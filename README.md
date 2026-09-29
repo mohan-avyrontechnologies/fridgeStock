@@ -538,7 +538,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.2.0] - 2026-09-29: API contract to spec
+### [2.2.0] - 2026-09-29: API contract to spec · `26b783b`
 **Breaking**
 - **`POST /foods/:id/use`:** now takes `{quantity?}`. No quantity (or all of it) uses the whole item; less logs `PARTIALLY_USED`; 0, negative or too much is a 400. It no longer takes `action`/`quantityUsed`.
 - **`POST /foods/:id/waste`:** always closes the whole item as `WASTED`. Partial waste is gone.
