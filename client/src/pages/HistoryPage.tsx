@@ -1,0 +1,88 @@
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
+import { api } from '../api/client';
+import type { UsageAction, UsageRecord } from '../api/types';
+import { PageHeader } from '../components/AppShell';
+import { Button, EmptyState, Spinner } from '../components/ui';
+import { historyActionLabel } from '../copy';
+import { formatInstant, formatQuantity } from '../lib/dates';
+
+const ACTIONS: UsageAction[] = ['USED', 'PARTIALLY_USED', 'WASTED', 'REMOVED'];
+const ACTION_STYLE: Record<UsageAction, string> = {
+  USED: 'bg-brand-soft text-brand',
+  PARTIALLY_USED: 'bg-brand-soft text-brand',
+  WASTED: 'bg-past text-past-ink',
+  REMOVED: 'bg-calm text-calm-ink',
+};
+
+export function HistoryPage() {
+  const [records, setRecords] = useState<UsageRecord[] | null>(null);
+  const [total, setTotal] = useState(0);
+  const [counts, setCounts] = useState<Record<UsageAction, number> | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    api
+      .usageRecords()
+      .then((page) => {
+        setRecords(page.items);
+        setTotal(page.total);
+        setCounts(page.counts);
+      })
+      .catch(() => setError('Couldn’t load your history.'));
+  }, []);
+
+  async function more() {
+    const page = await api.usageRecords(records!.length);
+    setRecords([...records!, ...page.items]);
+  }
+
+  return (
+    <>
+      <PageHeader title="History" subtitle="What you used, wasted or removed" />
+      <main className="space-y-5 px-4 pt-4">
+        {error && <EmptyState title={error} />}
+        {!records && !error && <Spinner />}
+        {counts && (
+          <ul className="grid grid-cols-4 gap-2">
+            {ACTIONS.map((a) => (
+              <li key={a} className={`rounded-2xl px-2 py-3 text-center ${ACTION_STYLE[a]}`}>
+                <p className="text-2xl font-bold tabular-nums">{counts[a]}</p>
+                <p className="text-[11px] leading-tight font-semibold">{historyActionLabel[a]}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+        {records && records.length === 0 && (
+          <EmptyState title="No history yet">Items you mark as used, wasted or removed show up here.</EmptyState>
+        )}
+        {records && records.length > 0 && (
+          <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
+            {records.map((r) => (
+              <li key={r.id}>
+                <Link to={`/food/${r.foodId}`} className="flex items-center gap-3 px-4 py-3 hover:bg-paper">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-semibold">{r.foodName}</p>
+                    <p className="text-sm text-muted">
+                      {formatQuantity(r.quantityUsed, r.unit)}
+                      {r.quantityRemaining > 0 && ` · ${formatQuantity(r.quantityRemaining, r.unit)} left`} ·{' '}
+                      {formatInstant(r.date)}
+                    </p>
+                  </div>
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${ACTION_STYLE[r.action]}`}>
+                    {historyActionLabel[r.action]}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+        {records && records.length < total && (
+          <Button variant="secondary" className="w-full" onClick={more}>
+            Show older
+          </Button>
+        )}
+      </main>
+    </>
+  );
+}

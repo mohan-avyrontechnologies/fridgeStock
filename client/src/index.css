@@ -1,0 +1,71 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --color-paper: #fbfaf7;
+  --color-card: #ffffff;
+  --color-ink: #1c2521;
+  --color-muted: #5b6661;
+  --color-line: #e5e1d8;
+  --color-brand: #1f3b33;
+  --color-brand-hover: #2a4d43;
+  --color-brand-soft: #e6eee9;
+
+  /* Urgency: neutral for "Not urgent" on purpose. Green would read as "fine to eat". */
+  --color-calm: #eef0ef;
+  --color-calm-ink: #3d4843;
+  --color-calm-bar: #b5bdb9;
+  --color-soon: #fcefd2;
+  --color-soon-ink: #744700;
+  --color-soon-bar: #e0a232;
+  --color-today: #fde0c8;
+  --color-today-ink: #873100;
+  --color-today-bar: #e46b1f;
+  --color-past: #fadada;
+  --color-past-ink: #8c1c1c;
+  --color-past-bar: #cf3b3b;
+
+  --color-danger: #b42318;
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--color-paper);
+  font-family: var(--font-sans);
+}
+
+/* Room for the fixed bottom nav and the phone's home indicator. */
+.pb-nav {
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+}
+.bottom-inset {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.top-inset {
+  padding-top: env(safe-area-inset-top);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sheet-in {
+    animation: sheet-in 180ms ease-out;
+  }
+  @keyframes sheet-in {
+    from {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+  }
+}

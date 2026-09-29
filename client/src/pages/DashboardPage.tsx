@@ -1,0 +1,89 @@
+import { Link } from 'react-router';
+import type { Urgency } from '../api/types';
+import { PageHeader } from '../components/AppShell';
+import { FoodList } from '../components/FoodCard';
+import { EstimateNote, URGENCY_STYLE } from '../components/Urgency';
+import { Button, EmptyState, SectionTitle, Spinner } from '../components/ui';
+import { urgencyShortLabel } from '../copy';
+import { formatDateKey } from '../lib/dates';
+import { useAuthStore } from '../stores/authStore';
+import { useFoodStore } from '../stores/foodStore';
+
+const ORDER: Urgency[] = ['PAST_EXPECTED_EXPIRY', 'DUE_TODAY', 'USE_SOON', 'NOT_URGENT'];
+
+export function DashboardPage() {
+  const user = useAuthStore((s) => s.user);
+  const { inventory, cookFirst, error, refresh } = useFoodStore();
+  const firstName = user?.name.split(' ')[0];
+
+  return (
+    <>
+      <PageHeader
+        title={firstName ? `Hi, ${firstName}` : 'Your fridge'}
+        subtitle={inventory ? formatDateKey(inventory.today) : undefined}
+      />
+      <main className="space-y-7 px-4 pt-4">
+        {!inventory && !error && <Spinner />}
+        {error && !inventory && (
+          <EmptyState title="Couldn’t load your food">
+            <p>{error}</p>
+            <Button variant="secondary" className="mt-4" onClick={() => refresh()}>
+              Try again
+            </Button>
+          </EmptyState>
+        )}
+
+        {inventory && (
+          <>
+            <section aria-label="Summary">
+              <ul className="grid grid-cols-4 gap-2">
+                {ORDER.map((u) => (
+                  <li key={u} className={`rounded-2xl px-2 py-3 text-center ${URGENCY_STYLE[u].tile}`}>
+                    <p className="text-2xl font-bold tabular-nums">{inventory.summary[u]}</p>
+                    <p className="text-[11px] leading-tight font-semibold">{urgencyShortLabel[u]}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            {inventory.items.length === 0 ? (
+              <EmptyState title="Nothing logged yet">
+                <p>Add the perishables in your fridge and we’ll order them by expected expiry.</p>
+                <Link to="/add" className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-brand px-4 font-semibold text-white">
+                  Add your first item
+                </Link>
+              </EmptyState>
+            ) : (
+              <>
+                {cookFirst && cookFirst.length > 0 && (
+                  <section>
+                    <SectionTitle
+                      action={
+                        <Link to="/cook-first" className="text-sm font-semibold text-brand">
+                          Open Cook First
+                        </Link>
+                      }
+                    >
+                      Needs attention
+                    </SectionTitle>
+                    <FoodList items={cookFirst.slice(0, 3)} />
+                    {cookFirst.length > 3 && (
+                      <p className="mt-2 text-sm text-muted">+{cookFirst.length - 3} more in Cook First</p>
+                    )}
+                  </section>
+                )}
+
+                <section>
+                  <SectionTitle>All food ({inventory.items.length})</SectionTitle>
+                  <p className="-mt-2 mb-3 text-sm text-muted">Sorted by expected expiry, soonest first.</p>
+                  <FoodList items={inventory.items} />
+                </section>
+              </>
+            )}
+            <EstimateNote />
+          </>
+        )}
+      </main>
+    </>
+  );
+}

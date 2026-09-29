@@ -1,0 +1,149 @@
+import type { Types } from 'mongoose';
+import { DEFAULT_THRESHOLDS } from '../config/urgency.js';
+import { reminderCopy } from '../copy.js';
+import { FoodItemModel, type FoodItemDoc } from '../models/FoodItem.js';
+import {
+  MAX_DELIVERY_ATTEMPTS,
+  NotificationModel,
+  type NotificationDoc,
+  type NotificationStatus,
+  type ReminderType,
+} from '../models/Notification.js';
+import type { NotificationPreferences, UserDoc } from '../models/User.js';
+import { clock } from '../utils/clock.js';
+import { addDays, diffDays, todayIn } from '../utils/dates.js';
+
+const PREFERENCE_FOR: Record<ReminderType, keyof NotificationPreferences> = {
+  APPROACHING_EXPIRY: 'approachingExpiry',
+  DUE: 'due',
+  OVERDUE: 'overdue',
+};
+
+const OPEN_STATUSES: NotificationStatus[] = ['PENDING', 'FAILED'];
+
+/**
+ * In-app delivery: a reminder is delivered by making it visible in the user's
+ * notification feed. Kept behind an object so a push channel (FCM) can be
+ * swapped in later, and so tests can simulate delivery failure.
+ */
+export const deliveryChannel = {
+  async deliver(_notification: NotificationDoc): Promise<void> {},
+};
+
+function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(date);
+}
+
+function stagesFor(expiry: Date) {
+  return [
+    {
+      type: 'APPROACHING_EXPIRY' as const,
+      starts: addDays(expiry, -DEFAULT_THRESHOLDS.useSoonDays),
+      endsBefore: expiry,
+    },
+    { type: 'DUE' as const, starts: expiry, endsBefore: addDays(expiry, 1) },
+    { type: 'OVERDUE' as const, starts: addDays(expiry, 1), endsBefore: null },
+  ];
+}
+
+export async function cancelForFood(foodId: Types.ObjectId): Promise<void> {
+  await NotificationModel.deleteMany({ foodId, status: { $in: OPEN_STATUSES } });
+}
+
+/**
+ * (Re)creates the reminders for one item. A stage the item has already moved
+ * past is skipped; the stage it is currently in is scheduled for today, so a
+ * backdated item gets one relevant reminder rather than a burst of stale ones.
+ */
+export async function scheduleForFood(food: FoodItemDoc, user: UserDoc): Promise<void> {
+  await cancelForFood(food._id);
+  if (food.status !== 'ACTIVE') return;
+
+  const today = todayIn(user.timeZone, clock.now());
+  for (const stage of stagesFor(food.expiryDate)) {
+    if (!user.notificationPreferences[PREFERENCE_FOR[stage.type]]) continue;
+    if (stage.endsBefore && stage.endsBefore <= today) continue;
+    const scheduledDate = stage.starts > today ? stage.starts : today;
+    await NotificationModel.updateOne(
+      { foodId: food._id, type: stage.type, expiryDate: food.expiryDate },
+      { $setOnInsert: { userId: user._id, scheduledDate, status: 'PENDING', attempts: 0 } },
+      { upsert: true },
+    );
+  }
+}
+
+export async function rescheduleAllForUser(user: UserDoc): Promise<void> {
+  const foods = await FoodItemModel.find({ userId: user._id, status: 'ACTIVE' });
+  for (const food of foods) await scheduleForFood(food, user);
+}
+
+function messageFor(type: ReminderType, food: FoodItemDoc, today: Date): string {
+  const expiry = formatDate(food.expiryDate);
+  switch (type) {
+    case 'APPROACHING_EXPIRY':
+      return reminderCopy.APPROACHING_EXPIRY(food.name, diffDays(food.expiryDate, today), expiry);
+    case 'DUE':
+      return reminderCopy.DUE(food.name);
+    case 'OVERDUE':
+      return reminderCopy.OVERDUE(food.name, expiry);
+  }
+}
+
+/** Delivers every reminder for this user whose scheduled day has arrived. */
+export async function dispatchForUser(user: UserDoc): Promise<void> {
+  const now = clock.now();
+  const today = todayIn(user.timeZone, now);
+  const due = await NotificationModel.find({
+    userId: user._id,
+    scheduledDate: { $lte: today },
+    $or: [{ status: 'PENDING' }, { status: 'FAILED', attempts: { $lt: MAX_DELIVERY_ATTEMPTS } }],
+  });
+
+  for (const notification of due) {
+    const food = await FoodItemModel.findOne({ _id: notification.foodId, userId: user._id });
+    const stillRelevant =
+      food &&
+      food.status === 'ACTIVE' &&
+      food.expiryDate.getTime() === notification.expiryDate.getTime() &&
+      user.notificationPreferences[PREFERENCE_FOR[notification.type]];
+    if (!stillRelevant) {
+      await notification.deleteOne();
+      continue;
+    }
+
+    notification.attempts += 1;
+    notification.message = messageFor(notification.type, food, today);
+    try {
+      await deliveryChannel.deliver(notification);
+      notification.status = 'SENT';
+      notification.sentAt = now;
+      notification.lastError = undefined;
+    } catch (error) {
+      // Failures stay visible as FAILED and are retried on later sweeps,
+      // up to MAX_DELIVERY_ATTEMPTS. Inventory views never depend on this.
+      notification.status = 'FAILED';
+      notification.lastError = error instanceof Error ? error.message : String(error);
+    }
+    await notification.save();
+  }
+}
+
+/** Background sweep across every user with reminders waiting to go out. */
+export async function sweep(loadUser: (id: Types.ObjectId) => Promise<UserDoc | null>) {
+  // A one-day margin covers users whose local date is ahead of UTC.
+  const horizon = addDays(clock.now(), 1);
+  const userIds: Types.ObjectId[] = await NotificationModel.distinct('userId', {
+    status: { $in: OPEN_STATUSES },
+    attempts: { $lt: MAX_DELIVERY_ATTEMPTS },
+    scheduledDate: { $lte: horizon },
+  });
+  for (const id of userIds) {
+    const user = await loadUser(id);
+    if (user) await dispatchForUser(user);
+  }
+}
