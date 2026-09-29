@@ -575,7 +575,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.3.0] - 2026-09-29: Reminders and screens to spec
+### [2.3.0] - 2026-09-29: Reminders and screens to spec · `6dfaaf5`
 **Changed: reminders**
 - **Messages** are now exactly:
   - "{name}: expected expiry in {n} days. Consider using it soon."
