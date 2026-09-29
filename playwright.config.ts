@@ -28,7 +28,7 @@ export default defineConfig({
   ],
   webServer: [
     {
-      command: 'npx tsx src/index.ts',
+      command: 'npx tsx --conditions=source src/index.ts',
       cwd: 'server',
       url: `http://localhost:${API_PORT}/api/health`,
       timeout: 180_000,
@@ -36,8 +36,8 @@ export default defineConfig({
       env: {
         PORT: String(API_PORT),
         EPHEMERAL_DB: '1',
-        MONGODB_URI: '',
-        CORS_ORIGIN: `http://localhost:${WEB_PORT}`,
+        MONGO_URI: '',
+        CLIENT_ORIGIN: `http://localhost:${WEB_PORT}`,
       },
     },
     {
@@ -46,7 +46,7 @@ export default defineConfig({
       url: `http://localhost:${WEB_PORT}`,
       timeout: 60_000,
       reuseExistingServer: false,
-      env: { API_PROXY_TARGET: `http://localhost:${API_PORT}` },
+      env: { VITE_API_URL: `http://localhost:${API_PORT}/api` },
     },
   ],
 });

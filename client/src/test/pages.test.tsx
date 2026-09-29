@@ -8,7 +8,9 @@ import { CookFirstPage } from '../pages/CookFirstPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { useAuthStore } from '../stores/authStore';
 import { renderSignedIn } from './render';
-import { item, sampleItems, server } from './server';
+import { API_URL } from '../api/client';
+import { item, sampleItems } from '../mocks/handlers';
+import { server } from '../mocks/server';
 
 describe('Dashboard', () => {
   it('shows every item in server order with its urgency label and counts', async () => {
@@ -35,14 +37,14 @@ describe('Dashboard', () => {
 
   it('shows an empty state for a new user', async () => {
     server.use(
-      http.get('/api/foods', () =>
+      http.get(`${API_URL}/foods`, () =>
         HttpResponse.json({
           today: '2026-09-29',
           summary: { NOT_URGENT: 0, USE_SOON: 0, DUE_TODAY: 0, PAST_EXPECTED_EXPIRY: 0 },
           items: [],
         }),
       ),
-      http.get('/api/foods/cook-first', () => HttpResponse.json({ today: '2026-09-29', items: [] })),
+      http.get(`${API_URL}/foods/cook-first`, () => HttpResponse.json({ today: '2026-09-29', items: [] })),
     );
     renderSignedIn('/', <DashboardPage />);
     expect(await screen.findByText('Nothing logged yet')).toBeInTheDocument();
@@ -50,7 +52,7 @@ describe('Dashboard', () => {
 
   it('signs out when the token is rejected', async () => {
     server.use(
-      http.get('/api/foods', () =>
+      http.get(`${API_URL}/foods`, () =>
         HttpResponse.json({ error: { code: 'UNAUTHENTICATED', message: 'Authentication required.' } }, { status: 401 }),
       ),
     );
@@ -71,7 +73,7 @@ describe('Cook First', () => {
     const user = userEvent.setup();
     let body: unknown;
     server.use(
-      http.post('/api/foods/c/use', async ({ request }) => {
+      http.post(`${API_URL}/foods/c/use`, async ({ request }) => {
         body = await request.json();
         return HttpResponse.json({ food: item({ id: 'c', quantity: 0.5 }), usageRecord: {} });
       }),
@@ -99,7 +101,7 @@ describe('Add food', () => {
     const user = userEvent.setup();
     let body: Record<string, unknown> | undefined;
     server.use(
-      http.post('/api/foods', async ({ request }) => {
+      http.post(`${API_URL}/foods`, async ({ request }) => {
         body = (await request.json()) as Record<string, unknown>;
         return HttpResponse.json(sampleItems[2], { status: 201 });
       }),
@@ -119,7 +121,7 @@ describe('Add food', () => {
   it('shows the server validation message on the right field', async () => {
     const user = userEvent.setup();
     server.use(
-      http.post('/api/foods', () =>
+      http.post(`${API_URL}/foods`, () =>
         HttpResponse.json(
           { error: { code: 'VALIDATION_ERROR', message: 'Food name must be at most 100 characters.', field: 'name' } },
           { status: 400 },

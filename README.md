@@ -7,7 +7,8 @@ A mobile-first web app that helps a household use perishable food before it goes
 | | |
 |---|---|
 | **Status** | MVP complete. Not yet deployed. |
-| **Version** | 1.3.0 (see the [Changelog](#changelog)) |
+| **Version** | 2.0.0 (see the [Changelog](#changelog)) |
+| **Requires** | Node.js 20.19 or later |
 | **Specifications** | PFCP BRD v2.0, FRD v1.0, SRD v1.0, TDD v1.0 (internal documents, not stored in this repo) |
 | **Repository** | `github.com/rugvailabs/cook_first` |
 
@@ -18,22 +19,24 @@ A mobile-first web app that helps a household use perishable food before it goes
 1. [Screenshots](#screenshots)
 2. [Features](#features)
 3. [Tech stack](#tech-stack)
-4. [Project structure](#project-structure)
-5. [Getting started](#getting-started)
-6. [Configuration](#configuration)
-7. [Scripts](#scripts)
-8. [Testing](#testing)
-9. [How it works](#how-it-works)
-10. [Data model](#data-model)
-11. [API reference](#api-reference)
-12. [Project rules](#project-rules)
-13. [Security](#security)
-14. [Deployment](#deployment)
-15. [Differences from the design documents](#differences-from-the-design-documents)
-16. [Project status](#project-status)
-17. [Changelog](#changelog)
-18. [Roadmap](#roadmap)
-19. [Keeping this README up to date](#keeping-this-readme-up-to-date)
+4. [Architecture](#architecture)
+5. [Project structure](#project-structure)
+6. [Getting started](#getting-started)
+7. [Configuration](#configuration)
+8. [Scripts](#scripts)
+9. [Testing](#testing)
+10. [How it works](#how-it-works)
+11. [Dates and time zones](#dates-and-time-zones)
+12. [Data model](#data-model)
+13. [API reference](#api-reference)
+14. [Project rules](#project-rules)
+15. [Security](#security)
+16. [Deployment](#deployment)
+17. [Differences from the design documents](#differences-from-the-design-documents)
+18. [Project status](#project-status)
+19. [Changelog](#changelog)
+20. [Roadmap](#roadmap)
+21. [Keeping this README up to date](#keeping-this-readme-up-to-date)
 
 ---
 
@@ -59,7 +62,7 @@ These screenshots are captured automatically by the Playwright test suite.
 
 | Area | What it does |
 |---|---|
-| **Accounts** | Register and log in with email and password. JWT sessions last 7 days, and passwords are hashed with bcrypt. |
+| **Accounts** | Register and log in with email and password. JWT sessions last 7 days; passwords are hashed with bcrypt. Your time zone is captured silently from the browser at sign-up. |
 | **Add food** | Name, quantity, unit, added date and lifespan (days). Quick-pick buttons for units, "Today" / "Yesterday" and 1–14 day lifespans. The form shows a live expected-expiry preview. There is also a "Save and add another" button. |
 | **Expected expiry** | Added date + lifespan. It is recalculated whenever the added date or lifespan is edited. |
 | **Urgency labels** | Not urgent (> 3 days) · Use soon (1–3 days) · Expected expiry today (0) · Past expected expiry (< 0). |
@@ -68,7 +71,7 @@ These screenshots are captured automatically by the Playwright test suite.
 | **Dashboard** | Counts for each label, a "Needs attention" section and the full list of food. |
 | **Recording what happened** | Used it all · Used some · Threw it away (all or part) · Remove. Each one is saved as a usage record. |
 | **History** | Every usage record, newest first, with totals for each action. |
-| **Reminders** | In-app reminders when an item reaches "Use soon", on its expected-expiry day, and the day after. Each type can be turned off. |
+| **Reminders** | In-app reminders when an item reaches "Use soon", on its expected-expiry day, and the day after. Each type can be turned off. A node-cron job delivers them every 15 minutes. |
 | **Privacy** | Each user only ever sees their own food, history and reminders. |
 | **Responsive** | Phone layout with a bottom navigation bar. From 1024 px wide: a sidebar and a two-column layout. |
 
@@ -76,29 +79,58 @@ These screenshots are captured automatically by the Playwright test suite.
 
 ## Tech stack
 
+The project is a **TypeScript monorepo** using npm workspaces, with three packages: `client`, `server` and `shared`. It requires **Node.js 20.19 or later** (20.19 is the minimum that Vite and Mongoose support).
+
 | Layer | Technology | Version |
 |---|---|---|
-| **Frontend** | React | 19.3 |
-| | TypeScript | 7.0 |
-| | Tailwind CSS | 4.3 |
-| | Zustand (app state) | 5.0 |
-| | React Router | 8.4 |
+| **Frontend** (`client`) | React | 19.3 |
 | | Vite (build and dev server) | 8.3 |
-| **Backend** | Node.js | 24 |
-| | Express | 5.2 |
-| | TypeScript, run with `tsx` in development | 7.0 |
-| | Mongoose | 9.10 |
-| | Zod (input validation) | 4.6 |
+| | React Router | 7.18 |
+| | Tailwind CSS | 4.3 |
+| | Zustand (app state; the login token is saved in `localStorage` through its `persist` middleware) | 5.0 |
+| **Backend** (`server`) | Express | 5.2 |
+| | Mongoose (MongoDB) | 9.10 |
 | | jsonwebtoken (HS256) | 9.0 |
-| | bcryptjs | 3.0 |
-| | Helmet, CORS, express-rate-limit | 8.3 / 2.8 / 8.7 |
-| **Database** | MongoDB | 8.2 |
-| **Testing** | Vitest, Supertest, mongodb-memory-server | 5.0 / 7.3 / 11.3 |
-| | React Testing Library, MSW, jsdom | 16.3 / 2.15 / 30.1 |
-| | Playwright | 1.63 |
-| **DevOps** | Docker Compose, GitHub Actions, Render, Vercel | |
+| | bcrypt | 6.0 |
+| | zod (validation) | 4.6 |
+| | node-cron (scheduled jobs) | 4.6 |
+| | helmet, cors, express-rate-limit | 8.3 / 2.8 / 8.7 |
+| **Shared** (`shared`) | Enums, API request and response types, zod schemas, date utilities | |
+| **Language** | TypeScript | 6.0 |
+| **Database** | MongoDB (docker-compose locally; MongoDB Atlas in production) | 8 |
+| **Testing** | Vitest (unit) | 4.1 |
+| | Supertest + mongodb-memory-server (API) | 7.3 / 11.3 |
+| | Playwright (end-to-end) | 1.63 |
+| | MSW (fake API in frontend tests), React Testing Library, jsdom | 2.15 / 16.3 / 27.4 |
+| **Code quality** | ESLint with typescript-eslint and react-hooks | 9 |
+| **CI / hosting** | GitHub Actions · Vercel (client) · any Node host, e.g. Render (server) · MongoDB Atlas | |
 
-The project is one repository with an npm workspace for each half: `client/` and `server/`.
+> **Why TypeScript 6.0, not 7?** TypeScript 7 is the new native compiler and has no JavaScript API yet, so ESLint's TypeScript support can't run on it. 6.0 is the latest version that works with ESLint.
+
+---
+
+## Architecture
+
+```
+client (React)  ──HTTP/JSON──▶  server (Express)  ──Mongoose──▶  MongoDB
+      │                               │
+      └──────── @cook-first/shared ───┘   enums · API types · zod schemas · dates.ts
+```
+
+**How a request flows through the server:**
+
+```
+routes → middleware (rate limit → JWT auth → zod validation) → controller → service → model → MongoDB
+```
+
+- **Routes** (`routes/index.ts`) only connect each path to its middleware and controller.
+- **Middleware** checks the JWT and attaches the user, validates the request with a shared zod schema, and turns errors into responses.
+- **Controllers** are thin: they parse the request, call one service, and send the response. There's no logic in them.
+- **Services** hold all business logic: the priority engine, food actions, usage history, reminders and accounts.
+- **Models** are the only code that talks to MongoDB.
+- **Jobs** (`jobs/reminderJob.ts`) run the node-cron reminder sweep every 15 minutes.
+
+**How the `shared` package is loaded:** it exports a `source` condition that points at its TypeScript source, so `tsx`, Vite and Vitest use `shared/src` directly with no separate build in development or tests. Production (`node server/dist/index.js`) uses the compiled `shared/dist`, which `npm run build` creates first.
 
 ---
 
@@ -106,34 +138,43 @@ The project is one repository with an npm workspace for each half: `client/` and
 
 ```
 cook-first/
-├── client/                     React app
-│   ├── public/                 static assets (icon)
-│   ├── src/
-│   │   ├── api/                API client and shared types
-│   │   ├── components/         AppShell (nav), FoodCard, FoodForm, ActionSheet, UI parts
-│   │   ├── lib/                date helpers
-│   │   ├── pages/              Dashboard, Cook First, Add food, Food details, Reminders, History, Settings, Sign in
-│   │   ├── stores/             Zustand stores: auth, food, notifications, toast
-│   │   ├── test/               component tests (MSW)
-│   │   └── copy.ts             all expiry wording in one place
-│   └── vercel.json             Vercel deployment config
+├── shared/                     @cook-first/shared, used by both client and server
+│   └── src/
+│       ├── enums.ts            urgency, food status, usage action, reminder type, …
+│       ├── api.ts              API request and response types
+│       ├── schemas.ts          zod schemas for every request body and query
+│       ├── dates.ts            todayInTz, addDays, diffDays, isValidDate, formatDisplay
+│       └── dates.test.ts
 ├── server/                     Express API
-│   ├── src/
-│   │   ├── config/             environment variables, urgency thresholds
-│   │   ├── controllers/        auth, food, notification and usage controllers
-│   │   ├── middleware/         JWT auth, validation, error handling
-│   │   ├── models/             User, FoodItem, UsageRecord, Notification
-│   │   ├── routes/             REST routes under /api
-│   │   ├── services/           priority engine, reminders, tokens, password hashing
-│   │   ├── utils/              calendar dates, clock, errors
-│   │   ├── copy.ts             server-side wording for reminders
-│   │   └── validation.ts       Zod schemas
-│   └── test/                   API and unit tests
+│   └── src/
+│       ├── config/             env variables, urgency thresholds, database connection
+│       ├── middleware/         JWT auth, zod validation, error handling
+│       ├── models/             User, FoodItem, UsageRecord, Notification (+ data migrations)
+│       ├── services/           all business logic: food, usage, reminders, auth, priority engine, clock
+│       ├── controllers/        thin: parse → call service → respond
+│       ├── routes/             REST routes under /api
+│       ├── jobs/               node-cron reminder sweep
+│       ├── tests/              API, unit, rules and structure tests
+│       ├── copy.ts             reminder message wording
+│       ├── app.ts              Express app (helmet, CORS, JSON, routes)
+│       └── index.ts            starts the database, server and jobs
+├── client/                     React app
+│   └── src/
+│       ├── api/                API client: one function per endpoint
+│       ├── stores/             Zustand stores: auth, food, notifications (+ toast)
+│       ├── pages/              one file per screen (9 screens)
+│       ├── components/         FoodCard, UrgencyBadge, FoodForm, ActionSheet, AppShell, AuthLayout, UI parts
+│       ├── mocks/              MSW handlers for frontend tests
+│       ├── lib/                small helpers: quantity/time formatting, shared-schema form checks
+│       ├── test/               frontend tests
+│       └── copy.ts             every piece of expiry wording in the interface
 ├── e2e/                        Playwright end-to-end tests
 ├── docs/screenshots/           screenshots used in this README
 ├── .github/workflows/ci.yml    CI pipeline
 ├── docker-compose.yml          local MongoDB
-├── render.yaml                 Render deployment config for the API
+├── render.yaml                 API deployment (Render)
+├── client/vercel.json          web app deployment (Vercel)
+├── eslint.config.js
 └── playwright.config.ts
 ```
 
@@ -143,10 +184,10 @@ cook-first/
 
 ### Prerequisites
 
-- **Node.js 24+** and npm 11+
+- **Node.js 20.19 or later**, with npm. `.nvmrc` pins 20.19.0.
 - **One of the following for the database:**
-  - **Docker Desktop.** This is the recommended option.
-  - **Nothing.** The API can start a built-in MongoDB. It uses more memory, and on first run it downloads the MongoDB program (~780 MB).
+  - **Docker Desktop.** Recommended: `docker compose up -d`.
+  - **Nothing.** The API can start a built-in MongoDB instead. It uses more memory, and on first run it downloads the MongoDB program (~780 MB).
   - **A MongoDB Atlas connection string.**
 
 ### Install and run
@@ -163,11 +204,10 @@ cp server/.env.example server/.env        # optional: the defaults work for deve
 ```bash
 # A) Docker (recommended)
 docker compose up -d
-#    then set in server/.env:
-#    MONGODB_URI=mongodb://localhost:27017/cook-first
+#    then in server/.env:
+#    MONGO_URI=mongodb://localhost:27017/cook-first
 
-# B) Built-in: leave MONGODB_URI empty.
-#    Data is kept in server/.data/ and survives restarts.
+# B) Built-in: leave MONGO_URI empty. Data is kept in server/.data/.
 ```
 
 **Start the app.** Use two terminals:
@@ -179,9 +219,7 @@ npm run dev:client     # web app → http://localhost:5173
 
 Open http://localhost:5173 and create an account.
 
-> **Port already in use?** Run the client on another port, for example `cd client && npx vite --port 5180`.
->
-> **Opening it on a phone on the same Wi-Fi:** run `cd client && npx vite --host 0.0.0.0 --port 5180` and open `http://<this-PC's-IP>:5180`. The Wi-Fi network must be set to *Private* in Windows, and the router must allow devices to reach each other.
+> **Running the client on a different port?** The browser calls the API directly, so add that address to `CLIENT_ORIGIN` in `server/.env`, for example `CLIENT_ORIGIN=http://localhost:5173,http://localhost:5180`.
 
 ---
 
@@ -191,20 +229,21 @@ Open http://localhost:5173 and create an account.
 
 | Variable | Default | Required in production | Description |
 |---|---|---|---|
-| `MONGODB_URI` | *(empty = built-in database)* | **Yes** | MongoDB connection string |
 | `PORT` | `4000` | No | API port |
-| `JWT_SECRET` | development-only value | **Yes** | Secret key for signing login tokens. Generate one with `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
+| `MONGO_URI` | *(empty = built-in database)* | **Yes** | MongoDB connection string |
+| `JWT_SECRET` | development-only value | **Yes** | Key for signing login tokens (HS256). Generate one with `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
 | `JWT_EXPIRES_IN` | `7d` | No | How long a login lasts |
-| `CORS_ORIGIN` | `http://localhost:5173` | **Yes** | Browser addresses allowed to call the API (comma-separated) |
-| `REMINDER_SWEEP_MINUTES` | `15` | No | How often the background reminder job runs |
+| `CLIENT_ORIGIN` | `http://localhost:5173` | **Yes** | The web app's address, allowed by CORS (comma-separate several) |
 
-In production the server **refuses to start** if `MONGODB_URI` or `JWT_SECRET` is missing.
+In production the server **refuses to start** if `MONGO_URI` or `JWT_SECRET` is missing.
 
 ### `client/.env`
 
 | Variable | Default | Description |
 |---|---|---|
-| `VITE_API_URL` | `/api` (sent through the Vite dev server) | Full API address in production, for example `https://cook-first-api.onrender.com/api` |
+| `VITE_API_URL` | `http://localhost:4000/api` | Full address of the API, for example `https://cook-first-api.onrender.com/api` |
+
+`.env.example` files are committed for both. The real `.env` files are git-ignored.
 
 ---
 
@@ -216,10 +255,11 @@ Run these from the repository root:
 |---|---|
 | `npm run dev:server` | Start the API with auto-reload |
 | `npm run dev:client` | Start the Vite dev server |
-| `npm test` | Server tests (91) + client tests (12) |
+| `npm run lint` | ESLint across all three packages |
+| `npm run typecheck` | TypeScript check of `shared`, `server` and `client` |
+| `npm test` | Unit and API tests: shared (20) + server (97) + client (21) |
 | `npm run test:e2e` | Playwright end-to-end tests (12) |
-| `npm run lint` | TypeScript type-check of both halves |
-| `npm run build` | Production build of the server (`server/dist`) and client (`client/dist`) |
+| `npm run build` | Build `shared/dist`, `server/dist` and `client/dist` |
 
 ---
 
@@ -227,11 +267,13 @@ Run these from the repository root:
 
 | Suite | Tools | Tests | What it covers |
 |---|---|---|---|
-| **API and logic** (`server/test`) | Vitest, Supertest, in-memory MongoDB | 75 | Registration and login, protected routes, bad or expired tokens, adding/editing/removing food, every validation rule, urgency and sorting (including ties), Cook First, time zones, used / partly used / wasted / removed, history, reminder scheduling, delivery, retries and preferences, cross-user isolation |
-| **Wording guard** (`server/test/foodSafetyCopy.test.ts`) | Vitest | 5 | Scans every `.ts`/`.tsx` file in `client/src` and `server/src`, comments included, for the banned phrases. Fails if the word "safe" appears in either copy file, or if expiry wording appears outside the copy files. Also checks the required estimate line. |
-| **Project rules** (`server/test/rules.test.ts`) | Vitest, Supertest | 11 | Every database query carries the user's ID; the query-string `userId` is ignored; the priority engine is pure; bcrypt cost 12; passwords never returned or logged; `.env` ignored; helmet headers; CORS limited to the client; rate limit of 20 per 15 minutes |
-| **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 12 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and expected-expiry preview, and the required estimate line on Add Food and Cook First |
-| **End-to-end** (`e2e/`) | Playwright in Chrome | 12 | 6 journeys, each run at **phone size (Pixel 7)** and **desktop size (1440×900)**; see the list below |
+| **Dates** (`shared/src/dates.test.ts`) | Vitest | 20 | Valid and invalid dates, today in several time zones, month and year ends, daylight-saving weekends, `addDays`/`diffDays` as inverses, the "Thu, 1 Oct" format |
+| **API and logic** (`server/src/tests`) | Vitest, Supertest, mongodb-memory-server | 70 | Registration and login, protected routes, bad or expired tokens, adding/editing/removing food, every validation rule, urgency and sorting (including ties), Cook First, time zones, used / partly used / wasted / removed, history, reminder scheduling, delivery, retries and preferences, cross-user isolation |
+| **Wording guard** (`foodSafetyCopy.test.ts`) | Vitest | 5 | Scans every `.ts`/`.tsx` file in `client/src`, `server/src` and `shared/src`, comments included, for the banned phrases. Fails on the word "safe" in either copy file, or on expiry wording outside the copy files. Checks the required estimate line. |
+| **Project rules** (`rules.test.ts`) | Vitest, Supertest | 11 | Every database query carries the user's ID; the query-string `userId` is ignored; pure priority engine; bcrypt cost 12; passwords never returned or logged; `.env` ignored; helmet; CORS; rate limit of 20 per 15 minutes |
+| **Server structure** (`structure.test.ts`) | Vitest | 11 | The `server/src` folders; thin controllers; only models talk to MongoDB; no `new Date()` in date logic; dates only from `shared`; node-cron job; env variable names and defaults |
+| **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 21 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and preview, the required estimate line, plus client structure checks (folders, one page per screen, `mocks/`, API default, persisted token, shared schemas) |
+| **End-to-end** (`e2e/`) | Playwright in Chrome | 12 | 6 journeys, each run at **phone size (Pixel 7)** and **desktop size (1440×900)** |
 
 The six end-to-end journeys:
 
@@ -242,9 +284,9 @@ The six end-to-end journeys:
 5. One user can't see another user's food
 6. Reminder settings and sign-out
 
-Every page visited is also checked for banned wording and for sideways scrolling. The Add Food and Cook First pages must show the required estimate line.
+Every page visited is also checked for banned wording and for sideways scrolling.
 
-The end-to-end run starts its own API (port 4100, throwaway database) and client (port 5174), so it never touches your data. Screenshots are saved to `e2e/screenshots/<mobile|desktop>/` (not committed).
+Test databases live in git-ignored `.test-db-*` folders inside the project, not the system temp folder, and are deleted afterwards. The end-to-end run uses its own ports (API 4100, web 5174), so it never touches your data.
 
 ---
 
@@ -253,8 +295,8 @@ The end-to-end run starts its own API (port 4100, throwaway database) and client
 ### Expected expiry and urgency
 
 ```
-expectedExpiryDate = addedDate + lifespanDays
-remainingDays      = expectedExpiryDate − today   (in the user's own time zone)
+expectedExpiryDate = addDays(addedDate, lifespanDays)
+remainingDays      = diffDays(today, expectedExpiryDate)   with today = todayInTz(user.timeZone)
 ```
 
 | Remaining days | Label | Colour | In Cook First |
@@ -264,18 +306,16 @@ remainingDays      = expectedExpiryDate − today   (in the user's own time zone
 | 0 | Expected expiry today | orange | Yes |
 | below 0 | Past expected expiry | red | Yes |
 
-- **Dates are calendar days** (`YYYY-MM-DD`), not timestamps, so time zones and daylight-saving changes never shift an item by a day.
-- **"Today" uses each user's time zone.** It's saved at sign-up and updated at each sign-in.
 - **Remaining days and labels are calculated on every request, not stored**, so they roll over at midnight on their own.
 - **The thresholds are configurable** in `server/src/config/urgency.ts`.
 - **"Not urgent" is grey, not green**, so it doesn't suggest "fine to eat".
 
 ### Priority engine
 
-`server/src/services/priorityEngine.ts` has no database access and doesn't read the clock, so it always gives the same result for the same input:
+`server/src/services/priorityEngine.ts` is a pure function with no database, Express or clock:
 
 1. Leave out used, wasted and removed items.
-2. Sort by **expected expiry**, then **added date**, then **item ID**.
+2. Sort by **expected expiry**, then **added date**, then **item ID**. `YYYY-MM-DD` strings sort in date order.
 3. Work out remaining days and the label for each item.
 4. **Cook First** = every item at or above "Use soon".
 
@@ -291,11 +331,28 @@ remainingDays      = expectedExpiryDate − today   (in the user's own time zone
 
 ### Reminders
 
-- Up to three per item: **approaching** (3 days before), **due** (on the day) and **overdue** (the day after).
+- **Up to three per item:** **approaching** (3 days before), **due** (on the day) and **overdue** (the day after).
 - **Rescheduled** when an item's dates change, and **cancelled** when it's used, wasted or removed.
 - **An item added late only gets the reminder for the stage it's already in**, not a burst of old ones.
-- **Delivered** when the user opens the app, and by a background job every 15 minutes.
+- **Delivered** when the user opens the app, and by the **node-cron job** (`*/15 * * * *`).
 - **Failed deliveries** are saved as `FAILED` and retried up to 3 times. The food lists never depend on reminders.
+
+---
+
+## Dates and time zones
+
+- **Every food date is a `"YYYY-MM-DD"` string, never a timestamp.** This covers `addedDate`, `expiryDate`, a reminder's `scheduledDate` and a usage record's `date`. Event times such as `sentAt` or `closedAt` are still timestamps.
+- **Each user has an IANA time zone**, such as `Asia/Kolkata`. The sign-up form captures it silently from the browser, and it's updated when the user signs in.
+- **The server never calls `new Date()` for date logic.** "Today" always comes from `clock.today(user.timeZone)`, which uses `todayInTz`. Only `services/clock.ts` reads the system time, and a test enforces this.
+- **`shared/src/dates.ts` provides five functions**, all doing their arithmetic at **UTC midnight** so daylight-saving changes can never shift a day:
+
+| Function | Example |
+|---|---|
+| `todayInTz(timeZone, now?)` | `todayInTz('Asia/Kolkata')` → `"2026-09-30"` |
+| `addDays(date, n)` | `addDays('2026-09-29', 4)` → `"2026-10-03"` |
+| `diffDays(from, to)` | `diffDays('2026-09-29', '2026-10-03')` → `4` |
+| `isValidDate(value)` | `isValidDate('2026-02-30')` → `false` |
+| `formatDisplay(date)` | `formatDisplay('2026-10-01')` → `"Thu, 1 Oct"` |
 
 ---
 
@@ -305,24 +362,26 @@ MongoDB collections:
 
 | Collection | Fields |
 |---|---|
-| **users** | `name`, `email` (unique), `passwordHash` (bcrypt), `timeZone`, `notificationPreferences {approachingExpiry, due, overdue}` |
-| **fooditems** | `userId`, `name`, `quantity`, `unit`, `addedDate`, `lifespanDays`, `expiryDate` (calculated), `status` (`ACTIVE`/`USED`/`WASTED`/`REMOVED`), `closedAt` |
-| **usagerecords** | `userId`, `foodId`, `action`, `date`, `quantityUsed`, `quantityRemaining`, `foodName`, `unit` (a copy taken at the time) |
-| **notifications** | `userId`, `foodId`, `type`, `expiryDate`, `scheduledDate`, `status` (`PENDING`/`SENT`/`FAILED`), `attempts`, `lastError`, `message`, `sentAt`, `readAt` |
+| **users** | `name`, `email` (unique), `passwordHash` (bcrypt), `timeZone` (IANA), `notificationPreferences {approachingExpiry, due, overdue}` |
+| **fooditems** | `userId`, `name`, `quantity`, `unit`, `addedDate` (`YYYY-MM-DD`), `lifespanDays`, `expiryDate` (`YYYY-MM-DD`, calculated), `status` (`ACTIVE`/`USED`/`WASTED`/`REMOVED`), `closedAt` |
+| **usagerecords** | `userId`, `foodId`, `action`, `date` (`YYYY-MM-DD`), `quantityUsed`, `quantityRemaining`, `foodName`, `unit` (a copy taken at the time), `createdAt` |
+| **notifications** | `userId`, `foodId`, `type`, `expiryDate` and `scheduledDate` (`YYYY-MM-DD`), `status` (`PENDING`/`SENT`/`FAILED`), `attempts`, `lastError`, `message`, `sentAt`, `readAt` |
 
 **Indexes:**
 - `fooditems {userId, status}` and `{userId, expiryDate}`
 - `users.email` (unique)
-- `notifications {foodId, type, expiryDate}` (unique, so no duplicate reminders)
-- `usagerecords {userId, date}`
+- `notifications {userId, foodId, type, expiryDate}` (unique, so no duplicate reminders)
+- `usagerecords {userId, date, createdAt}`
 
-**Stored in the browser:** only the login token and basic profile (`localStorage`), cleared at sign-out.
+**Migrations:** `models/migrations.ts` runs at start-up. It converts any food dates saved by versions before 2.0 from timestamps to `YYYY-MM-DD` strings, and removes out-of-date indexes. It's safe to run repeatedly.
+
+**Stored in the browser:** only the login token and basic profile (`localStorage`, through Zustand `persist`), cleared at sign-out.
 
 ---
 
 ## API reference
 
-Base URL: `/api`. Every route except register, login and health needs `Authorization: Bearer <token>`.
+Base URL: `http://localhost:4000/api` (`VITE_API_URL`). Every route except register, login and health needs `Authorization: Bearer <token>`. Request and response types are in `shared/src/api.ts`, and request schemas in `shared/src/schemas.ts`.
 
 | Method | Path | Body / query | Success |
 |---|---|---|---|
@@ -368,25 +427,27 @@ These rules must never be broken. Each one is enforced in code and checked by an
 
 | Rule | How it's enforced | Test |
 |---|---|---|
-| **Never suggest food is fit to eat.** The banned phrases (listed in the wording-guard test) must not appear anywhere. | All expiry wording lives in `client/src/copy.ts` (interface) and `server/src/copy.ts` (reminder messages). | `foodSafetyCopy.test.ts` scans every `.ts`/`.tsx` file in `client/src` and `server/src`, ignoring case. It fails on any banned phrase, on the word "safe" in either copy file, or on expiry wording outside the copy files. The Playwright tests also scan every rendered page. |
-| **Add Food and Cook First show:** *"Expected expiry is an estimate to help you plan. Always check your food before eating it."* | `estimateNote` in `client/src/copy.ts`, shown by the `EstimateNote` component. | Client tests `required estimate line`; Playwright journeys 1 and 3 |
-| **Users only ever see their own data.** | The identity comes only from the verified JWT (`middleware/auth.ts`). Every query on food items, usage records and reminders includes `userId`. Another user's item returns **404**, not 403. | `rules.test.ts` records every MongoDB operation in a full journey and fails on any without the user's ID; `security.test.ts`; Playwright journey 5 |
-| **Prioritisation is deterministic.** | `services/priorityEngine.ts` is a pure function with no database, Express or clock imports. Ties are broken by added date, then ID. | `priorityEngine.test.ts` (shuffled input gives the same order); `rules.test.ts` (import check) |
-| **Server-side validation is what counts.** | Zod schemas in `server/src/validation.ts`. Checks in the browser only make forms faster to use. | `foods.test.ts` (every invalid input rejected by the API) |
-| **Passwords: bcrypt cost 12, never logged or returned.** | `services/passwordHash.ts`. API responses never include `passwordHash`. The request log records only method, route, status and time. | `rules.test.ts`, `auth.test.ts` |
-| **Secrets only from environment variables.** | `config/env.ts`. `server/.env.example` and `client/.env.example` are committed; `.env` is git-ignored. Production refuses to start without `JWT_SECRET` and `MONGODB_URI`. | `rules.test.ts` |
-| **Helmet, CORS limited to the client, sign-in rate limit.** | `app.ts` (helmet, CORS from `CORS_ORIGIN`), `routes/index.ts` (`AUTH_RATE_LIMIT`: 20 per 15 minutes per IP address). | `rules.test.ts` (headers, allowed and blocked origins, the 21st request gets 429) |
+| **Never suggest food is fit to eat.** The banned phrases (listed in the wording-guard test) must not appear anywhere. | All expiry wording lives in `client/src/copy.ts` (interface) and `server/src/copy.ts` (reminder messages). | `foodSafetyCopy.test.ts` scans every `.ts`/`.tsx` file in `client/src`, `server/src` and `shared/src`, ignoring case. It fails on any banned phrase, on "safe" in either copy file, or on expiry wording outside the copy files. Playwright also scans every rendered page. |
+| **Add Food and Cook First show:** *"Expected expiry is an estimate to help you plan. Always check your food before eating it."* | `estimateNote` in `client/src/copy.ts`, shown by the `EstimateNote` component. | Client tests; Playwright journeys 1 and 3 |
+| **Users only ever see their own data.** | The identity comes only from the verified JWT. Every query on food items, usage records and reminders includes `userId` (including `save()`/`deleteOne()`, via Mongoose's `shardKey`). Another user's item returns **404**, not 403. | `rules.test.ts` records every MongoDB operation in a full journey and fails on any without the user's ID; `security.test.ts`; Playwright journey 5 |
+| **Prioritisation is deterministic.** | `services/priorityEngine.ts` is a pure function with no database, Express or clock imports. | `priorityEngine.test.ts` (shuffled input gives the same order); `rules.test.ts` |
+| **Server-side validation is what counts.** | Shared zod schemas run in `middleware/validate.ts`. The client runs the same schemas only so errors show instantly. | `foods.test.ts`, `auth.test.ts` |
+| **Passwords: bcrypt cost 12, never logged or returned.** | `services/passwordHash.ts`. Responses never include `passwordHash`. The request log records only method, route, status and time. | `rules.test.ts`, `auth.test.ts` |
+| **Secrets only from environment variables.** | `config/env.ts`. `.env.example` files are committed; `.env` is git-ignored. Production refuses to start without `JWT_SECRET` and `MONGO_URI`. | `rules.test.ts`, `structure.test.ts` |
+| **Helmet, CORS limited to the client, sign-in rate limit.** | `app.ts` (helmet, CORS from `CLIENT_ORIGIN`), `routes/index.ts` (20 per 15 minutes per IP address). | `rules.test.ts` |
+| **Thin controllers; logic in services; only models talk to MongoDB.** | Request flow: routes → middleware → controllers → services → models. | `structure.test.ts` |
+| **Food dates are `YYYY-MM-DD` strings; no `new Date()` in server date logic.** | `shared/src/dates.ts`; `services/clock.ts` is the only reader of the system time. | `dates.test.ts`, `structure.test.ts` |
 
 ---
 
 ## Security
 
-- **Passwords:** hashed with bcrypt (12 rounds) and never stored or logged in plain text. Wrong email and wrong password give the same response.
+- **Passwords:** hashed with bcrypt (cost 12) and never stored, logged or returned in plain text. A wrong email and a wrong password give the same response.
 - **Login tokens:** JWT, HS256, 7-day expiry. The token carries only the user ID. Expired or tampered tokens are rejected, and the app signs the user out.
-- **Access control:** the user's identity comes only from the verified JWT. Every database query on food items, usage records and reminders includes the logged-in user's ID, including `save()`/`deleteOne()` on loaded records (via Mongoose's `shardKey` option). Any `userId` in the body, query string or URL is ignored. Another user's item returns 404, so the API doesn't reveal which items exist.
-- **Input:** everything is checked on the server with Zod. Checks in the browser only make forms faster to use.
-- **HTTP:** Helmet security headers, CORS limited to the client's address (`CORS_ORIGIN`), a 20 KB request size limit, and `/auth/*` limited to 20 requests per 15 minutes per IP address.
-- **Secrets:** read from environment variables and never committed (`.env` is git-ignored).
+- **Access control:** the identity comes only from the verified JWT. Every query on food items, usage records and reminders includes the user's ID. Any `userId` in the body, query string or URL is ignored. Another user's item returns 404.
+- **Input:** everything is checked on the server with the shared zod schemas.
+- **HTTP:** Helmet headers, CORS limited to `CLIENT_ORIGIN`, a 20 KB request size limit, and `/auth/*` limited to 20 requests per 15 minutes per IP address.
+- **Secrets:** read only from environment variables and never committed.
 
 ---
 
@@ -395,11 +456,13 @@ These rules must never be broken. Each one is enforced in code and checked by an
 The configuration is ready but **nothing has been deployed yet**.
 
 1. **Database: MongoDB Atlas.** Create a free cluster and copy its connection string.
-2. **API: Render.** New → Blueprint → select this repo. `render.yaml` builds `server/`, starts `node server/dist/index.js`, checks `/api/health`, and generates `JWT_SECRET`. Set `MONGODB_URI` and `CORS_ORIGIN`.
-3. **Web app: Vercel.** Import the repo and set the root directory to `client`. `client/vercel.json` handles the build and page routing. Set `VITE_API_URL` to `https://<render-app>.onrender.com/api`.
-4. **Finish up.** Put the Vercel address into `CORS_ORIGIN` on Render and redeploy.
+2. **API: Render** (or any Node host). New → Blueprint → select this repo. `render.yaml` builds `shared` and `server`, starts `node server/dist/index.js`, checks `/api/health`, and generates `JWT_SECRET`. Set `MONGO_URI` and `CLIENT_ORIGIN`.
+3. **Web app: Vercel.** Import the repo and set the root directory to `client`. Set `VITE_API_URL` to `https://<api-host>/api`.
+4. **Finish up.** Put the Vercel address into `CLIENT_ORIGIN` on the API host and redeploy.
 
-**CI:** GitHub Actions runs type-check → tests → build → Playwright on every push and pull request.
+**CI** (`.github/workflows/ci.yml`) runs on every push and pull request:
+- **install → lint → typecheck → unit and API tests → build**, on Node **20.19** (the minimum) and **24**
+- then the Playwright end-to-end suite
 
 ---
 
@@ -410,7 +473,7 @@ The configuration is ready but **nothing has been deployed yet**.
 | Stored status | Store `APPROACHING_EXPIRY`, `DUE` and `OVERDUE` | Store only `ACTIVE`/`USED`/`WASTED`/`REMOVED`; calculate urgency on every request | A stored urgency goes wrong at midnight |
 | Urgency name | `SAFE` | `NOT_URGENT` | The app must never use the word "safe" |
 | Another user's item | 403 | 404 | Doesn't reveal that the item exists |
-| Usage record | `recordId, foodId, action, date, quantityUsed` | Also `userId`, name/unit copy, `quantityRemaining` | History is listed per user and stays readable after later edits |
+| Usage record | `recordId, foodId, action, date, quantityUsed` | Also `userId`, name/unit copy, `quantityRemaining`, `createdAt` | History is listed per user and stays readable after later edits |
 | `GET /foods` | Returns a plain list | Returns `{today, summary, items}` | The dashboard needs the counts |
 | Added date | Backdating "only if intentionally supported" | Past dates allowed; future dates rejected | People log food they bought earlier |
 | `EXPIRED` action | Recorded by the system | Not recorded; the item stays "Past expected expiry" until the user acts | Avoids closing items without the user knowing |
@@ -423,10 +486,12 @@ The configuration is ready but **nothing has been deployed yet**.
 | Item | Status |
 |---|---|
 | All MVP functional requirements (FR-AUTH, FOOD, EXP, PRI, UI, NOT, USE, VAL) | ✅ Done |
-| Server, client and end-to-end tests (115 total) | ✅ Passing |
+| Monorepo with `client`, `server` and `shared`; Node 20.19+ | ✅ Done |
+| Tests: 20 shared + 97 server + 21 client + 12 end-to-end = **150** | ✅ Passing |
+| ESLint and typecheck on all packages | ✅ Clean |
 | All project rules (see [Project rules](#project-rules)) | ✅ Met, each one checked by a test |
 | Phone and desktop layouts | ✅ Done and checked in screenshots |
-| Docker MongoDB, Render/Vercel config, CI workflow | ✅ Written |
+| Docker MongoDB, Render/Vercel config, CI workflow | ✅ Written. CI hasn't run yet because the code isn't on GitHub. |
 | Code on GitHub (`rugvailabs/cook_first`) | ⏳ Not pushed yet: the repo is empty |
 | Online deployment | ⏳ Not started |
 | Opening on a phone over Wi-Fi | ⏸ Paused: the phone's requests didn't reach the PC |
@@ -441,65 +506,97 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [1.3.0] - 2026-09-29: Project rules enforced · `7646618`
+### [2.0.0] - 2026-09-29: Monorepo with a shared package; layered server; calendar-date strings
+**Breaking**
+- **Environment variables renamed:** `MONGODB_URI` → `MONGO_URI` and `CORS_ORIGIN` → `CLIENT_ORIGIN`. `REMINDER_SWEEP_MINUTES` was removed; the job now uses a node-cron schedule.
+- **`VITE_API_URL` now defaults to `http://localhost:4000/api`.** The client calls the API directly instead of through the Vite proxy, so any client port other than 5173 must be listed in `CLIENT_ORIGIN`.
+- **Food dates are stored as `"YYYY-MM-DD"` strings instead of timestamps.** Existing data is converted automatically at start-up (`models/migrations.ts`).
+- **Node.js 20.19 or later required** (`engines`, `.nvmrc`).
+
 **Added**
-- **Wording guard rewritten to the rules:** scans every `.ts`/`.tsx` file in `client/src` and `server/src` (comments included) for the full list of seven banned phrases (one was missing before). It also fails on the word "safe" in either copy file, and on expiry wording written anywhere outside the copy files.
-- **New `rules.test.ts` (11 tests):**
-  - every database query on food items, usage records and reminders carries the user's ID
-  - a `userId` in the query string is ignored
-  - the priority engine is pure
-  - bcrypt cost 12, and passwords are never returned or logged
-  - `.env` is ignored and secrets come only from environment variables
-  - helmet headers, CORS allow-list, and the rate limit of 20 per 15 minutes
-- **Required estimate line tests:** client tests and Playwright checks for the line on Add Food and Cook First.
-- **README:** rewritten as the full project reference (screenshots, changelog, roadmap), with a new [Project rules](#project-rules) section.
+- **`shared` workspace package** (`@cook-first/shared`), used by both client and server:
+  - enums
+  - API request and response types
+  - zod schemas
+  - `dates.ts`, with `todayInTz`, `addDays`, `diffDays`, `isValidDate` and `formatDisplay` ("Thu, 1 Oct"), with 20 tests
+- **`server/src/jobs/reminderJob.ts`:** a node-cron job running every 15 minutes.
+- **Service layer:** `foodService`, `usageService`, `authService`, and read/update operations in `notificationService`. Controllers are now thin.
+- **`services/clock.ts`:** the only reader of the system time; `clock.today(timeZone)` provides every "today".
+- **ESLint** (typescript-eslint and react-hooks) and separate `lint` and `typecheck` scripts.
+- **CI:** install, lint, typecheck, tests and build on Node 20.19 and 24, then Playwright.
+- **New tests:**
+  - `structure.test.ts` (11): server folders, thin controllers, only models touch MongoDB, no `new Date()` in date logic, node-cron, env names
+  - client structure tests (9): folders, one page per screen, `mocks/`, API default, persisted token, shared schemas
+- **Screen files:** `LoginPage.tsx` and `RegisterPage.tsx` are now separate files, sharing `components/AuthLayout.tsx`.
+- **`client/src/mocks/`:** MSW handlers and server.
 
 **Changed**
-- **All expiry wording moved into `client/src/copy.ts`:** about 20 strings that were written directly in Dashboard, Cook First, Add Food, food cards, food details, Reminders, Settings and the sign-in pages.
-- **Estimate line:** now exactly *"Expected expiry is an estimate to help you plan. Always check your food before eating it."*, shown on Add Food, Cook First and the other screens.
-- **Sign-in rate limit:** `/auth/register` and `/auth/login` now allow 20 requests per 15 minutes per IP address (was 30).
+- **bcrypt:** `bcryptjs` → `bcrypt`. Hashes are identical (`$2b$12$…`), so existing accounts still sign in.
+- **Tests:** moved from `server/test` into `server/src/tests`.
+- **Forms:** the Add Food, Login and Register forms now check input with the shared zod schemas, so their messages match the server's exactly.
+- **Date labels:** dates display as "Tue, 29 Sep" everywhere (`formatDisplay`), whatever the device's language.
+- **Dependency versions, for Node 20 support:** React Router 8.4 → 7.18, Vitest 5.0 → 4.1, jsdom 30.1 → 27.4, TypeScript 7.0 → 6.0 (needed by ESLint).
+- **Test databases:** now stored in git-ignored `.test-db-*` folders inside the project instead of the system temp folder.
 
 **Fixed**
-- **Reminder queries without the user's ID:** scheduling and cancelling reminders filtered only by food ID. They now include the user's ID, and `save()`/`deleteOne()` on food items and reminders now include it too.
-- **Banned wording in comments:** comments in both copy files contained banned phrases or the word "safe"; they're reworded.
+- **Reminder sweep:** it no longer uses `new Date()` for its date window; it uses the calendar day in the earliest time zone.
+- **Stale item details:** an item's details could briefly show the previous item's data after moving quickly between items.
+- **Escape-key handler:** the action sheet's Escape handler no longer updates a ref during render.
+
+### [1.3.0] - 2026-09-29: Project rules enforced · `7646618`
+**Added**
+- **Wording guard rewritten to the rules:** scans every `.ts`/`.tsx` file in `client/src` and `server/src` (comments included) for the full list of seven banned phrases (one was missing before). It also fails on the word "safe" in either copy file, and on expiry wording outside the copy files.
+- **New `rules.test.ts` (11 tests):**
+  - every database query carries the user's ID
+  - a query-string `userId` is ignored
+  - the priority engine is pure
+  - bcrypt cost 12, and passwords are never returned or logged
+  - `.env` is ignored
+  - helmet, CORS, and the rate limit of 20 per 15 minutes
+- **Required estimate line tests:** client tests and Playwright checks for the line on Add Food and Cook First.
+- **README:** rewritten as the full project reference, with a [Project rules](#project-rules) section.
+
+**Changed**
+- **All expiry wording moved into `client/src/copy.ts`:** about 20 strings from 9 screens.
+- **Estimate line:** now exactly *"Expected expiry is an estimate to help you plan. Always check your food before eating it."*
+- **Sign-in rate limit:** 20 requests per 15 minutes per IP address (was 30).
+
+**Fixed**
+- **Reminder queries without the user's ID:** scheduling and cancelling reminders filtered only by food ID. They now include the user's ID, as do `save()`/`deleteOne()` on food items and reminders.
+- **Banned wording in comments:** comments in both copy files contained banned phrases or the word "safe".
 
 ### [1.2.0] - 2026-09-29: Desktop layout · `92176f7`
 **Added**
 - Desktop layout from 1024 px wide:
-  - a fixed sidebar (Add food, Home, Cook First with its count, Reminders with its unread count, History, Settings, and the user's name)
-  - a two-column dashboard with larger summary tiles
+  - a fixed sidebar
+  - a two-column dashboard
   - a two-column Cook First grid
-  - reading-width forms and lists
+  - reading-width forms
   - a brand panel beside the sign-in and sign-up forms
-- Every Playwright journey now runs at both phone size (Pixel 7) and desktop size (1440×900): 12 tests.
-
-**Changed**
-- On phones, the bell and bottom navigation are unchanged. On desktop, the sidebar replaces them.
+- Every Playwright journey now runs at phone size and desktop size: 12 tests.
 
 ### [1.1.0] - 2026-09-29: End-to-end tests, Docker and deployment config · `e17b113`
 **Added**
-- Playwright end-to-end suite: 6 journeys in real Chrome, with its own API, database and ports, plus checks for "safe" wording and sideways scrolling.
-- `docker-compose.yml` for a local MongoDB with a small memory cap.
-- `render.yaml` (API) and `client/vercel.json` (web app), with deployment steps.
-- Playwright in the CI workflow.
+- **Playwright end-to-end suite:** 6 journeys in real Chrome.
+- **Local MongoDB:** `docker-compose.yml`.
+- **Deployment config:** `render.yaml` and `client/vercel.json`.
+- **CI:** Playwright added to the workflow.
 
 **Fixed**
-- The Add food page scrolled sideways on phones (a browser default on the unit buttons' `<fieldset>`).
-- Error messages stayed on screen after the field was corrected.
-- Food cards repeated "Expected expiry" three times.
+- **Sideways scrolling:** the Add food page scrolled sideways on phones.
+- **Lingering errors:** error messages stayed on screen after the field was corrected.
+- **Repetitive cards:** food cards said "Expected expiry" three times.
 
 ### [1.0.0] - 2026-09-29: First release (MVP) · `ed9dbc2`
 **Added**
-- **Accounts:** register and log in with JWT; bcrypt password hashing; the user's time zone is saved.
+- **Accounts:** JWT sign-in, bcrypt password hashing and time-zone capture.
 - **Food:** add, edit, view and remove, with expected expiry = added date + lifespan.
-- **Priority:** the priority engine (expected expiry, then added date, then ID), four urgency labels, and the Cook First list.
-- **Dashboard:** urgency counts, "Needs attention" and the full list.
-- **Recording what happened:** used, partly used, wasted and removed, each saved as a usage record, plus a History screen.
-- **Reminders:** in-app reminders (approaching, due, overdue) with preferences, retries and a 15-minute background job.
-- **Privacy:** each user only sees their own data.
-- **Wording:** all expiry wording in one place per side, plus a test that bans "safe".
-- **Development:** a built-in MongoDB fallback, so no database install is needed.
-- **Tests and CI:** 76 server tests, 10 client tests and a GitHub Actions workflow.
+- **Priority and Cook First:** the priority engine, four urgency labels and the Cook First list.
+- **Dashboard and history:** the dashboard, used / partly used / wasted / removed actions with usage records, and History.
+- **Reminders:** in-app reminders with preferences and retries.
+- **Privacy and wording:** each user sees only their own data, plus the "safe"-wording test.
+- **Development:** a built-in MongoDB fallback.
+- **Tests and CI:** 76 server tests, 10 client tests and a CI workflow.
 
 ---
 
@@ -509,12 +606,12 @@ Planned or possible next steps, in rough priority order:
 
 | # | Item | Notes |
 |---|---|---|
-| 1 | **Push the code to GitHub** | `git push -u origin main` from your own terminal, signed in as `rugvailabs` |
-| 2 | **Deploy online** | MongoDB Atlas + Render + Vercel (see [Deployment](#deployment)); this also gives phone access over HTTPS |
-| 3 | **Phone access over Wi-Fi** | Check the phone and PC are on the same network, or use a temporary public link |
-| 4 | **Firebase push notifications** | Add a push channel to `deliveryChannel` in `notificationService.ts`; needs a Firebase project and keys |
-| 5 | **Python backend (optional)** | Possible rewrite in FastAPI + Beanie + Pydantic with the same API, so the React app wouldn't change; the SRD/TDD would need updating |
-| 6 | **Future ideas from the BRD** | Recipe suggestions, barcode and receipt scanning, shared household accounts, waste reports |
+| 1 | **Push the code to GitHub** | `git push -u origin main` from your own terminal, signed in as `rugvailabs`. CI then runs for the first time. |
+| 2 | **Deploy online** | MongoDB Atlas + Render + Vercel (see [Deployment](#deployment)). This also gives phone access over HTTPS. |
+| 3 | **Phone access over Wi-Fi** | Check that the phone and PC are on the same network, or use a temporary public link. |
+| 4 | **Firebase push notifications** | Add a push channel to `deliveryChannel` in `services/notificationService.ts`. Needs a Firebase project and keys. |
+| 5 | **Python backend (optional)** | FastAPI + Beanie + Pydantic with the same API. The React app and `shared` types wouldn't change; the SRD/TDD would need updating. |
+| 6 | **Future ideas from the BRD** | Recipe suggestions, barcode and receipt scanning, shared household accounts, waste reports. |
 
 ---
 
@@ -522,7 +619,7 @@ Planned or possible next steps, in rough priority order:
 
 Every change to the project should update this file in the same commit:
 
-1. Add an entry under **[Unreleased]** in the [Changelog](#changelog), using **Added**, **Changed**, **Fixed** or **Removed**.
+1. Add an entry under **[Unreleased]** in the [Changelog](#changelog), using **Added**, **Changed**, **Fixed**, **Removed** or **Breaking**.
 2. When releasing, rename **[Unreleased]** to the new version and date, then add the commit hash.
 3. Update [Project status](#project-status), [Roadmap](#roadmap) and any other affected sections: features, API, configuration, test counts.
 4. If the screens change, run `npm run test:e2e` and copy the new screenshots from `e2e/screenshots/` into `docs/screenshots/`.

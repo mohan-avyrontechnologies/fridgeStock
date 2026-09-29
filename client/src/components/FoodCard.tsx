@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import type { ActiveFoodItem } from '../api/types';
+import type { ActiveFoodItem } from '@cook-first/shared';
 import { cardExpiryLine } from '../copy';
-import { formatDateKey, formatQuantity } from '../lib/dates';
+import { formatDisplay } from '@cook-first/shared';
+import { formatQuantity } from '../lib/format';
 import { ActionSheet } from './ActionSheet';
 import { URGENCY_STYLE, UrgencyBadge } from './Urgency';
 
@@ -18,7 +19,7 @@ export function FoodCard({ item }: { item: ActiveFoodItem }) {
         </div>
         <p className="mt-1 text-sm text-ink">{formatQuantity(item.quantity, item.unit)}</p>
         <p className="text-sm text-muted">
-          {cardExpiryLine(formatDateKey(item.expectedExpiryDate), item.remainingDays)}
+          {cardExpiryLine(formatDisplay(item.expectedExpiryDate), item.remainingDays)}
         </p>
       </Link>
       <div className="flex items-center pr-3">

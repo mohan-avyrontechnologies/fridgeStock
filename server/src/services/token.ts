@@ -1,7 +1,7 @@
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import { env } from '../config/env.js';
 
-/** Payload carries only the user id (TDD §7.1). */
+/** HS256 JWT whose payload carries only the user id (TDD §7.1). */
 export function signToken(userId: string): string {
   return jwt.sign({}, env.jwtSecret, {
     algorithm: 'HS256',

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { api, ApiError } from '../api/client';
-import type { FoodItem } from '../api/types';
+import type { FoodItem } from '@cook-first/shared';
 import { ActionSheet } from '../components/ActionSheet';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { FoodForm } from '../components/FoodForm';
@@ -15,7 +15,8 @@ import {
   screenCopy,
   urgencyCopy,
 } from '../copy';
-import { formatDateKey, formatInstant, formatQuantity } from '../lib/dates';
+import { formatDisplay } from '@cook-first/shared';
+import { formatInstant, formatQuantity } from '../lib/format';
 import { useFoodStore } from '../stores/foodStore';
 import { useToastStore } from '../stores/toastStore';
 
@@ -29,16 +30,24 @@ export function FoodDetailPage() {
   const [editing, setEditing] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const load = useCallback(async () => {
-    try {
-      setFood(await api.getFood(id));
-    } catch (err) {
-      setError(err instanceof ApiError && err.status === 404 ? 'This item doesn’t exist or isn’t yours.' : 'Couldn’t load this item.');
-    }
-  }, [id]);
+  const load = useCallback(
+    (isCurrent: () => boolean = () => true) =>
+      api.getFood(id).then(
+        (item) => isCurrent() && setFood(item),
+        (err) =>
+          isCurrent() &&
+          setError(err instanceof ApiError && err.status === 404 ? 'This item doesn’t exist or isn’t yours.' : 'Couldn’t load this item.'),
+      ),
+    [id],
+  );
 
+  // Fetch on open; ignore a late response if the user has already moved to another item.
   useEffect(() => {
-    void load();
+    let current = true;
+    void load(() => current);
+    return () => {
+      current = false;
+    };
   }, [load]);
 
   if (error) {
@@ -109,8 +118,8 @@ export function FoodDetailPage() {
 
               <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line pt-4 text-sm">
                 <Detail label={active ? 'Quantity left' : 'Quantity'} value={formatQuantity(food.quantity, food.unit)} />
-                <Detail label={expectedExpiryLabel} value={formatDateKey(food.expectedExpiryDate)} />
-                <Detail label="Added on" value={formatDateKey(food.addedDate)} />
+                <Detail label={expectedExpiryLabel} value={formatDisplay(food.expectedExpiryDate)} />
+                <Detail label="Added on" value={formatDisplay(food.addedDate)} />
                 <Detail label="Lifespan" value={`${food.lifespanDays} ${food.lifespanDays === 1 ? 'day' : 'days'}`} />
               </dl>
             </section>

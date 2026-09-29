@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router';
-import type { AppNotification, ReminderType } from '../api/types';
+import type { AppNotification, ReminderType } from '@cook-first/shared';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { EstimateNote } from '../components/Urgency';
 import { Button, EmptyState, Spinner } from '../components/ui';
 import { reminderTypeLabel, screenCopy } from '../copy';
-import { formatInstant } from '../lib/dates';
+import { formatInstant } from '../lib/format';
 import { useNotificationStore } from '../stores/notificationStore';
 
 const TYPE_DOT: Record<ReminderType, string> = {

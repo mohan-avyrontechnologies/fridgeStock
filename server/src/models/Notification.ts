@@ -1,10 +1,12 @@
+import {
+  isValidDate,
+  NOTIFICATION_STATUSES,
+  REMINDER_TYPES,
+  type DateString,
+  type NotificationStatus,
+  type ReminderType,
+} from '@cook-first/shared';
 import { Schema, Types, model, type HydratedDocument } from 'mongoose';
-
-export const REMINDER_TYPES = ['APPROACHING_EXPIRY', 'DUE', 'OVERDUE'] as const;
-export type ReminderType = (typeof REMINDER_TYPES)[number];
-
-export const NOTIFICATION_STATUS = ['PENDING', 'SENT', 'FAILED'] as const;
-export type NotificationStatus = (typeof NOTIFICATION_STATUS)[number];
 
 export const MAX_DELIVERY_ATTEMPTS = 3;
 
@@ -12,8 +14,10 @@ export interface Notification {
   userId: Types.ObjectId;
   foodId: Types.ObjectId;
   type: ReminderType;
-  expiryDate: Date;
-  scheduledDate: Date;
+  /** The expected expiry this reminder was scheduled against. */
+  expiryDate: DateString;
+  /** The user's calendar day on which it should be delivered. */
+  scheduledDate: DateString;
   status: NotificationStatus;
   attempts: number;
   lastError?: string;
@@ -22,23 +26,28 @@ export interface Notification {
   readAt?: Date;
 }
 
+const calendarDate = {
+  type: String,
+  required: true,
+  validate: { validator: isValidDate, message: 'Must be a "YYYY-MM-DD" calendar date.' },
+};
+
 const notificationSchema = new Schema<Notification>(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     foodId: { type: Schema.Types.ObjectId, ref: 'FoodItem', required: true, index: true },
     type: { type: String, enum: REMINDER_TYPES, required: true },
-    // The expected expiry this reminder was scheduled against. If the item's
-    // dates are edited, a new expiry gets its own reminders.
-    expiryDate: { type: Date, required: true },
-    scheduledDate: { type: Date, required: true },
-    status: { type: String, enum: NOTIFICATION_STATUS, default: 'PENDING', required: true },
+    // If the item's dates are edited, a new expiry gets its own reminders.
+    expiryDate: calendarDate,
+    scheduledDate: calendarDate,
+    status: { type: String, enum: NOTIFICATION_STATUSES, default: 'PENDING', required: true },
     attempts: { type: Number, default: 0 },
     lastError: { type: String },
     message: { type: String },
     sentAt: { type: Date },
     readAt: { type: Date },
   },
-  // Adds userId to the filter of every save()/deleteOne() on a document.
+  // shardKey adds userId to the filter of every save()/deleteOne() on a document.
   { timestamps: true, shardKey: { userId: 1 } },
 );
 

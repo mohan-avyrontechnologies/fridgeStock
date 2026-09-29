@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { api } from '../api/client';
-import type { ActiveFoodItem, FoodInput, FoodItem, FoodList, UsageAction } from '../api/types';
+import type { ActiveFoodItem, FoodInput, FoodItem, FoodList, UsageAction } from '@cook-first/shared';
 import { useAuthStore } from './authStore';
 
 interface FoodState {

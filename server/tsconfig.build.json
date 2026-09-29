@@ -1,0 +1,12 @@
+{
+  // Production build: resolves @cook-first/shared from its compiled dist (build it first).
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist",
+    "rootDir": "src",
+    "customConditions": []
+  },
+  "include": ["src"],
+  "exclude": ["src/tests"]
+}

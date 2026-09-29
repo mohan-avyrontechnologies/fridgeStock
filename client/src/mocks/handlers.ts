@@ -1,6 +1,7 @@
+/** MSW handlers: the fake API used by the frontend tests. */
 import { http, HttpResponse } from 'msw';
-import { setupServer } from 'msw/node';
-import type { ActiveFoodItem, FoodList } from '../api/types';
+import type { ActiveFoodItem, FoodList } from '@cook-first/shared';
+import { API_URL } from '../api/client';
 
 export function item(overrides: Partial<ActiveFoodItem>): ActiveFoodItem {
   return {
@@ -35,11 +36,10 @@ export const sampleList: FoodList = {
 };
 
 export const handlers = [
-  http.get('/api/foods', () => HttpResponse.json(sampleList)),
-  http.get('/api/foods/cook-first', () =>
+  http.get(`${API_URL}/foods`, () => HttpResponse.json(sampleList)),
+  http.get(`${API_URL}/foods/cook-first`, () =>
     HttpResponse.json({ today: sampleList.today, items: sampleItems.filter((i) => i.urgency !== 'NOT_URGENT') }),
   ),
-  http.get('/api/notifications/unread-count', () => HttpResponse.json({ unread: 2 })),
+  http.get(`${API_URL}/notifications/unread-count`, () => HttpResponse.json({ unread: 2 })),
 ];
 
-export const server = setupServer(...handlers);

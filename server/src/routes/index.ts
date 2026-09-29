@@ -1,12 +1,3 @@
-import { Router } from 'express';
-import rateLimit from 'express-rate-limit';
-import { env } from '../config/env.js';
-import { authController } from '../controllers/authController.js';
-import { foodController } from '../controllers/foodController.js';
-import { notificationController } from '../controllers/notificationController.js';
-import { usageController } from '../controllers/usageController.js';
-import { requireAuth } from '../middleware/auth.js';
-import { validate } from '../middleware/validate.js';
 import {
   createFoodSchema,
   loginSchema,
@@ -17,7 +8,15 @@ import {
   updateFoodSchema,
   useFoodSchema,
   wasteFoodSchema,
-} from '../validation.js';
+} from '@cook-first/shared';
+import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
+import { authController } from '../controllers/authController.js';
+import { foodController } from '../controllers/foodController.js';
+import { notificationController } from '../controllers/notificationController.js';
+import { usageController } from '../controllers/usageController.js';
+import { requireAuth } from '../middleware/auth.js';
+import { validate } from '../middleware/validate.js';
 
 export const router = Router();
 
@@ -32,6 +31,8 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: { code: 'RATE_LIMITED', message: 'Too many attempts. Try again later.' } },
 });
+
+// Requests flow: route → middleware (rate limit, auth, validation) → controller → service.
 
 router.get('/health', (_req, res) => {
   res.json({ ok: true });

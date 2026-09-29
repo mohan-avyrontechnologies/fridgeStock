@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { api, configureApi } from '../api/client';
-import type { User } from '../api/types';
+import type { User } from '@cook-first/shared';
 
 interface AuthState {
   token: string | null;

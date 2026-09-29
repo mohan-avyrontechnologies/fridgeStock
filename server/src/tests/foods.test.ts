@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { UsageRecordModel } from '../src/models/UsageRecord.js';
+import { UsageRecordModel } from '../models/UsageRecord.js';
 import { api, food, registerUser, setToday } from './helpers.js';
 
 type Session = Awaited<ReturnType<typeof registerUser>>;
@@ -98,7 +98,7 @@ describe('listing and Cook First', () => {
   it("uses the user's own time zone to decide today", async () => {
     const tokyo = await registerUser({ timeZone: 'Asia/Tokyo' });
     // 20:00 UTC on 29 Sep is already 30 Sep in Tokyo.
-    const { clock } = await import('../src/utils/clock.js');
+    const { clock } = await import('../services/clock.js');
     clock.set(new Date('2026-09-29T20:00:00Z'));
     const res = await tokyo
       .auth(api().post('/api/foods').send(food({ addedDate: '2026-09-30', lifespanDays: 1 })))

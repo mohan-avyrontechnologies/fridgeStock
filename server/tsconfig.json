@@ -3,13 +3,14 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "outDir": "dist",
-    "rootDir": "src",
     "strict": true,
+    "noEmit": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["node"]
+    "types": ["node"],
+    // Resolve @cook-first/shared from its TypeScript source during development and tests.
+    "customConditions": ["source"]
   },
-  "include": ["src"]
+  "include": ["src", "vitest.config.ts"]
 }

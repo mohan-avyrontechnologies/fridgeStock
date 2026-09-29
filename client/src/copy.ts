@@ -7,7 +7,7 @@
  * to eat. Use "expected expiry" wording only; the banned phrase list is in
  * server/test/foodSafetyCopy.test.ts.
  */
-import type { ReminderType, Urgency } from './api/types';
+import type { ReminderType, Urgency } from '@cook-first/shared';
 
 /** Required on Add Food and Cook First (and shown elsewhere). Do not reword. */
 export const estimateNote = 'Expected expiry is an estimate to help you plan. Always check your food before eating it.';

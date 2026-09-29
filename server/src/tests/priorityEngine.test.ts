@@ -4,14 +4,12 @@ import {
   cookFirst,
   prioritise,
   summarise,
-} from '../src/services/priorityEngine.js';
-import { addDays, diffDays, parseDateKey, todayIn } from '../src/utils/dates.js';
+} from '../services/priorityEngine.js';
+import { addDays } from '@cook-first/shared';
 
-const d = (key: string) => parseDateKey(key)!;
-const today = d('2026-09-29');
+const today = '2026-09-29';
 
-function item(id: string, added: string, lifespan: number, status = 'ACTIVE') {
-  const addedDate = d(added);
+function item(id: string, addedDate: string, lifespan: number, status = 'ACTIVE') {
   return { id, status, addedDate, expiryDate: addDays(addedDate, lifespan) };
 }
 
@@ -116,24 +114,5 @@ describe('cookFirst and summarise', () => {
       DUE_TODAY: 1,
       PAST_EXPECTED_EXPIRY: 1,
     });
-  });
-});
-
-describe('date helpers', () => {
-  it('rejects impossible calendar dates', () => {
-    expect(parseDateKey('2026-02-30')).toBeNull();
-    expect(parseDateKey('29/09/2026')).toBeNull();
-    expect(parseDateKey('2028-02-29')).not.toBeNull();
-  });
-
-  it('counts whole days across a DST change', () => {
-    expect(diffDays(d('2026-11-02'), d('2026-10-31'))).toBe(2);
-  });
-
-  it("uses the user's local calendar day as today", () => {
-    const instant = new Date('2026-09-29T23:30:00Z');
-    expect(todayIn('UTC', instant)).toEqual(d('2026-09-29'));
-    expect(todayIn('Asia/Kolkata', instant)).toEqual(d('2026-09-30'));
-    expect(todayIn('America/Los_Angeles', instant)).toEqual(d('2026-09-29'));
   });
 });

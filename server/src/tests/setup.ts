@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { afterAll, beforeAll, beforeEach } from 'vitest';
-import { clock } from '../src/utils/clock.js';
+import { clock } from '../services/clock.js';
 
 process.env.NODE_ENV = 'test';
 process.env.AUTH_RATE_LIMIT = 'off';

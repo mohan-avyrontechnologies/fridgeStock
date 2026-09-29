@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { describe, expect, it } from 'vitest';
-import { env } from '../src/config/env.js';
-import { UserModel } from '../src/models/User.js';
+import { env } from '../config/env.js';
+import { UserModel } from '../models/User.js';
 import { api, registerUser } from './helpers.js';
 
 describe('registration', () => {

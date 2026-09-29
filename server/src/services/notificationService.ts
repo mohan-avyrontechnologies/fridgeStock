@@ -1,45 +1,46 @@
-import type { Types } from 'mongoose';
+import {
+  addDays,
+  diffDays,
+  formatDisplay,
+  type AppNotification,
+  type NotificationFeed,
+  type NotificationPreferences,
+  type Pagination,
+  type PreferenceKey,
+  type PreferencesInput,
+  type ReminderType,
+} from '@cook-first/shared';
+import { isValidObjectId, type Types } from 'mongoose';
 import { DEFAULT_THRESHOLDS } from '../config/urgency.js';
 import { reminderCopy } from '../copy.js';
 import { FoodItemModel, type FoodItemDoc } from '../models/FoodItem.js';
-import {
-  MAX_DELIVERY_ATTEMPTS,
-  NotificationModel,
-  type NotificationDoc,
-  type NotificationStatus,
-  type ReminderType,
-} from '../models/Notification.js';
-import type { NotificationPreferences, UserDoc } from '../models/User.js';
-import { clock } from '../utils/clock.js';
-import { addDays, diffDays, todayIn } from '../utils/dates.js';
+import { MAX_DELIVERY_ATTEMPTS, NotificationModel, type NotificationDoc } from '../models/Notification.js';
+import { UserModel, type UserDoc } from '../models/User.js';
+import { clock } from './clock.js';
+import { AppError } from './errors.js';
+import { toNotificationView, toUserView } from './views.js';
 
-const PREFERENCE_FOR: Record<ReminderType, keyof NotificationPreferences> = {
+const PREFERENCE_FOR: Record<ReminderType, PreferenceKey> = {
   APPROACHING_EXPIRY: 'approachingExpiry',
   DUE: 'due',
   OVERDUE: 'overdue',
 };
 
-const OPEN_STATUSES: NotificationStatus[] = ['PENDING', 'FAILED'];
+const OPEN_STATUSES = ['PENDING', 'FAILED'] as const;
+
+/** The IANA zone whose calendar day starts first, so no user is ever "ahead" of it. */
+const EARLIEST_ZONE = 'Pacific/Kiritimati';
 
 /**
  * In-app delivery: a reminder is delivered by making it visible in the user's
- * notification feed. Kept behind an object so a push channel (FCM) can be
- * swapped in later, and so tests can simulate delivery failure.
+ * feed. Kept behind an object so a push channel (FCM) can be added later, and
+ * so tests can simulate delivery failure.
  */
 export const deliveryChannel = {
   async deliver(_notification: NotificationDoc): Promise<void> {},
 };
 
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    timeZone: 'UTC',
-  }).format(date);
-}
-
-function stagesFor(expiryDate: Date) {
+function stagesFor(expiryDate: string) {
   return [
     {
       type: 'APPROACHING_EXPIRY' as const,
@@ -64,7 +65,7 @@ export async function scheduleForFood(food: FoodItemDoc, user: UserDoc): Promise
   await cancelForFood(user._id, food._id);
   if (food.status !== 'ACTIVE') return;
 
-  const today = todayIn(user.timeZone, clock.now());
+  const today = clock.today(user.timeZone);
   for (const stage of stagesFor(food.expiryDate)) {
     if (!user.notificationPreferences[PREFERENCE_FOR[stage.type]]) continue;
     if (stage.endsBefore && stage.endsBefore <= today) continue;
@@ -77,16 +78,16 @@ export async function scheduleForFood(food: FoodItemDoc, user: UserDoc): Promise
   }
 }
 
-export async function rescheduleAllForUser(user: UserDoc): Promise<void> {
+async function rescheduleAllForUser(user: UserDoc): Promise<void> {
   const foods = await FoodItemModel.find({ userId: user._id, status: 'ACTIVE' });
   for (const food of foods) await scheduleForFood(food, user);
 }
 
-function messageFor(type: ReminderType, food: FoodItemDoc, today: Date): string {
-  const expiryLabel = formatDate(food.expiryDate);
+function messageFor(type: ReminderType, food: FoodItemDoc, today: string): string {
+  const expiryLabel = formatDisplay(food.expiryDate);
   switch (type) {
     case 'APPROACHING_EXPIRY':
-      return reminderCopy.APPROACHING_EXPIRY(food.name, diffDays(food.expiryDate, today), expiryLabel);
+      return reminderCopy.APPROACHING_EXPIRY(food.name, diffDays(today, food.expiryDate), expiryLabel);
     case 'DUE':
       return reminderCopy.DUE(food.name);
     case 'OVERDUE':
@@ -96,8 +97,7 @@ function messageFor(type: ReminderType, food: FoodItemDoc, today: Date): string 
 
 /** Delivers every reminder for this user whose scheduled day has arrived. */
 export async function dispatchForUser(user: UserDoc): Promise<void> {
-  const now = clock.now();
-  const today = todayIn(user.timeZone, now);
+  const today = clock.today(user.timeZone);
   const due = await NotificationModel.find({
     userId: user._id,
     scheduledDate: { $lte: today },
@@ -109,7 +109,7 @@ export async function dispatchForUser(user: UserDoc): Promise<void> {
     const stillRelevant =
       food &&
       food.status === 'ACTIVE' &&
-      food.expiryDate.getTime() === notification.expiryDate.getTime() &&
+      food.expiryDate === notification.expiryDate &&
       user.notificationPreferences[PREFERENCE_FOR[notification.type]];
     if (!stillRelevant) {
       await notification.deleteOne();
@@ -121,11 +121,11 @@ export async function dispatchForUser(user: UserDoc): Promise<void> {
     try {
       await deliveryChannel.deliver(notification);
       notification.status = 'SENT';
-      notification.sentAt = now;
+      notification.sentAt = clock.now();
       notification.lastError = undefined;
     } catch (error) {
-      // Failures stay visible as FAILED and are retried on later sweeps,
-      // up to MAX_DELIVERY_ATTEMPTS. Inventory views never depend on this.
+      // Failures stay visible as FAILED and are retried on later sweeps, up to
+      // MAX_DELIVERY_ATTEMPTS. Inventory views never depend on this.
       notification.status = 'FAILED';
       notification.lastError = error instanceof Error ? error.message : String(error);
     }
@@ -139,16 +139,66 @@ export async function dispatchForUser(user: UserDoc): Promise<void> {
  * only collects user ids, and each user's reminders are then read by
  * dispatchForUser with that user's id.
  */
-export async function sweep(loadUser: (id: Types.ObjectId) => Promise<UserDoc | null>) {
-  // A one-day margin covers users whose local date is ahead of UTC.
-  const horizon = addDays(clock.now(), 1);
+export async function sweep(): Promise<void> {
+  const horizon = clock.today(EARLIEST_ZONE);
   const userIds: Types.ObjectId[] = await NotificationModel.distinct('userId', {
     status: { $in: OPEN_STATUSES },
     attempts: { $lt: MAX_DELIVERY_ATTEMPTS },
     scheduledDate: { $lte: horizon },
   });
   for (const id of userIds) {
-    const user = await loadUser(id);
+    const user = await UserModel.findById(id);
     if (user) await dispatchForUser(user);
   }
+}
+
+// ---- Read and update operations used by the notification controller ----
+
+const SENT = { status: 'SENT' as const };
+
+export async function listFeed(user: UserDoc, { limit, offset }: Pagination): Promise<NotificationFeed> {
+  await dispatchForUser(user);
+  const filter = { userId: user._id, ...SENT };
+  const [items, total, unread] = await Promise.all([
+    NotificationModel.find(filter).sort({ sentAt: -1, _id: -1 }).skip(offset).limit(limit),
+    NotificationModel.countDocuments(filter),
+    NotificationModel.countDocuments({ ...filter, readAt: null }),
+  ]);
+  return { items: items.map(toNotificationView), total, unread };
+}
+
+export async function unreadCount(user: UserDoc): Promise<{ unread: number }> {
+  await dispatchForUser(user);
+  const unread = await NotificationModel.countDocuments({ userId: user._id, ...SENT, readAt: null });
+  return { unread };
+}
+
+export async function markRead(user: UserDoc, id: string): Promise<AppNotification> {
+  const notFound = new AppError(404, 'NOT_FOUND', 'Notification not found.');
+  if (!isValidObjectId(id)) throw notFound;
+  const n = await NotificationModel.findOneAndUpdate(
+    { _id: id, userId: user._id, ...SENT },
+    { $set: { readAt: clock.now() } },
+    { returnDocument: 'after' },
+  );
+  if (!n) throw notFound;
+  return toNotificationView(n);
+}
+
+export async function markAllRead(user: UserDoc): Promise<void> {
+  await NotificationModel.updateMany({ userId: user._id, ...SENT, readAt: null }, { $set: { readAt: clock.now() } });
+}
+
+export function getPreferences(user: UserDoc): NotificationPreferences {
+  return toUserView(user).notificationPreferences;
+}
+
+/** A disabled preference stops that reminder type being generated at all. */
+export async function updatePreferences(user: UserDoc, updates: PreferencesInput): Promise<NotificationPreferences> {
+  for (const [key, value] of Object.entries(updates)) {
+    if (value !== undefined) user.notificationPreferences[key as PreferenceKey] = value;
+  }
+  await user.save();
+  await rescheduleAllForUser(user);
+  return getPreferences(user);
 }

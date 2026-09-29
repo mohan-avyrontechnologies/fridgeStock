@@ -1,4 +1,4 @@
-import type { Urgency } from '../api/types';
+import type { Urgency } from '@cook-first/shared';
 import { estimateNote, urgencyCopy } from '../copy';
 
 export const URGENCY_STYLE: Record<Urgency, { badge: string; bar: string; tile: string }> = {

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
-import type { FoodItem } from '../api/types';
+import type { FoodItem } from '@cook-first/shared';
 import { actionCopy } from '../copy';
-import { formatQuantity } from '../lib/dates';
+import { formatQuantity } from '../lib/format';
 import { useFoodStore } from '../stores/foodStore';
 import { useToastStore } from '../stores/toastStore';
 import { Button, Field, FormError } from './ui';
@@ -22,7 +22,11 @@ export function ActionSheet({ item, onClose }: { item: FoodItem; onClose: (close
   const [error, setError] = useState<string | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
+
+  // Keep the latest onClose for the Escape handler without re-binding it.
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onCloseRef.current(false);

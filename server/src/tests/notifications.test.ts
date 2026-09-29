@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { NotificationModel } from '../src/models/Notification.js';
-import { UserModel } from '../src/models/User.js';
-import { deliveryChannel, sweep } from '../src/services/notificationService.js';
+import { NotificationModel } from '../models/Notification.js';
+import { deliveryChannel, sweep } from '../services/notificationService.js';
 import { api, food, registerUser, setToday } from './helpers.js';
 
 let s: Awaited<ReturnType<typeof registerUser>>;
@@ -21,7 +20,7 @@ const add = (overrides: Record<string, unknown> = {}) =>
 const scheduled = async (foodId: string) =>
   (await NotificationModel.find({ foodId }).sort({ scheduledDate: 1 })).map((n) => ({
     type: n.type,
-    date: n.scheduledDate.toISOString().slice(0, 10),
+    date: n.scheduledDate,
     status: n.status,
   }));
 
@@ -98,7 +97,7 @@ describe('delivery', () => {
 
   it('the background sweep delivers without the user opening the app', async () => {
     await add({ lifespanDays: 1 });
-    await sweep((id) => UserModel.findById(id));
+    await sweep();
     expect(await NotificationModel.countDocuments({ status: 'SENT' })).toBe(1);
   });
 });

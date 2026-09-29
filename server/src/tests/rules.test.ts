@@ -2,8 +2,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import mongoose from 'mongoose';
 import { afterEach, describe, expect, it } from 'vitest';
-import { UserModel } from '../src/models/User.js';
-import { AUTH_RATE_LIMIT } from '../src/routes/index.js';
+import { UserModel } from '../models/User.js';
+import { AUTH_RATE_LIMIT } from '../routes/index.js';
 import { api, food, registerUser, setToday } from './helpers.js';
 
 /** Project rules that must never be broken, each checked directly. */
@@ -117,7 +117,7 @@ describe('secrets', () => {
   it('JWT secret and database URL come only from environment variables', () => {
     const env = readFileSync(path.resolve('src/config/env.ts'), 'utf8');
     expect(env).toContain('process.env.JWT_SECRET');
-    expect(env).toContain('process.env.MONGODB_URI');
+    expect(env).toContain('process.env.MONGO_URI');
     expect(env).toMatch(/JWT_SECRET must be set in production/);
   });
 });

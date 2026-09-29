@@ -1,8 +1,9 @@
+import { addDays, createFoodSchema, diffDays, formatDisplay, isValidDate, todayInTz, type FoodInput } from '@cook-first/shared';
 import { useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
-import type { FoodInput } from '../api/types';
 import { remainingText, screenCopy } from '../copy';
-import { addDaysToKey, daysBetween, formatDateKey, localDateKey } from '../lib/dates';
+import { check } from '../lib/validation';
+import { useAuthStore } from '../stores/authStore';
 import { Button, Chip, Field, FormError } from './ui';
 
 const UNITS = ['pcs', 'g', 'kg', 'ml', 'l', 'pack', 'bunch'];
@@ -19,13 +20,18 @@ interface Props {
   autoFocus?: boolean;
 }
 
+/** Empty inputs become undefined so the shared schema reports "required" rather than 0. */
+const toNumber = (value: string) => (value.trim() === '' ? undefined : Number(value));
+
 /**
  * Only the five fields the app needs. Chips cover the common cases so most
- * items need nothing typed except the name. Client checks are for speed only;
- * the server re-validates everything.
+ * items need nothing typed except the name. Input is checked with the same
+ * shared schema as the server, purely so errors show instantly; the server
+ * re-validates everything.
  */
 export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, autoFocus }: Props) {
-  const today = localDateKey();
+  const timeZone = useAuthStore((s) => s.user?.timeZone) ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const today = todayInTz(timeZone);
   const [name, setName] = useState(initial?.name ?? '');
   const [quantity, setQuantity] = useState(String(initial?.quantity ?? 1));
   const [unit, setUnit] = useState(initial?.unit ?? 'pcs');
@@ -39,23 +45,23 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
     setErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
 
   const lifespanNumber = Number(lifespan);
-  const previewValid = lifespan !== '' && Number.isInteger(lifespanNumber) && lifespanNumber >= 0 && /^\d{4}-\d{2}-\d{2}$/.test(addedDate);
-  const expiryKey = previewValid ? addDaysToKey(addedDate, lifespanNumber) : null;
+  const previewValid = lifespan !== '' && Number.isInteger(lifespanNumber) && lifespanNumber >= 0 && isValidDate(addedDate);
+  const expiryDate = previewValid ? addDays(addedDate, lifespanNumber) : null;
 
   function validate(): FoodInput | null {
-    const next: Errors = {};
-    const q = Number(quantity);
-    if (!name.trim()) next.name = 'Food name is required.';
-    if (!quantity || !Number.isFinite(q) || q <= 0) next.quantity = 'Quantity must be a positive number.';
-    if (!unit.trim()) next.unit = 'Unit is required.';
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(addedDate)) next.addedDate = 'Added date could not be parsed.';
-    else if (addedDate > today) next.addedDate = 'Added date can’t be in the future.';
-    if (lifespan === '' || !Number.isInteger(lifespanNumber) || lifespanNumber < 0) {
-      next.lifespanDays = 'Lifespan must be zero or a positive number of days.';
+    const { data, errors: found } = check(createFoodSchema, {
+      name,
+      quantity: toNumber(quantity),
+      unit,
+      addedDate,
+      lifespanDays: toNumber(lifespan),
+    });
+    const next: Errors = { ...found };
+    if (!next.addedDate && isValidDate(addedDate) && addedDate > today) {
+      next.addedDate = 'Added date can’t be in the future.';
     }
     setErrors(next);
-    if (Object.keys(next).length) return null;
-    return { name: name.trim(), quantity: q, unit: unit.trim(), addedDate, lifespanDays: lifespanNumber };
+    return Object.keys(next).length ? null : data;
   }
 
   async function submit(e: FormEvent, addAnother = false) {
@@ -171,7 +177,7 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
           }}>
             Today
           </Chip>
-          <Chip selected={addedDate === addDaysToKey(today, -1)} onClick={() => setAddedDate(addDaysToKey(today, -1))}>
+          <Chip selected={addedDate === addDays(today, -1)} onClick={() => setAddedDate(addDays(today, -1))}>
             Yesterday
           </Chip>
         </div>
@@ -208,7 +214,7 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
       <div aria-live="polite" className="rounded-2xl bg-brand-soft px-4 py-3">
         <p className="text-sm text-muted">{screenCopy.form.previewLabel}</p>
         <p className="text-base font-semibold text-ink">
-          {expiryKey ? `${formatDateKey(expiryKey)} · ${remainingText(daysBetween(today, expiryKey))}` : screenCopy.form.previewEmpty}
+          {expiryDate ? `${formatDisplay(expiryDate)} · ${remainingText(diffDays(today, expiryDate))}` : screenCopy.form.previewEmpty}
         </p>
       </div>
 

@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
  * "expected expiry" estimate and must never suggest food is fit to eat.
  */
 const THIS_FILE = fileURLToPath(import.meta.url);
-const SRC_ROOTS = [path.resolve('src'), path.resolve('../client/src')];
+const SRC_ROOTS = [path.resolve('src'), path.resolve('../client/src'), path.resolve('../shared/src')];
 const COPY_FILES = [path.resolve('src/copy.ts'), path.resolve('../client/src/copy.ts')];
 
 const BANNED_PHRASES = [
@@ -40,7 +40,7 @@ function stripComments(source: string): string {
 
 describe('food-safety wording', () => {
   it('scans a real set of source files', () => {
-    expect(sourceFiles.length).toBeGreaterThan(40);
+    expect(sourceFiles.length).toBeGreaterThan(50);
     for (const copy of COPY_FILES) expect(sourceFiles).toContain(copy);
   });
 
@@ -67,7 +67,7 @@ describe('food-safety wording', () => {
     const wording = /(?<![\w$.])expir(?:y|e|es|ed|ing)(?![\w$])/i;
     const offenders: string[] = [];
     for (const file of sourceFiles) {
-      if (COPY_FILES.includes(file) || /[\\/]test[\\/]|\.test\.tsx?$/.test(file)) continue;
+      if (COPY_FILES.includes(file) || /[\\/](tests?|mocks)[\\/]|\.test\.tsx?$/.test(file)) continue;
       stripComments(readFileSync(file, 'utf8'))
         .split('\n')
         .forEach((line, i) => {

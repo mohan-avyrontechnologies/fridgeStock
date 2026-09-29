@@ -1,6 +1,6 @@
 # Local MongoDB for development. Lighter than the embedded fallback.
 #   docker compose up -d
-#   then set MONGODB_URI=mongodb://localhost:27017/cook-first in server/.env
+#   then set MONGO_URI=mongodb://localhost:27017/cook-first in server/.env
 services:
   mongo:
     image: mongo:8

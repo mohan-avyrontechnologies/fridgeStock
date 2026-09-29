@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { api } from '../api/client';
-import type { AppNotification } from '../api/types';
+import type { AppNotification } from '@cook-first/shared';
 import { useAuthStore } from './authStore';
 
 interface NotificationState {

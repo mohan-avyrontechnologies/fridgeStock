@@ -1,11 +1,11 @@
 import { Link } from 'react-router';
-import type { Urgency } from '../api/types';
+import type { Urgency } from '@cook-first/shared';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { FoodList } from '../components/FoodCard';
 import { EstimateNote, URGENCY_STYLE } from '../components/Urgency';
 import { Button, EmptyState, SectionTitle, Spinner } from '../components/ui';
 import { screenCopy, urgencyCopy, urgencyShortLabel } from '../copy';
-import { formatDateKey } from '../lib/dates';
+import { formatDisplay } from '@cook-first/shared';
 import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
 
@@ -20,7 +20,7 @@ export function DashboardPage() {
     <>
       <PageHeader
         title={firstName ? `Hi, ${firstName}` : 'Your fridge'}
-        subtitle={inventory ? formatDateKey(inventory.today) : undefined}
+        subtitle={inventory ? formatDisplay(inventory.today) : undefined}
       />
       <PageBody>
         {!inventory && !error && <Spinner />}

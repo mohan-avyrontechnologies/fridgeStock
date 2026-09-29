@@ -11,7 +11,8 @@
     "isolatedModules": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "types": ["vite/client", "node", "@testing-library/jest-dom"]
+    "types": ["vite/client", "node", "@testing-library/jest-dom"],
+    "customConditions": ["source"]
   },
   "include": ["src", "vite.config.ts"]
 }

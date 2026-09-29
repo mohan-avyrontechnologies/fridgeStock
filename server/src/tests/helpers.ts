@@ -1,6 +1,6 @@
 import request from 'supertest';
-import { createApp } from '../src/app.js';
-import { clock } from '../src/utils/clock.js';
+import { createApp } from '../app.js';
+import { clock } from '../services/clock.js';
 
 export const app = createApp();
 export const api = () => request(app);

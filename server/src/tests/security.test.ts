@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { FoodItemModel } from '../src/models/FoodItem.js';
+import { FoodItemModel } from '../models/FoodItem.js';
 import { api, food, registerUser, setToday } from './helpers.js';
 
 describe('cross-user isolation', () => {

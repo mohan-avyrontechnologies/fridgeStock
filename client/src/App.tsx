@@ -1,7 +1,8 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router';
 import { AppShell } from './components/AppShell';
 import { AddFoodPage } from './pages/AddFoodPage';
-import { LoginPage, RegisterPage } from './pages/AuthPages';
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
 import { CookFirstPage } from './pages/CookFirstPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { FoodDetailPage } from './pages/FoodDetailPage';

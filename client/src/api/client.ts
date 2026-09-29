@@ -1,16 +1,22 @@
 import type {
   AppNotification,
+  AuthResponse,
+  CookFirstList,
   FoodInput,
   FoodItem,
   FoodList,
+  FoodUpdateInput,
+  NotificationFeed,
   NotificationPreferences,
-  Page,
-  UsageAction,
-  UsageRecord,
+  PreferencesInput,
+  UpdateAccountInput,
+  UsageHistory,
+  UsageResult,
   User,
-} from './types';
+} from '@cook-first/shared';
 
-const BASE = import.meta.env.VITE_API_URL ?? '/api';
+/** Base URL of the API. Set VITE_API_URL for other environments. */
+export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api';
 
 export class ApiError extends Error {
   constructor(
@@ -40,7 +46,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
   let res: Response;
   try {
-    res = await fetch(`${BASE}${path}`, {
+    res = await fetch(`${API_URL}${path}`, {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -59,39 +65,56 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   return data as T;
 }
 
-const timeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
+/** Captured silently from the browser and sent with sign-up and sign-in. */
+const browserTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
+/** One function per API endpoint. */
 export const api = {
+  // POST /auth/register
   register: (body: { name: string; email: string; password: string }) =>
-    request<{ token: string; user: User }>('POST', '/auth/register', { ...body, timeZone: timeZone() }),
+    request<AuthResponse>('POST', '/auth/register', { ...body, timeZone: browserTimeZone() }),
+  // POST /auth/login
   login: (body: { email: string; password: string }) =>
-    request<{ token: string; user: User }>('POST', '/auth/login', { ...body, timeZone: timeZone() }),
+    request<AuthResponse>('POST', '/auth/login', { ...body, timeZone: browserTimeZone() }),
+  // GET /auth/me
   me: () => request<{ user: User }>('GET', '/auth/me'),
-  updateMe: (body: { name?: string; timeZone?: string }) => request<{ user: User }>('PUT', '/auth/me', body),
+  // PUT /auth/me
+  updateMe: (body: UpdateAccountInput) => request<{ user: User }>('PUT', '/auth/me', body),
 
+  // GET /foods
   listFoods: () => request<FoodList>('GET', '/foods'),
-  cookFirst: () => request<Omit<FoodList, 'summary'>>('GET', '/foods/cook-first'),
+  // GET /foods/cook-first
+  cookFirst: () => request<CookFirstList>('GET', '/foods/cook-first'),
+  // GET /foods/:id
   getFood: (id: string) => request<FoodItem>('GET', `/foods/${id}`),
+  // POST /foods
   createFood: (body: FoodInput) => request<FoodItem>('POST', '/foods', body),
-  updateFood: (id: string, body: Partial<FoodInput>) => request<FoodItem>('PUT', `/foods/${id}`, body),
+  // PUT /foods/:id
+  updateFood: (id: string, body: FoodUpdateInput) => request<FoodItem>('PUT', `/foods/${id}`, body),
+  // DELETE /foods/:id
   removeFood: (id: string) => request<void>('DELETE', `/foods/${id}`),
+  // POST /foods/:id/use
   useFood: (id: string, action: 'USED' | 'PARTIALLY_USED', quantityUsed?: number) =>
-    request<{ food: FoodItem; usageRecord: UsageRecord }>('POST', `/foods/${id}/use`, { action, quantityUsed }),
-  wasteFood: (id: string, quantityUsed?: number) =>
-    request<{ food: FoodItem; usageRecord: UsageRecord }>('POST', `/foods/${id}/waste`, { quantityUsed }),
+    request<UsageResult>('POST', `/foods/${id}/use`, { action, quantityUsed }),
+  // POST /foods/:id/waste
+  wasteFood: (id: string, quantityUsed?: number) => request<UsageResult>('POST', `/foods/${id}/waste`, { quantityUsed }),
 
+  // GET /usage-records
   usageRecords: (offset = 0, limit = 20) =>
-    request<Page<UsageRecord> & { counts: Record<UsageAction, number> }>(
-      'GET',
-      `/usage-records?offset=${offset}&limit=${limit}`,
-    ),
+    request<UsageHistory>('GET', `/usage-records?offset=${offset}&limit=${limit}`),
 
+  // GET /notifications
   notifications: (offset = 0, limit = 30) =>
-    request<Page<AppNotification> & { unread: number }>('GET', `/notifications?offset=${offset}&limit=${limit}`),
+    request<NotificationFeed>('GET', `/notifications?offset=${offset}&limit=${limit}`),
+  // GET /notifications/unread-count
   unreadCount: () => request<{ unread: number }>('GET', '/notifications/unread-count'),
+  // PUT /notifications/:id/read
   markRead: (id: string) => request<AppNotification>('PUT', `/notifications/${id}/read`),
+  // PUT /notifications/read-all
   markAllRead: () => request<void>('PUT', '/notifications/read-all'),
+  // GET /notifications/preferences
   preferences: () => request<NotificationPreferences>('GET', '/notifications/preferences'),
-  updatePreferences: (body: Partial<NotificationPreferences>) =>
+  // PUT /notifications/preferences
+  updatePreferences: (body: PreferencesInput) =>
     request<NotificationPreferences>('PUT', '/notifications/preferences', body),
 };

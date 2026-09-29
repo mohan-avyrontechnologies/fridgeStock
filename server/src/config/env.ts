@@ -14,16 +14,18 @@ function jwtSecret(): string {
   return DEV_JWT_SECRET;
 }
 
+/** Everything the server reads from its environment. Secrets come only from here. */
 export const env = {
   isProduction,
   isTest,
   port: Number(process.env.PORT ?? 4000),
-  mongoUri: process.env.MONGODB_URI ?? '',
+  /** Empty in development means "use the embedded MongoDB". */
+  mongoUri: process.env.MONGO_URI ?? '',
   jwtSecret: jwtSecret(),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
-  corsOrigins: (process.env.CORS_ORIGIN ?? 'http://localhost:5173')
+  /** Browser origin(s) allowed by CORS; comma-separated for more than one. */
+  clientOrigins: (process.env.CLIENT_ORIGIN ?? 'http://localhost:5173')
     .split(',')
-    .map((o) => o.trim())
+    .map((origin) => origin.trim())
     .filter(Boolean),
-  reminderSweepMinutes: Number(process.env.REMINDER_SWEEP_MINUTES ?? 15),
 };

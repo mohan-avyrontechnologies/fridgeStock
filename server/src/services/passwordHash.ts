@@ -1,8 +1,9 @@
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 
-const ROUNDS = 12;
+/** bcrypt at cost 12. Plaintext passwords are never stored, logged or returned. */
+export const BCRYPT_COST = 12;
 
 export const passwordHashService = {
-  hash: (password: string) => bcrypt.hash(password, ROUNDS),
+  hash: (password: string) => bcrypt.hash(password, BCRYPT_COST),
   verify: (password: string, hash: string) => bcrypt.compare(password, hash),
 };

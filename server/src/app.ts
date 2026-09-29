@@ -10,19 +10,20 @@ export function createApp() {
   app.disable('x-powered-by');
   app.set('trust proxy', 1);
   app.use(helmet());
-  app.use(cors({ origin: env.corsOrigins }));
+  app.use(cors({ origin: env.clientOrigins }));
   app.use(express.json({ limit: '20kb' }));
 
   if (!env.isTest) {
+    // Only method, route, status and duration: never bodies or headers.
     app.use((req, res, next) => {
-      const start = Date.now();
+      const start = process.hrtime.bigint();
       res.on('finish', () => {
         console.log(
           JSON.stringify({
             method: req.method,
             route: req.originalUrl.split('?')[0],
             status: res.statusCode,
-            ms: Date.now() - start,
+            ms: Number((process.hrtime.bigint() - start) / 1_000_000n),
           }),
         );
       });

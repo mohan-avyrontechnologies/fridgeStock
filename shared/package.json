@@ -1,0 +1,24 @@
+{
+  "name": "@cook-first/shared",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Enums, API types, zod schemas and date utilities used by both client and server.",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.11"
+  }
+}
