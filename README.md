@@ -516,7 +516,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.1.0] - 2026-09-29: Data model limits, urgency states and priority engine to spec
+### [2.1.0] - 2026-09-29: Data model limits, urgency states and priority engine to spec · `3107802`
 **Breaking**
 - **Urgency states renamed:** `USE_SOON` → `APPROACHING_EXPIRY`, `DUE_TODAY` → `DUE`, `PAST_EXPECTED_EXPIRY` → `OVERDUE` (in API responses and `shared`).
 - **`GET /foods` summary:** now includes `total`.
