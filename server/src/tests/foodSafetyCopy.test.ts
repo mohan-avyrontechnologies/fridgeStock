@@ -63,7 +63,7 @@ describe('food-safety wording', () => {
 
   it('expiry wording lives only in the two copy files', () => {
     // "expiry", "expire(s|d)" or "expiring" as a word of text. Identifiers such
-    // as expiryDate, PAST_EXPECTED_EXPIRY or expiresIn don't match.
+    // as expiryDate, OVERDUE or expiresIn don't match.
     const wording = /(?<![\w$.])expir(?:y|e|es|ed|ing)(?![\w$])/i;
     const offenders: string[] = [];
     for (const file of sourceFiles) {

@@ -1,118 +1,116 @@
+import { addDays, type FoodStatus } from '@cook-first/shared';
 import { describe, expect, it } from 'vitest';
-import {
-  classifyUrgency,
-  cookFirst,
-  prioritise,
-  summarise,
-} from '../services/priorityEngine.js';
-import { addDays } from '@cook-first/shared';
+import { APPROACHING_EXPIRY_DAYS } from '../config/urgency.js';
+import { classifyUrgency, prioritise } from '../services/priorityEngine.js';
 
-const today = '2026-09-29';
+const TODAY = '2026-09-29';
 
-function item(id: string, addedDate: string, lifespan: number, status = 'ACTIVE') {
-  return { id, status, addedDate, expiryDate: addDays(addedDate, lifespan) };
+function item(id: string, addedDate: string, lifespanDays: number, status: FoodStatus = 'ACTIVE') {
+  return { id, status, addedDate, expiryDate: addDays(addedDate, lifespanDays) };
 }
 
-describe('classifyUrgency', () => {
-  it.each([
-    [10, 'NOT_URGENT'],
-    [4, 'NOT_URGENT'],
-    [3, 'USE_SOON'],
-    [1, 'USE_SOON'],
-    [0, 'DUE_TODAY'],
-    [-1, 'PAST_EXPECTED_EXPIRY'],
-    [-30, 'PAST_EXPECTED_EXPIRY'],
-  ])('%i remaining days -> %s', (days, expected) => {
-    expect(classifyUrgency(days)).toBe(expected);
-  });
-
-  it('honours configured thresholds', () => {
-    expect(classifyUrgency(5, { useSoonDays: 5, cookFirstMinimum: 'USE_SOON' })).toBe('USE_SOON');
-  });
-});
+const ids = (list: { id: string }[]) => list.map((i) => i.id);
 
 describe('prioritise', () => {
-  it('orders the FRD worked example earliest expected expiry first', () => {
-    const items = [
-      item('eggs', '2026-09-29', 8),
-      item('milk', '2026-09-29', 4),
-      item('chicken', '2026-09-29', 1),
-      item('spinach', '2026-09-29', 2),
-    ];
-    expect(prioritise(items, today).map((i) => i.id)).toEqual(['chicken', 'spinach', 'milk', 'eggs']);
+  it('sorts items with different expiry dates earliest first', () => {
+    const { items } = prioritise([item('late', TODAY, 9), item('soon', TODAY, 1), item('mid', TODAY, 5)], TODAY);
+    expect(ids(items)).toEqual(['soon', 'mid', 'late']);
   });
 
-  it('breaks expiry ties by added date, then by id', () => {
-    const items = [
-      item('c', '2026-09-27', 3), // expires 09-30, added later
-      item('b', '2026-09-25', 5), // expires 09-30, added earliest
-      item('a', '2026-09-27', 3), // same expiry and added date as c; lower id
-    ];
-    expect(prioritise(items, today).map((i) => i.id)).toEqual(['b', 'a', 'c']);
+  it('orders items with the same expiry date by added date, then by id', () => {
+    const { items } = prioritise(
+      [
+        item('c', '2026-09-27', 3), // expires 09-30, added 09-27
+        item('b', '2026-09-25', 5), // expires 09-30, added earliest
+        item('a', '2026-09-27', 3), // same expiry and added date as c; lower id
+      ],
+      TODAY,
+    );
+    expect(ids(items)).toEqual(['b', 'a', 'c']);
   });
 
-  it('is deterministic regardless of input order', () => {
-    const items = [
-      item('x', '2026-09-20', 5),
-      item('y', '2026-09-28', 2),
-      item('z', '2026-09-28', 2),
-      item('w', '2026-09-29', 0),
-    ];
-    const expected = prioritise(items, today).map((i) => i.id);
-    for (let n = 0; n < 10; n++) {
-      const shuffled = [...items].sort(() => Math.random() - 0.5);
-      expect(prioritise(shuffled, today).map((i) => i.id)).toEqual(expected);
-    }
+  it('compares ids as strings', () => {
+    const { items } = prioritise([item('10', TODAY, 2), item('9', TODAY, 2), item('100', TODAY, 2)], TODAY);
+    expect(ids(items)).toEqual(['10', '100', '9']);
   });
 
   it('excludes used, wasted and removed items', () => {
-    const items = [
-      item('active', '2026-09-29', 1),
-      item('used', '2026-09-29', 1, 'USED'),
-      item('wasted', '2026-09-29', 1, 'WASTED'),
-      item('removed', '2026-09-29', 1, 'REMOVED'),
-    ];
-    expect(prioritise(items, today).map((i) => i.id)).toEqual(['active']);
-  });
-
-  it('computes remaining days and urgency, including past expected expiry', () => {
-    const [overdue, due, soon, later] = prioritise(
+    const { items, cookFirst, summary } = prioritise(
       [
-        item('later', '2026-09-29', 7),
-        item('soon', '2026-09-29', 2),
-        item('due', '2026-09-26', 3),
-        item('overdue', '2026-09-20', 2),
+        item('active', TODAY, 1),
+        item('used', TODAY, 1, 'USED'),
+        item('wasted', TODAY, 1, 'WASTED'),
+        item('removed', TODAY, 1, 'REMOVED'),
       ],
-      today,
+      TODAY,
     );
-    expect(overdue).toMatchObject({ id: 'overdue', remainingDays: -7, urgency: 'PAST_EXPECTED_EXPIRY' });
-    expect(due).toMatchObject({ id: 'due', remainingDays: 0, urgency: 'DUE_TODAY' });
-    expect(soon).toMatchObject({ id: 'soon', remainingDays: 2, urgency: 'USE_SOON' });
-    expect(later).toMatchObject({ id: 'later', remainingDays: 7, urgency: 'NOT_URGENT' });
-  });
-});
-
-describe('cookFirst and summarise', () => {
-  const list = prioritise(
-    [
-      item('later', '2026-09-29', 7),
-      item('soon', '2026-09-29', 3),
-      item('due', '2026-09-29', 0),
-      item('overdue', '2026-09-20', 2),
-    ],
-    today,
-  );
-
-  it('includes every item that is not "Not urgent", in priority order', () => {
-    expect(cookFirst(list).map((i) => i.id)).toEqual(['overdue', 'due', 'soon']);
+    expect(ids(items)).toEqual(['active']);
+    expect(ids(cookFirst)).toEqual(['active']);
+    expect(summary.total).toBe(1);
   });
 
-  it('counts items by urgency', () => {
-    expect(summarise(list)).toEqual({
-      NOT_URGENT: 1,
-      USE_SOON: 1,
-      DUE_TODAY: 1,
-      PAST_EXPECTED_EXPIRY: 1,
-    });
+  it.each([
+    [4, 'NOT_URGENT'],
+    [3, 'APPROACHING_EXPIRY'],
+    [1, 'APPROACHING_EXPIRY'],
+    [0, 'DUE'],
+    [-1, 'OVERDUE'],
+  ] as const)('switches urgency at exactly the right point: %i days remaining → %s', (remaining, urgency) => {
+    const { items } = prioritise([item('x', addDays(TODAY, remaining), 0)], TODAY);
+    expect(items[0]).toMatchObject({ remainingDays: remaining, urgency });
+    expect(classifyUrgency(remaining)).toBe(urgency);
+  });
+
+  it('uses the single threshold constant for the NOT_URGENT / APPROACHING_EXPIRY boundary', () => {
+    expect(APPROACHING_EXPIRY_DAYS).toBe(3);
+    expect(classifyUrgency(APPROACHING_EXPIRY_DAYS)).toBe('APPROACHING_EXPIRY');
+    expect(classifyUrgency(APPROACHING_EXPIRY_DAYS + 1)).toBe('NOT_URGENT');
+  });
+
+  it('counts an item with a zero-day lifespan as DUE on the day it is added', () => {
+    const { items, cookFirst } = prioritise([item('yoghurt', TODAY, 0)], TODAY);
+    expect(items[0]).toMatchObject({ expiryDate: TODAY, remainingDays: 0, urgency: 'DUE' });
+    expect(ids(cookFirst)).toEqual(['yoghurt']);
+  });
+
+  it('gives identical output when run twice on the same input', () => {
+    const input = [item('x', '2026-09-20', 5), item('y', '2026-09-28', 2), item('z', '2026-09-28', 2), item('w', TODAY, 9)];
+    const first = prioritise(input, TODAY);
+    const second = prioritise(input, TODAY);
+    expect(second).toEqual(first);
+    expect(JSON.stringify(second)).toBe(JSON.stringify(first));
+  });
+
+  it('gives the same order whatever order the items arrive in', () => {
+    const input = [item('x', '2026-09-20', 5), item('y', '2026-09-28', 2), item('z', '2026-09-28', 2), item('w', TODAY, 0)];
+    const expected = ids(prioritise(input, TODAY).items);
+    expect(ids(prioritise([...input].reverse(), TODAY).items)).toEqual(expected);
+  });
+
+  it('does not change the items it is given', () => {
+    const input = [item('b', TODAY, 2), item('a', TODAY, 1)];
+    const copy = structuredClone(input);
+    prioritise(input, TODAY);
+    expect(input).toEqual(copy);
+  });
+
+  it('orders chicken, spinach, milk, eggs, with only chicken and spinach in Cook First', () => {
+    const { items, cookFirst, summary } = prioritise(
+      [item('eggs', TODAY, 8), item('milk', TODAY, 4), item('chicken', TODAY, 1), item('spinach', TODAY, 2)],
+      TODAY,
+    );
+    expect(ids(items)).toEqual(['chicken', 'spinach', 'milk', 'eggs']);
+    expect(ids(cookFirst)).toEqual(['chicken', 'spinach']);
+    expect(summary).toEqual({ NOT_URGENT: 2, APPROACHING_EXPIRY: 2, DUE: 0, OVERDUE: 0, total: 4 });
+  });
+
+  it('returns Cook First in the same order as the full list, with a summary and total', () => {
+    const { items, cookFirst, summary } = prioritise(
+      [item('later', TODAY, 7), item('soon', TODAY, 3), item('due', TODAY, 0), item('overdue', '2026-09-20', 2)],
+      TODAY,
+    );
+    expect(ids(items)).toEqual(['overdue', 'due', 'soon', 'later']);
+    expect(ids(cookFirst)).toEqual(['overdue', 'due', 'soon']);
+    expect(summary).toEqual({ NOT_URGENT: 1, APPROACHING_EXPIRY: 1, DUE: 1, OVERDUE: 1, total: 4 });
   });
 });

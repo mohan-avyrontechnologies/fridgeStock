@@ -79,6 +79,39 @@ describe('dates', () => {
   });
 });
 
+describe('urgency threshold', () => {
+  const REPO = path.resolve('..');
+  const everySourceFile = [
+    ...appFiles,
+    ...files(path.join(REPO, 'client/src')).filter((f) => /\.tsx?$/.test(f) && !/[\\/](test|mocks)[\\/]/.test(f)),
+    ...files(path.join(REPO, 'shared/src')).filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts')),
+  ];
+
+  it('is defined once, as APPROACHING_EXPIRY_DAYS in config/urgency.ts', () => {
+    expect(source(path.join(SRC, 'config/urgency.ts'))).toMatch(/export const APPROACHING_EXPIRY_DAYS = 3;/);
+  });
+
+  it('is not hard-coded anywhere else in client, server or shared', () => {
+    // Comparisons with 3, "3 days", or ±3 day offsets.
+    const hardCoded = /[<>]=?\s*3\b|\b3\s*(day|days)\b|addDays\([^)]*,\s*-?3\s*\)|useSoonDays/i;
+    const offenders = everySourceFile
+      .filter((f) => path.resolve(f) !== path.join(SRC, 'config/urgency.ts'))
+      .filter((f) => hardCoded.test(stripComments(source(f))))
+      .map((f) => path.relative(REPO, f));
+    expect(offenders).toEqual([]);
+  });
+});
+
+describe('expiry date', () => {
+  it('is calculated in the food service, not by a Mongoose hook', () => {
+    const model = stripComments(source(path.join(SRC, 'models/FoodItem.ts')));
+    expect(model).not.toMatch(/\.pre\(|\.post\(|addDays/);
+    const service = source(path.join(SRC, 'services/foodService.ts'));
+    expect(service).toMatch(/expiryDate: expiryFor\(addedDate, lifespanDays\)/);
+    expect(service).toMatch(/food\.expiryDate = expiryFor\(/);
+  });
+});
+
 describe('scheduled jobs', () => {
   it('the reminder sweep is a node-cron job in jobs/, every 15 minutes', () => {
     expect(imports(path.join(SRC, 'jobs/reminderJob.ts'))).toContain('node-cron');

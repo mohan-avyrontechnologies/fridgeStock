@@ -85,6 +85,7 @@ export function FoodDetailPage() {
                 unit: food.unit,
                 addedDate: food.addedDate,
                 lifespanDays: food.lifespanDays,
+                notes: food.notes ?? undefined,
               }}
               onSubmit={async (input) => {
                 setFood(await update(food.id, input));
@@ -121,10 +122,16 @@ export function FoodDetailPage() {
                 <Detail label={expectedExpiryLabel} value={formatDisplay(food.expectedExpiryDate)} />
                 <Detail label="Added on" value={formatDisplay(food.addedDate)} />
                 <Detail label="Lifespan" value={`${food.lifespanDays} ${food.lifespanDays === 1 ? 'day' : 'days'}`} />
+                {food.notes && (
+                  <div className="col-span-2">
+                    <dt className="text-muted">Notes</dt>
+                    <dd className="whitespace-pre-line text-ink">{food.notes}</dd>
+                  </div>
+                )}
               </dl>
             </section>
 
-            {food.urgency === 'PAST_EXPECTED_EXPIRY' && (
+            {food.urgency === 'OVERDUE' && (
               <p className="rounded-2xl bg-past px-4 py-3 text-sm text-past-ink">{pastExpectedExpiryNote}</p>
             )}
 

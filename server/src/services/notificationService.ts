@@ -11,7 +11,7 @@ import {
   type ReminderType,
 } from '@cook-first/shared';
 import { isValidObjectId, type Types } from 'mongoose';
-import { DEFAULT_THRESHOLDS } from '../config/urgency.js';
+import { APPROACHING_EXPIRY_DAYS } from '../config/urgency.js';
 import { reminderCopy } from '../copy.js';
 import { FoodItemModel, type FoodItemDoc } from '../models/FoodItem.js';
 import { MAX_DELIVERY_ATTEMPTS, NotificationModel, type NotificationDoc } from '../models/Notification.js';
@@ -44,7 +44,7 @@ function stagesFor(expiryDate: string) {
   return [
     {
       type: 'APPROACHING_EXPIRY' as const,
-      starts: addDays(expiryDate, -DEFAULT_THRESHOLDS.useSoonDays),
+      starts: addDays(expiryDate, -APPROACHING_EXPIRY_DAYS),
       endsBefore: expiryDate,
     },
     { type: 'DUE' as const, starts: expiryDate, endsBefore: addDays(expiryDate, 1) },

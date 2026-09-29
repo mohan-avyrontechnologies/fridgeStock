@@ -43,6 +43,7 @@ async function expectNoHorizontalScroll(page: Page) {
 const REQUIRED_LINE = 'Expected expiry is an estimate to help you plan. Always check your food before eating it.';
 
 async function shot(page: Page, name: string) {
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(350);
   await expectNoHorizontalScroll(page);
   await page.screenshot({ path: `e2e/screenshots/${test.info().project.name}/${name}.png` });
@@ -138,7 +139,7 @@ test('validation messages and the expected-expiry preview', async ({ page }) => 
   await expect(page.getByText('Food name is required.')).toBeHidden();
   await page.getByRole('button', { name: '3 days' }).click();
   await expect(page.getByText('Lifespan must be zero or a positive number of days.')).toBeHidden();
-  await expect(page.getByText('Expected expiry in 3 days')).toBeVisible();
+  await expect(page.getByText('3 days left')).toBeVisible();
   await expect(page.getByText(REQUIRED_LINE)).toBeVisible();
   await expectNoSafetyClaim(page);
   await shot(page, '07-add-food');
@@ -151,8 +152,10 @@ test('reminders appear under the bell', async ({ page }) => {
   await expect(page.getByText('Prawns: expected expiry in 1 day', { exact: false })).toBeVisible();
   await expectNoSafetyClaim(page);
   await shot(page, '08-reminders');
-  await page.getByRole('button', { name: 'Mark all as read' }).click();
-  await expect(page.getByRole('link', { name: 'Reminders', exact: true })).toBeVisible();
+  // Opening the screen marks them read: the unread badge disappears.
+  await expect(page.getByText('New', { exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Home' }).first().click();
+  await expect(page.getByRole('link', { name: /Reminders, \d+ unread/ })).toHaveCount(0);
 });
 
 test("one user never sees another user's food", async ({ browser }) => {

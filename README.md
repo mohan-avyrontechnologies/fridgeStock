@@ -7,7 +7,7 @@ A mobile-first web app that helps a household use perishable food before it goes
 | | |
 |---|---|
 | **Status** | MVP complete. Not yet deployed. |
-| **Version** | 2.0.0 (see the [Changelog](#changelog)) |
+| **Version** | 2.1.0 (see the [Changelog](#changelog)) |
 | **Requires** | Node.js 20.19 or later |
 | **Specifications** | PFCP BRD v2.0, FRD v1.0, SRD v1.0, TDD v1.0 (internal documents, not stored in this repo) |
 | **Repository** | `github.com/rugvailabs/cook_first` |
@@ -63,15 +63,15 @@ These screenshots are captured automatically by the Playwright test suite.
 | Area | What it does |
 |---|---|
 | **Accounts** | Register and log in with email and password. JWT sessions last 7 days; passwords are hashed with bcrypt. Your time zone is captured silently from the browser at sign-up. |
-| **Add food** | Name, quantity, unit, added date and lifespan (days). Quick-pick buttons for units, "Today" / "Yesterday" and 1–14 day lifespans. The form shows a live expected-expiry preview. There is also a "Save and add another" button. |
-| **Expected expiry** | Added date + lifespan. It is recalculated whenever the added date or lifespan is edited. |
-| **Urgency labels** | Not urgent (> 3 days) · Use soon (1–3 days) · Expected expiry today (0) · Past expected expiry (< 0). |
+| **Add food** | Name (up to 60 characters), quantity, unit (pcs, g, kg, ml, l, pack or bunch), added date, lifespan (0–365 days) and optional notes (up to 200 characters). Quick-pick buttons for units, "Today" / "Yesterday" and common lifespans. The form shows a live expected-expiry preview. There is also a "Save and add another" button. |
+| **Expected expiry** | Added date + lifespan, calculated by the server's food service and never accepted from the client. It is recalculated whenever the added date or lifespan changes. A lifespan of 0 means the expected expiry is the day the item was added. |
+| **Urgency** | 🟢 Not urgent (more than 3 days left) · 🟡 Use soon (1–3) · 🟠 Expected expiry today (0) · 🔴 Past expected expiry (below 0). Always shown as a colour **and** a text label. Each card also says "5 days left", "1 day left", "1 day past expected expiry" and so on. |
 | **Priority order** | Sorted by expected expiry, then added date, then item ID, so the same data always gives the same order. |
 | **Cook First** | Every active item that isn't "Not urgent", most urgent first. |
 | **Dashboard** | Counts for each label, a "Needs attention" section and the full list of food. |
 | **Recording what happened** | Used it all · Used some · Threw it away (all or part) · Remove. Each one is saved as a usage record. |
 | **History** | Every usage record, newest first, with totals for each action. |
-| **Reminders** | In-app reminders when an item reaches "Use soon", on its expected-expiry day, and the day after. Each type can be turned off. A node-cron job delivers them every 15 minutes. |
+| **Reminders** | In-app reminders when an item reaches "Use soon", on its expected-expiry day, and the day after. Each type can be turned off. A node-cron job delivers them every 15 minutes. They count as read once you open the Reminders screen. |
 | **Privacy** | Each user only ever sees their own food, history and reminders. |
 | **Responsive** | Phone layout with a bottom navigation bar. From 1024 px wide: a sidebar and a two-column layout. |
 
@@ -257,7 +257,7 @@ Run these from the repository root:
 | `npm run dev:client` | Start the Vite dev server |
 | `npm run lint` | ESLint across all three packages |
 | `npm run typecheck` | TypeScript check of `shared`, `server` and `client` |
-| `npm test` | Unit and API tests: shared (20) + server (97) + client (21) |
+| `npm test` | Unit and API tests: shared (20) + server (112) + client (32) |
 | `npm run test:e2e` | Playwright end-to-end tests (12) |
 | `npm run build` | Build `shared/dist`, `server/dist` and `client/dist` |
 
@@ -268,11 +268,11 @@ Run these from the repository root:
 | Suite | Tools | Tests | What it covers |
 |---|---|---|---|
 | **Dates** (`shared/src/dates.test.ts`) | Vitest | 20 | Valid and invalid dates, today in several time zones, month and year ends, daylight-saving weekends, `addDays`/`diffDays` as inverses, the "Thu, 1 Oct" format |
-| **API and logic** (`server/src/tests`) | Vitest, Supertest, mongodb-memory-server | 70 | Registration and login, protected routes, bad or expired tokens, adding/editing/removing food, every validation rule, urgency and sorting (including ties), Cook First, time zones, used / partly used / wasted / removed, history, reminder scheduling, delivery, retries and preferences, cross-user isolation |
+| **API and logic** (`server/src/tests`) | Vitest, Supertest, mongodb-memory-server | 82 | Registration and login (name ≤ 50, lowercase email, UTC and reminder defaults), protected routes, bad or expired tokens, adding/editing/removing food, every validation rule and limit (name 60, units, lifespan 0–365, notes 200), expiry never accepted from the client, urgency and sorting (including ties), Cook First, time zones, used / partly used / wasted / removed, history, reminders, cross-user isolation. **Priority engine:** the required cases (earliest first; same expiry by added date then ID; closed items excluded; switches at 4, 3, 1, 0 and −1 days; a zero-day lifespan is DUE; identical output when run twice; chicken, spinach, milk, eggs with only chicken and spinach in Cook First). |
 | **Wording guard** (`foodSafetyCopy.test.ts`) | Vitest | 5 | Scans every `.ts`/`.tsx` file in `client/src`, `server/src` and `shared/src`, comments included, for the banned phrases. Fails on the word "safe" in either copy file, or on expiry wording outside the copy files. Checks the required estimate line. |
 | **Project rules** (`rules.test.ts`) | Vitest, Supertest | 11 | Every database query carries the user's ID; the query-string `userId` is ignored; pure priority engine; bcrypt cost 12; passwords never returned or logged; `.env` ignored; helmet; CORS; rate limit of 20 per 15 minutes |
-| **Server structure** (`structure.test.ts`) | Vitest | 11 | The `server/src` folders; thin controllers; only models talk to MongoDB; no `new Date()` in date logic; dates only from `shared`; node-cron job; env variable names and defaults |
-| **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 21 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and preview, the required estimate line, plus client structure checks (folders, one page per screen, `mocks/`, API default, persisted token, shared schemas) |
+| **Server structure** (`structure.test.ts`) | Vitest | 14 | The `server/src` folders; thin controllers; only models talk to MongoDB; no `new Date()` in date logic; dates only from `shared`; node-cron job; env variable names and defaults; the threshold of 3 exists only in `config/urgency.ts` (checked across client, server and shared); expiry calculated in the food service with no Mongoose hook |
+| **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 32 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and preview, the required estimate line, all five remaining-days phrasings, colour always paired with a label, exactly seven units, notes, reminders marked read when the screen opens, plus client structure checks |
 | **End-to-end** (`e2e/`) | Playwright in Chrome | 12 | 6 journeys, each run at **phone size (Pixel 7)** and **desktop size (1440×900)** |
 
 The six end-to-end journeys:
@@ -288,6 +288,8 @@ Every page visited is also checked for banned wording and for sideways scrolling
 
 Test databases live in git-ignored `.test-db-*` folders inside the project, not the system temp folder, and are deleted afterwards. The end-to-end run uses its own ports (API 4100, web 5174), so it never touches your data.
 
+> **Low disk space on the system drive?** Chrome creates a temporary profile for every Playwright test. If that drive is nearly full, point the temp folder elsewhere for the run. For example, in Git Bash: `TMP="$PWD/.tmp" TEMP="$PWD/.tmp" npm run test:e2e` (`.tmp/` is git-ignored).
+
 ---
 
 ## How it works
@@ -295,29 +297,31 @@ Test databases live in git-ignored `.test-db-*` folders inside the project, not 
 ### Expected expiry and urgency
 
 ```
-expectedExpiryDate = addDays(addedDate, lifespanDays)
-remainingDays      = diffDays(today, expectedExpiryDate)   with today = todayInTz(user.timeZone)
+expiryDate    = addDays(addedDate, lifespanDays)                  calculated in services/foodService.ts
+remainingDays = diffDays(today, expiryDate)                       today = todayInTz(user.timeZone)
 ```
 
-| Remaining days | Label | Colour | In Cook First |
-|---|---|---|---|
-| more than 3 | Not urgent | neutral grey | No |
-| 1 – 3 | Use soon | amber | Yes |
-| 0 | Expected expiry today | orange | Yes |
-| below 0 | Past expected expiry | red | Yes |
+| Remaining days | Urgency | Label | Colour | In Cook First | Card text |
+|---|---|---|---|---|---|
+| more than 3 | `NOT_URGENT` | Not urgent | green | No | "5 days left" |
+| 1 – 3 | `APPROACHING_EXPIRY` | Use soon | amber | Yes | "2 days left", "1 day left" |
+| 0 | `DUE` | Expected expiry today | orange | Yes | *(the label already says it)* |
+| below 0 | `OVERDUE` | Past expected expiry | red | Yes | "1 day past expected expiry", "4 days past expected expiry" |
 
-- **Remaining days and labels are calculated on every request, not stored**, so they roll over at midnight on their own.
-- **The thresholds are configurable** in `server/src/config/urgency.ts`.
-- **"Not urgent" is grey, not green**, so it doesn't suggest "fine to eat".
+- **Urgency is calculated every time items are read and is never stored**, so it rolls over at midnight on its own.
+- **The threshold of 3 is one constant**, `APPROACHING_EXPIRY_DAYS` in `server/src/config/urgency.ts`. It isn't hard-coded anywhere else, including the client's wording, and a test enforces this.
+- **Urgency always has a text label as well as a colour**, on badges, summary tiles and reminders.
 
 ### Priority engine
 
-`server/src/services/priorityEngine.ts` is a pure function with no database, Express or clock:
+`prioritise(items, today)` in `server/src/services/priorityEngine.ts` is a pure function with no database, Express or clock:
 
-1. Leave out used, wasted and removed items.
-2. Sort by **expected expiry**, then **added date**, then **item ID**. `YYYY-MM-DD` strings sort in date order.
-3. Work out remaining days and the label for each item.
-4. **Cook First** = every item at or above "Use soon".
+1. Keep only `ACTIVE` items, and add remaining days and urgency to each.
+2. Sort by **expiry date** (earliest first), then **added date**, then **ID compared as strings**. `YYYY-MM-DD` strings sort in date order.
+3. Return **`{ items, cookFirst, summary }`**:
+   - `items`: the full sorted list
+   - `cookFirst`: the `APPROACHING_EXPIRY`, `DUE` and `OVERDUE` items, in the same order
+   - `summary`: the count for each urgency state, plus `total`
 
 ### Recording what happened
 
@@ -331,11 +335,12 @@ remainingDays      = diffDays(today, expectedExpiryDate)   with today = todayInT
 
 ### Reminders
 
-- **Up to three per item:** **approaching** (3 days before), **due** (on the day) and **overdue** (the day after).
+- **Up to three per item:** **approaching** (when the item becomes "Use soon"), **due** (on the day) and **overdue** (the day after).
 - **Rescheduled** when an item's dates change, and **cancelled** when it's used, wasted or removed.
 - **An item added late only gets the reminder for the stage it's already in**, not a burst of old ones.
 - **Delivered** when the user opens the app, and by the **node-cron job** (`*/15 * * * *`).
 - **Failed deliveries** are saved as `FAILED` and retried up to 3 times. The food lists never depend on reminders.
+- **`readAt` stays empty until the user opens the Reminders screen.** Opening it marks every delivered reminder as read. New ones still show a "New" tag during that visit.
 
 ---
 
@@ -362,10 +367,12 @@ MongoDB collections:
 
 | Collection | Fields |
 |---|---|
-| **users** | `name`, `email` (unique), `passwordHash` (bcrypt), `timeZone` (IANA), `notificationPreferences {approachingExpiry, due, overdue}` |
-| **fooditems** | `userId`, `name`, `quantity`, `unit`, `addedDate` (`YYYY-MM-DD`), `lifespanDays`, `expiryDate` (`YYYY-MM-DD`, calculated), `status` (`ACTIVE`/`USED`/`WASTED`/`REMOVED`), `closedAt` |
-| **usagerecords** | `userId`, `foodId`, `action`, `date` (`YYYY-MM-DD`), `quantityUsed`, `quantityRemaining`, `foodName`, `unit` (a copy taken at the time), `createdAt` |
-| **notifications** | `userId`, `foodId`, `type`, `expiryDate` and `scheduledDate` (`YYYY-MM-DD`), `status` (`PENDING`/`SENT`/`FAILED`), `attempts`, `lastError`, `message`, `sentAt`, `readAt` |
+| **users** | `name` (1–50 characters), `email` (stored in lowercase, unique), `passwordHash` (bcrypt, never returned), `timeZone` (IANA, default `UTC`), `notificationPreferences {approachingExpiry, due, overdue}` (all default `true`) |
+| **fooditems** | `userId` (exactly one owner), `name` (1–60), `quantity` (> 0), `unit` (`pcs`/`g`/`kg`/`ml`/`l`/`pack`/`bunch`), `addedDate` (`YYYY-MM-DD`, not in the future in the user's time zone), `lifespanDays` (whole number 0–365), `expiryDate` (= `addedDate` + `lifespanDays`), `notes` (optional, ≤ 200), `status` (`ACTIVE`/`USED`/`WASTED`/`REMOVED`, default `ACTIVE`), `closedAt` (set when it stops being active) |
+| **usagerecords** | `userId`, `foodId`, `action` (`USED`/`PARTIALLY_USED`/`WASTED`/`REMOVED`), `date` (`YYYY-MM-DD` in the user's time zone), `quantityUsed`, `unit` (copied from the item), plus `foodName`, `quantityRemaining` and `createdAt` |
+| **notifications** | `userId`, `foodId`, `type` (`APPROACHING_EXPIRY`/`DUE`/`OVERDUE`), `scheduledDate` (`YYYY-MM-DD`), `status` (`PENDING`/`SENT`/`FAILED`, default `PENDING`), `message`, `sentAt`, `readAt` (empty until the Reminders screen is opened), `attempts` (starts at 0), plus `expiryDate` and `lastError` |
+
+**The expiry date is calculated in `services/foodService.ts`** when an item is created and whenever its added date or lifespan changes. There's deliberately no Mongoose hook, because hooks don't run on update queries. Any expiry date sent by the client is ignored.
 
 **Indexes:**
 - `fooditems {userId, status}` and `{userId, expiryDate}`
@@ -390,11 +397,11 @@ Base URL: `http://localhost:4000/api` (`VITE_API_URL`). Every route except regis
 | POST | `/auth/login` | `{email, password, timeZone?}` | `200 {token, user}` |
 | GET | `/auth/me` | | `{user}` |
 | PUT | `/auth/me` | `{name?, timeZone?}` | `{user}` |
-| GET | `/foods` | | `{today, summary, items}` in priority order |
+| GET | `/foods` | | `{today, summary, items}` in priority order; `summary` has a count for each urgency state and `total` |
 | GET | `/foods/cook-first` | | `{today, items}` |
-| POST | `/foods` | `{name, quantity, unit, addedDate, lifespanDays}` | `201 FoodItem` |
+| POST | `/foods` | `{name, quantity, unit, addedDate, lifespanDays, notes?}`; any expiry date sent is ignored | `201 FoodItem` |
 | GET | `/foods/:id` | | `FoodItem` |
-| PUT | `/foods/:id` | any food fields | `FoodItem` |
+| PUT | `/foods/:id` | any food fields (`notes: ""` clears the notes) | `FoodItem` |
 | DELETE | `/foods/:id` | | `204`; the item is closed as `REMOVED`, not deleted |
 | POST | `/foods/:id/use` | `{action: "USED" \| "PARTIALLY_USED", quantityUsed?}` | `{food, usageRecord}` |
 | POST | `/foods/:id/waste` | `{quantityUsed?}` | `{food, usageRecord}` |
@@ -413,7 +420,7 @@ Base URL: `http://localhost:4000/api` (`VITE_API_URL`). Every route except regis
 
 | Status | Code | When |
 |---|---|---|
-| 400 | `VALIDATION_ERROR` | Invalid name, quantity, unit, date or lifespan |
+| 400 | `VALIDATION_ERROR` | Invalid name, quantity, unit, date, lifespan or notes |
 | 401 | `UNAUTHENTICATED` / `INVALID_CREDENTIALS` | Missing, bad or expired token; wrong email or password |
 | 404 | `NOT_FOUND` | Item doesn't exist *or belongs to another user* |
 | 409 | `CONFLICT` / `ITEM_CLOSED` | Email already registered; the item is already used, wasted or removed |
@@ -430,7 +437,10 @@ These rules must never be broken. Each one is enforced in code and checked by an
 | **Never suggest food is fit to eat.** The banned phrases (listed in the wording-guard test) must not appear anywhere. | All expiry wording lives in `client/src/copy.ts` (interface) and `server/src/copy.ts` (reminder messages). | `foodSafetyCopy.test.ts` scans every `.ts`/`.tsx` file in `client/src`, `server/src` and `shared/src`, ignoring case. It fails on any banned phrase, on "safe" in either copy file, or on expiry wording outside the copy files. Playwright also scans every rendered page. |
 | **Add Food and Cook First show:** *"Expected expiry is an estimate to help you plan. Always check your food before eating it."* | `estimateNote` in `client/src/copy.ts`, shown by the `EstimateNote` component. | Client tests; Playwright journeys 1 and 3 |
 | **Users only ever see their own data.** | The identity comes only from the verified JWT. Every query on food items, usage records and reminders includes `userId` (including `save()`/`deleteOne()`, via Mongoose's `shardKey`). Another user's item returns **404**, not 403. | `rules.test.ts` records every MongoDB operation in a full journey and fails on any without the user's ID; `security.test.ts`; Playwright journey 5 |
-| **Prioritisation is deterministic.** | `services/priorityEngine.ts` is a pure function with no database, Express or clock imports. | `priorityEngine.test.ts` (shuffled input gives the same order); `rules.test.ts` |
+| **Prioritisation is deterministic.** | `prioritise(items, today)` in `services/priorityEngine.ts` is a pure function with no database, Express or clock imports. | `priorityEngine.test.ts` (running twice gives identical output; shuffled input gives the same order); `rules.test.ts` |
+| **Urgency is never stored; the threshold of 3 is one constant.** | `APPROACHING_EXPIRY_DAYS` in `server/src/config/urgency.ts`. Urgency is calculated on every read. | `structure.test.ts` scans client, server and shared for a hard-coded 3 |
+| **Urgency is shown with a colour and a text label, never colour alone.** | `URGENCY_STYLE` (colour) always rendered with `urgencyCopy` (label). | Client tests |
+| **The expiry date is calculated in the food service and never accepted from the client.** | `foodService.ts` (no Mongoose hook). The shared schemas drop unknown fields. | `foods.test.ts`, `structure.test.ts`, client test |
 | **Server-side validation is what counts.** | Shared zod schemas run in `middleware/validate.ts`. The client runs the same schemas only so errors show instantly. | `foods.test.ts`, `auth.test.ts` |
 | **Passwords: bcrypt cost 12, never logged or returned.** | `services/passwordHash.ts`. Responses never include `passwordHash`. The request log records only method, route, status and time. | `rules.test.ts`, `auth.test.ts` |
 | **Secrets only from environment variables.** | `config/env.ts`. `.env.example` files are committed; `.env` is git-ignored. Production refuses to start without `JWT_SECRET` and `MONGO_URI`. | `rules.test.ts`, `structure.test.ts` |
@@ -487,7 +497,7 @@ The configuration is ready but **nothing has been deployed yet**.
 |---|---|
 | All MVP functional requirements (FR-AUTH, FOOD, EXP, PRI, UI, NOT, USE, VAL) | ✅ Done |
 | Monorepo with `client`, `server` and `shared`; Node 20.19+ | ✅ Done |
-| Tests: 20 shared + 97 server + 21 client + 12 end-to-end = **150** | ✅ Passing |
+| Tests: 20 shared + 112 server + 32 client + 12 end-to-end = **176** | ✅ Passing |
 | ESLint and typecheck on all packages | ✅ Clean |
 | All project rules (see [Project rules](#project-rules)) | ✅ Met, each one checked by a test |
 | Phone and desktop layouts | ✅ Done and checked in screenshots |
@@ -505,6 +515,30 @@ All notable changes to this project are listed here, newest first. Versions foll
 
 ### [Unreleased]
 - *Nothing yet.*
+
+### [2.1.0] - 2026-09-29: Data model limits, urgency states and priority engine to spec
+**Breaking**
+- **Urgency states renamed:** `USE_SOON` → `APPROACHING_EXPIRY`, `DUE_TODAY` → `DUE`, `PAST_EXPECTED_EXPIRY` → `OVERDUE` (in API responses and `shared`).
+- **`GET /foods` summary:** now includes `total`.
+- **Units restricted to `pcs, g, kg, ml, l, pack, bunch`;** the free-text "Other…" unit is gone.
+- **New limits:** lifespan 0–365 days (was 0–3650), food name 60 characters (was 100), user name 50 characters (was 80).
+
+**Added**
+- **Notes:** optional, up to 200 characters, on food items. Shown on cards and the details screen; editable, and cleared with an empty string.
+- **Priority engine:** `prioritise(items, today)` now returns `{ items, cookFirst, summary }` (with `total`).
+- **Required priority-engine tests:** a zero-day lifespan is DUE on the day it's added; running twice gives identical output; chicken, spinach, milk, eggs orders correctly with only chicken and spinach in Cook First; urgency switches exactly at 4, 3, 1, 0 and −1 days.
+- **Tests for new limits and fields:** units, name/lifespan/notes limits, the name limit of 50, lowercase email and default settings.
+- **Expiry never from the client:** tests show a client-sent expiry date is ignored on create and edit.
+- **Structure tests:** the threshold of 3 isn't hard-coded outside `config/urgency.ts` (checked across client, server and shared); there's no Mongoose hook for expiry.
+- **Client tests:** the five remaining-days phrasings; colour always paired with a label; seven units; notes; reminders read on opening.
+
+**Changed**
+- **Expiry calculation:** now done in `foodService` on create, and on edit when the added date or lifespan changes. The Mongoose `pre('validate')` hook was removed.
+- **Threshold constant:** `APPROACHING_EXPIRY_DAYS = 3` in `config/urgency.ts` is the single source. Client wording no longer mentions the number.
+- **Remaining-days text:** "{n} days left", "1 day left", "Expected expiry today", "1 day past expected expiry", "{n} days past expected expiry".
+- **"Not urgent" colour:** now **green** (was grey). Closed items keep a neutral grey badge.
+- **Reminders:** `readAt` is now set when the Reminders screen is opened. The "Mark all as read" button and tap-to-read were removed. New reminders show a "New" tag during that visit.
+- **Database model limits:** `FoodItem` (name 60, unit list, quantity > 0, whole-number lifespan 0–365, notes 200) and `User` (name 50) now enforce the same rules at the database level.
 
 ### [2.0.0] - 2026-09-29: Monorepo with a shared package; layered server; calendar-date strings · `39b6a2d`
 **Breaking**

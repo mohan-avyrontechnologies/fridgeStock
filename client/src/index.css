@@ -12,7 +12,11 @@
   --color-brand-hover: #2a4d43;
   --color-brand-soft: #e6eee9;
 
-  /* Urgency: neutral for "Not urgent" on purpose. Green would read as "fine to eat". */
+  /* Urgency colours. Every use is paired with a text label (never colour alone). */
+  --color-ok: #e2f2e6;
+  --color-ok-ink: #1d5c33;
+  --color-ok-bar: #3d9a5b;
+  /* Neutral grey, for closed items and "Removed". */
   --color-calm: #eef0ef;
   --color-calm-ink: #3d4843;
   --color-calm-bar: #b5bdb9;

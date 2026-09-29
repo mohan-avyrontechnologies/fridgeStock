@@ -1,4 +1,6 @@
+import { addDays } from '@cook-first/shared';
 import type {
+  ActiveFoodItem,
   CookFirstList,
   DateString,
   FoodInput,
@@ -17,7 +19,7 @@ import type { UserDoc } from '../models/User.js';
 import { clock } from './clock.js';
 import { AppError, foodNotFound, validationError } from './errors.js';
 import { cancelForFood, scheduleForFood } from './notificationService.js';
-import { cookFirst, prioritise, summarise } from './priorityEngine.js';
+import { prioritise } from './priorityEngine.js';
 import { createRecord } from './usageService.js';
 import { toFoodView, toUsageView } from './views.js';
 
@@ -49,12 +51,19 @@ function assertNotFuture(addedDate: DateString, today: DateString) {
 async function prioritisedFor(user: UserDoc) {
   const today = clock.today(user.timeZone);
   const foods = await FoodItemModel.find({ userId: user._id, status: 'ACTIVE' });
-  const ordered = prioritise(
+  const result = prioritise(
     foods.map((doc) => ({ id: doc._id.toString(), status: doc.status, addedDate: doc.addedDate, expiryDate: doc.expiryDate, doc })),
     today,
   );
-  return { today, items: ordered.map(({ doc }) => toFoodView(doc, today)) };
+  const view = (list: typeof result.items) => list.map(({ doc }) => toFoodView(doc, today) as ActiveFoodItem);
+  return { today, items: view(result.items), cookFirst: view(result.cookFirst), summary: result.summary };
 }
+
+/** The expiry date is always calculated here, never accepted from the client. */
+const expiryFor = (addedDate: DateString, lifespanDays: number) => addDays(addedDate, lifespanDays);
+
+/** An empty notes string clears the notes. */
+const cleanNotes = (notes: string | undefined) => (notes === undefined ? undefined : notes.trim() || null);
 
 const CLOSING_STATUS: Record<UsageAction, FoodStatus | null> = {
   USED: 'USED',
@@ -85,13 +94,13 @@ async function applyUsage(user: UserDoc, food: FoodItemDoc, action: UsageAction,
 }
 
 export async function listFoods(user: UserDoc): Promise<FoodList> {
-  const { today, items } = await prioritisedFor(user);
-  return { today, summary: summarise(items), items: items as FoodList['items'] };
+  const { today, items, summary } = await prioritisedFor(user);
+  return { today, summary, items };
 }
 
 export async function listCookFirst(user: UserDoc): Promise<CookFirstList> {
-  const { today, items } = await prioritisedFor(user);
-  return { today, items: cookFirst(items) as CookFirstList['items'] };
+  const { today, cookFirst } = await prioritisedFor(user);
+  return { today, items: cookFirst };
 }
 
 export async function getFood(user: UserDoc, id: string): Promise<FoodItem> {
@@ -101,7 +110,17 @@ export async function getFood(user: UserDoc, id: string): Promise<FoodItem> {
 export async function createFood(user: UserDoc, input: FoodInput): Promise<FoodItem> {
   const today = clock.today(user.timeZone);
   assertNotFuture(input.addedDate, today);
-  const food = await FoodItemModel.create({ userId: user._id, ...input });
+  const { name, quantity, unit, addedDate, lifespanDays, notes } = input;
+  const food = await FoodItemModel.create({
+    userId: user._id,
+    name,
+    quantity,
+    unit,
+    addedDate,
+    lifespanDays,
+    expiryDate: expiryFor(addedDate, lifespanDays),
+    notes: cleanNotes(notes) ?? undefined,
+  });
   await scheduleForFood(food, user);
   return toFoodView(food, today);
 }
@@ -111,8 +130,18 @@ export async function updateFood(user: UserDoc, id: string, input: FoodUpdateInp
   const food = await findOwned(user, id);
   assertActive(food);
   if (input.addedDate !== undefined) assertNotFuture(input.addedDate, today);
-  food.set(input);
-  await food.save(); // the pre-validate hook recalculates expiryDate
+  const { name, quantity, unit, addedDate, lifespanDays, notes } = input;
+  if (name !== undefined) food.name = name;
+  if (quantity !== undefined) food.quantity = quantity;
+  if (unit !== undefined) food.unit = unit;
+  if (addedDate !== undefined) food.addedDate = addedDate;
+  if (lifespanDays !== undefined) food.lifespanDays = lifespanDays;
+  if (notes !== undefined) food.notes = cleanNotes(notes) ?? undefined;
+  // Recalculate whenever the added date or lifespan changes (no Mongoose hook: hooks skip update queries).
+  if (addedDate !== undefined || lifespanDays !== undefined) {
+    food.expiryDate = expiryFor(food.addedDate, food.lifespanDays);
+  }
+  await food.save();
   await scheduleForFood(food, user);
   return toFoodView(food, today);
 }

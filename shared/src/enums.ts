@@ -1,8 +1,12 @@
 /** Enumerations shared by client and server. Each is a const array plus its union type. */
 
-/** Derived from remaining days; never stored. */
-export const URGENCIES = ['NOT_URGENT', 'USE_SOON', 'DUE_TODAY', 'PAST_EXPECTED_EXPIRY'] as const;
+/** Derived from remaining days every time items are read; never stored. */
+export const URGENCIES = ['NOT_URGENT', 'APPROACHING_EXPIRY', 'DUE', 'OVERDUE'] as const;
 export type Urgency = (typeof URGENCIES)[number];
+
+/** Units a food item's quantity can be measured in. */
+export const UNITS = ['pcs', 'g', 'kg', 'ml', 'l', 'pack', 'bunch'] as const;
+export type Unit = (typeof UNITS)[number];
 
 /** Stored lifecycle status of a food item. A partly used item stays ACTIVE. */
 export const FOOD_STATUSES = ['ACTIVE', 'USED', 'WASTED', 'REMOVED'] as const;

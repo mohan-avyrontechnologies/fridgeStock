@@ -16,7 +16,7 @@ export interface User {
 
 const userSchema = new Schema<User>(
   {
-    name: { type: String, required: true, trim: true },
+    name: { type: String, required: true, trim: true, minlength: 1, maxlength: 50 },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
     // IANA zone used to decide which calendar day is "today" for this user.

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { FoodItemModel } from '../models/FoodItem.js';
 import { UsageRecordModel } from '../models/UsageRecord.js';
 import { api, food, registerUser, setToday } from './helpers.js';
 
@@ -25,18 +26,18 @@ describe('adding food', () => {
       expectedExpiryDate: '2026-10-02',
       status: 'ACTIVE',
       remainingDays: 3,
-      urgency: 'USE_SOON',
+      urgency: 'APPROACHING_EXPIRY',
     });
   });
 
   it('accepts a zero-day lifespan as expected expiry today', async () => {
     const body = await create({ lifespanDays: 0 });
-    expect(body).toMatchObject({ expectedExpiryDate: '2026-09-29', remainingDays: 0, urgency: 'DUE_TODAY' });
+    expect(body).toMatchObject({ expectedExpiryDate: '2026-09-29', remainingDays: 0, urgency: 'DUE' });
   });
 
   it('allows a backdated added date that is already past expected expiry', async () => {
     const body = await create({ addedDate: '2026-09-20', lifespanDays: 2 });
-    expect(body).toMatchObject({ remainingDays: -7, urgency: 'PAST_EXPECTED_EXPIRY' });
+    expect(body).toMatchObject({ remainingDays: -7, urgency: 'OVERDUE' });
   });
 
   it.each([
@@ -45,7 +46,11 @@ describe('adding food', () => {
     [{ quantity: 0 }, 'quantity', 'Quantity must be a positive number.'],
     [{ quantity: -2 }, 'quantity', 'Quantity must be a positive number.'],
     [{ quantity: 'lots' }, 'quantity', 'Quantity must be a positive number.'],
-    [{ unit: '' }, 'unit', 'Unit is required.'],
+    [{ unit: '' }, 'unit', 'Unit must be one of pcs, g, kg, ml, l, pack, bunch.'],
+    [{ unit: 'cups' }, 'unit', 'Unit must be one of pcs, g, kg, ml, l, pack, bunch.'],
+    [{ name: 'x'.repeat(61) }, 'name', 'Food name must be at most 60 characters.'],
+    [{ lifespanDays: 366 }, 'lifespanDays', 'Lifespan can be at most 365 days.'],
+    [{ notes: 'n'.repeat(201) }, 'notes', 'Notes must be at most 200 characters.'],
     [{ lifespanDays: -1 }, 'lifespanDays', 'Lifespan must be zero or a positive number of days.'],
     [{ lifespanDays: 2.5 }, 'lifespanDays', 'Lifespan must be zero or a positive number of days.'],
     [{ lifespanDays: 'three' }, 'lifespanDays', 'Lifespan must be zero or a positive number of days.'],
@@ -65,6 +70,52 @@ describe('adding food', () => {
   });
 });
 
+describe('limits, units and notes', () => {
+  it('accepts the boundaries: 60-character name, 365-day lifespan, 200-character notes, every unit', async () => {
+    for (const unit of ['pcs', 'g', 'kg', 'ml', 'l', 'pack', 'bunch']) {
+      await create({ unit });
+    }
+    const body = await create({ name: 'x'.repeat(60), lifespanDays: 365, notes: 'n'.repeat(200) });
+    expect(body).toMatchObject({ lifespanDays: 365, expectedExpiryDate: '2027-09-29', notes: 'n'.repeat(200) });
+  });
+
+  it('stores optional notes, returns null without them, and clears them with an empty string', async () => {
+    const withNotes = await create({ notes: '  Top shelf, opened  ' });
+    expect(withNotes.notes).toBe('Top shelf, opened');
+    expect((await create()).notes).toBeNull();
+    const cleared = await s.auth(api().put(`/api/foods/${withNotes.id}`).send({ notes: '' })).expect(200);
+    expect(cleared.body.notes).toBeNull();
+  });
+});
+
+describe('expiry date is always calculated by the server', () => {
+  it('ignores an expiry date sent by the client when creating', async () => {
+    const body = await create({
+      addedDate: '2026-09-28',
+      lifespanDays: 2,
+      expiryDate: '2030-01-01',
+      expectedExpiryDate: '2030-01-01',
+    });
+    expect(body.expectedExpiryDate).toBe('2026-09-30');
+    const stored = await FoodItemModel.findById(body.id);
+    expect(stored!.expiryDate).toBe('2026-09-30');
+  });
+
+  it('ignores an expiry date sent by the client when editing, and recalculates from lifespan', async () => {
+    const { id } = await create({ lifespanDays: 2 });
+    const res = await s
+      .auth(api().put(`/api/foods/${id}`).send({ expiryDate: '2030-01-01', expectedExpiryDate: '2030-01-01', lifespanDays: 5 }))
+      .expect(200);
+    expect(res.body.expectedExpiryDate).toBe('2026-10-04');
+  });
+
+  it('keeps the expiry date when only other fields change', async () => {
+    const { id } = await create({ lifespanDays: 2 });
+    const res = await s.auth(api().put(`/api/foods/${id}`).send({ name: 'Oat milk', expiryDate: '2030-01-01' })).expect(200);
+    expect(res.body).toMatchObject({ name: 'Oat milk', expectedExpiryDate: '2026-10-01' });
+  });
+});
+
 describe('listing and Cook First', () => {
   it('sorts by expected expiry with urgency counts, and Cook First excludes "Not urgent"', async () => {
     await create({ name: 'Eggs', lifespanDays: 8 });
@@ -79,7 +130,7 @@ describe('listing and Cook First', () => {
     expect(list.body.items.map((i: { name: string }) => i.name)).toEqual([
       'Bread', 'Yoghurt', 'Chicken', 'Spinach', 'Milk', 'Eggs',
     ]);
-    expect(list.body.summary).toEqual({ NOT_URGENT: 2, USE_SOON: 2, DUE_TODAY: 1, PAST_EXPECTED_EXPIRY: 1 });
+    expect(list.body.summary).toEqual({ NOT_URGENT: 2, APPROACHING_EXPIRY: 2, DUE: 1, OVERDUE: 1, total: 6 });
 
     const cf = await s.auth(api().get('/api/foods/cook-first')).expect(200);
     expect(cf.body.items.map((i: { name: string }) => i.name)).toEqual(['Bread', 'Yoghurt', 'Chicken', 'Spinach']);
@@ -89,10 +140,10 @@ describe('listing and Cook First', () => {
     const { id } = await create({ lifespanDays: 4 });
     setToday('2026-10-02');
     const res = await s.auth(api().get(`/api/foods/${id}`)).expect(200);
-    expect(res.body).toMatchObject({ remainingDays: 1, urgency: 'USE_SOON' });
+    expect(res.body).toMatchObject({ remainingDays: 1, urgency: 'APPROACHING_EXPIRY' });
     setToday('2026-10-04');
     const later = await s.auth(api().get(`/api/foods/${id}`)).expect(200);
-    expect(later.body).toMatchObject({ remainingDays: -1, urgency: 'PAST_EXPECTED_EXPIRY' });
+    expect(later.body).toMatchObject({ remainingDays: -1, urgency: 'OVERDUE' });
   });
 
   it("uses the user's own time zone to decide today", async () => {
@@ -117,7 +168,7 @@ describe('editing', () => {
   it('recalculates expected expiry when added date changes', async () => {
     const { id } = await create({ lifespanDays: 4 });
     const res = await s.auth(api().put(`/api/foods/${id}`).send({ addedDate: '2026-09-24' })).expect(200);
-    expect(res.body).toMatchObject({ expectedExpiryDate: '2026-09-28', urgency: 'PAST_EXPECTED_EXPIRY' });
+    expect(res.body).toMatchObject({ expectedExpiryDate: '2026-09-28', urgency: 'OVERDUE' });
   });
 
   it('validates updates and requires at least one field', async () => {

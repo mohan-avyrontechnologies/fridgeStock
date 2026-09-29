@@ -37,6 +37,28 @@ describe('registration', () => {
     expect(await UserModel.countDocuments({ email: 'dup@example.com' })).toBe(1);
   });
 
+  it('limits names to 50 characters and stores email in lowercase', async () => {
+    const long = await api()
+      .post('/api/auth/register')
+      .send({ name: 'n'.repeat(51), email: 'long@example.com', password: 'longenough' })
+      .expect(400);
+    expect(long.body.error).toMatchObject({ field: 'name', message: 'Name must be at most 50 characters.' });
+    const ok = await api()
+      .post('/api/auth/register')
+      .send({ name: 'n'.repeat(50), email: 'MiXeD@Example.COM', password: 'longenough' })
+      .expect(201);
+    expect(ok.body.user.email).toBe('mixed@example.com');
+  });
+
+  it('defaults the time zone to UTC and turns on all three reminder types', async () => {
+    const res = await api()
+      .post('/api/auth/register')
+      .send({ name: 'Default', email: 'defaults@example.com', password: 'longenough' })
+      .expect(201);
+    expect(res.body.user.timeZone).toBe('UTC');
+    expect(res.body.user.notificationPreferences).toEqual({ approachingExpiry: true, due: true, overdue: true });
+  });
+
   it('rejects short passwords and bad emails', async () => {
     const short = await api()
       .post('/api/auth/register')

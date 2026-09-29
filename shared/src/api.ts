@@ -4,6 +4,7 @@ import type {
   NotificationStatus,
   PreferenceKey,
   ReminderType,
+  Unit,
   UsageAction,
   Urgency,
 } from './enums.js';
@@ -29,10 +30,12 @@ export interface FoodItem {
   id: string;
   name: string;
   quantity: number;
-  unit: string;
+  unit: Unit;
   addedDate: DateString;
   lifespanDays: number;
+  /** Always addedDate + lifespanDays, calculated by the server. */
   expectedExpiryDate: DateString;
+  notes: string | null;
   status: FoodStatus;
   /** Only while the item is active. */
   remainingDays: number | null;
@@ -45,9 +48,12 @@ export interface FoodItem {
 /** An item from the active list always has remaining days and urgency. */
 export type ActiveFoodItem = FoodItem & { remainingDays: number; urgency: Urgency };
 
+/** How many active items are in each urgency state, plus the total. */
+export type UrgencySummary = Record<Urgency, number> & { total: number };
+
 export interface FoodList {
   today: DateString;
-  summary: Record<Urgency, number>;
+  summary: UrgencySummary;
   items: ActiveFoodItem[];
 }
 

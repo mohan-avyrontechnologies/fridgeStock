@@ -9,7 +9,10 @@ import { formatDisplay } from '@cook-first/shared';
 import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
 
-const ORDER: Urgency[] = ['PAST_EXPECTED_EXPIRY', 'DUE_TODAY', 'USE_SOON', 'NOT_URGENT'];
+/** How many Cook First items the phone dashboard previews (unrelated to urgency). */
+const PREVIEW_COUNT = 3;
+
+const ORDER: Urgency[] = ['OVERDUE', 'DUE', 'APPROACHING_EXPIRY', 'NOT_URGENT'];
 
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
@@ -69,9 +72,9 @@ export function DashboardPage() {
                     </SectionTitle>
                     {/* Phones show the top three; wide screens have room for all of them. */}
                     <div className="lg:hidden">
-                      <FoodList items={cookFirst.slice(0, 3)} />
-                      {cookFirst.length > 3 && (
-                        <p className="mt-2 text-sm text-muted">+{cookFirst.length - 3} more in Cook First</p>
+                      <FoodList items={cookFirst.slice(0, PREVIEW_COUNT)} />
+                      {cookFirst.length > PREVIEW_COUNT && (
+                        <p className="mt-2 text-sm text-muted">+{cookFirst.length - PREVIEW_COUNT} more in Cook First</p>
                       )}
                     </div>
                     <div className="hidden lg:block">

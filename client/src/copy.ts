@@ -12,43 +12,40 @@ import type { ReminderType, Urgency } from '@cook-first/shared';
 /** Required on Add Food and Cook First (and shown elsewhere). Do not reword. */
 export const estimateNote = 'Expected expiry is an estimate to help you plan. Always check your food before eating it.';
 
+/**
+ * Every urgency state has a text label as well as a colour; the interface
+ * never shows colour alone. The day threshold lives only on the server
+ * (server/src/config/urgency.ts), so no wording here mentions a number.
+ */
 export const urgencyCopy: Record<Urgency, { label: string; hint: string }> = {
-  NOT_URGENT: { label: 'Not urgent', hint: 'More than 3 days to expected expiry' },
-  USE_SOON: { label: 'Use soon', hint: '1–3 days to expected expiry' },
-  DUE_TODAY: { label: 'Expected expiry today', hint: 'Expected to expire today' },
-  PAST_EXPECTED_EXPIRY: { label: 'Past expected expiry', hint: 'The expected expiry date has passed' },
+  NOT_URGENT: { label: 'Not urgent', hint: 'Plenty of time before its expected expiry' },
+  APPROACHING_EXPIRY: { label: 'Use soon', hint: 'Getting close to its expected expiry' },
+  DUE: { label: 'Expected expiry today', hint: 'Its expected expiry is today' },
+  OVERDUE: { label: 'Past expected expiry', hint: 'The expected expiry date has passed' },
 };
 
 /** Short label for summary tiles where space is tight. */
 export const urgencyShortLabel: Record<Urgency, string> = {
   NOT_URGENT: 'Not urgent',
-  USE_SOON: 'Use soon',
-  DUE_TODAY: 'Today',
-  PAST_EXPECTED_EXPIRY: 'Past',
+  APPROACHING_EXPIRY: 'Use soon',
+  DUE: 'Today',
+  OVERDUE: 'Past',
 };
 
 export const pastExpectedExpiryNote =
   'This item is past its expected expiry. Check its condition before deciding whether to use it or throw it away.';
 
+/** "5 days left", "1 day left", "Expected expiry today", "1 day past expected expiry", "4 days past expected expiry". */
 export function remainingText(remainingDays: number): string {
+  if (remainingDays > 1) return `${remainingDays} days left`;
+  if (remainingDays === 1) return '1 day left';
   if (remainingDays === 0) return 'Expected expiry today';
-  if (remainingDays === 1) return 'Expected expiry tomorrow';
-  if (remainingDays > 1) return `Expected expiry in ${remainingDays} days`;
-  const ago = -remainingDays;
-  return `Expected expiry was ${ago === 1 ? 'yesterday' : `${ago} days ago`}`;
+  if (remainingDays === -1) return '1 day past expected expiry';
+  return `${-remainingDays} days past expected expiry`;
 }
 
-/** Short relative day for compact rows: "today", "tomorrow", "in 3 days", "2 days ago". */
-export function relativeDay(remainingDays: number): string {
-  if (remainingDays === 0) return 'today';
-  if (remainingDays === 1) return 'tomorrow';
-  if (remainingDays > 1) return `in ${remainingDays} days`;
-  return remainingDays === -1 ? 'yesterday' : `${-remainingDays} days ago`;
-}
-
-/** Card line: "Expected expiry Tue, Sep 29 · today". */
-export const cardExpiryLine = (date: string, remainingDays: number) =>
-  `Expected expiry ${date} · ${relativeDay(remainingDays)}`;
+/** Card line: "Expected expiry Tue, 29 Sep". */
+export const cardExpiryLine = (date: string) => `Expected expiry ${date}`;
 
 export const expectedExpiryLabel = 'Expected expiry';
 
@@ -69,13 +66,13 @@ export const screenCopy = {
     emptyTitle: 'Nothing needs attention right now',
     emptyBody: (total: number) =>
       total > 0
-        ? `None of your ${total} items are within 3 days of their expected expiry.`
+        ? `None of your ${total} items are close to their expected expiry yet.`
         : 'Add food to see what to cook first.',
   },
   form: {
     previewLabel: 'Expected expiry (estimate)',
     previewEmpty: 'Enter a lifespan to see it',
-    lifespanHint: 'Your own estimate, counted from the added date.',
+    lifespanHint: 'Your own estimate, counted from the added date. 0 means it expires the same day.',
   },
   detail: {
     savedToast: 'Saved. Expected expiry updated.',
@@ -91,16 +88,16 @@ export const screenCopy = {
 
 /** Labels for the three reminder types (feed and settings). */
 export const reminderTypeLabel: Record<ReminderType, string> = {
-  APPROACHING_EXPIRY: urgencyCopy.USE_SOON.label,
-  DUE: urgencyCopy.DUE_TODAY.label,
-  OVERDUE: urgencyCopy.PAST_EXPECTED_EXPIRY.label,
+  APPROACHING_EXPIRY: urgencyCopy.APPROACHING_EXPIRY.label,
+  DUE: urgencyCopy.DUE.label,
+  OVERDUE: urgencyCopy.OVERDUE.label,
 };
 
 export const reminderPreferenceCopy: Record<
   'approachingExpiry' | 'due' | 'overdue',
   { title: string; detail: string }
 > = {
-  approachingExpiry: { title: 'Getting close', detail: 'When an item is 3 days or less from its expected expiry' },
+  approachingExpiry: { title: 'Getting close', detail: 'When an item becomes “Use soon”' },
   due: { title: 'On the day', detail: 'When an item reaches its expected expiry' },
   overdue: { title: 'Once it’s past', detail: 'The day after an item’s expected expiry' },
 };

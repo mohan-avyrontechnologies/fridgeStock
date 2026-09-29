@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import type { ActiveFoodItem } from '@cook-first/shared';
-import { cardExpiryLine } from '../copy';
+import { cardExpiryLine, remainingText, urgencyCopy } from '../copy';
 import { formatDisplay } from '@cook-first/shared';
 import { formatQuantity } from '../lib/format';
 import { ActionSheet } from './ActionSheet';
@@ -9,6 +9,7 @@ import { URGENCY_STYLE, UrgencyBadge } from './Urgency';
 
 export function FoodCard({ item }: { item: ActiveFoodItem }) {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const remaining = remainingText(item.remainingDays);
   return (
     <li className="relative flex overflow-hidden rounded-2xl border border-line bg-card">
       <span aria-hidden className={`w-1.5 shrink-0 ${URGENCY_STYLE[item.urgency].bar}`} />
@@ -17,10 +18,18 @@ export function FoodCard({ item }: { item: ActiveFoodItem }) {
           <span className="truncate text-base font-semibold text-ink">{item.name}</span>
           <UrgencyBadge urgency={item.urgency} />
         </div>
-        <p className="mt-1 text-sm text-ink">{formatQuantity(item.quantity, item.unit)}</p>
-        <p className="text-sm text-muted">
-          {cardExpiryLine(formatDisplay(item.expectedExpiryDate), item.remainingDays)}
+        <p className="mt-1 text-sm text-ink">
+          {formatQuantity(item.quantity, item.unit)}
+          {/* When due today the badge already says "Expected expiry today". */}
+          {remaining !== urgencyCopy[item.urgency].label && (
+            <>
+              {' · '}
+              <span className="font-medium">{remaining}</span>
+            </>
+          )}
         </p>
+        <p className="text-sm text-muted">{cardExpiryLine(formatDisplay(item.expectedExpiryDate))}</p>
+        {item.notes && <p className="mt-0.5 truncate text-sm text-muted italic">{item.notes}</p>}
       </Link>
       <div className="flex items-center pr-3">
         <button

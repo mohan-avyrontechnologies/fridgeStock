@@ -2,8 +2,10 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
-import { urgencyCopy } from '../copy';
+import { remainingText, urgencyCopy } from '../copy';
+import { URGENCY_STYLE } from '../components/Urgency';
 import { AddFoodPage } from '../pages/AddFoodPage';
+import { NotificationsPage } from '../pages/NotificationsPage';
 import { CookFirstPage } from '../pages/CookFirstPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { useAuthStore } from '../stores/authStore';
@@ -26,7 +28,8 @@ describe('Dashboard', () => {
     expect(within(list).getByText('Expected expiry today', { selector: 'span' })).toBeInTheDocument();
     expect(within(list).getByText('Use soon')).toBeInTheDocument();
     expect(within(list).getByText('Not urgent')).toBeInTheDocument();
-    expect(within(list).getByText(/· yesterday$/)).toBeInTheDocument();
+    expect(within(list).getByText('1 day past expected expiry')).toBeInTheDocument();
+    expect(within(list).getByText('2 days left')).toBeInTheDocument();
   });
 
   it('never uses the word "safe" in anything it renders', async () => {
@@ -40,7 +43,7 @@ describe('Dashboard', () => {
       http.get(`${API_URL}/foods`, () =>
         HttpResponse.json({
           today: '2026-09-29',
-          summary: { NOT_URGENT: 0, USE_SOON: 0, DUE_TODAY: 0, PAST_EXPECTED_EXPIRY: 0 },
+          summary: { NOT_URGENT: 0, APPROACHING_EXPIRY: 0, DUE: 0, OVERDUE: 0, total: 0 },
           items: [],
         }),
       ),
@@ -110,7 +113,7 @@ describe('Add food', () => {
     await user.type(screen.getByLabelText('Food'), 'Spinach');
     await user.click(screen.getByRole('button', { name: 'bunch' }));
     await user.click(screen.getByRole('button', { name: '2 days' }));
-    expect(screen.getByText(/Expected expiry in 2 days/)).toBeInTheDocument();
+    expect(screen.getByText(/2 days left/)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(body).toBeDefined());
@@ -159,5 +162,89 @@ describe('copy', () => {
       'Expected expiry today',
       'Past expected expiry',
     ]);
+  });
+});
+
+describe('remaining-days text', () => {
+  it.each([
+    [5, '5 days left'],
+    [2, '2 days left'],
+    [1, '1 day left'],
+    [0, 'Expected expiry today'],
+    [-1, '1 day past expected expiry'],
+    [-4, '4 days past expected expiry'],
+  ])('%i → "%s"', (days, text) => {
+    expect(remainingText(days)).toBe(text);
+  });
+});
+
+describe('urgency is never shown by colour alone', () => {
+  it('every urgency state has both a colour and a text label', () => {
+    for (const urgency of ['NOT_URGENT', 'APPROACHING_EXPIRY', 'DUE', 'OVERDUE'] as const) {
+      expect(URGENCY_STYLE[urgency].badge).toMatch(/^bg-\S+ text-\S+$/);
+      expect(urgencyCopy[urgency].label.length).toBeGreaterThan(0);
+    }
+    expect(URGENCY_STYLE.NOT_URGENT.badge).toContain('bg-ok');
+  });
+
+  it('the badge renders its label text', async () => {
+    renderSignedIn('/', <DashboardPage />);
+    const list = (await screen.findByRole('heading', { name: 'All food (4)' })).parentElement!.parentElement!;
+    for (const label of ['Not urgent', 'Use soon', 'Expected expiry today', 'Past expected expiry']) {
+      expect(within(list).getAllByText(label).length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('Add food units and notes', () => {
+  it('offers exactly the seven units and no free-text unit', () => {
+    renderSignedIn('/add', <AddFoodPage />);
+    const units = within(screen.getByRole('group', { name: 'Unit' })).getAllByRole('button');
+    expect(units.map((b) => b.textContent)).toEqual(['pcs', 'g', 'kg', 'ml', 'l', 'pack', 'bunch']);
+    expect(screen.queryByText(/Other/)).not.toBeInTheDocument();
+  });
+
+  it('sends optional notes', async () => {
+    const user = userEvent.setup();
+    let body: Record<string, unknown> | undefined;
+    server.use(
+      http.post(`${API_URL}/foods`, async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(sampleItems[2], { status: 201 });
+      }),
+    );
+    renderSignedIn('/add', <AddFoodPage />);
+    await user.type(screen.getByLabelText('Food'), 'Paneer');
+    await user.click(screen.getByRole('button', { name: '2 days' }));
+    await user.type(screen.getByLabelText(/Notes/), 'Opened, top shelf');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(body).toMatchObject({ name: 'Paneer', notes: 'Opened, top shelf' }));
+    expect(body).not.toHaveProperty('expiryDate');
+    expect(body).not.toHaveProperty('expectedExpiryDate');
+  });
+});
+
+describe('Reminders screen', () => {
+  it('marks reminders as read when it opens, and still highlights the new ones', async () => {
+    let markedRead = false;
+    server.use(
+      http.get(`${API_URL}/notifications`, () =>
+        HttpResponse.json({
+          items: [
+            { id: 'n1', foodId: 'c', type: 'APPROACHING_EXPIRY', message: 'Spinach: 2 days left.', scheduledDate: '2026-09-29', status: 'SENT', sentAt: '2026-09-29T08:00:00Z', readAt: null },
+          ],
+          total: 1,
+          unread: 1,
+        }),
+      ),
+      http.put(`${API_URL}/notifications/read-all`, () => {
+        markedRead = true;
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+    renderSignedIn('/notifications', <NotificationsPage />);
+    expect(await screen.findByText('Spinach: 2 days left.')).toBeInTheDocument();
+    await waitFor(() => expect(markedRead).toBe(true));
+    expect(screen.getByText('New')).toBeInTheDocument();
   });
 });

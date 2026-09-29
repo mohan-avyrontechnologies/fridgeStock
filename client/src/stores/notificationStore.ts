@@ -1,6 +1,6 @@
+import type { AppNotification } from '@cook-first/shared';
 import { create } from 'zustand';
 import { api } from '../api/client';
-import type { AppNotification } from '@cook-first/shared';
 import { useAuthStore } from './authStore';
 
 interface NotificationState {
@@ -9,10 +9,13 @@ interface NotificationState {
   unread: number;
   loading: boolean;
   fetchUnread: () => Promise<void>;
-  fetchAll: () => Promise<void>;
+  /**
+   * Called when the Reminders screen opens: loads the feed, then marks every
+   * delivered reminder as read (readAt stays empty until this moment). The
+   * list keeps its unread highlight for this visit so new ones stand out.
+   */
+  openFeed: () => Promise<void>;
   loadMore: () => Promise<void>;
-  markRead: (id: string) => Promise<void>;
-  markAllRead: () => Promise<void>;
 }
 
 export const useNotificationStore = create<NotificationState>()((set, get) => ({
@@ -30,11 +33,13 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
     }
   },
 
-  async fetchAll() {
+  async openFeed() {
     set({ loading: true });
     try {
       const page = await api.notifications();
-      set({ items: page.items, total: page.total, unread: page.unread, loading: false });
+      set({ items: page.items, total: page.total, loading: false });
+      if (page.unread > 0) await api.markAllRead();
+      set({ unread: 0 });
     } catch {
       set({ loading: false });
     }
@@ -42,21 +47,7 @@ export const useNotificationStore = create<NotificationState>()((set, get) => ({
 
   async loadMore() {
     const page = await api.notifications(get().items.length);
-    set({ items: [...get().items, ...page.items], total: page.total, unread: page.unread });
-  },
-
-  async markRead(id) {
-    const updated = await api.markRead(id);
-    set({
-      items: get().items.map((n) => (n.id === id ? updated : n)),
-      unread: Math.max(0, get().unread - 1),
-    });
-  },
-
-  async markAllRead() {
-    await api.markAllRead();
-    const now = new Date().toISOString();
-    set({ items: get().items.map((n) => ({ ...n, readAt: n.readAt ?? now })), unread: 0 });
+    set({ items: [...get().items, ...page.items], total: page.total });
   },
 }));
 

@@ -9,3 +9,4 @@ e2e/.results/
 e2e/screenshots/
 playwright-report/
 .test-db-*/
+.tmp/
