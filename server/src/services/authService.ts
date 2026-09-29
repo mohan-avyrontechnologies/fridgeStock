@@ -1,4 +1,11 @@
-import { MESSAGES, type AuthResponse, type LoginInput, type RegisterInput, type UpdateAccountInput, type User } from '@cook-first/shared';
+import {
+  MESSAGES,
+  type AuthResponse,
+  type LoginInput,
+  type RegisterInput,
+  type UpdateAccountInput,
+  type User,
+} from '@cook-first/shared';
 import { UserModel, type UserDoc } from '../models/User.js';
 import { AppError, conflict } from './errors.js';
 import { passwordHashService } from './passwordHash.js';

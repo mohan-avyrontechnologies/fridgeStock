@@ -17,7 +17,10 @@ afterEach(() => {
 });
 
 const add = (overrides: Record<string, unknown> = {}) =>
-  s.auth(api().post('/api/foods').send(food(overrides))).expect(201).then((r) => r.body);
+  s
+    .auth(api().post('/api/foods').send(food(overrides)))
+    .expect(201)
+    .then((r) => r.body);
 
 const scheduled = async (foodId: string) =>
   (await NotificationModel.find({ foodId }).sort({ scheduledDate: 1 })).map((n) => ({
@@ -68,7 +71,11 @@ describe('scheduling', () => {
 
   it('skips stages the item has already moved past', async () => {
     const soon = await add({ lifespanDays: 2 });
-    expect((await scheduled(soon.id))[0]).toEqual({ type: 'APPROACHING_EXPIRY', date: '2026-09-29', status: 'PENDING' });
+    expect((await scheduled(soon.id))[0]).toEqual({
+      type: 'APPROACHING_EXPIRY',
+      date: '2026-09-29',
+      status: 'PENDING',
+    });
 
     const overdue = await add({ addedDate: '2026-09-20', lifespanDays: 2 });
     expect(await scheduled(overdue.id)).toEqual([{ type: 'OVERDUE', date: '2026-09-29', status: 'PENDING' }]);
@@ -128,14 +135,33 @@ describe('delivery', () => {
     expect((await s.auth(api().get('/api/notifications/unread-count'))).body.unread).toBe(0);
   });
 
-  it('GET /notifications returns at most 50', async () => {
+  it('GET /notifications is paginated: pages of up to 50, newest first, with a total', async () => {
     const { id } = await add({ lifespanDays: 1 });
     const food = await NotificationModel.findOne({ foodId: id });
-    const base = { userId: food!.userId, foodId: food!.foodId, type: 'DUE', status: 'SENT', sentAt: new Date(0), attempts: 1 };
+    const base = {
+      userId: food!.userId,
+      foodId: food!.foodId,
+      type: 'DUE',
+      status: 'SENT',
+      sentAt: new Date(0),
+      attempts: 1,
+    };
     await NotificationModel.insertMany(
-      Array.from({ length: 60 }, (_, i) => ({ ...base, expiryDate: `2025-01-${String((i % 28) + 1).padStart(2, '0')}`, scheduledDate: '2025-01-01', type: (['DUE', 'OVERDUE', 'APPROACHING_EXPIRY'] as const)[Math.floor(i / 28)] })),
+      Array.from({ length: 60 }, (_, i) => ({
+        ...base,
+        expiryDate: `2025-01-${String((i % 28) + 1).padStart(2, '0')}`,
+        scheduledDate: '2025-01-01',
+        type: (['DUE', 'OVERDUE', 'APPROACHING_EXPIRY'] as const)[Math.floor(i / 28)],
+      })),
     );
-    expect((await feed()).items).toHaveLength(50);
+    const first = await feed();
+    expect(first.items).toHaveLength(50);
+    expect(first.total).toBe(61);
+    const second = (await s.auth(api().get('/api/notifications?offset=50')).expect(200)).body;
+    expect(second.items).toHaveLength(11);
+    const ids = new Set([...first.items, ...second.items].map((n: { id: string }) => n.id));
+    expect(ids.size).toBe(61);
+    await s.auth(api().get('/api/notifications?limit=51')).expect(400);
   });
 
   it('the background sweep delivers without the user opening the app', async () => {
@@ -149,7 +175,9 @@ describe('dispatchDue', () => {
   it('runs at the start of GET /foods', async () => {
     const { id } = await add({ lifespanDays: 1 });
     await s.auth(api().get('/api/foods')).expect(200);
-    expect(await NotificationModel.findOne({ foodId: id, type: 'APPROACHING_EXPIRY' })).toMatchObject({ status: 'SENT' });
+    expect(await NotificationModel.findOne({ foodId: id, type: 'APPROACHING_EXPIRY' })).toMatchObject({
+      status: 'SENT',
+    });
   });
 
   it('a reminder failure never affects the inventory or Cook First', async () => {
@@ -165,7 +193,10 @@ describe('dispatchDue', () => {
 
   it('does not send reminders for a type the user has since turned off', async () => {
     const { id } = await add({ lifespanDays: 1 });
-    await UserModelForTests.updateOne({ _id: s.user.id }, { $set: { 'notificationPreferences.approachingExpiry': false } });
+    await UserModelForTests.updateOne(
+      { _id: s.user.id },
+      { $set: { 'notificationPreferences.approachingExpiry': false } },
+    );
     await feed();
     expect(await NotificationModel.countDocuments({ foodId: id, status: 'SENT' })).toBe(0);
   });

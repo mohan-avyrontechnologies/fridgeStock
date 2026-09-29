@@ -57,7 +57,10 @@ describe('errors', () => {
   });
 
   it('login failure is 401 UNAUTHENTICATED "Email or password is incorrect."', async () => {
-    const res = await api().post('/api/auth/login').send({ email: s.user.email, password: 'wrong-password' }).expect(401);
+    const res = await api()
+      .post('/api/auth/login')
+      .send({ email: s.user.email, password: 'wrong-password' })
+      .expect(401);
     expect(res.body).toEqual({ error: { code: 'UNAUTHENTICATED', message: 'Email or password is incorrect.' } });
   });
 
@@ -77,7 +80,13 @@ describe('responses', () => {
   });
 
   it('food items have their stored fields plus remaining days and urgency', async () => {
-    const res = await s.auth(api().post('/api/foods').send(food({ notes: 'Top shelf' }))).expect(201);
+    const res = await s
+      .auth(
+        api()
+          .post('/api/foods')
+          .send(food({ notes: 'Top shelf' })),
+      )
+      .expect(201);
     expect(res.body).toMatchObject({
       name: 'Milk',
       quantity: 1,
@@ -95,8 +104,16 @@ describe('responses', () => {
   });
 
   it('GET /foods returns active items in priority order with the urgency summary', async () => {
-    await s.auth(api().post('/api/foods').send(food({ name: 'Later', lifespanDays: 9 })));
-    await s.auth(api().post('/api/foods').send(food({ name: 'Sooner', lifespanDays: 1 })));
+    await s.auth(
+      api()
+        .post('/api/foods')
+        .send(food({ name: 'Later', lifespanDays: 9 })),
+    );
+    await s.auth(
+      api()
+        .post('/api/foods')
+        .send(food({ name: 'Sooner', lifespanDays: 1 })),
+    );
     const res = await s.auth(api().get('/api/foods')).expect(200);
     expect(res.body.items.map((i: { name: string }) => i.name)).toEqual(['Sooner', 'Later']);
     expect(res.body.summary).toEqual({ NOT_URGENT: 1, APPROACHING_EXPIRY: 1, DUE: 0, OVERDUE: 0, total: 2 });
@@ -110,13 +127,26 @@ describe('routes', () => {
   });
 
   it('POST /foods returns 201 and schedules the reminders', async () => {
-    const res = await s.auth(api().post('/api/foods').send(food({ lifespanDays: 10 }))).expect(201);
+    const res = await s
+      .auth(
+        api()
+          .post('/api/foods')
+          .send(food({ lifespanDays: 10 })),
+      )
+      .expect(201);
     expect(await NotificationModel.countDocuments({ foodId: res.body.id, status: 'PENDING' })).toBe(3);
   });
 
   it('PUT /foods/:id reschedules reminders only when the added date or lifespan changes', async () => {
-    const { body } = await s.auth(api().post('/api/foods').send(food({ lifespanDays: 10 }))).expect(201);
-    const ids = async () => (await NotificationModel.find({ foodId: body.id }).sort({ _id: 1 })).map((n) => String(n._id));
+    const { body } = await s
+      .auth(
+        api()
+          .post('/api/foods')
+          .send(food({ lifespanDays: 10 })),
+      )
+      .expect(201);
+    const ids = async () =>
+      (await NotificationModel.find({ foodId: body.id }).sort({ _id: 1 })).map((n) => String(n._id));
     const before = await ids();
 
     await s.auth(api().put(`/api/foods/${body.id}`).send({ name: 'Oat milk', notes: 'x' })).expect(200);
@@ -128,7 +158,13 @@ describe('routes', () => {
   });
 
   it('closing an item deletes its pending reminders', async () => {
-    const { body } = await s.auth(api().post('/api/foods').send(food({ lifespanDays: 10 }))).expect(201);
+    const { body } = await s
+      .auth(
+        api()
+          .post('/api/foods')
+          .send(food({ lifespanDays: 10 })),
+      )
+      .expect(201);
     await s.auth(api().post(`/api/foods/${body.id}/waste`).send({})).expect(200);
     expect(await NotificationModel.countDocuments({ foodId: body.id, status: 'PENDING' })).toBe(0);
   });

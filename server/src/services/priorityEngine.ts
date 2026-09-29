@@ -38,7 +38,9 @@ const compareStrings = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
 /** Expiry date, then added date, then id (as strings). "YYYY-MM-DD" strings sort chronologically. */
 export function compareByPriority(a: PrioritisableItem, b: PrioritisableItem): number {
-  return compareStrings(a.expiryDate, b.expiryDate) || compareStrings(a.addedDate, b.addedDate) || compareStrings(a.id, b.id);
+  return (
+    compareStrings(a.expiryDate, b.expiryDate) || compareStrings(a.addedDate, b.addedDate) || compareStrings(a.id, b.id)
+  );
 }
 
 export function prioritise<T extends PrioritisableItem>(items: readonly T[], today: DateString): Prioritisation<T> {

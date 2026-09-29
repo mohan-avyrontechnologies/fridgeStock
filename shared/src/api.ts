@@ -98,14 +98,22 @@ export interface Page<T> {
 }
 
 export type UsageHistory = Page<UsageRecord> & { counts: Record<UsageAction, number> };
-/** Up to 50 delivered (SENT) or FAILED reminders, newest first. */
+/** A page of delivered (SENT) or FAILED reminders, newest first (up to 50 per page). */
 export interface NotificationFeed {
   items: AppNotification[];
+  total: number;
   unread: number;
 }
 
 /** Every error the API returns. Never includes a stack trace. */
-export const ERROR_CODES = ['VALIDATION_ERROR', 'UNAUTHENTICATED', 'NOT_FOUND', 'CONFLICT', 'RATE_LIMITED', 'INTERNAL'] as const;
+export const ERROR_CODES = [
+  'VALIDATION_ERROR',
+  'UNAUTHENTICATED',
+  'NOT_FOUND',
+  'CONFLICT',
+  'RATE_LIMITED',
+  'INTERNAL',
+] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
 export interface ApiErrorBody {

@@ -12,7 +12,10 @@ beforeEach(async () => {
 });
 
 const create = (overrides: Record<string, unknown> = {}) =>
-  s.auth(api().post('/api/foods').send(food(overrides))).expect(201).then((r) => r.body);
+  s
+    .auth(api().post('/api/foods').send(food(overrides)))
+    .expect(201)
+    .then((r) => r.body);
 
 describe('adding food', () => {
   it('calculates expected expiry as added date plus lifespan', async () => {
@@ -111,7 +114,9 @@ describe('expiry date is always calculated by the server', () => {
 
   it('keeps the expiry date when only other fields change', async () => {
     const { id } = await create({ lifespanDays: 2 });
-    const res = await s.auth(api().put(`/api/foods/${id}`).send({ name: 'Oat milk', expiryDate: '2030-01-01' })).expect(200);
+    const res = await s
+      .auth(api().put(`/api/foods/${id}`).send({ name: 'Oat milk', expiryDate: '2030-01-01' }))
+      .expect(200);
     expect(res.body).toMatchObject({ name: 'Oat milk', expiryDate: '2026-10-01' });
   });
 });
@@ -128,7 +133,12 @@ describe('listing and Cook First', () => {
     const list = await s.auth(api().get('/api/foods')).expect(200);
     expect(list.body.today).toBe('2026-09-29');
     expect(list.body.items.map((i: { name: string }) => i.name)).toEqual([
-      'Bread', 'Yoghurt', 'Chicken', 'Spinach', 'Milk', 'Eggs',
+      'Bread',
+      'Yoghurt',
+      'Chicken',
+      'Spinach',
+      'Milk',
+      'Eggs',
     ]);
     expect(list.body.summary).toEqual({ NOT_URGENT: 2, APPROACHING_EXPIRY: 2, DUE: 1, OVERDUE: 1, total: 6 });
 
@@ -152,7 +162,11 @@ describe('listing and Cook First', () => {
     const { clock } = await import('../services/clock.js');
     clock.set(new Date('2026-09-29T20:00:00Z'));
     const res = await tokyo
-      .auth(api().post('/api/foods').send(food({ addedDate: '2026-09-30', lifespanDays: 1 })))
+      .auth(
+        api()
+          .post('/api/foods')
+          .send(food({ addedDate: '2026-09-30', lifespanDays: 1 })),
+      )
       .expect(201);
     expect(res.body.remainingDays).toBe(1);
   });
@@ -195,6 +209,21 @@ describe('usage actions', () => {
     expect((await s.auth(api().get('/api/foods/cook-first')).expect(200)).body.items).toHaveLength(0);
   });
 
+  it.each([
+    ['used', (id: string) => api().post(`/api/foods/${id}/use`).send({})],
+    ['wasted', (id: string) => api().post(`/api/foods/${id}/waste`).send({})],
+    ['removed', (id: string) => api().delete(`/api/foods/${id}`)],
+  ])('a %s item disappears from the inventory and Cook First', async (_label, close) => {
+    const kept = await create({ name: 'Kept', lifespanDays: 1 });
+    const gone = await create({ name: 'Gone', lifespanDays: 1 });
+    await s.auth(close(gone.id));
+    const list = (await s.auth(api().get('/api/foods')).expect(200)).body;
+    const cf = (await s.auth(api().get('/api/foods/cook-first')).expect(200)).body;
+    expect(list.items.map((i: { id: string }) => i.id)).toEqual([kept.id]);
+    expect(cf.items.map((i: { id: string }) => i.id)).toEqual([kept.id]);
+    expect(list.summary.total).toBe(1);
+  });
+
   it('POST /use with the whole quantity also closes the item as USED', async () => {
     const { id } = await create({ quantity: 3, unit: 'pcs' });
     const res = await s.auth(api().post(`/api/foods/${id}/use`).send({ quantity: 3 })).expect(200);
@@ -206,7 +235,12 @@ describe('usage actions', () => {
     const { id } = await create({ quantity: 1, unit: 'kg' });
     const res = await s.auth(api().post(`/api/foods/${id}/use`).send({ quantity: 0.3 })).expect(200);
     expect(res.body.food).toMatchObject({ status: 'ACTIVE', quantity: 0.7, closedAt: null });
-    expect(res.body.usageRecord).toMatchObject({ action: 'PARTIALLY_USED', quantityUsed: 0.3, quantityRemaining: 0.7, unit: 'kg' });
+    expect(res.body.usageRecord).toMatchObject({
+      action: 'PARTIALLY_USED',
+      quantityUsed: 0.3,
+      quantityRemaining: 0.7,
+      unit: 'kg',
+    });
   });
 
   it.each([
@@ -268,7 +302,8 @@ describe('usage actions', () => {
     expect(page.body.total).toBe(3);
     expect(page.body.items.map((r: { foodName: string }) => r.foodName)).toEqual(['B', 'A']);
 
-    for (let i = 0; i < 22; i++) await create({ name: `bulk${i}` }).then((f) => s.auth(api().delete(`/api/foods/${f.id}`)));
+    for (let i = 0; i < 22; i++)
+      await create({ name: `bulk${i}` }).then((f) => s.auth(api().delete(`/api/foods/${f.id}`)));
     expect((await s.auth(api().get('/api/usage')).expect(200)).body.items).toHaveLength(20);
   });
 });

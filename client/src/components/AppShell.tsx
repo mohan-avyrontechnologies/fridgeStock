@@ -67,7 +67,11 @@ export function PageHeader({
     <header className="top-inset sticky top-0 z-30 border-b border-line/70 bg-paper/95 backdrop-blur lg:static lg:border-0 lg:bg-transparent">
       <div className="flex min-h-14 items-center gap-2 px-4 py-2 lg:px-8 lg:pt-8 lg:pb-2">
         {back && (
-          <Link to={back} aria-label="Back" className="-ml-2 grid size-11 place-items-center rounded-full hover:bg-brand-soft">
+          <Link
+            to={back}
+            aria-label="Back"
+            className="-ml-2 grid size-11 place-items-center rounded-full hover:bg-brand-soft"
+          >
             <svg aria-hidden viewBox="0 0 24 24" className="size-5 fill-none stroke-current stroke-2">
               <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -86,7 +90,11 @@ export function PageHeader({
           <UnreadDot count={unread} className="absolute top-1.5 right-1.5" />
         </Link>
         {showIcons && (
-          <Link to="/settings" aria-label="Open settings" className="grid size-11 place-items-center rounded-full hover:bg-brand-soft">
+          <Link
+            to="/settings"
+            aria-label="Open settings"
+            className="grid size-11 place-items-center rounded-full hover:bg-brand-soft"
+          >
             <GearIcon />
           </Link>
         )}
@@ -97,9 +105,7 @@ export function PageHeader({
 
 /** Page body with the gutters used on every signed-in screen. */
 export function PageBody({ children, narrow = false }: { children: ReactNode; narrow?: boolean }) {
-  return (
-    <main className={`space-y-6 px-4 pt-4 lg:px-8 lg:pt-4 ${narrow ? 'lg:max-w-2xl' : ''}`}>{children}</main>
-  );
+  return <main className={`space-y-6 px-4 pt-4 lg:px-8 lg:pt-4 ${narrow ? 'lg:max-w-2xl' : ''}`}>{children}</main>;
 }
 
 function UnreadDot({ count, className = '' }: { count: number; className?: string }) {
@@ -158,7 +164,11 @@ function Sidebar() {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/notifications" className={item} aria-label={unread ? `Reminders, ${unread} unread` : 'Reminders'}>
+            <NavLink
+              to="/notifications"
+              className={item}
+              aria-label={unread ? `Reminders, ${unread} unread` : 'Reminders'}
+            >
               <BellIcon /> <span className="flex-1">Reminders</span>
               <UnreadDot count={unread} className="min-w-6 px-1.5 text-xs" />
             </NavLink>
@@ -257,7 +267,9 @@ function Toast() {
       className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex justify-center px-4 lg:bottom-8 lg:left-64"
     >
       {message && (
-        <div className="sheet-in rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-white shadow-lg">{message}</div>
+        <div className="sheet-in rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-white shadow-lg">
+          {message}
+        </div>
       )}
     </div>
   );
@@ -298,7 +310,11 @@ function GearIcon() {
 function BellIcon() {
   return (
     <svg aria-hidden viewBox="0 0 24 24" className={iconClass}>
-      <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0" strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }

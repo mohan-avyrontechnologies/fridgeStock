@@ -48,7 +48,13 @@ async function prioritisedFor(user: UserDoc) {
   const today = clock.today(user.timeZone);
   const foods = await FoodItemModel.find({ userId: user._id, status: 'ACTIVE' });
   const result = prioritise(
-    foods.map((doc) => ({ id: doc._id.toString(), status: doc.status, addedDate: doc.addedDate, expiryDate: doc.expiryDate, doc })),
+    foods.map((doc) => ({
+      id: doc._id.toString(),
+      status: doc.status,
+      addedDate: doc.addedDate,
+      expiryDate: doc.expiryDate,
+      doc,
+    })),
     today,
   );
   const view = (list: typeof result.items) => list.map(({ doc }) => toFoodView(doc, today) as ActiveFoodItem);

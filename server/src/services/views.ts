@@ -1,4 +1,11 @@
-import { diffDays, type AppNotification, type DateString, type FoodItem, type UsageRecord, type User } from '@cook-first/shared';
+import {
+  diffDays,
+  type AppNotification,
+  type DateString,
+  type FoodItem,
+  type UsageRecord,
+  type User,
+} from '@cook-first/shared';
 import type { FoodItemDoc } from '../models/FoodItem.js';
 import type { NotificationDoc } from '../models/Notification.js';
 import type { UsageRecordDoc } from '../models/UsageRecord.js';

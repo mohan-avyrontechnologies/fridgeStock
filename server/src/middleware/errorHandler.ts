@@ -16,7 +16,9 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
   // A database-level rule caught something the request schema didn't.
   if (err instanceof mongoose.Error.ValidationError) {
     const [field, detail] = Object.entries(err.errors)[0] ?? [];
-    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: detail?.message ?? 'Invalid data.', ...(field && { field }) } });
+    res.status(400).json({
+      error: { code: 'VALIDATION_ERROR', message: detail?.message ?? 'Invalid data.', ...(field && { field }) },
+    });
     return;
   }
   if (err instanceof SyntaxError && 'body' in err) {

@@ -15,9 +15,7 @@ export function CookFirstPage() {
       <PageBody>
         {!cookFirst && !error && <Spinner />}
         {error && !cookFirst && <EmptyState title={screenCopy.cookFirst.loadError}>{error}</EmptyState>}
-        {cookFirst && cookFirst.length === 0 && (
-          <EmptyState title={screenCopy.cookFirst.empty} />
-        )}
+        {cookFirst && cookFirst.length === 0 && <EmptyState title={screenCopy.cookFirst.empty} />}
         {cookFirst && cookFirst.length > 0 && (
           <>
             <p className="text-sm text-muted">{screenCopy.cookFirst.intro(cookFirst.length)}</p>

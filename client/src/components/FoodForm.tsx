@@ -63,7 +63,11 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
 
   const lifespanNumber = Number(lifespan);
   const previewValid =
-    lifespan !== '' && Number.isInteger(lifespanNumber) && lifespanNumber >= 0 && lifespanNumber <= 365 && isValidDate(addedDate);
+    lifespan !== '' &&
+    Number.isInteger(lifespanNumber) &&
+    lifespanNumber >= 0 &&
+    lifespanNumber <= 365 &&
+    isValidDate(addedDate);
   const expiryDate = previewValid ? addDays(addedDate, lifespanNumber) : null;
 
   function validate(): FoodInput | null {
@@ -245,34 +249,36 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
           + {screenCopy.form.addNote}
         </button>
       ) : (
-      <div>
-        <label htmlFor={notesId} className="mb-1.5 block text-sm font-medium text-ink">
-          Notes <span className="font-normal text-muted">(optional)</span>
-        </label>
-        <textarea
-          id={notesId}
-          rows={2}
-          maxLength={NOTES_MAX}
-          placeholder="e.g. Opened, top shelf"
-          value={notes}
-          onChange={(e) => {
-            setNotes(e.target.value);
-            clearError('notes');
-          }}
-          aria-invalid={errors.notes ? true : undefined}
-          className={`block w-full rounded-xl border bg-card px-3.5 py-3 text-base text-ink placeholder:text-muted/70 focus:border-brand focus:outline-none ${
-            errors.notes ? 'border-danger' : 'border-line'
-          }`}
-        />
-        <p className={`mt-1.5 text-sm ${errors.notes ? 'text-danger' : 'text-muted'}`}>
-          {errors.notes ?? `${notes.length}/${NOTES_MAX}`}
-        </p>
-      </div>
+        <div>
+          <label htmlFor={notesId} className="mb-1.5 block text-sm font-medium text-ink">
+            Notes <span className="font-normal text-muted">(optional)</span>
+          </label>
+          <textarea
+            id={notesId}
+            rows={2}
+            maxLength={NOTES_MAX}
+            placeholder="e.g. Opened, top shelf"
+            value={notes}
+            onChange={(e) => {
+              setNotes(e.target.value);
+              clearError('notes');
+            }}
+            aria-invalid={errors.notes ? true : undefined}
+            className={`block w-full rounded-xl border bg-card px-3.5 py-3 text-base text-ink placeholder:text-muted/70 focus:border-brand focus:outline-none ${
+              errors.notes ? 'border-danger' : 'border-line'
+            }`}
+          />
+          <p className={`mt-1.5 text-sm ${errors.notes ? 'text-danger' : 'text-muted'}`}>
+            {errors.notes ?? `${notes.length}/${NOTES_MAX}`}
+          </p>
+        </div>
       )}
 
       <div aria-live="polite" className="space-y-2 rounded-2xl bg-brand-soft px-4 py-3">
         <p className="text-base font-semibold text-ink">
-          {expiryDate ? screenCopy.form.preview(formatDisplay(expiryDate), diffDays(today, expiryDate)) : screenCopy.form.previewEmpty}
+          {expiryDate
+            ? screenCopy.form.preview(formatDisplay(expiryDate), diffDays(today, expiryDate))
+            : screenCopy.form.previewEmpty}
         </p>
         <EstimateNote />
       </div>

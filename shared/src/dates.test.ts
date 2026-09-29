@@ -6,12 +6,26 @@ describe('isValidDate', () => {
     expect(isValidDate(d)).toBe(true);
   });
 
-  it.each(['2026-02-30', '2027-02-29', '2026-13-01', '2026-9-29', '29/09/2026', '2026-09-29T00:00:00Z', '', 20260929, null])(
-    'rejects %s',
-    (d) => {
-      expect(isValidDate(d)).toBe(false);
-    },
-  );
+  it('knows leap years, including the century rules', () => {
+    expect(isValidDate('2024-02-29')).toBe(true);
+    expect(isValidDate('2000-02-29')).toBe(true); // divisible by 400
+    expect(isValidDate('2100-02-29')).toBe(false); // divisible by 100 but not 400
+    expect(isValidDate('2026-04-31')).toBe(false); // 30-day month
+  });
+
+  it.each([
+    '2026-02-30',
+    '2027-02-29',
+    '2026-13-01',
+    '2026-9-29',
+    '29/09/2026',
+    '2026-09-29T00:00:00Z',
+    '',
+    20260929,
+    null,
+  ])('rejects %s', (d) => {
+    expect(isValidDate(d)).toBe(false);
+  });
 });
 
 describe('todayInTz', () => {
@@ -31,6 +45,13 @@ describe('addDays', () => {
     expect(addDays('2026-12-30', 3)).toBe('2027-01-02');
     expect(addDays('2026-03-01', -1)).toBe('2026-02-28');
     expect(addDays('2028-02-28', 1)).toBe('2028-02-29');
+    expect(addDays('2028-02-29', 1)).toBe('2028-03-01');
+    expect(addDays('2027-02-28', 1)).toBe('2027-03-01');
+    expect(addDays('2026-01-31', 1)).toBe('2026-02-01');
+    expect(addDays('2026-04-30', 1)).toBe('2026-05-01');
+    expect(addDays('2026-12-31', 1)).toBe('2027-01-01');
+    expect(addDays('2027-01-01', -1)).toBe('2026-12-31');
+    expect(addDays('2028-01-01', 365)).toBe('2028-12-31'); // leap year has 366 days
     expect(addDays('2026-09-29', 0)).toBe('2026-09-29');
   });
 
@@ -51,6 +72,8 @@ describe('diffDays', () => {
     expect(diffDays('2026-10-03', '2026-09-29')).toBe(-4);
     expect(diffDays('2026-09-29', '2026-09-29')).toBe(0);
     expect(diffDays('2026-10-31', '2026-11-02')).toBe(2);
+    expect(diffDays('2028-02-28', '2028-03-01')).toBe(2); // across 29 Feb
+    expect(diffDays('2026-12-30', '2027-01-02')).toBe(3); // across a year end
   });
 
   it('is the inverse of addDays', () => {

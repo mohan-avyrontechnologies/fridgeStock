@@ -113,7 +113,9 @@ export function SettingsPage() {
           className="flex min-h-14 items-center justify-between rounded-2xl border border-line bg-card px-4 font-medium hover:bg-paper"
         >
           History
-          <span aria-hidden className="text-muted">›</span>
+          <span aria-hidden className="text-muted">
+            ›
+          </span>
         </Link>
 
         <Button variant="danger" className="w-full" onClick={logout}>

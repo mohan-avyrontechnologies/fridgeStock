@@ -38,7 +38,10 @@ export function RegisterPage() {
       footer={
         <>
           Already have an account?{' '}
-          <Link to="/login" className="inline-flex min-h-11 items-center font-semibold text-brand underline-offset-2 hover:underline">
+          <Link
+            to="/login"
+            className="inline-flex min-h-11 items-center font-semibold text-brand underline-offset-2 hover:underline"
+          >
             Sign in
           </Link>
         </>
@@ -46,7 +49,13 @@ export function RegisterPage() {
     >
       <form onSubmit={submit} className="space-y-4" noValidate>
         <FormError message={errors.form ?? null} />
-        <Field label="Name" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} error={errors.name} />
+        <Field
+          label="Name"
+          autoComplete="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          error={errors.name}
+        />
         <Field
           label="Email"
           type="email"

@@ -27,7 +27,11 @@ export const MESSAGES = {
   itemClosed: 'This item is no longer active.',
 } as const;
 
-const email = z.string({ error: MESSAGES.email }).trim().toLowerCase().pipe(z.email({ error: MESSAGES.email }));
+const email = z
+  .string({ error: MESSAGES.email })
+  .trim()
+  .toLowerCase()
+  .pipe(z.email({ error: MESSAGES.email }));
 
 const name = z.string({ error: MESSAGES.name }).trim().min(1, MESSAGES.name).max(50, MESSAGES.nameTooLong);
 
@@ -85,8 +89,15 @@ export const preferencesSchema = z
   .partial()
   .strict();
 
+/** GET /usage: limit defaults to 20 and offset to 0. */
 export const paginationSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+/** GET /notifications: pages of up to 50, newest first. */
+export const notificationPageSchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(50),
   offset: z.coerce.number().int().min(0).default(0),
 });
 

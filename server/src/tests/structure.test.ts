@@ -26,7 +26,16 @@ describe('server/src layout', () => {
     }
     expect(existsSync(path.join(SRC, 'copy.ts'))).toBe(true);
     const topLevel = readdirSync(SRC).filter((name) => statSync(path.join(SRC, name)).isDirectory());
-    expect(topLevel.sort()).toEqual(['config', 'controllers', 'jobs', 'middleware', 'models', 'routes', 'services', 'tests']);
+    expect(topLevel.sort()).toEqual([
+      'config',
+      'controllers',
+      'jobs',
+      'middleware',
+      'models',
+      'routes',
+      'services',
+      'tests',
+    ]);
   });
 });
 
@@ -74,7 +83,9 @@ describe('dates', () => {
 
   it('date helpers come from @cook-first/shared, not local copies', () => {
     for (const file of appFiles) {
-      expect(stripComments(source(file)), rel(file)).not.toMatch(/function\s+(addDays|diffDays|todayInTz|isValidDate|formatDisplay)\b/);
+      expect(stripComments(source(file)), rel(file)).not.toMatch(
+        /function\s+(addDays|diffDays|todayInTz|isValidDate|formatDisplay)\b/,
+      );
     }
   });
 });

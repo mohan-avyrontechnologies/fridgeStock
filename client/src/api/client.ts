@@ -103,7 +103,8 @@ export const api = {
   usage: (offset = 0, limit = 20) => request<UsageHistory>('GET', `/usage?offset=${offset}&limit=${limit}`),
 
   // GET /notifications
-  notifications: () => request<NotificationFeed>('GET', '/notifications'),
+  notifications: (offset = 0, limit = 50) =>
+    request<NotificationFeed>('GET', `/notifications?offset=${offset}&limit=${limit}`),
   // GET /notifications/unread-count
   unreadCount: () => request<{ unread: number }>('GET', '/notifications/unread-count'),
   // POST /notifications/read-all

@@ -53,7 +53,11 @@ export const screenCopy = {
   auth: {
     intro: 'Log what’s in your fridge and see what to cook before it reaches its expected expiry.',
     headline: 'Know what to cook before it’s forgotten.',
-    points: ['Log food with a lifespan in days', 'See everything ordered by expected expiry', 'Get reminders as items get close'],
+    points: [
+      'Log food with a lifespan in days',
+      'See everything ordered by expected expiry',
+      'Get reminders as items get close',
+    ],
   },
   dashboard: {
     sortedHint: 'Sorted by expected expiry, soonest first.',

@@ -234,8 +234,18 @@ describe('Reminders screen', () => {
       http.get(`${API_URL}/notifications`, () =>
         HttpResponse.json({
           items: [
-            { id: 'n1', foodId: 'c', type: 'APPROACHING_EXPIRY', message: 'Spinach: 2 days left.', scheduledDate: '2026-09-29', status: 'SENT', sentAt: '2026-09-29T08:00:00Z', readAt: null },
+            {
+              id: 'n1',
+              foodId: 'c',
+              type: 'APPROACHING_EXPIRY',
+              message: 'Spinach: 2 days left.',
+              scheduledDate: '2026-09-29',
+              status: 'SENT',
+              sentAt: '2026-09-29T08:00:00Z',
+              readAt: null,
+            },
           ],
+          total: 1,
           unread: 1,
         }),
       ),
@@ -257,7 +267,9 @@ describe('dashboard layout', () => {
       http.get(`${API_URL}/foods/cook-first`, () =>
         HttpResponse.json({
           today: '2026-09-29',
-          items: ['a', 'b', 'c', 'e'].map((id) => item({ id, name: `Urgent ${id}`, urgency: 'APPROACHING_EXPIRY', remainingDays: 2 })),
+          items: ['a', 'b', 'c', 'e'].map((id) =>
+            item({ id, name: `Urgent ${id}`, urgency: 'APPROACHING_EXPIRY', remainingDays: 2 }),
+          ),
         }),
       ),
     );
@@ -332,7 +344,11 @@ describe('Cook First', () => {
 
 describe('error states', () => {
   it('the Reminders screen shows an error rather than "No reminders yet" when loading fails', async () => {
-    server.use(http.get(`${API_URL}/notifications`, () => HttpResponse.json({ error: { code: 'INTERNAL', message: 'x' } }, { status: 500 })));
+    server.use(
+      http.get(`${API_URL}/notifications`, () =>
+        HttpResponse.json({ error: { code: 'INTERNAL', message: 'x' } }, { status: 500 }),
+      ),
+    );
     renderSignedIn('/notifications', <NotificationsPage />);
     expect(await screen.findByText('Couldn’t load your reminders.')).toBeInTheDocument();
     expect(screen.queryByText('No reminders yet')).not.toBeInTheDocument();

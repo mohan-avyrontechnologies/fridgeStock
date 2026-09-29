@@ -43,4 +43,3 @@ export const handlers = [
   ),
   http.get(`${API_URL}/notifications/unread-count`, () => HttpResponse.json({ unread: 2 })),
 ];
-

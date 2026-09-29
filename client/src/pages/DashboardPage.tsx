@@ -41,7 +41,10 @@ export function DashboardPage() {
             <section aria-label="Summary">
               <ul className="grid grid-cols-4 gap-2 lg:gap-4">
                 {ORDER.map((u) => (
-                  <li key={u} className={`rounded-2xl px-2 py-3 text-center lg:px-5 lg:py-5 lg:text-left ${URGENCY_STYLE[u].tile}`}>
+                  <li
+                    key={u}
+                    className={`rounded-2xl px-2 py-3 text-center lg:px-5 lg:py-5 lg:text-left ${URGENCY_STYLE[u].tile}`}
+                  >
                     <p className="text-2xl font-bold tabular-nums lg:text-4xl">{inventory.summary[u]}</p>
                     <p className="text-[11px] leading-tight font-semibold lg:hidden">{urgencyShortLabel[u]}</p>
                     <p className="hidden text-sm font-semibold lg:block">{urgencyCopy[u].label}</p>
@@ -55,7 +58,10 @@ export function DashboardPage() {
                 <SectionTitle
                   id="cook-first-heading"
                   action={
-                    <Link to="/cook-first" className="inline-flex min-h-11 items-center text-sm font-semibold text-brand">
+                    <Link
+                      to="/cook-first"
+                      className="inline-flex min-h-11 items-center text-sm font-semibold text-brand"
+                    >
                       {screenCopy.dashboard.seeAll}
                     </Link>
                   }
@@ -73,7 +79,10 @@ export function DashboardPage() {
                 <SectionTitle id="all-food-heading">All food ({inventory.items.length})</SectionTitle>
                 {inventory.items.length === 0 ? (
                   <EmptyState title={screenCopy.dashboard.emptyInventory}>
-                    <Link to="/add" className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-brand px-4 font-semibold text-white">
+                    <Link
+                      to="/add"
+                      className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-brand px-4 font-semibold text-white"
+                    >
                       Add food
                     </Link>
                   </EmptyState>

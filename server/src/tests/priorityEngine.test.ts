@@ -74,7 +74,12 @@ describe('prioritise', () => {
   });
 
   it('gives identical output when run twice on the same input', () => {
-    const input = [item('x', '2026-09-20', 5), item('y', '2026-09-28', 2), item('z', '2026-09-28', 2), item('w', TODAY, 9)];
+    const input = [
+      item('x', '2026-09-20', 5),
+      item('y', '2026-09-28', 2),
+      item('z', '2026-09-28', 2),
+      item('w', TODAY, 9),
+    ];
     const first = prioritise(input, TODAY);
     const second = prioritise(input, TODAY);
     expect(second).toEqual(first);
@@ -82,7 +87,12 @@ describe('prioritise', () => {
   });
 
   it('gives the same order whatever order the items arrive in', () => {
-    const input = [item('x', '2026-09-20', 5), item('y', '2026-09-28', 2), item('z', '2026-09-28', 2), item('w', TODAY, 0)];
+    const input = [
+      item('x', '2026-09-20', 5),
+      item('y', '2026-09-28', 2),
+      item('z', '2026-09-28', 2),
+      item('w', TODAY, 0),
+    ];
     const expected = ids(prioritise(input, TODAY).items);
     expect(ids(prioritise([...input].reverse(), TODAY).items)).toEqual(expected);
   });

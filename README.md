@@ -7,7 +7,7 @@ A mobile-first web app that helps a household use perishable food before it goes
 | | |
 |---|---|
 | **Status** | MVP complete. Not yet deployed. |
-| **Version** | 2.3.0 (see the [Changelog](#changelog)) |
+| **Version** | 2.4.0 (see the [Changelog](#changelog)) |
 | **Requires** | Node.js 20.19 or later |
 | **Specifications** | PFCP BRD v2.0, FRD v1.0, SRD v1.0, TDD v1.0 (internal documents, not stored in this repo) |
 | **Repository** | `github.com/rugvailabs/cook_first` |
@@ -34,10 +34,11 @@ A mobile-first web app that helps a household use perishable food before it goes
 16. [Security](#security)
 17. [Deployment](#deployment)
 18. [Differences from the design documents](#differences-from-the-design-documents)
-19. [Project status](#project-status)
-20. [Changelog](#changelog)
-21. [Roadmap](#roadmap)
-22. [Keeping this README up to date](#keeping-this-readme-up-to-date)
+19. [Build phases](#build-phases)
+20. [Project status](#project-status)
+21. [Changelog](#changelog)
+22. [Roadmap](#roadmap)
+23. [Keeping this README up to date](#keeping-this-readme-up-to-date)
 
 ---
 
@@ -104,7 +105,7 @@ The project is a **TypeScript monorepo** using npm workspaces, with three packag
 | | Supertest + mongodb-memory-server (API) | 7.3 / 11.3 |
 | | Playwright (end-to-end) | 1.63 |
 | | MSW (fake API in frontend tests), React Testing Library, jsdom | 2.15 / 16.3 / 27.4 |
-| **Code quality** | ESLint with typescript-eslint and react-hooks | 9 |
+| **Code quality** | ESLint with typescript-eslint and react-hooks; Prettier | 9 / 3 |
 | **CI / hosting** | GitHub Actions · Vercel (client) · any Node host, e.g. Render (server) · MongoDB Atlas | |
 
 > **Why TypeScript 6.0, not 7?** TypeScript 7 is the new native compiler and has no JavaScript API yet, so ESLint's TypeScript support can't run on it. 6.0 is the latest version that works with ESLint.
@@ -258,9 +259,10 @@ Run these from the repository root:
 | `npm run dev:server` | Start the API with auto-reload |
 | `npm run dev:client` | Start the Vite dev server |
 | `npm run lint` | ESLint across all three packages |
+| `npm run format` / `npm run format:check` | Format with Prettier / check formatting (CI runs the check) |
 | `npm run typecheck` | TypeScript check of `shared`, `server` and `client` |
-| `npm test` | Unit and API tests: shared (20) + server (146) + client (39) |
-| `npm run test:e2e` | Playwright end-to-end tests (12), at 375 px and 1440 px |
+| `npm test` | Unit and API tests: shared (21) + server (149) + client (39) |
+| `npm run test:e2e` | Playwright end-to-end tests (14), at 375 px and 1440 px |
 | `npm run build` | Build `shared/dist`, `server/dist` and `client/dist` |
 
 ---
@@ -269,25 +271,47 @@ Run these from the repository root:
 
 | Suite | Tools | Tests | What it covers |
 |---|---|---|---|
-| **Dates** (`shared/src/dates.test.ts`) | Vitest | 20 | Valid and invalid dates, today in several time zones, month and year ends, daylight-saving weekends, `addDays`/`diffDays` as inverses, the "Thu, 1 Oct" format |
-| **API and logic** (`server/src/tests`) | Vitest, Supertest, mongodb-memory-server | 104 | `auth`, `foods`, `notifications`, `security` and `priorityEngine` tests: registration and login, tokens, every validation message, limits and units, expiry never accepted from the client, `/use` (whole, partial, 0, negative or too much), `/waste`, `DELETE`, 409 on closed items, `/usage` paging, each reminder scheduling rule (including a zero-day lifespan), the three exact messages, `dispatchDue` on `GET /foods`, a dispatch failure never breaking the inventory or Cook First, `{n}` worked out at send time, delivery, failures and preferences, cross-user isolation, and all the required priority-engine cases |
+| **Dates** (`shared/src/dates.test.ts`) | Vitest | 21 | Valid and invalid dates, leap years (including 2000 and 2100), today in several time zones, month and year ends, daylight-saving weekends, `addDays`/`diffDays` as inverses, the "Thu, 1 Oct" format |
+| **API and logic** (`server/src/tests`) | Vitest, Supertest, mongodb-memory-server | 107 | `auth`, `foods`, `notifications`, `security` and `priorityEngine` tests: registration and login, tokens, every validation message, limits and units, expiry never accepted from the client, `/use` (whole, partial, 0, negative or too much), `/waste`, `DELETE`, 409 on closed items, `/usage` paging, each reminder scheduling rule (including a zero-day lifespan), the three exact messages, `dispatchDue` on `GET /foods`, a dispatch failure never breaking the inventory or Cook First, `{n}` worked out at send time, delivery, failures and preferences, cross-user isolation, and all the required priority-engine cases |
 | **API contract** (`api.test.ts`) | Vitest, Supertest | 14 | Only the agreed error codes, never a stack trace, 500 is `INTERNAL`, database validation errors are 400, login 401 message, exact register messages, user and food response shapes, priority order and summary, `cook-first` matched before `/:id`, reminders scheduled on create and rescheduled only when dates change, pending reminders deleted on close, old routes removed |
 | **Wording guard** (`foodSafetyCopy.test.ts`) | Vitest | 5 | Scans every `.ts`/`.tsx` file in `client/src`, `server/src` and `shared/src`, comments included, for the banned phrases. Fails on the word "safe" in either copy file, or on expiry wording outside the copy files. Checks the required estimate line. |
 | **Project rules** (`rules.test.ts`) | Vitest, Supertest | 11 | Every database query carries the user's ID; the query-string `userId` is ignored; pure priority engine; bcrypt cost 12; passwords never returned or logged; `.env` ignored; helmet; CORS; rate limit of 20 per 15 minutes |
 | **Server structure** (`structure.test.ts`) | Vitest | 12 | The `server/src` folders; thin controllers; only models talk to MongoDB; no `new Date()` in date logic; dates only from `shared`; hourly node-cron job; env variable names and defaults; the threshold of 3 exists only in `config/urgency.ts` (checked across client, server and shared); expiry calculated in the food service with no Mongoose hook |
 | **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 39 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and preview, the required estimate line, all five remaining-days phrasings, colour always paired with a label, exactly seven units, notes, reminders marked read when the screen opens; the dashboard header, 3-item Cook First with "See all", and empty texts; Add Food defaults, the unit dropdown, the "Add note" link and the preview format; closing actions needing one confirmation; the Reminders error state; plus client structure checks |
-| **End-to-end** (`e2e/`) | Playwright in Chrome | 12 | 6 journeys, each run at **375 px phone size** and **desktop size (1440×900)** |
+| **End-to-end** (`e2e/`) | Playwright in Chrome | 14 | 7 journeys, each run at **375 px phone size** and **desktop size (1440×900)** |
 
-The six end-to-end journeys:
+The seven end-to-end journeys:
 
-1. Register → add food → Cook First → mark used → History
-2. Partial use and partial waste
-3. Validation messages and the expected-expiry preview
-4. Reminders
-5. One user can't see another user's food
-6. Reminder settings and sign-out
+1. **The spec journey:** sign up → add chicken (1-day lifespan) and eggs (8-day) → Cook First shows only the chicken → mark it used → it has disappeared from both the dashboard and Cook First
+2. Register → add food → Cook First → mark used → History
+3. Partial use, then waste the rest
+4. Validation messages and the expected-expiry preview
+5. Reminders
+6. One user can't see another user's food
+7. Reminder settings and log out
 
 Every page visited is also checked for banned wording, sideways scrolling, and **tap targets under 44 px**.
+
+**Required coverage.** Where each testing requirement is covered:
+
+| Requirement | Test |
+|---|---|
+| Every priority-engine case | `server/src/tests/priorityEngine.test.ts` |
+| Date functions: month ends, year ends, leap years | `shared/src/dates.test.ts` |
+| Reminder scheduling rules | `notifications.test.ts` → "scheduling rules" |
+| Banned-phrase scan | `foodSafetyCopy.test.ts` |
+| Register with a duplicate email → 409 | `auth.test.ts`, `api.test.ts` |
+| Login success; wrong password → 401 | `auth.test.ts`, `api.test.ts` |
+| Protected routes → 401 with no, malformed or expired token | `auth.test.ts` → "protected endpoints" |
+| Create food: every validation rule | `foods.test.ts` → "rejects …" (one case per rule) |
+| Expiry recalculated when the added date or lifespan is edited | `foods.test.ts` → "editing" |
+| Partial, full and over-quantity use; wasting; deleting | `foods.test.ts` → "usage actions" |
+| A closed item → 409 on edit | `foods.test.ts` → "409 CONFLICT …" |
+| Closed items leave the inventory and Cook First (used, wasted, removed) | `foods.test.ts` → "a %s item disappears …" |
+| Second user → 404 on view, edit, delete, use, waste | `security.test.ts` |
+| A disabled preference stops that reminder type | `notifications.test.ts` → "preferences" |
+| Dashboard, Add Food and Cook First rendered against MSW | `client/src/test/pages.test.tsx` (handlers in `client/src/mocks/`) |
+| End-to-end: sign up → chicken + eggs → only chicken in Cook First → used → gone | `e2e/journey.spec.ts` → "spec journey" |
 
 Test databases live in git-ignored `.test-db-*` folders inside the project, not the system temp folder, and are deleted afterwards. The end-to-end run uses its own ports (API 4100, web 5174), so it never touches your data.
 
@@ -363,7 +387,7 @@ A failed send is marked `FAILED` and retried until it has been attempted 3 times
 
 In `GET /foods` it's wrapped so that any reminder failure is only logged: it can never affect the inventory or the Cook First list.
 
-**Feed.** Up to 50 reminders (`SENT` or `FAILED`), newest first, with the unread count. `readAt` stays empty until the user opens the Reminders screen, which calls `POST /notifications/read-all`. New ones still show a "New" tag during that visit.
+**Feed.** Paginated: pages of up to 50 reminders (`SENT` or `FAILED`), newest first, with the total and the unread count. The Reminders screen has "Load more". `readAt` stays empty until the user opens the Reminders screen, which calls `POST /notifications/read-all`. New ones still show a "New" tag during that visit.
 
 ---
 
@@ -378,7 +402,7 @@ The app is mobile-first and tested at **375 px** wide. Buttons, links and fields
 | **Add food** | One short form: name (focused), quantity (1), unit dropdown (pcs), added date (today, never in the future), lifespan quick picks 1/2/3/5/7/14 plus a number box, and notes behind "Add note". A live preview such as "Expected expiry: Thu, 1 Oct (2 days left)", then the disclaimer. Saving returns to the dashboard with a short confirmation. |
 | **Food details** | Every field, plus expected expiry, remaining days and urgency. Active items can be edited or marked **Used all**, **Used some** (asks for a quantity), **Wasted** or **Remove**. Each closing action needs one confirmation. Closed items are read-only. |
 | **Cook First** | Urgent items in priority order: name, quantity, unit, expected expiry, remaining days, urgency and notes, with **Used** (all or some) and **Wasted** buttons, plus the disclaimer. "Nothing needs attention right now." when nothing is urgent. |
-| **Reminders** | Newest first; everything is marked read when the screen opens. |
+| **Reminders** | Newest first, 50 at a time with "Load more". Everything is marked read when the screen opens. |
 | **Settings** | Name and email (read-only), the three reminder switches, a link to History, and Log out. |
 | **History** | Usage records newest first: food, action, quantity and date, with "Load more". |
 
@@ -448,7 +472,7 @@ Base URL: `http://localhost:4000/api` (`VITE_API_URL`). Requests and responses a
 | POST | `/foods/:id/waste` | | `{food, usageRecord}`: closed as `WASTED` | 404, 409 |
 | DELETE | `/foods/:id` | | `204`: soft-deleted as `REMOVED` | 404, 409 |
 | GET | `/usage` | `?limit=20&offset=0` (defaults) | `{items, total, counts}`, newest first | 400 |
-| GET | `/notifications` | | Sends due reminders, then `{items, unread}`: up to 50 `SENT` or `FAILED`, newest first | 401 |
+| GET | `/notifications` | `?limit=50&offset=0` (defaults; max 50) | Sends due reminders, then `{items, total, unread}`: `SENT` or `FAILED`, newest first | 400, 401 |
 | POST | `/notifications/read-all` | | `204`: all marked as read | 401 |
 | PUT | `/notifications/preferences` | `{approachingExpiry?, due?, overdue?}` | preferences; pending reminders of any turned-off type are deleted | 400 |
 
@@ -530,23 +554,53 @@ The configuration is ready but **nothing has been deployed yet**.
 4. **Finish up.** Put the Vercel address into `CLIENT_ORIGIN` on the API host and redeploy.
 
 **CI** (`.github/workflows/ci.yml`) runs on every push and pull request:
-- **install → lint → typecheck → unit and API tests → build**, on Node **20.19** (the minimum) and **24**
+- **install → lint → format check → typecheck → unit and API tests → build**, on Node **20.19** (the minimum) and **24**
 - then the Playwright end-to-end suite
 
 ---
 
 ## Differences from the design documents
 
-| Area | Design documents say | This app does | Why |
+These decisions intentionally differ from the original BRD, FRD, SRD and TDD:
+
+| Area | Decision | Why |
+|---|---|---|
+| Food status | Only `ACTIVE`, `USED`, `WASTED` and `REMOVED` are stored. **Urgency is always calculated when items are read.** `PARTIALLY_USED` is a usage action, not a status. | A stored urgency would go wrong at midnight; a partly used item is still active. |
+| Urgency name | `SAFE` is renamed **`NOT_URGENT`** | The word "safe" must never reach the interface. |
+| Dates | Stored as **`"YYYY-MM-DD"` strings** and evaluated in each user's time zone | Calendar dates must never shift with time zones or daylight saving. |
+| Lifespan and added date | Lifespan **0–365 days**. **Past added dates are allowed; future ones are rejected.** | People log food they bought earlier; a future date is almost always a typo. |
+| Deleting | A **soft delete** (status `REMOVED`) that keeps history | Usage history must survive. |
+| Another user's item | **404** instead of 403 | Doesn't reveal that the item exists. |
+| Usage records | Include the **user's ID**. The `EXPIRED` action is **not built**. `POST /foods/:id/use` works out full or partial use from the quantity. | History is listed per user; items aren't closed without the user's knowledge. |
+| New fields | Food items gain **notes** and **closed-at**. Users gain a **time zone**. Notifications gain **type**, **message**, **read-at** and **attempt count**. | Needed by the screens, reminders and retries. |
+| New endpoints | **`GET /auth/me`** (current user), **`GET /usage`** (usage history), **`POST /notifications/read-all`** (mark as read) | Not in the TDD's endpoint table. The app also uses `GET /health`, `PUT /auth/me`, `GET /notifications/unread-count` and `GET /notifications/preferences`. |
+| Reminders | **In-app only.** Firebase push is postponed. | See the [Roadmap](#roadmap). |
+| Pagination | The food list is **not** paginated. **Usage history** (`/usage`, 20 per page) and **notifications** (`/notifications`, 50 per page) are. | A household's active food is small; history grows. |
+| `GET /foods` response | `{today, summary, items}` rather than a bare array | The dashboard needs the counts. |
+
+**Out of scope for the MVP:**
+- recipes
+- barcode and receipt scanning
+- AI meal planning
+- shared households
+- grocery integrations
+- push notifications
+- analytics dashboards
+
+---
+
+## Build phases
+
+The project was built in these phases; each one is complete.
+
+| Phase | Server | Client | Status |
 |---|---|---|---|
-| Stored status | Store `APPROACHING_EXPIRY`, `DUE` and `OVERDUE` | Store only `ACTIVE`/`USED`/`WASTED`/`REMOVED`; calculate urgency on every request | A stored urgency goes wrong at midnight |
-| Urgency name | `SAFE` | `NOT_URGENT` | The app must never use the word "safe" |
-| Another user's item | 403 | 404 | Doesn't reveal that the item exists |
-| Usage record | `recordId, foodId, action, date, quantityUsed` | Also `userId`, name/unit copy, `quantityRemaining`, `createdAt` | History is listed per user and stays readable after later edits |
-| `GET /foods` | Returns a plain list | Returns `{today, summary, items}` | The dashboard needs the counts |
-| Added date | Backdating "only if intentionally supported" | Past dates allowed; future dates rejected | People log food they bought earlier |
-| `EXPIRED` action | Recorded by the system | Not recorded; the item stays "Past expected expiry" until the user acts | Avoids closing items without the user knowing |
-| Push notifications | Firebase (optional) | In-app reminders only | Needs a Firebase project; see the [Roadmap](#roadmap) |
+| **1. Scaffold** | npm workspaces (`client`, `server`, `shared`); TypeScript, ESLint, Prettier; Express with `/api/health`; MongoDB `docker-compose.yml`; `.env.example` files; CI workflow; shared date functions with tests | Vite app | ✅ |
+| **2. Authentication** | User model; register, login and current-user endpoints; JWT middleware, error handler, zod validation middleware, rate limiting; API tests | Sign-up and log-in screens, auth store, protected routes, 401 handling | ✅ |
+| **3. Food and priority** | Priority engine and its unit tests first; food item model; food endpoints (except use, waste and delete); API tests including cross-user checks | Dashboard, Add Food, Food Details (view and edit) | ✅ |
+| **4. Usage** | Use, waste and delete endpoints; usage record model; usage history endpoint; tests | Action buttons, Cook First, History | ✅ |
+| **5. Reminders** | Notification model, scheduling logic, `dispatchDue`, hourly job, preferences endpoint; tests | Bell with count, Reminders screen, Settings | ✅ |
+| **6. Polish and ship** | Banned-phrase test; deployment config (`render.yaml`, `client/vercel.json`) | Every empty, loading and error state; Playwright end-to-end tests; this README (setup, environment variables, running tests) | ✅ (deployment itself not yet done; see the [Roadmap](#roadmap)) |
 
 ---
 
@@ -556,8 +610,8 @@ The configuration is ready but **nothing has been deployed yet**.
 |---|---|
 | All MVP functional requirements (FR-AUTH, FOOD, EXP, PRI, UI, NOT, USE, VAL) | ✅ Done |
 | Monorepo with `client`, `server` and `shared`; Node 20.19+ | ✅ Done |
-| Tests: 20 shared + 146 server + 39 client + 12 end-to-end = **217** | ✅ Passing |
-| ESLint and typecheck on all packages | ✅ Clean |
+| Tests: 21 shared + 149 server + 39 client + 14 end-to-end = **223** | ✅ Passing |
+| ESLint, Prettier and typecheck on all packages | ✅ Clean |
 | All project rules (see [Project rules](#project-rules)) | ✅ Met, each one checked by a test |
 | Phone (375 px) and desktop layouts, 44 px tap targets | ✅ Done, checked in screenshots and by tests |
 | Docker MongoDB, Render/Vercel config, CI workflow | ✅ Written. CI hasn't run yet because the code isn't on GitHub. |
@@ -574,6 +628,21 @@ All notable changes to this project are listed here, newest first. Versions foll
 
 ### [Unreleased]
 - *Nothing yet.*
+
+### [2.4.0] - 2026-09-29: Testing, build-phase and decisions requirements
+**Added**
+- **Prettier:** config (`.prettierrc.json`, `.prettierignore`), `npm run format` and `format:check`, and a **format check step in CI**. The whole codebase was formatted once (layout only).
+- **`.gitattributes`:** keeps LF line endings on every OS, so the Prettier check passes on Windows checkouts.
+- **Notifications are paginated:** `GET /notifications?limit=50&offset=0` (maximum 50 per page) returns `{items, total, unread}`, and the Reminders screen has "Load more".
+- **End-to-end spec journey:** sign up → chicken (1 day) and eggs (8 days) → only chicken in Cook First → mark used → gone from the dashboard and Cook First. Now 7 journeys, 14 tests.
+- **More tests:**
+  - wasted and removed items leave both lists, alongside used ones
+  - century leap years (2000, 2100) and more month- and year-end date cases
+  - notification paging
+- **README:**
+  - a **Build phases** section
+  - a **Required coverage** table mapping each testing requirement to its test
+  - **Differences from the design documents** rewritten as the agreed decisions, with the out-of-scope list
 
 ### [2.3.0] - 2026-09-29: Reminders and screens to spec · `6dfaaf5`
 **Changed: reminders**

@@ -5,6 +5,7 @@ import { useAuthStore } from './authStore';
 
 interface NotificationState {
   items: AppNotification[];
+  total: number;
   unread: number;
   loading: boolean;
   error: boolean;
@@ -15,10 +16,12 @@ interface NotificationState {
    * list keeps its unread highlight for this visit so new ones stand out.
    */
   openFeed: () => Promise<void>;
+  loadMore: () => Promise<void>;
 }
 
-export const useNotificationStore = create<NotificationState>()((set) => ({
+export const useNotificationStore = create<NotificationState>()((set, get) => ({
   items: [],
+  total: 0,
   unread: 0,
   loading: false,
   error: false,
@@ -36,15 +39,21 @@ export const useNotificationStore = create<NotificationState>()((set) => ({
     set({ loading: true, error: false });
     try {
       const page = await api.notifications();
-      set({ items: page.items, loading: false });
+      set({ items: page.items, total: page.total, loading: false });
       if (page.unread > 0) await api.markAllRead();
       set({ unread: 0 });
     } catch {
       set({ loading: false, error: true });
     }
   },
+
+  async loadMore() {
+    const page = await api.notifications(get().items.length);
+    set({ items: [...get().items, ...page.items], total: page.total });
+    if (page.unread > 0) await api.markAllRead();
+  },
 }));
 
 useAuthStore.subscribe((state, prev) => {
-  if (state.token !== prev.token) useNotificationStore.setState({ items: [], unread: 0 });
+  if (state.token !== prev.token) useNotificationStore.setState({ items: [], total: 0, unread: 0 });
 });

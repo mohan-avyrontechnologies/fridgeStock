@@ -37,7 +37,11 @@ export function FoodDetailPage() {
         (item) => isCurrent() && setFood(item),
         (err) =>
           isCurrent() &&
-          setError(err instanceof ApiError && err.status === 404 ? 'This item doesn’t exist or isn’t yours.' : 'Couldn’t load this item.'),
+          setError(
+            err instanceof ApiError && err.status === 404
+              ? 'This item doesn’t exist or isn’t yours.'
+              : 'Couldn’t load this item.',
+          ),
       ),
     [id],
   );
@@ -119,7 +123,10 @@ export function FoodDetailPage() {
               )}
 
               <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line pt-4 text-sm">
-                <Detail label={active ? 'Quantity left' : 'Quantity'} value={formatQuantity(food.quantity, food.unit)} />
+                <Detail
+                  label={active ? 'Quantity left' : 'Quantity'}
+                  value={formatQuantity(food.quantity, food.unit)}
+                />
                 <Detail label="Unit" value={food.unit} />
                 <Detail label={expectedExpiryLabel} value={formatDisplay(food.expiryDate)} />
                 <Detail label="Added on" value={formatDisplay(food.addedDate)} />

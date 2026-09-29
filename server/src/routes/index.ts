@@ -1,6 +1,7 @@
 import {
   createFoodSchema,
   loginSchema,
+  notificationPageSchema,
   paginationSchema,
   preferencesSchema,
   registerSchema,
@@ -59,7 +60,7 @@ router.post('/foods/:id/waste', validate(wasteFoodSchema), foodController.waste)
 
 router.get('/usage', validate(paginationSchema, 'query'), usageController.list);
 
-router.get('/notifications', notificationController.list);
+router.get('/notifications', validate(notificationPageSchema, 'query'), notificationController.list);
 router.get('/notifications/unread-count', notificationController.unreadCount);
 router.get('/notifications/preferences', notificationController.getPreferences);
 router.put('/notifications/preferences', validate(preferencesSchema), notificationController.updatePreferences);

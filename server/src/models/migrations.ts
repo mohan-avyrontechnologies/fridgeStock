@@ -7,7 +7,10 @@ import { UsageRecordModel } from './UsageRecord.js';
  * Rewrite any that remain as "YYYY-MM-DD" strings. Safe to run repeatedly:
  * each update only matches values that are still dates.
  */
-async function datesToStrings(collection: { updateMany: typeof FoodItemModel.collection.updateMany }, fields: string[]) {
+async function datesToStrings(
+  collection: { updateMany: typeof FoodItemModel.collection.updateMany },
+  fields: string[],
+) {
   for (const field of fields) {
     await collection.updateMany({ [field]: { $type: 'date' } }, [
       { $set: { [field]: { $dateToString: { format: '%Y-%m-%d', date: `$${field}`, timezone: 'UTC' } } } },

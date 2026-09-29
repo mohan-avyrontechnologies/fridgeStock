@@ -16,7 +16,7 @@ const TYPE_DOT: Record<ReminderType, string> = {
 };
 
 export function NotificationsPage() {
-  const { items, loading, error, openFeed } = useNotificationStore();
+  const { items, total, loading, error, openFeed, loadMore } = useNotificationStore();
 
   // Opening this screen is what marks reminders as read.
   useEffect(() => {
@@ -45,6 +45,11 @@ export function NotificationsPage() {
             <ReminderRow key={n.id} n={n} />
           ))}
         </ul>
+        {items.length < total && (
+          <Button variant="secondary" className="w-full" onClick={() => loadMore()}>
+            {screenCopy.history.loadMore}
+          </Button>
+        )}
         <EstimateNote />
       </PageBody>
     </>

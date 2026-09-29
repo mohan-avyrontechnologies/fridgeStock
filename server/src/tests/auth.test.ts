@@ -111,7 +111,14 @@ describe('protected endpoints', () => {
     const expired = jwt.sign({}, env.jwtSecret, { subject: user.id, expiresIn: -10 });
     const forged = jwt.sign({}, 'some-other-secret', { subject: user.id });
 
-    for (const header of [undefined, 'Bearer', 'Bearer garbage', `Bearer ${expired}`, `Bearer ${forged}`, 'Basic abc']) {
+    for (const header of [
+      undefined,
+      'Bearer',
+      'Bearer garbage',
+      `Bearer ${expired}`,
+      `Bearer ${forged}`,
+      'Basic abc',
+    ]) {
       const req = api().get('/api/foods');
       if (header) req.set('Authorization', header);
       const res = await req.expect(401);

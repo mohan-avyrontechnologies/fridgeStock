@@ -11,7 +11,13 @@ describe('cross-user isolation', () => {
     setToday('2026-09-29');
     alice = await registerUser();
     bob = await registerUser();
-    const res = await alice.auth(api().post('/api/foods').send(food({ lifespanDays: 1 }))).expect(201);
+    const res = await alice
+      .auth(
+        api()
+          .post('/api/foods')
+          .send(food({ lifespanDays: 1 })),
+      )
+      .expect(201);
     aliceFoodId = res.body.id;
     await alice.auth(api().post(`/api/foods/${aliceFoodId}/use`).send({ quantity: 0.5 })).expect(200);
   });

@@ -35,8 +35,20 @@ describe('every data query is scoped to the signed-in user', () => {
     });
 
     // A full journey that touches every collection and code path.
-    const a = (await s.auth(api().post('/api/foods').send(food({ lifespanDays: 2, quantity: 2 })))).body;
-    const b = (await s.auth(api().post('/api/foods').send(food({ lifespanDays: 9 })))).body;
+    const a = (
+      await s.auth(
+        api()
+          .post('/api/foods')
+          .send(food({ lifespanDays: 2, quantity: 2 })),
+      )
+    ).body;
+    const b = (
+      await s.auth(
+        api()
+          .post('/api/foods')
+          .send(food({ lifespanDays: 9 })),
+      )
+    ).body;
     await s.auth(api().get('/api/foods'));
     await s.auth(api().get('/api/foods/cook-first'));
     await s.auth(api().get(`/api/foods/${a.id}`));
@@ -64,7 +76,13 @@ describe('every data query is scoped to the signed-in user', () => {
   it('ignores a userId passed in the query string', async () => {
     const alice = await registerUser();
     const bob = await registerUser();
-    await alice.auth(api().post('/api/foods').send(food({ name: 'Alice milk' }))).expect(201);
+    await alice
+      .auth(
+        api()
+          .post('/api/foods')
+          .send(food({ name: 'Alice milk' })),
+      )
+      .expect(201);
     const res = await bob.auth(api().get(`/api/foods?userId=${alice.user.id}`)).expect(200);
     expect(res.body.items).toEqual([]);
   });

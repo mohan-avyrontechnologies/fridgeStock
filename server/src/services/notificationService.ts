@@ -171,17 +171,19 @@ export async function sweep(): Promise<void> {
 
 /** The feed shows delivered reminders and ones whose delivery failed. */
 const VISIBLE = { status: { $in: ['SENT', 'FAILED'] as NotificationStatus[] } };
-export const FEED_LIMIT = 50;
-
-/** Sends any reminders that are due, then returns up to 50 SENT or FAILED ones, newest first. */
-export async function listFeed(user: UserDoc): Promise<NotificationFeed> {
+/** Sends any reminders that are due, then returns a page (up to 50) of SENT or FAILED ones, newest first. */
+export async function listFeed(
+  user: UserDoc,
+  { limit, offset }: { limit: number; offset: number },
+): Promise<NotificationFeed> {
   await dispatchDue(user);
   const filter = { userId: user._id, ...VISIBLE };
-  const [items, unread] = await Promise.all([
-    NotificationModel.find(filter).sort({ scheduledDate: -1, sentAt: -1, _id: -1 }).limit(FEED_LIMIT),
+  const [items, total, unread] = await Promise.all([
+    NotificationModel.find(filter).sort({ scheduledDate: -1, sentAt: -1, _id: -1 }).skip(offset).limit(limit),
+    NotificationModel.countDocuments(filter),
     NotificationModel.countDocuments({ ...filter, readAt: null }),
   ]);
-  return { items: items.map(toNotificationView), unread };
+  return { items: items.map(toNotificationView), total, unread };
 }
 
 export async function unreadCount(user: UserDoc): Promise<{ unread: number }> {

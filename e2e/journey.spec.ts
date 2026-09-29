@@ -25,12 +25,17 @@ async function addFood(page: Page, name: string, lifespan: string, unit = 'pcs')
 }
 
 const allFood = (page: Page) =>
-  page.getByRole('heading', { name: /^All food/ }).locator('xpath=../..').getByRole('listitem');
+  page
+    .getByRole('heading', { name: /^All food/ })
+    .locator('xpath=../..')
+    .getByRole('listitem');
 
 /** Nothing the user sees may call food "safe" (BRD §10.3). */
 async function expectNoSafetyClaim(page: Page) {
   const text = await page.locator('body').innerText();
-  expect(text).not.toMatch(/\bsafe\b|guaranteed|good until|fresh until|still good|safe until|safe to eat|safe to consume/i);
+  expect(text).not.toMatch(
+    /\bsafe\b|guaranteed|good until|fresh until|still good|safe until|safe to eat|safe to consume/i,
+  );
 }
 
 /** Phone layouts must never scroll sideways. */
@@ -45,10 +50,18 @@ async function expectLargeTapTargets(page: Page) {
     [...document.querySelectorAll<HTMLElement>('a[href], button, input:not([type=hidden]), select, textarea')]
       .filter((el) => {
         const r = el.getBoundingClientRect();
-        return r.width > 0 && r.height > 0 && !el.classList.contains('sr-only') && getComputedStyle(el).visibility !== 'hidden';
+        return (
+          r.width > 0 &&
+          r.height > 0 &&
+          !el.classList.contains('sr-only') &&
+          getComputedStyle(el).visibility !== 'hidden'
+        );
       })
       .filter((el) => el.getBoundingClientRect().height < 44)
-      .map((el) => `${el.tagName} "${(el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 30)}" ${Math.round(el.getBoundingClientRect().height)}px`),
+      .map(
+        (el) =>
+          `${el.tagName} "${(el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 30)}" ${Math.round(el.getBoundingClientRect().height)}px`,
+      ),
   );
   expect(small).toEqual([]);
 }
@@ -63,6 +76,37 @@ async function shot(page: Page, name: string) {
   await expectLargeTapTargets(page);
   await page.screenshot({ path: `e2e/screenshots/${test.info().project.name}/${name}.png` });
 }
+
+test('spec journey: chicken (1 day) and eggs (8 days); only chicken in Cook First; used chicken disappears', async ({
+  page,
+}) => {
+  await register(page, 'Sam Patel');
+  await addFood(page, 'Chicken', '1', 'g');
+  await addFood(page, 'Eggs', '8');
+
+  const nav = page.getByRole('navigation', { name: 'Main' });
+  await nav.getByRole('link', { name: /Cook First/ }).click();
+  const cookFirst = page.getByRole('main').getByRole('listitem');
+  await expect(cookFirst).toHaveCount(1);
+  await expect(cookFirst.first()).toContainText('Chicken');
+  await expect(page.getByRole('main')).not.toContainText('Eggs');
+
+  await page.getByRole('button', { name: 'Used: Chicken' }).click();
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /Used all/ })
+    .click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Yes, used all' }).click();
+  await expect(page.getByText('Nothing needs attention right now.')).toBeVisible();
+  await expect(page.getByRole('main')).not.toContainText('Chicken');
+
+  await nav.getByRole('link', { name: 'Home' }).click();
+  const allFood = page.getByRole('region', { name: /All food/ });
+  await expect(allFood.getByRole('listitem')).toHaveCount(1);
+  await expect(allFood).toContainText('Eggs');
+  await expect(page.getByRole('main')).not.toContainText('Chicken');
+  await expect(page.getByText('Nothing urgent right now.')).toBeVisible();
+});
 
 test('register → add food → Cook First → mark used → history', async ({ page }) => {
   await register(page);
@@ -88,7 +132,10 @@ test('register → add food → Cook First → mark used → history', async ({ 
   await shot(page, '02-dashboard');
 
   // Cook First: everything except "Not urgent".
-  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: /Cook First/ }).click();
+  await page
+    .getByRole('navigation', { name: 'Main' })
+    .getByRole('link', { name: /Cook First/ })
+    .click();
   await expect(page.getByRole('heading', { name: 'Cook First', level: 1 })).toBeVisible();
   const cookFirst = page.getByRole('main').getByRole('listitem');
   await expect(cookFirst).toHaveCount(3);
@@ -99,7 +146,10 @@ test('register → add food → Cook First → mark used → history', async ({ 
 
   // One tap: used it all.
   await page.getByRole('button', { name: 'Used: Chicken' }).click();
-  await page.getByRole('dialog').getByRole('button', { name: /Used all/ }).click();
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: /Used all/ })
+    .click();
   await expect(page.getByRole('dialog', { name: 'Mark Chicken as used?' })).toBeVisible();
   await shot(page, '04-action-sheet');
   await page.getByRole('dialog').getByRole('button', { name: 'Yes, used all' }).click();
@@ -168,7 +218,10 @@ test('validation messages and the expected-expiry preview', async ({ page }) => 
 test('reminders appear under the bell', async ({ page }) => {
   await register(page, 'Dana Ruiz');
   await addFood(page, 'Prawns', '1', 'g');
-  await page.getByRole('link', { name: /Reminders/ }).first().click();
+  await page
+    .getByRole('link', { name: /Reminders/ })
+    .first()
+    .click();
   await expect(page.getByText('Prawns: expected expiry in 1 day', { exact: false })).toBeVisible();
   await expectNoSafetyClaim(page);
   await shot(page, '08-reminders');
@@ -182,7 +235,10 @@ test("one user never sees another user's food", async ({ browser }) => {
   const a = await browser.newPage();
   await register(a, 'Ava First');
   await addFood(a, 'Secret salmon', '2', 'g');
-  const foodUrl = await a.getByRole('link', { name: /Secret salmon/ }).first().getAttribute('href');
+  const foodUrl = await a
+    .getByRole('link', { name: /Secret salmon/ })
+    .first()
+    .getAttribute('href');
 
   const bCtx = await browser.newContext();
   const b = await bCtx.newPage();
