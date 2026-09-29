@@ -9,7 +9,7 @@ Built from the BRD/FRD/SRD/TDD set (PFCP-*-1.0/2.0).
 | Client (`client/`) | React 19, TypeScript, Tailwind CSS v4, Zustand, React Router, Vite |
 | API (`server/`) | Node.js, Express 5, TypeScript, Mongoose, Zod, JWT (HS256), bcrypt |
 | Database | MongoDB |
-| Tests | Vitest + Supertest + mongodb-memory-server (API), Vitest + Testing Library + MSW (client) |
+| Tests | Vitest + Supertest + mongodb-memory-server (API), Vitest + Testing Library + MSW (client), Playwright (end-to-end) |
 
 ## Running locally
 
@@ -20,12 +20,42 @@ npm run dev:server                   # API on http://localhost:4000/api
 npm run dev:client                   # app on http://localhost:5173
 ```
 
-If `MONGODB_URI` is empty, the API starts an **embedded MongoDB** that stores its data in `server/.data/`, so you don't need Docker or a local `mongod`. The first start downloads the MongoDB binary (~780 MB, then cached). In production, `MONGODB_URI` and `JWT_SECRET` are required and the server refuses to start without them.
+**Database.** The lighter option is Docker:
 
 ```bash
-npm test        # server (76 tests) + client (10 tests)
+docker compose up -d                      # MongoDB 8 on 127.0.0.1:27017, capped at 256 MB cache
+# then in server/.env:
+MONGODB_URI=mongodb://localhost:27017/cook-first
+```
+
+If `MONGODB_URI` is empty, the API instead starts an **embedded MongoDB** that stores its data in `server/.data/`, so you don't need Docker or a local `mongod`. The first start downloads the MongoDB binary (~780 MB, then cached). In production, `MONGODB_URI` and `JWT_SECRET` are required and the server refuses to start without them.
+
+```bash
+npm test          # server (76 tests) + client (10 tests)
+npm run test:e2e  # Playwright, 6 journeys in Chrome at a Pixel 7 viewport
 npm run build
 ```
+
+The end-to-end run starts its own API (on port 4100, with a throwaway in-memory database) and its own client (on port 5174), so it doesn't touch your dev data. Locally it uses your installed Chrome; in CI it uses Playwright's Chromium. It covers:
+
+- register → add food → Cook First → mark used → history
+- partial use and partial waste
+- validation messages and the expected-expiry preview
+- reminders
+- cross-user isolation
+- settings
+- that no page says "safe" or scrolls sideways
+
+Screenshots go to `e2e/screenshots/` (git-ignored).
+
+## Deploying (SRD §9)
+
+1. **Database:** create a MongoDB Atlas cluster (the free tier is enough) and copy its connection string.
+2. **API on Render:** New → Blueprint → select this repo. `render.yaml` builds `server/`, runs `node server/dist/index.js` and checks `/api/health`. It generates `JWT_SECRET` for you. Set `MONGODB_URI` (Atlas) and `CORS_ORIGIN` (the Vercel URL from step 3).
+3. **Client on Vercel:** import the repo and set **Root Directory** to `client`. `client/vercel.json` handles the install, the build and the rewrites that make client-side routes work. Set `VITE_API_URL` to `https://<your-render-app>.onrender.com/api`.
+4. Redeploy the API once the Vercel URL is known, so `CORS_ORIGIN` matches it.
+
+CI (`.github/workflows/ci.yml`) runs typecheck → unit and API tests → build → Playwright on every push and pull request. Render and Vercel deploy on their own when `main` changes.
 
 ## How it behaves
 
@@ -82,4 +112,4 @@ Errors always have the shape `{error: {code, message, field?}}`.
 - **`GET /foods` response.** It returns `{today, summary, items}` rather than a bare array, because the dashboard needs the counts.
 - **Future added dates.** These are rejected. Backdated dates are allowed.
 - **`EXPIRED` usage action.** This is not generated. An item that passes its expected expiry stays on the list as "Past expected expiry" until the user acts on it.
-- **Not built yet.** Playwright end-to-end tests, push delivery through Firebase, and the deployment pipeline. A CI workflow runs typecheck, tests and build.
+- **Push notifications (Firebase Cloud Messaging) are not built.** The SRD marks them "future/optional", and they need a Firebase project and keys. Reminders are delivered in-app. Delivery goes through `deliveryChannel` in `server/src/services/notificationService.ts`, so a push channel can be added there without changing scheduling.

@@ -40,6 +40,14 @@ export function remainingText(remainingDays: number): string {
   return `Expected expiry was ${ago === 1 ? 'yesterday' : `${ago} days ago`}`;
 }
 
+/** Short relative day for compact rows: "today", "tomorrow", "in 3 days", "2 days ago". */
+export function relativeDay(remainingDays: number): string {
+  if (remainingDays === 0) return 'today';
+  if (remainingDays === 1) return 'tomorrow';
+  if (remainingDays > 1) return `in ${remainingDays} days`;
+  return remainingDays === -1 ? 'yesterday' : `${-remainingDays} days ago`;
+}
+
 export const actionCopy = {
   USED: { label: 'Used it all', past: 'Marked as used' },
   PARTIALLY_USED: { label: 'Used some', past: 'Recorded partial use' },

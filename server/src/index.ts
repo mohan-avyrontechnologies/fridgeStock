@@ -12,6 +12,11 @@ async function resolveMongoUri(): Promise<string> {
   // Development fallback: an embedded MongoDB persisted under ./.data, so the
   // app runs without Docker or a local mongod install.
   const { MongoMemoryServer } = await import('mongodb-memory-server');
+  if (process.env.EPHEMERAL_DB === '1') {
+    // End-to-end runs: a throwaway database that never touches ./.data.
+    const server = await MongoMemoryServer.create();
+    return `${server.getUri()}cook-first-e2e`;
+  }
   const dbPath = path.resolve('.data');
   const { mkdirSync } = await import('node:fs');
   mkdirSync(dbPath, { recursive: true });

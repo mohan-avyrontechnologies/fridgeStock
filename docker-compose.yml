@@ -1,0 +1,14 @@
+# Local MongoDB for development. Lighter than the embedded fallback.
+#   docker compose up -d
+#   then set MONGODB_URI=mongodb://localhost:27017/cook-first in server/.env
+services:
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:27017:27017'
+    volumes:
+      - mongo-data:/data/db
+    command: ['--wiredTigerCacheSizeGB', '0.25']
+volumes:
+  mongo-data:

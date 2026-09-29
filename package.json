@@ -11,6 +11,10 @@
     "dev:client": "npm run dev --workspace client",
     "build": "npm run build --workspace server && npm run build --workspace client",
     "test": "npm test --workspace server && npm test --workspace client",
-    "lint": "npm run lint --workspace server && npm run lint --workspace client"
+    "lint": "npm run lint --workspace server && npm run lint --workspace client",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
   }
 }

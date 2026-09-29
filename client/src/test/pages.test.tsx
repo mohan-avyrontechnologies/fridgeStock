@@ -24,7 +24,7 @@ describe('Dashboard', () => {
     expect(within(list).getByText('Expected expiry today', { selector: 'span' })).toBeInTheDocument();
     expect(within(list).getByText('Use soon')).toBeInTheDocument();
     expect(within(list).getByText('Not urgent')).toBeInTheDocument();
-    expect(within(list).getByText('Expected expiry was yesterday', { exact: false })).toBeInTheDocument();
+    expect(within(list).getByText(/· yesterday$/)).toBeInTheDocument();
   });
 
   it('never uses the word "safe" in anything it renders', async () => {

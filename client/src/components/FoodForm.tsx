@@ -35,6 +35,9 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
 
+  const clearError = (field: keyof Errors) =>
+    setErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
+
   const lifespanNumber = Number(lifespan);
   const previewValid = lifespan !== '' && Number.isInteger(lifespanNumber) && lifespanNumber >= 0 && /^\d{4}-\d{2}-\d{2}$/.test(addedDate);
   const expiryKey = previewValid ? addDaysToKey(addedDate, lifespanNumber) : null;
@@ -89,7 +92,10 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
         autoCapitalize="sentences"
         autoFocus={autoFocus}
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={(e) => {
+          setName(e.target.value);
+          clearError('name');
+        }}
         error={errors.name}
       />
 
@@ -103,14 +109,20 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
             step="any"
             min="0"
             value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
+            onChange={(e) => {
+              setQuantity(e.target.value);
+              clearError('quantity');
+            }}
             error={errors.quantity}
           />
           {customUnit && (
-            <Field className="flex-1" label="Unit" value={unit} onChange={(e) => setUnit(e.target.value)} error={errors.unit} />
+            <Field className="flex-1" label="Unit" value={unit} onChange={(e) => {
+                setUnit(e.target.value);
+                clearError('unit');
+              }} error={errors.unit} />
           )}
         </div>
-        <fieldset className="mt-3">
+        <fieldset className="mt-3 min-w-0">
           <legend className="sr-only">Unit</legend>
           <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
             {UNITS.map((u) => (
@@ -120,6 +132,7 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
                 onClick={() => {
                   setCustomUnit(false);
                   setUnit(u);
+                  clearError('unit');
                 }}
               >
                 {u}
@@ -145,11 +158,17 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
           type="date"
           max={today}
           value={addedDate}
-          onChange={(e) => setAddedDate(e.target.value)}
+          onChange={(e) => {
+            setAddedDate(e.target.value);
+            clearError('addedDate');
+          }}
           error={errors.addedDate}
         />
         <div className="mt-2 flex gap-2">
-          <Chip selected={addedDate === today} onClick={() => setAddedDate(today)}>
+          <Chip selected={addedDate === today} onClick={() => {
+            setAddedDate(today);
+            clearError('addedDate');
+          }}>
             Today
           </Chip>
           <Chip selected={addedDate === addDaysToKey(today, -1)} onClick={() => setAddedDate(addDaysToKey(today, -1))}>
@@ -167,13 +186,19 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
           step="1"
           placeholder="How many days you expect it to last"
           value={lifespan}
-          onChange={(e) => setLifespan(e.target.value)}
+          onChange={(e) => {
+            setLifespan(e.target.value);
+            clearError('lifespanDays');
+          }}
           error={errors.lifespanDays}
           hint="Your own estimate, counted from the added date."
         />
         <div className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1">
           {LIFESPANS.map((d) => (
-            <Chip key={d} selected={lifespan === String(d)} onClick={() => setLifespan(String(d))}>
+            <Chip key={d} selected={lifespan === String(d)} onClick={() => {
+              setLifespan(String(d));
+              clearError('lifespanDays');
+            }}>
               {d} {d === 1 ? 'day' : 'days'}
             </Chip>
           ))}

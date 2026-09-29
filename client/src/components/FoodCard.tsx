@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import type { ActiveFoodItem } from '../api/types';
-import { remainingText } from '../copy';
+import { relativeDay } from '../copy';
 import { formatDateKey, formatQuantity } from '../lib/dates';
 import { ActionSheet } from './ActionSheet';
 import { URGENCY_STYLE, UrgencyBadge } from './Urgency';
@@ -16,10 +16,10 @@ export function FoodCard({ item }: { item: ActiveFoodItem }) {
           <span className="truncate text-base font-semibold text-ink">{item.name}</span>
           <UrgencyBadge urgency={item.urgency} />
         </div>
-        <p className="mt-1 text-sm text-muted">
-          {formatQuantity(item.quantity, item.unit)} · {remainingText(item.remainingDays)}
+        <p className="mt-1 text-sm text-ink">{formatQuantity(item.quantity, item.unit)}</p>
+        <p className="text-sm text-muted">
+          Expected expiry {formatDateKey(item.expectedExpiryDate)} · {relativeDay(item.remainingDays)}
         </p>
-        <p className="text-xs text-muted">Expected expiry {formatDateKey(item.expectedExpiryDate)}</p>
       </Link>
       <div className="flex items-center pr-3">
         <button

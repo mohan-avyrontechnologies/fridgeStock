@@ -1,0 +1,27 @@
+# Render Blueprint for the API (SRD §9: "suitable Node.js hosting").
+# New > Blueprint > pick this repo. Then set MONGODB_URI (e.g. MongoDB Atlas)
+# and CORS_ORIGIN (your Vercel URL) in the dashboard.
+services:
+  - type: web
+    name: cook-first-api
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build --workspace server
+    startCommand: node server/dist/index.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: '24'
+      # The embedded test database is a devDependency; skip its binary download.
+      - key: MONGOMS_DISABLE_POSTINSTALL
+        value: '1'
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: MONGODB_URI
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
