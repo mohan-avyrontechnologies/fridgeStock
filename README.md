@@ -648,7 +648,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.5.0] - 2026-09-29: Data model fields for later phases + Phase 1 (faster entry)
+### [2.5.0] - 2026-09-29: Data model fields for later phases + Phase 1 (faster entry) · `b8fedd6`
 **Added: data model (ahead of later phases)**
 - **`householdId`:** on users (each starts in their own household) and food items.
 - **`storage`:** `FRIDGE`, `FREEZER` or `PANTRY` on food items, defaulting to `FRIDGE`.
