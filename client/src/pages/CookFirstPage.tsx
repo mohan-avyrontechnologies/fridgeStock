@@ -2,6 +2,7 @@ import { PageBody, PageHeader } from '../components/AppShell';
 import { FoodList } from '../components/FoodCard';
 import { EstimateNote } from '../components/Urgency';
 import { EmptyState, Spinner } from '../components/ui';
+import { screenCopy } from '../copy';
 import { useFoodStore } from '../stores/foodStore';
 
 export function CookFirstPage() {
@@ -11,27 +12,20 @@ export function CookFirstPage() {
 
   return (
     <>
-      <PageHeader title="Cook First" subtitle="What to use first, soonest expected expiry at the top" />
+      <PageHeader title="Cook First" subtitle={screenCopy.cookFirst.subtitle} />
       <PageBody>
         {!cookFirst && !error && <Spinner />}
         {error && !cookFirst && <EmptyState title="Couldn’t load Cook First">{error}</EmptyState>}
         {cookFirst && cookFirst.length === 0 && (
-          <EmptyState title="Nothing needs attention right now">
-            {total > 0
-              ? `None of your ${total} items are within 3 days of their expected expiry.`
-              : 'Add food to see what to cook first.'}
-          </EmptyState>
+          <EmptyState title={screenCopy.cookFirst.emptyTitle}>{screenCopy.cookFirst.emptyBody(total)}</EmptyState>
         )}
         {cookFirst && cookFirst.length > 0 && (
           <>
-            <p className="text-sm text-muted">
-              {cookFirst.length} {cookFirst.length === 1 ? 'item is' : 'items are'} at or near expected expiry. Tap
-              “Update” once you’ve cooked with something.
-            </p>
+            <p className="text-sm text-muted">{screenCopy.cookFirst.intro(cookFirst.length)}</p>
             <FoodList items={cookFirst} columns={2} />
           </>
         )}
-        <EstimateNote long />
+        <EstimateNote />
       </PageBody>
     </>
   );

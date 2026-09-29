@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
 import type { FoodInput } from '../api/types';
-import { remainingText } from '../copy';
+import { remainingText, screenCopy } from '../copy';
 import { addDaysToKey, daysBetween, formatDateKey, localDateKey } from '../lib/dates';
 import { Button, Chip, Field, FormError } from './ui';
 
@@ -191,7 +191,7 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
             clearError('lifespanDays');
           }}
           error={errors.lifespanDays}
-          hint="Your own estimate, counted from the added date."
+          hint={screenCopy.form.lifespanHint}
         />
         <div className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1">
           {LIFESPANS.map((d) => (
@@ -206,9 +206,9 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
       </div>
 
       <div aria-live="polite" className="rounded-2xl bg-brand-soft px-4 py-3">
-        <p className="text-sm text-muted">Expected expiry (estimate)</p>
+        <p className="text-sm text-muted">{screenCopy.form.previewLabel}</p>
         <p className="text-base font-semibold text-ink">
-          {expiryKey ? `${formatDateKey(expiryKey)} · ${remainingText(daysBetween(today, expiryKey))}` : 'Enter a lifespan to see it'}
+          {expiryKey ? `${formatDateKey(expiryKey)} · ${remainingText(daysBetween(today, expiryKey))}` : screenCopy.form.previewEmpty}
         </p>
       </div>
 

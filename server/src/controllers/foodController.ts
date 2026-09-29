@@ -95,7 +95,7 @@ async function recordUsage(
     quantityRemaining: closingStatus ? 0 : remaining,
   });
 
-  if (closingStatus) await cancelForFood(food._id);
+  if (closingStatus) await cancelForFood(user._id, food._id);
   return record;
 }
 

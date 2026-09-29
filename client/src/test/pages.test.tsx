@@ -134,6 +134,21 @@ describe('Add food', () => {
   });
 });
 
+const REQUIRED_LINE = 'Expected expiry is an estimate to help you plan. Always check your food before eating it.';
+
+describe('required estimate line', () => {
+  it('is shown on Add Food', () => {
+    renderSignedIn('/add', <AddFoodPage />);
+    expect(screen.getByText(REQUIRED_LINE)).toBeInTheDocument();
+  });
+
+  it('is shown on Cook First, with or without items', async () => {
+    renderSignedIn('/cook-first', <CookFirstPage />);
+    await screen.findByText('3 items are at or near expected expiry', { exact: false });
+    expect(screen.getByText(REQUIRED_LINE)).toBeInTheDocument();
+  });
+});
+
 describe('copy', () => {
   it('uses the agreed urgency labels', () => {
     expect(Object.values(urgencyCopy).map((c) => c.label)).toEqual([

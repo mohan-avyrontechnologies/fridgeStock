@@ -3,6 +3,7 @@ import { afterAll, beforeAll, beforeEach } from 'vitest';
 import { clock } from '../src/utils/clock.js';
 
 process.env.NODE_ENV = 'test';
+process.env.AUTH_RATE_LIMIT = 'off';
 
 beforeAll(async () => {
   await mongoose.connect(`${process.env.TEST_MONGO_URI}cook-first-test`);

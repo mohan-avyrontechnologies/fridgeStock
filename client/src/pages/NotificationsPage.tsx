@@ -4,13 +4,14 @@ import type { AppNotification, ReminderType } from '../api/types';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { EstimateNote } from '../components/Urgency';
 import { Button, EmptyState, Spinner } from '../components/ui';
+import { reminderTypeLabel, screenCopy } from '../copy';
 import { formatInstant } from '../lib/dates';
 import { useNotificationStore } from '../stores/notificationStore';
 
-const TYPE_STYLE: Record<ReminderType, { label: string; dot: string }> = {
-  APPROACHING_EXPIRY: { label: 'Use soon', dot: 'bg-soon-bar' },
-  DUE: { label: 'Expected expiry today', dot: 'bg-today-bar' },
-  OVERDUE: { label: 'Past expected expiry', dot: 'bg-past-bar' },
+const TYPE_DOT: Record<ReminderType, string> = {
+  APPROACHING_EXPIRY: 'bg-soon-bar',
+  DUE: 'bg-today-bar',
+  OVERDUE: 'bg-past-bar',
 };
 
 export function NotificationsPage() {
@@ -27,7 +28,7 @@ export function NotificationsPage() {
         {loading && items.length === 0 && <Spinner />}
         {!loading && items.length === 0 && (
           <EmptyState title="No reminders yet">
-            You’ll get a reminder here when an item is getting close to its expected expiry, on the day, and if it passes.
+            {screenCopy.reminders.emptyBody}
           </EmptyState>
         )}
         {unread > 0 && (
@@ -54,7 +55,6 @@ export function NotificationsPage() {
 }
 
 function ReminderRow({ n, onOpen }: { n: AppNotification; onOpen: () => void }) {
-  const style = TYPE_STYLE[n.type];
   return (
     <li>
       <Link
@@ -62,10 +62,10 @@ function ReminderRow({ n, onOpen }: { n: AppNotification; onOpen: () => void }) 
         onClick={onOpen}
         className={`flex gap-3 rounded-2xl border px-4 py-3 ${n.readAt ? 'border-line bg-card' : 'border-brand/30 bg-brand-soft'}`}
       >
-        <span aria-hidden className={`mt-1.5 size-2.5 shrink-0 rounded-full ${style.dot}`} />
+        <span aria-hidden className={`mt-1.5 size-2.5 shrink-0 rounded-full ${TYPE_DOT[n.type]}`} />
         <div className="min-w-0">
           <p className="text-xs font-semibold text-muted">
-            {style.label}
+            {reminderTypeLabel[n.type]}
             {!n.readAt && <span className="sr-only"> (unread)</span>}
           </p>
           <p className="text-[15px] text-ink">{n.message}</p>

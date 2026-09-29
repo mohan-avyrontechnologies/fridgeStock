@@ -21,10 +21,13 @@ import {
 
 export const router = Router();
 
+/** Authentication routes: 20 requests per 15 minutes per IP address. */
+export const AUTH_RATE_LIMIT = { windowMs: 15 * 60 * 1000, limit: 20 };
+
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 30,
-  skip: () => env.isTest,
+  ...AUTH_RATE_LIMIT,
+  // Tests turn it off, except the test that checks the limit itself.
+  skip: () => process.env.AUTH_RATE_LIMIT === 'off',
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   message: { error: { code: 'RATE_LIMITED', message: 'Too many attempts. Try again later.' } },

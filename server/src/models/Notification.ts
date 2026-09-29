@@ -38,10 +38,11 @@ const notificationSchema = new Schema<Notification>(
     sentAt: { type: Date },
     readAt: { type: Date },
   },
-  { timestamps: true },
+  // Adds userId to the filter of every save()/deleteOne() on a document.
+  { timestamps: true, shardKey: { userId: 1 } },
 );
 
-notificationSchema.index({ foodId: 1, type: 1, expiryDate: 1 }, { unique: true });
+notificationSchema.index({ userId: 1, foodId: 1, type: 1, expiryDate: 1 }, { unique: true });
 notificationSchema.index({ userId: 1, status: 1, scheduledDate: 1 });
 notificationSchema.index({ userId: 1, sentAt: -1 });
 

@@ -4,14 +4,13 @@ import type { NotificationPreferences } from '../api/types';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { EstimateNote } from '../components/Urgency';
 import { Button } from '../components/ui';
+import { reminderPreferenceCopy, screenCopy } from '../copy';
 import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
 
-const PREFS: { key: keyof NotificationPreferences; title: string; detail: string }[] = [
-  { key: 'approachingExpiry', title: 'Getting close', detail: 'When an item is 3 days or less from its expected expiry' },
-  { key: 'due', title: 'On the day', detail: 'When an item reaches its expected expiry' },
-  { key: 'overdue', title: 'Once it’s past', detail: 'The day after an item’s expected expiry' },
-];
+const PREFS = (['approachingExpiry', 'due', 'overdue'] as const satisfies (keyof NotificationPreferences)[]).map(
+  (key) => ({ key, ...reminderPreferenceCopy[key] }),
+);
 
 export function SettingsPage() {
   const { user, setUser, logout } = useAuthStore();
@@ -90,8 +89,8 @@ export function SettingsPage() {
         </section>
 
         <section>
-          <h2 className="mb-2 text-lg font-semibold">About expected expiry</h2>
-          <EstimateNote long />
+          <h2 className="mb-2 text-lg font-semibold">{screenCopy.settings.aboutTitle}</h2>
+          <EstimateNote />
         </section>
 
         <Button variant="danger" className="w-full" onClick={logout}>

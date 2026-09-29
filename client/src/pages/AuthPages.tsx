@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router';
 import { ApiError } from '../api/client';
 import { EstimateNote } from '../components/Urgency';
 import { Button, Field, FormError } from '../components/ui';
-import { estimateNoteShort } from '../copy';
+import { estimateNote, screenCopy } from '../copy';
 import { useAuthStore } from '../stores/authStore';
 
 type Errors = Partial<Record<'name' | 'email' | 'password' | 'form', string>>;
@@ -18,14 +18,14 @@ function AuthLayout({ title, children, footer }: { title: string; children: Reac
           <span className="text-xl font-bold tracking-tight">Cook First</span>
         </div>
         <div className="max-w-md">
-          <p className="text-4xl leading-tight font-bold tracking-tight">Know what to cook before it’s forgotten.</p>
+          <p className="text-4xl leading-tight font-bold tracking-tight">{screenCopy.auth.headline}</p>
           <ul className="mt-8 space-y-3 text-lg text-white/85">
-            <li>Log food with a lifespan in days</li>
-            <li>See everything ordered by expected expiry</li>
-            <li>Get reminders as items get close</li>
+            {screenCopy.auth.points.map((point) => (
+              <li key={point}>{point}</li>
+            ))}
           </ul>
         </div>
-        <p className="max-w-md text-sm text-white/70">{estimateNoteShort}</p>
+        <p className="max-w-md text-sm text-white/70">{estimateNote}</p>
       </aside>
 
       <main className="top-inset mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-8 lg:justify-center lg:py-12">
@@ -33,7 +33,7 @@ function AuthLayout({ title, children, footer }: { title: string; children: Reac
           <img src="/icon.svg" alt="" className="size-12 lg:hidden" />
           <p className="mt-5 text-sm font-semibold tracking-wide text-brand uppercase lg:mt-0">Cook First</p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight">{title}</h1>
-          <p className="mt-2 text-muted">Log what’s in your fridge and see what to cook before it reaches its expected expiry.</p>
+          <p className="mt-2 text-muted">{screenCopy.auth.intro}</p>
         </div>
         {children}
         <p className="mt-6 text-center text-sm text-muted">{footer}</p>

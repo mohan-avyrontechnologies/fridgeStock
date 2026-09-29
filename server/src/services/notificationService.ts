@@ -39,20 +39,20 @@ function formatDate(date: Date): string {
   }).format(date);
 }
 
-function stagesFor(expiry: Date) {
+function stagesFor(expiryDate: Date) {
   return [
     {
       type: 'APPROACHING_EXPIRY' as const,
-      starts: addDays(expiry, -DEFAULT_THRESHOLDS.useSoonDays),
-      endsBefore: expiry,
+      starts: addDays(expiryDate, -DEFAULT_THRESHOLDS.useSoonDays),
+      endsBefore: expiryDate,
     },
-    { type: 'DUE' as const, starts: expiry, endsBefore: addDays(expiry, 1) },
-    { type: 'OVERDUE' as const, starts: addDays(expiry, 1), endsBefore: null },
+    { type: 'DUE' as const, starts: expiryDate, endsBefore: addDays(expiryDate, 1) },
+    { type: 'OVERDUE' as const, starts: addDays(expiryDate, 1), endsBefore: null },
   ];
 }
 
-export async function cancelForFood(foodId: Types.ObjectId): Promise<void> {
-  await NotificationModel.deleteMany({ foodId, status: { $in: OPEN_STATUSES } });
+export async function cancelForFood(userId: Types.ObjectId, foodId: Types.ObjectId): Promise<void> {
+  await NotificationModel.deleteMany({ userId, foodId, status: { $in: OPEN_STATUSES } });
 }
 
 /**
@@ -61,7 +61,7 @@ export async function cancelForFood(foodId: Types.ObjectId): Promise<void> {
  * backdated item gets one relevant reminder rather than a burst of stale ones.
  */
 export async function scheduleForFood(food: FoodItemDoc, user: UserDoc): Promise<void> {
-  await cancelForFood(food._id);
+  await cancelForFood(user._id, food._id);
   if (food.status !== 'ACTIVE') return;
 
   const today = todayIn(user.timeZone, clock.now());
@@ -70,8 +70,8 @@ export async function scheduleForFood(food: FoodItemDoc, user: UserDoc): Promise
     if (stage.endsBefore && stage.endsBefore <= today) continue;
     const scheduledDate = stage.starts > today ? stage.starts : today;
     await NotificationModel.updateOne(
-      { foodId: food._id, type: stage.type, expiryDate: food.expiryDate },
-      { $setOnInsert: { userId: user._id, scheduledDate, status: 'PENDING', attempts: 0 } },
+      { userId: user._id, foodId: food._id, type: stage.type, expiryDate: food.expiryDate },
+      { $setOnInsert: { scheduledDate, status: 'PENDING', attempts: 0 } },
       { upsert: true },
     );
   }
@@ -83,14 +83,14 @@ export async function rescheduleAllForUser(user: UserDoc): Promise<void> {
 }
 
 function messageFor(type: ReminderType, food: FoodItemDoc, today: Date): string {
-  const expiry = formatDate(food.expiryDate);
+  const expiryLabel = formatDate(food.expiryDate);
   switch (type) {
     case 'APPROACHING_EXPIRY':
-      return reminderCopy.APPROACHING_EXPIRY(food.name, diffDays(food.expiryDate, today), expiry);
+      return reminderCopy.APPROACHING_EXPIRY(food.name, diffDays(food.expiryDate, today), expiryLabel);
     case 'DUE':
       return reminderCopy.DUE(food.name);
     case 'OVERDUE':
-      return reminderCopy.OVERDUE(food.name, expiry);
+      return reminderCopy.OVERDUE(food.name, expiryLabel);
   }
 }
 
@@ -133,7 +133,12 @@ export async function dispatchForUser(user: UserDoc): Promise<void> {
   }
 }
 
-/** Background sweep across every user with reminders waiting to go out. */
+/**
+ * Background sweep across every user with reminders waiting to go out. This
+ * is the one query not scoped to a signed-in user (a system job has none); it
+ * only collects user ids, and each user's reminders are then read by
+ * dispatchForUser with that user's id.
+ */
 export async function sweep(loadUser: (id: Types.ObjectId) => Promise<UserDoc | null>) {
   // A one-day margin covers users whose local date is ahead of UTC.
   const horizon = addDays(clock.now(), 1);

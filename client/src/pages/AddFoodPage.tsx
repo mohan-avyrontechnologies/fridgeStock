@@ -24,7 +24,7 @@ export function AddFoodPage() {
             if (!addAnother) navigate('/');
           }}
         />
-        <EstimateNote long />
+        <EstimateNote />
       </PageBody>
     </>
   );

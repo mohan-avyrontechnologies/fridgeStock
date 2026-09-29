@@ -30,7 +30,7 @@ const allFood = (page: Page) =>
 /** Nothing the user sees may call food "safe" (BRD §10.3). */
 async function expectNoSafetyClaim(page: Page) {
   const text = await page.locator('body').innerText();
-  expect(text).not.toMatch(/\bsafe\b|guaranteed|good until|fresh until/i);
+  expect(text).not.toMatch(/\bsafe\b|guaranteed|good until|fresh until|still good|safe until|safe to eat|safe to consume/i);
 }
 
 /** Phone layouts must never scroll sideways. */
@@ -40,6 +40,8 @@ async function expectNoHorizontalScroll(page: Page) {
 }
 
 /** Viewport-sized, after animations settle, as the user would see it. */
+const REQUIRED_LINE = 'Expected expiry is an estimate to help you plan. Always check your food before eating it.';
+
 async function shot(page: Page, name: string) {
   await page.waitForTimeout(350);
   await expectNoHorizontalScroll(page);
@@ -75,6 +77,7 @@ test('register → add food → Cook First → mark used → history', async ({ 
   const cookFirst = page.getByRole('main').getByRole('listitem');
   await expect(cookFirst).toHaveCount(3);
   await expect(page.getByRole('main')).not.toContainText('Eggs');
+  await expect(page.getByText(REQUIRED_LINE)).toBeVisible();
   await expectNoSafetyClaim(page);
   await shot(page, '03-cook-first');
 
@@ -136,6 +139,7 @@ test('validation messages and the expected-expiry preview', async ({ page }) => 
   await page.getByRole('button', { name: '3 days' }).click();
   await expect(page.getByText('Lifespan must be zero or a positive number of days.')).toBeHidden();
   await expect(page.getByText('Expected expiry in 3 days')).toBeVisible();
+  await expect(page.getByText(REQUIRED_LINE)).toBeVisible();
   await expectNoSafetyClaim(page);
   await shot(page, '07-add-food');
 });

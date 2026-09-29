@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import type { ActiveFoodItem } from '../api/types';
-import { relativeDay } from '../copy';
+import { cardExpiryLine } from '../copy';
 import { formatDateKey, formatQuantity } from '../lib/dates';
 import { ActionSheet } from './ActionSheet';
 import { URGENCY_STYLE, UrgencyBadge } from './Urgency';
@@ -18,7 +18,7 @@ export function FoodCard({ item }: { item: ActiveFoodItem }) {
         </div>
         <p className="mt-1 text-sm text-ink">{formatQuantity(item.quantity, item.unit)}</p>
         <p className="text-sm text-muted">
-          Expected expiry {formatDateKey(item.expectedExpiryDate)} · {relativeDay(item.remainingDays)}
+          {cardExpiryLine(formatDateKey(item.expectedExpiryDate), item.remainingDays)}
         </p>
       </Link>
       <div className="flex items-center pr-3">

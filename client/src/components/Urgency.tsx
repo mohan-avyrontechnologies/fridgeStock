@@ -1,5 +1,5 @@
 import type { Urgency } from '../api/types';
-import { estimateNote, estimateNoteShort, urgencyCopy } from '../copy';
+import { estimateNote, urgencyCopy } from '../copy';
 
 export const URGENCY_STYLE: Record<Urgency, { badge: string; bar: string; tile: string }> = {
   NOT_URGENT: { badge: 'bg-calm text-calm-ink', bar: 'bg-calm-bar', tile: 'bg-calm text-calm-ink' },
@@ -18,13 +18,14 @@ export function UrgencyBadge({ urgency }: { urgency: Urgency }) {
   );
 }
 
-export function EstimateNote({ long = false }: { long?: boolean }) {
+/** The required estimate line (copy.estimateNote). */
+export function EstimateNote() {
   return (
     <p className="flex gap-2 text-[13px] leading-snug text-muted">
       <svg aria-hidden viewBox="0 0 20 20" className="mt-px size-4 shrink-0 fill-current">
         <path d="M10 2a8 8 0 1 0 0 16 8 8 0 0 0 0-16Zm0 3.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2ZM11 14.5H9v-5h2v5Z" />
       </svg>
-      <span>{long ? estimateNote : estimateNoteShort}</span>
+      <span>{estimateNote}</span>
     </p>
   );
 }

@@ -7,7 +7,14 @@ import { PageBody, PageHeader } from '../components/AppShell';
 import { FoodForm } from '../components/FoodForm';
 import { EstimateNote, UrgencyBadge } from '../components/Urgency';
 import { Button, EmptyState, Spinner } from '../components/ui';
-import { historyActionLabel, pastExpectedExpiryNote, remainingText, urgencyCopy } from '../copy';
+import {
+  expectedExpiryLabel,
+  historyActionLabel,
+  pastExpectedExpiryNote,
+  remainingText,
+  screenCopy,
+  urgencyCopy,
+} from '../copy';
 import { formatDateKey, formatInstant, formatQuantity } from '../lib/dates';
 import { useFoodStore } from '../stores/foodStore';
 import { useToastStore } from '../stores/toastStore';
@@ -73,7 +80,7 @@ export function FoodDetailPage() {
               onSubmit={async (input) => {
                 setFood(await update(food.id, input));
                 setEditing(false);
-                toast('Saved. Expected expiry updated.');
+                toast(screenCopy.detail.savedToast);
               }}
             />
             <Button variant="ghost" className="w-full" onClick={() => setEditing(false)}>
@@ -102,7 +109,7 @@ export function FoodDetailPage() {
 
               <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line pt-4 text-sm">
                 <Detail label={active ? 'Quantity left' : 'Quantity'} value={formatQuantity(food.quantity, food.unit)} />
-                <Detail label="Expected expiry" value={formatDateKey(food.expectedExpiryDate)} />
+                <Detail label={expectedExpiryLabel} value={formatDateKey(food.expectedExpiryDate)} />
                 <Detail label="Added on" value={formatDateKey(food.addedDate)} />
                 <Detail label="Lifespan" value={`${food.lifespanDays} ${food.lifespanDays === 1 ? 'day' : 'days'}`} />
               </dl>
@@ -120,7 +127,7 @@ export function FoodDetailPage() {
                 </Button>
               </div>
             )}
-            <EstimateNote long />
+            <EstimateNote />
           </>
         )}
       </PageBody>

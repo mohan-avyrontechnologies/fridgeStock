@@ -33,7 +33,8 @@ const foodItemSchema = new Schema<FoodItem>(
     status: { type: String, enum: FOOD_STATUS, default: 'ACTIVE', required: true },
     closedAt: { type: Date },
   },
-  { timestamps: true },
+  // Adds userId to the filter of every save()/deleteOne() on a document.
+  { timestamps: true, shardKey: { userId: 1 } },
 );
 
 foodItemSchema.pre('validate', function () {

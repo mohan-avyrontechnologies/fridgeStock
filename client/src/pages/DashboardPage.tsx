@@ -4,7 +4,7 @@ import { PageBody, PageHeader } from '../components/AppShell';
 import { FoodList } from '../components/FoodCard';
 import { EstimateNote, URGENCY_STYLE } from '../components/Urgency';
 import { Button, EmptyState, SectionTitle, Spinner } from '../components/ui';
-import { urgencyCopy, urgencyShortLabel } from '../copy';
+import { screenCopy, urgencyCopy, urgencyShortLabel } from '../copy';
 import { formatDateKey } from '../lib/dates';
 import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
@@ -49,7 +49,7 @@ export function DashboardPage() {
 
             {inventory.items.length === 0 ? (
               <EmptyState title="Nothing logged yet">
-                <p>Add the perishables in your fridge and we’ll order them by expected expiry.</p>
+                <p>{screenCopy.dashboard.emptyBody}</p>
                 <Link to="/add" className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-brand px-4 font-semibold text-white">
                   Add your first item
                 </Link>
@@ -82,7 +82,7 @@ export function DashboardPage() {
 
                 <section className={cookFirst && cookFirst.length > 0 ? '' : 'lg:col-span-2'}>
                   <SectionTitle>All food ({inventory.items.length})</SectionTitle>
-                  <p className="-mt-2 mb-3 text-sm text-muted">Sorted by expected expiry, soonest first.</p>
+                  <p className="-mt-2 mb-3 text-sm text-muted">{screenCopy.dashboard.sortedHint}</p>
                   <FoodList items={inventory.items} columns={cookFirst && cookFirst.length > 0 ? 1 : 2} />
                 </section>
               </div>

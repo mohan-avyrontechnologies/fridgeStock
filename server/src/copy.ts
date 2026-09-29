@@ -1,7 +1,8 @@
 /**
- * Every user-facing sentence the server produces about expiry lives here.
- * Food-safety boundary (BRD §10.3): dates are estimates for planning cooking.
- * Never describe food as fit, fine or guaranteed to eat; say "expected expiry".
+ * Every user-facing sentence the server produces about expiry lives here, and
+ * nowhere else (server/test/foodSafetyCopy.test.ts checks).
+ * Food-safety boundary (BRD §10.3): dates are planning estimates. Never claim
+ * food is fit to eat; use "expected expiry" wording only.
  */
 function days(n: number): string {
   return n === 1 ? '1 day' : `${n} days`;

@@ -2,12 +2,12 @@
 
 A mobile-first web app that helps a household use perishable food before it goes to waste. You log each item with a lifespan in days. The app works out its **expected expiry**, sorts everything so the most urgent food comes first, and shows a daily **Cook First** list.
 
-> **Food-safety boundary:** expected expiry is an *estimate* to help plan cooking. The app never says or implies that food is safe to eat. Always check the food itself.
+> **Food-safety boundary:** *Expected expiry is an estimate to help you plan. Always check your food before eating it.* The app never claims that food is fit to eat.
 
 | | |
 |---|---|
 | **Status** | MVP complete. Not yet deployed. |
-| **Version** | 1.2.0 (see the [Changelog](#changelog)) |
+| **Version** | 1.3.0 (see the [Changelog](#changelog)) |
 | **Specifications** | PFCP BRD v2.0, FRD v1.0, SRD v1.0, TDD v1.0 (internal documents, not stored in this repo) |
 | **Repository** | `github.com/rugvailabs/cook_first` |
 
@@ -26,13 +26,14 @@ A mobile-first web app that helps a household use perishable food before it goes
 9. [How it works](#how-it-works)
 10. [Data model](#data-model)
 11. [API reference](#api-reference)
-12. [Security](#security)
-13. [Deployment](#deployment)
-14. [Differences from the design documents](#differences-from-the-design-documents)
-15. [Project status](#project-status)
-16. [Changelog](#changelog)
-17. [Roadmap](#roadmap)
-18. [Keeping this README up to date](#keeping-this-readme-up-to-date)
+12. [Project rules](#project-rules)
+13. [Security](#security)
+14. [Deployment](#deployment)
+15. [Differences from the design documents](#differences-from-the-design-documents)
+16. [Project status](#project-status)
+17. [Changelog](#changelog)
+18. [Roadmap](#roadmap)
+19. [Keeping this README up to date](#keeping-this-readme-up-to-date)
 
 ---
 
@@ -215,7 +216,7 @@ Run these from the repository root:
 |---|---|
 | `npm run dev:server` | Start the API with auto-reload |
 | `npm run dev:client` | Start the Vite dev server |
-| `npm test` | Server tests (76) + client tests (10) |
+| `npm test` | Server tests (91) + client tests (12) |
 | `npm run test:e2e` | Playwright end-to-end tests (12) |
 | `npm run lint` | TypeScript type-check of both halves |
 | `npm run build` | Production build of the server (`server/dist`) and client (`client/dist`) |
@@ -226,9 +227,10 @@ Run these from the repository root:
 
 | Suite | Tools | Tests | What it covers |
 |---|---|---|---|
-| **API and logic** (`server/test`) | Vitest, Supertest, in-memory MongoDB | 76 | Registration and login, protected routes, bad or expired tokens, adding/editing/removing food, every validation rule, urgency and sorting (including ties), Cook First, time zones, used / partly used / wasted / removed, history, reminder scheduling, delivery, retries and preferences, cross-user isolation |
-| **Wording guard** | Vitest | 1 of the 76 | Fails if "safe", "guaranteed", "good until" or "fresh until" appears anywhere in the source |
-| **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 10 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and expected-expiry preview |
+| **API and logic** (`server/test`) | Vitest, Supertest, in-memory MongoDB | 75 | Registration and login, protected routes, bad or expired tokens, adding/editing/removing food, every validation rule, urgency and sorting (including ties), Cook First, time zones, used / partly used / wasted / removed, history, reminder scheduling, delivery, retries and preferences, cross-user isolation |
+| **Wording guard** (`server/test/foodSafetyCopy.test.ts`) | Vitest | 5 | Scans every `.ts`/`.tsx` file in `client/src` and `server/src`, comments included, for the banned phrases. Fails if the word "safe" appears in either copy file, or if expiry wording appears outside the copy files. Also checks the required estimate line. |
+| **Project rules** (`server/test/rules.test.ts`) | Vitest, Supertest | 11 | Every database query carries the user's ID; the query-string `userId` is ignored; the priority engine is pure; bcrypt cost 12; passwords never returned or logged; `.env` ignored; helmet headers; CORS limited to the client; rate limit of 20 per 15 minutes |
+| **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 12 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and expected-expiry preview, and the required estimate line on Add Food and Cook First |
 | **End-to-end** (`e2e/`) | Playwright in Chrome | 12 | 6 journeys, each run at **phone size (Pixel 7)** and **desktop size (1440×900)**; see the list below |
 
 The six end-to-end journeys:
@@ -240,7 +242,7 @@ The six end-to-end journeys:
 5. One user can't see another user's food
 6. Reminder settings and sign-out
 
-Every page visited is also checked for "safe" wording and for sideways scrolling.
+Every page visited is also checked for banned wording and for sideways scrolling. The Add Food and Cook First pages must show the required estimate line.
 
 The end-to-end run starts its own API (port 4100, throwaway database) and client (port 5174), so it never touches your data. Screenshots are saved to `e2e/screenshots/<mobile|desktop>/` (not committed).
 
@@ -356,7 +358,24 @@ Base URL: `/api`. Every route except register, login and health needs `Authoriza
 | 401 | `UNAUTHENTICATED` / `INVALID_CREDENTIALS` | Missing, bad or expired token; wrong email or password |
 | 404 | `NOT_FOUND` | Item doesn't exist *or belongs to another user* |
 | 409 | `CONFLICT` / `ITEM_CLOSED` | Email already registered; the item is already used, wasted or removed |
-| 429 | `RATE_LIMITED` | More than 30 sign-in attempts in 15 minutes from one address |
+| 429 | `RATE_LIMITED` | More than 20 requests to `/auth/register` or `/auth/login` in 15 minutes from one IP address |
+
+---
+
+## Project rules
+
+These rules must never be broken. Each one is enforced in code and checked by an automated test.
+
+| Rule | How it's enforced | Test |
+|---|---|---|
+| **Never suggest food is fit to eat.** The banned phrases (listed in the wording-guard test) must not appear anywhere. | All expiry wording lives in `client/src/copy.ts` (interface) and `server/src/copy.ts` (reminder messages). | `foodSafetyCopy.test.ts` scans every `.ts`/`.tsx` file in `client/src` and `server/src`, ignoring case. It fails on any banned phrase, on the word "safe" in either copy file, or on expiry wording outside the copy files. The Playwright tests also scan every rendered page. |
+| **Add Food and Cook First show:** *"Expected expiry is an estimate to help you plan. Always check your food before eating it."* | `estimateNote` in `client/src/copy.ts`, shown by the `EstimateNote` component. | Client tests `required estimate line`; Playwright journeys 1 and 3 |
+| **Users only ever see their own data.** | The identity comes only from the verified JWT (`middleware/auth.ts`). Every query on food items, usage records and reminders includes `userId`. Another user's item returns **404**, not 403. | `rules.test.ts` records every MongoDB operation in a full journey and fails on any without the user's ID; `security.test.ts`; Playwright journey 5 |
+| **Prioritisation is deterministic.** | `services/priorityEngine.ts` is a pure function with no database, Express or clock imports. Ties are broken by added date, then ID. | `priorityEngine.test.ts` (shuffled input gives the same order); `rules.test.ts` (import check) |
+| **Server-side validation is what counts.** | Zod schemas in `server/src/validation.ts`. Checks in the browser only make forms faster to use. | `foods.test.ts` (every invalid input rejected by the API) |
+| **Passwords: bcrypt cost 12, never logged or returned.** | `services/passwordHash.ts`. API responses never include `passwordHash`. The request log records only method, route, status and time. | `rules.test.ts`, `auth.test.ts` |
+| **Secrets only from environment variables.** | `config/env.ts`. `server/.env.example` and `client/.env.example` are committed; `.env` is git-ignored. Production refuses to start without `JWT_SECRET` and `MONGODB_URI`. | `rules.test.ts` |
+| **Helmet, CORS limited to the client, sign-in rate limit.** | `app.ts` (helmet, CORS from `CORS_ORIGIN`), `routes/index.ts` (`AUTH_RATE_LIMIT`: 20 per 15 minutes per IP address). | `rules.test.ts` (headers, allowed and blocked origins, the 21st request gets 429) |
 
 ---
 
@@ -364,9 +383,9 @@ Base URL: `/api`. Every route except register, login and health needs `Authoriza
 
 - **Passwords:** hashed with bcrypt (12 rounds) and never stored or logged in plain text. Wrong email and wrong password give the same response.
 - **Login tokens:** JWT, HS256, 7-day expiry. The token carries only the user ID. Expired or tampered tokens are rejected, and the app signs the user out.
-- **Access control:** every database query is filtered by the logged-in user's ID. Any `userId` sent in a request is ignored. Another user's item returns 404, so the API doesn't reveal which items exist.
+- **Access control:** the user's identity comes only from the verified JWT. Every database query on food items, usage records and reminders includes the logged-in user's ID, including `save()`/`deleteOne()` on loaded records (via Mongoose's `shardKey` option). Any `userId` in the body, query string or URL is ignored. Another user's item returns 404, so the API doesn't reveal which items exist.
 - **Input:** everything is checked on the server with Zod. Checks in the browser only make forms faster to use.
-- **HTTP:** Helmet security headers, a CORS allow-list, a 20 KB request size limit, and rate-limited sign-in.
+- **HTTP:** Helmet security headers, CORS limited to the client's address (`CORS_ORIGIN`), a 20 KB request size limit, and `/auth/*` limited to 20 requests per 15 minutes per IP address.
 - **Secrets:** read from environment variables and never committed (`.env` is git-ignored).
 
 ---
@@ -404,7 +423,8 @@ The configuration is ready but **nothing has been deployed yet**.
 | Item | Status |
 |---|---|
 | All MVP functional requirements (FR-AUTH, FOOD, EXP, PRI, UI, NOT, USE, VAL) | ✅ Done |
-| Server, client and end-to-end tests (98 total) | ✅ Passing |
+| Server, client and end-to-end tests (115 total) | ✅ Passing |
+| All project rules (see [Project rules](#project-rules)) | ✅ Met, each one checked by a test |
 | Phone and desktop layouts | ✅ Done and checked in screenshots |
 | Docker MongoDB, Render/Vercel config, CI workflow | ✅ Written |
 | Code on GitHub (`rugvailabs/cook_first`) | ⏳ Not pushed yet: the repo is empty |
@@ -419,7 +439,29 @@ The configuration is ready but **nothing has been deployed yet**.
 All notable changes to this project are listed here, newest first. Versions follow [Semantic Versioning](https://semver.org/).
 
 ### [Unreleased]
-- **Docs:** rewrote this README as the full project reference, including the changelog, roadmap and screenshots.
+- *Nothing yet.*
+
+### [1.3.0] - 2026-09-29: Project rules enforced
+**Added**
+- **Wording guard rewritten to the rules:** scans every `.ts`/`.tsx` file in `client/src` and `server/src` (comments included) for the full list of seven banned phrases (one was missing before). It also fails on the word "safe" in either copy file, and on expiry wording written anywhere outside the copy files.
+- **New `rules.test.ts` (11 tests):**
+  - every database query on food items, usage records and reminders carries the user's ID
+  - a `userId` in the query string is ignored
+  - the priority engine is pure
+  - bcrypt cost 12, and passwords are never returned or logged
+  - `.env` is ignored and secrets come only from environment variables
+  - helmet headers, CORS allow-list, and the rate limit of 20 per 15 minutes
+- **Required estimate line tests:** client tests and Playwright checks for the line on Add Food and Cook First.
+- **README:** rewritten as the full project reference (screenshots, changelog, roadmap), with a new [Project rules](#project-rules) section.
+
+**Changed**
+- **All expiry wording moved into `client/src/copy.ts`:** about 20 strings that were written directly in Dashboard, Cook First, Add Food, food cards, food details, Reminders, Settings and the sign-in pages.
+- **Estimate line:** now exactly *"Expected expiry is an estimate to help you plan. Always check your food before eating it."*, shown on Add Food, Cook First and the other screens.
+- **Sign-in rate limit:** `/auth/register` and `/auth/login` now allow 20 requests per 15 minutes per IP address (was 30).
+
+**Fixed**
+- **Reminder queries without the user's ID:** scheduling and cancelling reminders filtered only by food ID. They now include the user's ID, and `save()`/`deleteOne()` on food items and reminders now include it too.
+- **Banned wording in comments:** comments in both copy files contained banned phrases or the word "safe"; they're reworded.
 
 ### [1.2.0] - 2026-09-29: Desktop layout · `92176f7`
 **Added**
