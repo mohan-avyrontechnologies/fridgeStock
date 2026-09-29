@@ -441,7 +441,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [1.3.0] - 2026-09-29: Project rules enforced
+### [1.3.0] - 2026-09-29: Project rules enforced · `7646618`
 **Added**
 - **Wording guard rewritten to the rules:** scans every `.ts`/`.tsx` file in `client/src` and `server/src` (comments included) for the full list of seven banned phrases (one was missing before). It also fails on the word "safe" in either copy file, and on expiry wording written anywhere outside the copy files.
 - **New `rules.test.ts` (11 tests):**
