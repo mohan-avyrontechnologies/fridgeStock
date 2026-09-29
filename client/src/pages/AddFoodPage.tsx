@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import { PageHeader } from '../components/AppShell';
+import { PageBody, PageHeader } from '../components/AppShell';
 import { FoodForm } from '../components/FoodForm';
 import { EstimateNote } from '../components/Urgency';
 import { useFoodStore } from '../stores/foodStore';
@@ -13,7 +13,7 @@ export function AddFoodPage() {
   return (
     <>
       <PageHeader title="Add food" back="/" />
-      <main className="space-y-5 px-4 pt-4">
+      <PageBody narrow>
         <FoodForm
           submitLabel="Save"
           allowAddAnother
@@ -25,7 +25,7 @@ export function AddFoodPage() {
           }}
         />
         <EstimateNote long />
-      </main>
+      </PageBody>
     </>
   );
 }

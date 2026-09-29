@@ -36,9 +36,9 @@ export function FoodCard({ item }: { item: ActiveFoodItem }) {
   );
 }
 
-export function FoodList({ items }: { items: ActiveFoodItem[] }) {
+export function FoodList({ items, columns = 1 }: { items: ActiveFoodItem[]; columns?: 1 | 2 }) {
   return (
-    <ul className="space-y-2.5">
+    <ul className={columns === 2 ? 'grid gap-2.5 lg:grid-cols-2' : 'space-y-2.5'}>
       {items.map((item) => (
         <FoodCard key={item.id} item={item} />
       ))}

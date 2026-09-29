@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { api } from '../api/client';
 import type { UsageAction, UsageRecord } from '../api/types';
-import { PageHeader } from '../components/AppShell';
+import { PageBody, PageHeader } from '../components/AppShell';
 import { Button, EmptyState, Spinner } from '../components/ui';
 import { historyActionLabel } from '../copy';
 import { formatInstant, formatQuantity } from '../lib/dates';
@@ -40,7 +40,7 @@ export function HistoryPage() {
   return (
     <>
       <PageHeader title="History" subtitle="What you used, wasted or removed" />
-      <main className="space-y-5 px-4 pt-4">
+      <PageBody narrow>
         {error && <EmptyState title={error} />}
         {!records && !error && <Spinner />}
         {counts && (
@@ -82,7 +82,7 @@ export function HistoryPage() {
             Show older
           </Button>
         )}
-      </main>
+      </PageBody>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { PageHeader } from '../components/AppShell';
+import { PageBody, PageHeader } from '../components/AppShell';
 import { FoodList } from '../components/FoodCard';
 import { EstimateNote } from '../components/Urgency';
 import { EmptyState, Spinner } from '../components/ui';
@@ -12,7 +12,7 @@ export function CookFirstPage() {
   return (
     <>
       <PageHeader title="Cook First" subtitle="What to use first, soonest expected expiry at the top" />
-      <main className="space-y-5 px-4 pt-4">
+      <PageBody>
         {!cookFirst && !error && <Spinner />}
         {error && !cookFirst && <EmptyState title="Couldn’t load Cook First">{error}</EmptyState>}
         {cookFirst && cookFirst.length === 0 && (
@@ -28,11 +28,11 @@ export function CookFirstPage() {
               {cookFirst.length} {cookFirst.length === 1 ? 'item is' : 'items are'} at or near expected expiry. Tap
               “Update” once you’ve cooked with something.
             </p>
-            <FoodList items={cookFirst} />
+            <FoodList items={cookFirst} columns={2} />
           </>
         )}
         <EstimateNote long />
-      </main>
+      </PageBody>
     </>
   );
 }

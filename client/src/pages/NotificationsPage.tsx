@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router';
 import type { AppNotification, ReminderType } from '../api/types';
-import { PageHeader } from '../components/AppShell';
+import { PageBody, PageHeader } from '../components/AppShell';
 import { EstimateNote } from '../components/Urgency';
 import { Button, EmptyState, Spinner } from '../components/ui';
 import { formatInstant } from '../lib/dates';
@@ -23,7 +23,7 @@ export function NotificationsPage() {
   return (
     <>
       <PageHeader title="Reminders" subtitle={unread ? `${unread} unread` : undefined} back="/" />
-      <main className="space-y-4 px-4 pt-4">
+      <PageBody narrow>
         {loading && items.length === 0 && <Spinner />}
         {!loading && items.length === 0 && (
           <EmptyState title="No reminders yet">
@@ -48,7 +48,7 @@ export function NotificationsPage() {
           </Button>
         )}
         <EstimateNote />
-      </main>
+      </PageBody>
     </>
   );
 }

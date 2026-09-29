@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { Link, NavLink, Outlet } from 'react-router';
+import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
 import { useNotificationStore } from '../stores/notificationStore';
 import { useToastStore } from '../stores/toastStore';
@@ -7,7 +8,8 @@ import { useToastStore } from '../stores/toastStore';
 const REFRESH_MS = 5 * 60 * 1000;
 
 /**
- * Signed-in layout: a slim header, the page, and a thumb-reachable bottom nav.
+ * Signed-in layout. Phones get a slim header and a thumb-reachable bottom nav;
+ * from the `lg` breakpoint (1024px) a fixed sidebar replaces the bottom nav.
  * Refreshes on focus and every few minutes so "remaining days" roll over
  * without a reload.
  */
@@ -31,8 +33,13 @@ export function AppShell() {
   }, [refresh, fetchUnread]);
 
   return (
-    <div className="pb-nav mx-auto min-h-dvh max-w-xl">
-      <Outlet />
+    <div className="min-h-dvh">
+      <Sidebar />
+      <div className="lg:pl-64">
+        <div className="pb-nav mx-auto min-h-dvh max-w-xl lg:max-w-5xl lg:pb-12">
+          <Outlet />
+        </div>
+      </div>
       <Toast />
       <BottomNav />
     </div>
@@ -42,8 +49,8 @@ export function AppShell() {
 export function PageHeader({ title, subtitle, back }: { title: string; subtitle?: ReactNode; back?: string }) {
   const unread = useNotificationStore((s) => s.unread);
   return (
-    <header className="top-inset sticky top-0 z-30 border-b border-line/70 bg-paper/95 backdrop-blur">
-      <div className="flex min-h-14 items-center gap-2 px-4 py-2">
+    <header className="top-inset sticky top-0 z-30 border-b border-line/70 bg-paper/95 backdrop-blur lg:static lg:border-0 lg:bg-transparent">
+      <div className="flex min-h-14 items-center gap-2 px-4 py-2 lg:px-8 lg:pt-8 lg:pb-2">
         {back && (
           <Link to={back} aria-label="Back" className="-ml-2 grid size-11 place-items-center rounded-full hover:bg-brand-soft">
             <svg aria-hidden viewBox="0 0 24 24" className="size-5 fill-none stroke-current stroke-2">
@@ -52,23 +59,111 @@ export function PageHeader({ title, subtitle, back }: { title: string; subtitle?
           </Link>
         )}
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-xl font-bold tracking-tight">{title}</h1>
-          {subtitle && <p className="truncate text-sm text-muted">{subtitle}</p>}
+          <h1 className="truncate text-xl font-bold tracking-tight lg:text-3xl">{title}</h1>
+          {subtitle && <p className="truncate text-sm text-muted lg:mt-1 lg:text-base">{subtitle}</p>}
         </div>
+        {/* The sidebar carries the bell on large screens. */}
         <Link
           to="/notifications"
           aria-label={unread ? `Reminders, ${unread} unread` : 'Reminders'}
-          className="relative grid size-11 place-items-center rounded-full hover:bg-brand-soft"
+          className="relative grid size-11 place-items-center rounded-full hover:bg-brand-soft lg:hidden"
         >
           <BellIcon />
-          {unread > 0 && (
-            <span className="absolute top-1.5 right-1.5 grid min-w-5 place-items-center rounded-full bg-past-bar px-1 text-[11px] font-bold text-white">
-              {unread > 9 ? '9+' : unread}
-            </span>
-          )}
+          <UnreadDot count={unread} className="absolute top-1.5 right-1.5" />
         </Link>
       </div>
     </header>
+  );
+}
+
+/** Page body with the gutters used on every signed-in screen. */
+export function PageBody({ children, narrow = false }: { children: ReactNode; narrow?: boolean }) {
+  return (
+    <main className={`space-y-6 px-4 pt-4 lg:px-8 lg:pt-4 ${narrow ? 'lg:max-w-2xl' : ''}`}>{children}</main>
+  );
+}
+
+function UnreadDot({ count, className = '' }: { count: number; className?: string }) {
+  if (count <= 0) return null;
+  return (
+    <span
+      className={`grid min-w-5 place-items-center rounded-full bg-past-bar px-1 text-[11px] font-bold text-white ${className}`}
+    >
+      {count > 9 ? '9+' : count}
+    </span>
+  );
+}
+
+function Sidebar() {
+  const user = useAuthStore((s) => s.user);
+  const unread = useNotificationStore((s) => s.unread);
+  const cookFirstCount = useFoodStore((s) => s.cookFirst?.length ?? 0);
+
+  const item = ({ isActive }: { isActive: boolean }) =>
+    `flex min-h-11 items-center gap-3 rounded-xl px-3 text-[15px] font-medium transition-colors ${
+      isActive ? 'bg-brand-soft text-brand' : 'text-ink hover:bg-paper'
+    }`;
+
+  return (
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-line bg-card px-4 py-6 lg:flex">
+      <Link to="/" className="flex items-center gap-2.5 px-2">
+        <img src="/icon.svg" alt="" className="size-9" />
+        <span className="text-lg font-bold tracking-tight">Cook First</span>
+      </Link>
+
+      <Link
+        to="/add"
+        className="mt-8 flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand px-4 font-semibold text-white hover:bg-brand-hover"
+      >
+        <svg aria-hidden viewBox="0 0 24 24" className="size-5 fill-none stroke-current stroke-[2.5]">
+          <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+        </svg>
+        Add food
+      </Link>
+
+      <nav aria-label="Main" className="mt-6">
+        <ul className="space-y-1">
+          <li>
+            <NavLink to="/" end className={item}>
+              <HomeIcon /> Home
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/cook-first" className={item}>
+              <PanIcon /> <span className="flex-1">Cook First</span>
+              {cookFirstCount > 0 && (
+                <span className="grid min-w-6 place-items-center rounded-full bg-today-bar px-1.5 text-xs font-bold text-white">
+                  {cookFirstCount}
+                </span>
+              )}
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/notifications" className={item} aria-label={unread ? `Reminders, ${unread} unread` : 'Reminders'}>
+              <BellIcon /> <span className="flex-1">Reminders</span>
+              <UnreadDot count={unread} className="min-w-6 px-1.5 text-xs" />
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/history" className={item}>
+              <ListIcon /> History
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/settings" className={item}>
+              <GearIcon /> Settings
+            </NavLink>
+          </li>
+        </ul>
+      </nav>
+
+      {user && (
+        <div className="mt-auto border-t border-line px-2 pt-4">
+          <p className="truncate text-sm font-semibold">{user.name}</p>
+          <p className="truncate text-xs text-muted">{user.email}</p>
+        </div>
+      )}
+    </aside>
   );
 }
 
@@ -77,7 +172,7 @@ function BottomNav() {
   return (
     <nav
       aria-label="Main"
-      className="bottom-inset fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/95 backdrop-blur"
+      className="bottom-inset fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card/95 backdrop-blur lg:hidden"
     >
       <ul className="mx-auto grid max-w-xl grid-cols-5 items-end px-1">
         <NavItem to="/" label="Home" icon={<HomeIcon />} end />
@@ -139,7 +234,10 @@ function NavItem({
 function Toast() {
   const message = useToastStore((s) => s.message);
   return (
-    <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex justify-center px-4">
+    <div
+      aria-live="polite"
+      className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex justify-center px-4 lg:bottom-8 lg:left-64"
+    >
       {message && (
         <div className="sheet-in rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-white shadow-lg">{message}</div>
       )}
@@ -147,7 +245,7 @@ function Toast() {
   );
 }
 
-const iconClass = 'size-6 fill-none stroke-current stroke-[1.8]';
+const iconClass = 'size-6 shrink-0 fill-none stroke-current stroke-[1.8]';
 
 function HomeIcon() {
   return (
@@ -181,7 +279,7 @@ function GearIcon() {
 }
 function BellIcon() {
   return (
-    <svg aria-hidden viewBox="0 0 24 24" className="size-6 fill-none stroke-current stroke-[1.8]">
+    <svg aria-hidden viewBox="0 0 24 24" className={iconClass}>
       <path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );

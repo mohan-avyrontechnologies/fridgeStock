@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 /**
  * End-to-end: real API (throwaway in-memory MongoDB) + real client, driven in
- * the locally installed Chrome at a phone-sized viewport. Uses its own ports so
+ * the locally installed Chrome, once at phone size and once at desktop size. Uses its own ports so
  * it never collides with a running dev setup.
  */
 const API_PORT = 4100;
@@ -17,11 +17,15 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: [['list']],
   use: {
-    ...devices['Pixel 7'],
     baseURL: `http://localhost:${WEB_PORT}`,
     channel: process.env.CI ? undefined : 'chrome',
     trace: 'retain-on-failure',
   },
+  // Every journey runs on a phone and on a desktop screen.
+  projects: [
+    { name: 'mobile', use: { ...devices['Pixel 7'] } },
+    { name: 'desktop', use: { viewport: { width: 1440, height: 900 } } },
+  ],
   webServer: [
     {
       command: 'npx tsx src/index.ts',

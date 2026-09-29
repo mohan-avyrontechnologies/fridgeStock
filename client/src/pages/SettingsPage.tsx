@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
 import type { NotificationPreferences } from '../api/types';
-import { PageHeader } from '../components/AppShell';
+import { PageBody, PageHeader } from '../components/AppShell';
 import { EstimateNote } from '../components/Urgency';
 import { Button } from '../components/ui';
 import { useAuthStore } from '../stores/authStore';
@@ -46,7 +46,7 @@ export function SettingsPage() {
   return (
     <>
       <PageHeader title="Settings" />
-      <main className="space-y-6 px-4 pt-4">
+      <PageBody narrow>
         <section className="rounded-2xl border border-line bg-card p-4">
           <p className="font-semibold">{user?.name}</p>
           <p className="text-sm text-muted">{user?.email}</p>
@@ -97,7 +97,7 @@ export function SettingsPage() {
         <Button variant="danger" className="w-full" onClick={logout}>
           Sign out
         </Button>
-      </main>
+      </PageBody>
     </>
   );
 }

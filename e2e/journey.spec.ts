@@ -39,11 +39,11 @@ async function expectNoHorizontalScroll(page: Page) {
   expect(overflow).toBeLessThanOrEqual(0);
 }
 
-/** Viewport-sized, after animations settle, as a phone user would see it. */
+/** Viewport-sized, after animations settle, as the user would see it. */
 async function shot(page: Page, name: string) {
   await page.waitForTimeout(350);
   await expectNoHorizontalScroll(page);
-  await page.screenshot({ path: `e2e/screenshots/${name}.png` });
+  await page.screenshot({ path: `e2e/screenshots/${test.info().project.name}/${name}.png` });
 }
 
 test('register → add food → Cook First → mark used → history', async ({ page }) => {

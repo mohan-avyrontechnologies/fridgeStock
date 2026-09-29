@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { api, ApiError } from '../api/client';
 import type { FoodItem } from '../api/types';
 import { ActionSheet } from '../components/ActionSheet';
-import { PageHeader } from '../components/AppShell';
+import { PageBody, PageHeader } from '../components/AppShell';
 import { FoodForm } from '../components/FoodForm';
 import { EstimateNote, UrgencyBadge } from '../components/Urgency';
 import { Button, EmptyState, Spinner } from '../components/ui';
@@ -38,9 +38,9 @@ export function FoodDetailPage() {
     return (
       <>
         <PageHeader title="Food" back="/" />
-        <main className="px-4 pt-4">
+        <PageBody narrow>
           <EmptyState title={error} />
-        </main>
+        </PageBody>
       </>
     );
   }
@@ -58,7 +58,7 @@ export function FoodDetailPage() {
   return (
     <>
       <PageHeader title={food.name} back="/" />
-      <main className="space-y-5 px-4 pt-4">
+      <PageBody narrow>
         {editing ? (
           <>
             <FoodForm
@@ -123,7 +123,7 @@ export function FoodDetailPage() {
             <EstimateNote long />
           </>
         )}
-      </main>
+      </PageBody>
       {sheetOpen && (
         <ActionSheet
           item={food}
