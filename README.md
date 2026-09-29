@@ -629,7 +629,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.4.0] - 2026-09-29: Testing, build-phase and decisions requirements
+### [2.4.0] - 2026-09-29: Testing, build-phase and decisions requirements · `57f099a`
 **Added**
 - **Prettier:** config (`.prettierrc.json`, `.prettierignore`), `npm run format` and `format:check`, and a **format check step in CI**. The whole codebase was formatted once (layout only).
 - **`.gitattributes`:** keeps LF line endings on every OS, so the Prettier check passes on Windows checkouts.
