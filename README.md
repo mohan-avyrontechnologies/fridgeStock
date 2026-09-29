@@ -7,7 +7,7 @@ A mobile-first web app that helps a household use perishable food before it goes
 | | |
 |---|---|
 | **Status** | MVP complete. Not yet deployed. |
-| **Version** | 2.1.0 (see the [Changelog](#changelog)) |
+| **Version** | 2.2.0 (see the [Changelog](#changelog)) |
 | **Requires** | Node.js 20.19 or later |
 | **Specifications** | PFCP BRD v2.0, FRD v1.0, SRD v1.0, TDD v1.0 (internal documents, not stored in this repo) |
 | **Repository** | `github.com/rugvailabs/cook_first` |
@@ -69,7 +69,7 @@ These screenshots are captured automatically by the Playwright test suite.
 | **Priority order** | Sorted by expected expiry, then added date, then item ID, so the same data always gives the same order. |
 | **Cook First** | Every active item that isn't "Not urgent", most urgent first. |
 | **Dashboard** | Counts for each label, a "Needs attention" section and the full list of food. |
-| **Recording what happened** | Used it all · Used some · Threw it away (all or part) · Remove. Each one is saved as a usage record. |
+| **Recording what happened** | Used it all · Used some (reduces the quantity) · Threw it away (closes the item) · Remove. Each one is saved as a usage record. |
 | **History** | Every usage record, newest first, with totals for each action. |
 | **Reminders** | In-app reminders when an item reaches "Use soon", on its expected-expiry day, and the day after. Each type can be turned off. A node-cron job delivers them every 15 minutes. They count as read once you open the Reminders screen. |
 | **Privacy** | Each user only ever sees their own food, history and reminders. |
@@ -257,7 +257,7 @@ Run these from the repository root:
 | `npm run dev:client` | Start the Vite dev server |
 | `npm run lint` | ESLint across all three packages |
 | `npm run typecheck` | TypeScript check of `shared`, `server` and `client` |
-| `npm test` | Unit and API tests: shared (20) + server (112) + client (32) |
+| `npm test` | Unit and API tests: shared (20) + server (130) + client (32) |
 | `npm run test:e2e` | Playwright end-to-end tests (12) |
 | `npm run build` | Build `shared/dist`, `server/dist` and `client/dist` |
 
@@ -268,10 +268,11 @@ Run these from the repository root:
 | Suite | Tools | Tests | What it covers |
 |---|---|---|---|
 | **Dates** (`shared/src/dates.test.ts`) | Vitest | 20 | Valid and invalid dates, today in several time zones, month and year ends, daylight-saving weekends, `addDays`/`diffDays` as inverses, the "Thu, 1 Oct" format |
-| **API and logic** (`server/src/tests`) | Vitest, Supertest, mongodb-memory-server | 82 | Registration and login (name ≤ 50, lowercase email, UTC and reminder defaults), protected routes, bad or expired tokens, adding/editing/removing food, every validation rule and limit (name 60, units, lifespan 0–365, notes 200), expiry never accepted from the client, urgency and sorting (including ties), Cook First, time zones, used / partly used / wasted / removed, history, reminders, cross-user isolation. **Priority engine:** the required cases (earliest first; same expiry by added date then ID; closed items excluded; switches at 4, 3, 1, 0 and −1 days; a zero-day lifespan is DUE; identical output when run twice; chicken, spinach, milk, eggs with only chicken and spinach in Cook First). |
+| **API and logic** (`server/src/tests`) | Vitest, Supertest, mongodb-memory-server | 88 | `auth`, `foods`, `notifications`, `security` and `priorityEngine` tests: registration and login, tokens, every validation message, limits and units, expiry never accepted from the client, `/use` (whole, partial, 0, negative or too much), `/waste`, `DELETE`, 409 on closed items, `/usage` paging, reminder scheduling, delivery, failures and preferences, cross-user isolation, and all the required priority-engine cases |
+| **API contract** (`api.test.ts`) | Vitest, Supertest | 14 | Only the agreed error codes, never a stack trace, 500 is `INTERNAL`, database validation errors are 400, login 401 message, exact register messages, user and food response shapes, priority order and summary, `cook-first` matched before `/:id`, reminders scheduled on create and rescheduled only when dates change, pending reminders deleted on close, old routes removed |
 | **Wording guard** (`foodSafetyCopy.test.ts`) | Vitest | 5 | Scans every `.ts`/`.tsx` file in `client/src`, `server/src` and `shared/src`, comments included, for the banned phrases. Fails on the word "safe" in either copy file, or on expiry wording outside the copy files. Checks the required estimate line. |
 | **Project rules** (`rules.test.ts`) | Vitest, Supertest | 11 | Every database query carries the user's ID; the query-string `userId` is ignored; pure priority engine; bcrypt cost 12; passwords never returned or logged; `.env` ignored; helmet; CORS; rate limit of 20 per 15 minutes |
-| **Server structure** (`structure.test.ts`) | Vitest | 14 | The `server/src` folders; thin controllers; only models talk to MongoDB; no `new Date()` in date logic; dates only from `shared`; node-cron job; env variable names and defaults; the threshold of 3 exists only in `config/urgency.ts` (checked across client, server and shared); expiry calculated in the food service with no Mongoose hook |
+| **Server structure** (`structure.test.ts`) | Vitest | 12 | The `server/src` folders; thin controllers; only models talk to MongoDB; no `new Date()` in date logic; dates only from `shared`; node-cron job; env variable names and defaults; the threshold of 3 exists only in `config/urgency.ts` (checked across client, server and shared); expiry calculated in the food service with no Mongoose hook |
 | **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 32 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and preview, the required estimate line, all five remaining-days phrasings, colour always paired with a label, exactly seven units, notes, reminders marked read when the screen opens, plus client structure checks |
 | **End-to-end** (`e2e/`) | Playwright in Chrome | 12 | 6 journeys, each run at **phone size (Pixel 7)** and **desktop size (1440×900)** |
 
@@ -325,22 +326,24 @@ remainingDays = diffDays(today, expiryDate)                       today = todayI
 
 ### Recording what happened
 
-| Action | Effect on the item | Usage record |
-|---|---|---|
-| Used it all | Closed as `USED` | `USED` with the full quantity |
-| Used some | Quantity reduced; stays active | `PARTIALLY_USED` (the amount must be less than what's left) |
-| Threw it away: all | Closed as `WASTED` | `WASTED` |
-| Threw it away: part | Quantity reduced; stays active | `WASTED` with that amount |
-| Remove | Closed as `REMOVED` (kept, not deleted) | `REMOVED` |
+| Action | Request | Effect on the item | Usage record |
+|---|---|---|---|
+| Used it all | `POST /foods/:id/use` with no quantity (or the whole quantity) | Closed as `USED` | `USED` with the quantity that was left |
+| Used some | `POST /foods/:id/use` `{quantity}` below what's left | Quantity reduced; stays active | `PARTIALLY_USED` |
+| Threw it away | `POST /foods/:id/waste` | Closed as `WASTED` | `WASTED` with the quantity that was left |
+| Remove | `DELETE /foods/:id` → 204 | Closed as `REMOVED` (kept, not deleted) | `REMOVED` with the quantity that was left |
+
+Every closing action sets `closedAt` and deletes the item's pending reminders. A quantity of 0, a negative quantity, or more than is left is rejected with 400. Any action on an item that's already closed returns **409 CONFLICT "This item is no longer active."**
 
 ### Reminders
 
 - **Up to three per item:** **approaching** (when the item becomes "Use soon"), **due** (on the day) and **overdue** (the day after).
 - **Rescheduled** when an item's dates change, and **cancelled** when it's used, wasted or removed.
 - **An item added late only gets the reminder for the stage it's already in**, not a burst of old ones.
-- **Delivered** when the user opens the app, and by the **node-cron job** (`*/15 * * * *`).
+- **Delivered** when the user opens the app (`GET /notifications` sends anything due first), and by the **node-cron job** (`*/15 * * * *`).
 - **Failed deliveries** are saved as `FAILED` and retried up to 3 times. The food lists never depend on reminders.
-- **`readAt` stays empty until the user opens the Reminders screen.** Opening it marks every delivered reminder as read. New ones still show a "New" tag during that visit.
+- **The feed shows up to 50 reminders, `SENT` or `FAILED`, newest first**, with the unread count.
+- **`readAt` stays empty until the user opens the Reminders screen.** Opening it calls `POST /notifications/read-all`. New ones still show a "New" tag during that visit.
 
 ---
 
@@ -388,43 +391,62 @@ MongoDB collections:
 
 ## API reference
 
-Base URL: `http://localhost:4000/api` (`VITE_API_URL`). Every route except register, login and health needs `Authorization: Bearer <token>`. Request and response types are in `shared/src/api.ts`, and request schemas in `shared/src/schemas.ts`.
+Base URL: `http://localhost:4000/api` (`VITE_API_URL`). Requests and responses are JSON. Every route except register and login (and the `/health` check) needs `Authorization: Bearer <token>`. The auth middleware attaches the user's ID, time zone and reminder preferences to the request. It returns **401** if the token is missing, invalid or expired, or if the user no longer exists. Types are in `shared/src/api.ts`, and request schemas in `shared/src/schemas.ts`.
 
-| Method | Path | Body / query | Success |
-|---|---|---|---|
-| GET | `/health` | | `{ok: true}` |
-| POST | `/auth/register` | `{name, email, password, timeZone?}` | `201 {token, user}` |
-| POST | `/auth/login` | `{email, password, timeZone?}` | `200 {token, user}` |
-| GET | `/auth/me` | | `{user}` |
-| PUT | `/auth/me` | `{name?, timeZone?}` | `{user}` |
-| GET | `/foods` | | `{today, summary, items}` in priority order; `summary` has a count for each urgency state and `total` |
-| GET | `/foods/cook-first` | | `{today, items}` |
-| POST | `/foods` | `{name, quantity, unit, addedDate, lifespanDays, notes?}`; any expiry date sent is ignored | `201 FoodItem` |
-| GET | `/foods/:id` | | `FoodItem` |
-| PUT | `/foods/:id` | any food fields (`notes: ""` clears the notes) | `FoodItem` |
-| DELETE | `/foods/:id` | | `204`; the item is closed as `REMOVED`, not deleted |
-| POST | `/foods/:id/use` | `{action: "USED" \| "PARTIALLY_USED", quantityUsed?}` | `{food, usageRecord}` |
-| POST | `/foods/:id/waste` | `{quantityUsed?}` | `{food, usageRecord}` |
-| GET | `/usage-records` | `?limit=20&offset=0` | `{items, total, counts}` |
-| GET | `/notifications` | `?limit=30&offset=0` | `{items, total, unread}` |
-| GET | `/notifications/unread-count` | | `{unread}` |
-| PUT | `/notifications/:id/read` | | the notification |
-| PUT | `/notifications/read-all` | | `204` |
-| GET / PUT | `/notifications/preferences` | `{approachingExpiry?, due?, overdue?}` | preferences |
+**Responses:**
+- **Users:** `{id, name, email, timeZone, notificationPreferences}`
+- **Food items:** their stored fields (`id, name, quantity, unit, addedDate, lifespanDays, expiryDate, notes, status, closedAt, createdAt, updatedAt`) plus `remainingDays` and `urgency`. For a closed item, both are `null`.
 
-**Errors** always look like this:
+| Method | Path | Body / query | Success | Errors |
+|---|---|---|---|---|
+| POST | `/auth/register` | `{name, email, password (8+), timeZone}` | `201 {token, user}` | 400, 409 email taken |
+| POST | `/auth/login` | `{email, password}` | `200 {token, user}` | 400, 401 "Email or password is incorrect." |
+| GET | `/auth/me` | | `{user}` | 401 |
+| GET | `/foods` | | `{today, summary, items}`: active items in priority order; `summary` has a count for each urgency state plus `total` | 401 |
+| GET | `/foods/cook-first` | | `{today, items}`: urgent items only. Registered before `/foods/:id`. | 401 |
+| POST | `/foods` | `{name, quantity, unit, addedDate, lifespanDays, notes?}` | `201 FoodItem`, with reminders scheduled | 400 |
+| GET | `/foods/:id` | | `FoodItem`, active or closed | 404 if missing or another user's |
+| PUT | `/foods/:id` | any food fields | `FoodItem`. Changing `addedDate` or `lifespanDays` recalculates `expiryDate` and reschedules reminders. | 400, 404, 409 |
+| POST | `/foods/:id/use` | `{quantity?}` | `{food, usageRecord}`: no quantity (or all of it) → `USED`; less → `PARTIALLY_USED` | 400 for 0, negative or too much; 404; 409 |
+| POST | `/foods/:id/waste` | | `{food, usageRecord}`: closed as `WASTED` | 404, 409 |
+| DELETE | `/foods/:id` | | `204`: soft-deleted as `REMOVED` | 404, 409 |
+| GET | `/usage` | `?limit=20&offset=0` (defaults) | `{items, total, counts}`, newest first | 400 |
+| GET | `/notifications` | | Sends due reminders, then `{items, unread}`: up to 50 `SENT` or `FAILED`, newest first | 401 |
+| POST | `/notifications/read-all` | | `204`: all marked as read | 401 |
+| PUT | `/notifications/preferences` | `{approachingExpiry?, due?, overdue?}` | preferences; pending reminders of any turned-off type are deleted | 400 |
+
+**Also available** (used by the app):
+- `GET /health`
+- `PUT /auth/me` (name, time zone)
+- `GET /notifications/unread-count` (the bell badge)
+- `GET /notifications/preferences`
+
+**Errors** always look like this, and never include a stack trace:
 
 ```json
-{ "error": { "code": "VALIDATION_ERROR", "message": "Lifespan must be zero or a positive number of days.", "field": "lifespanDays" } }
+{ "error": { "code": "VALIDATION_ERROR", "message": "Lifespan must be a whole number of days from 0 to 365.", "field": "lifespanDays" } }
 ```
 
 | Status | Code | When |
 |---|---|---|
-| 400 | `VALIDATION_ERROR` | Invalid name, quantity, unit, date, lifespan or notes |
-| 401 | `UNAUTHENTICATED` / `INVALID_CREDENTIALS` | Missing, bad or expired token; wrong email or password |
+| 400 | `VALIDATION_ERROR` | Invalid input (includes `field`). A database-level validation error is also a 400, never a 500. |
+| 401 | `UNAUTHENTICATED` | Missing, invalid or expired token; deleted user; wrong email or password |
 | 404 | `NOT_FOUND` | Item doesn't exist *or belongs to another user* |
-| 409 | `CONFLICT` / `ITEM_CLOSED` | Email already registered; the item is already used, wasted or removed |
-| 429 | `RATE_LIMITED` | More than 20 requests to `/auth/register` or `/auth/login` in 15 minutes from one IP address |
+| 409 | `CONFLICT` | Email already registered; "This item is no longer active." |
+| 429 | `RATE_LIMITED` | More than 20 requests to `/auth/*` in 15 minutes from one IP address (from the security rules) |
+| 500 | `INTERNAL` | Anything unexpected: a generic message; details are only in the server log |
+
+**Validation messages** (defined once in `MESSAGES`, `shared/src/schemas.ts`, and used by the API and the forms):
+
+| Field | Message |
+|---|---|
+| Food name | Food name is required. |
+| Quantity | Quantity must be a positive number. |
+| Unit | Choose a unit from the list. |
+| Added date | Added date must be a valid date that isn't in the future. |
+| Lifespan | Lifespan must be a whole number of days from 0 to 365. |
+| Email | Enter a valid email address. |
+| Password | Password must be at least 8 characters. |
 
 ---
 
@@ -497,7 +519,7 @@ The configuration is ready but **nothing has been deployed yet**.
 |---|---|
 | All MVP functional requirements (FR-AUTH, FOOD, EXP, PRI, UI, NOT, USE, VAL) | ✅ Done |
 | Monorepo with `client`, `server` and `shared`; Node 20.19+ | ✅ Done |
-| Tests: 20 shared + 112 server + 32 client + 12 end-to-end = **176** | ✅ Passing |
+| Tests: 20 shared + 130 server + 32 client + 12 end-to-end = **194** | ✅ Passing |
 | ESLint and typecheck on all packages | ✅ Clean |
 | All project rules (see [Project rules](#project-rules)) | ✅ Met, each one checked by a test |
 | Phone and desktop layouts | ✅ Done and checked in screenshots |
@@ -515,6 +537,32 @@ All notable changes to this project are listed here, newest first. Versions foll
 
 ### [Unreleased]
 - *Nothing yet.*
+
+### [2.2.0] - 2026-09-29: API contract to spec
+**Breaking**
+- **`POST /foods/:id/use`:** now takes `{quantity?}`. No quantity (or all of it) uses the whole item; less logs `PARTIALLY_USED`; 0, negative or too much is a 400. It no longer takes `action`/`quantityUsed`.
+- **`POST /foods/:id/waste`:** always closes the whole item as `WASTED`. Partial waste is gone.
+- **`GET /usage-records` → `GET /usage`.**
+- **`PUT /notifications/read-all` → `POST /notifications/read-all`.** `PUT /notifications/:id/read` was removed.
+- **`GET /notifications`:** returns up to 50 `SENT` **or `FAILED`** reminders with the unread count, with no paging.
+- **Food items return `expiryDate`** (the stored field name) instead of `expectedExpiryDate`.
+- **Error codes limited to** `VALIDATION_ERROR`, `UNAUTHENTICATED`, `NOT_FOUND`, `CONFLICT`, `INTERNAL` (plus `RATE_LIMITED` from the security rules):
+  - a wrong login is now `UNAUTHENTICATED`
+  - a closed item is now `CONFLICT` with "This item is no longer active."
+
+**Added**
+- **`MESSAGES` in `shared`:** the exact validation messages, used by both the API and the forms.
+- **Database validation errors** now return 400 `VALIDATION_ERROR` instead of 500.
+- **`api.test.ts` (14 tests):** the error format and codes, no stack traces, response shapes, route order, and reminder scheduling rules.
+- **More tests** for `/use`, `/waste`, `DELETE`, the 409 wording and `/usage` defaults.
+
+**Changed**
+- **Rescheduling on edit:** `PUT /foods/:id` reschedules reminders only when the added date or lifespan changes.
+- **New validation messages:**
+  - "Choose a unit from the list."
+  - "Added date must be a valid date that isn't in the future." (for invalid and future dates alike)
+  - "Lifespan must be a whole number of days from 0 to 365."
+- **App:** "Threw it away" is now one tap; the Reminders list shows up to 50 reminders with no "Show older".
 
 ### [2.1.0] - 2026-09-29: Data model limits, urgency states and priority engine to spec · `3107802`
 **Breaking**

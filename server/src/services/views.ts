@@ -27,7 +27,7 @@ export function toFoodView(doc: FoodItemDoc, today: DateString): FoodItem {
     unit: doc.unit,
     addedDate: doc.addedDate,
     lifespanDays: doc.lifespanDays,
-    expectedExpiryDate: doc.expiryDate,
+    expiryDate: doc.expiryDate,
     notes: doc.notes ?? null,
     status: doc.status,
     remainingDays,

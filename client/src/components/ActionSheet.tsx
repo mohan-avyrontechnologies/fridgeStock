@@ -1,17 +1,19 @@
+import { MESSAGES, type FoodItem } from '@cook-first/shared';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
-import type { FoodItem } from '@cook-first/shared';
 import { actionCopy } from '../copy';
 import { formatQuantity } from '../lib/format';
 import { useFoodStore } from '../stores/foodStore';
 import { useToastStore } from '../stores/toastStore';
 import { Button, Field, FormError } from './ui';
 
-type Mode = 'choose' | 'PARTIALLY_USED' | 'WASTED';
+type Mode = 'choose' | 'PARTIALLY_USED';
+type Action = 'USED' | 'PARTIALLY_USED' | 'WASTED' | 'REMOVED';
 
 /**
- * Bottom sheet for recording what happened to an item. "Used it all" and
- * "Remove" are one tap; partial amounts ask for a number first.
+ * Bottom sheet for recording what happened to an item. "Used it all",
+ * "Threw it away" and "Remove" are one tap and close the whole item; only
+ * "Used some" asks for an amount.
  */
 export function ActionSheet({ item, onClose }: { item: FoodItem; onClose: (closed: boolean) => void }) {
   const act = useFoodStore((s) => s.act);
@@ -39,14 +41,15 @@ export function ActionSheet({ item, onClose }: { item: FoodItem; onClose: (close
     sheetRef.current?.querySelector<HTMLElement>('input, [data-autofocus]')?.focus();
   }, [mode]);
 
-  async function run(action: 'USED' | 'PARTIALLY_USED' | 'WASTED' | 'REMOVED', quantity?: number) {
+  async function run(action: Action, quantity?: number) {
     setBusy(true);
     setError(null);
     try {
       await act(item.id, action, quantity);
-      const partial = action === 'PARTIALLY_USED' || (action === 'WASTED' && quantity! < item.quantity);
-      toast(`${actionCopy[action].past}: ${item.name}`);
-      onClose(!partial);
+      // Using some of it leaves the item open; everything else closes it.
+      const stillOpen = action === 'PARTIALLY_USED' && quantity! < item.quantity;
+      toast(`${actionCopy[stillOpen ? 'PARTIALLY_USED' : action === 'PARTIALLY_USED' ? 'USED' : action].past}: ${item.name}`);
+      onClose(!stillOpen);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
       setBusy(false);
@@ -56,17 +59,11 @@ export function ActionSheet({ item, onClose }: { item: FoodItem; onClose: (close
   function submitAmount(e: FormEvent) {
     e.preventDefault();
     const n = Number(amount);
-    if (!amount || !Number.isFinite(n) || n <= 0) {
-      setError('Enter an amount greater than zero.');
+    if (!amount.trim() || !Number.isFinite(n) || n <= 0) {
+      setError(MESSAGES.quantity);
       return;
     }
-    void run(mode as 'PARTIALLY_USED' | 'WASTED', n);
-  }
-
-  function openAmount(next: Mode) {
-    setMode(next);
-    setError(null);
-    setAmount(next === 'WASTED' ? String(item.quantity) : '');
+    void run('PARTIALLY_USED', n);
   }
 
   return (
@@ -89,25 +86,18 @@ export function ActionSheet({ item, onClose }: { item: FoodItem; onClose: (close
           <FormError message={error} />
           {mode === 'choose' ? (
             <>
-              <SheetOption
-                autoFocus
-                title={actionCopy.USED.label}
-                detail="Finished all of it"
-                disabled={busy}
-                onClick={() => run('USED')}
-              />
+              <SheetOption autoFocus title={actionCopy.USED.label} detail="Finished all of it" disabled={busy} onClick={() => run('USED')} />
               <SheetOption
                 title={actionCopy.PARTIALLY_USED.label}
                 detail="Keep the rest on your list"
                 disabled={busy}
-                onClick={() => openAmount('PARTIALLY_USED')}
+                onClick={() => {
+                  setMode('PARTIALLY_USED');
+                  setError(null);
+                  setAmount('');
+                }}
               />
-              <SheetOption
-                title={actionCopy.WASTED.label}
-                detail="Discarded without using it"
-                disabled={busy}
-                onClick={() => openAmount('WASTED')}
-              />
+              <SheetOption title={actionCopy.WASTED.label} detail="Discarded all of it" disabled={busy} onClick={() => run('WASTED')} />
               <SheetOption
                 title={actionCopy.REMOVED.label}
                 detail="Added by mistake, given away, or moved elsewhere"
@@ -118,18 +108,14 @@ export function ActionSheet({ item, onClose }: { item: FoodItem; onClose: (close
           ) : (
             <form onSubmit={submitAmount} className="space-y-3" noValidate>
               <Field
-                label={mode === 'PARTIALLY_USED' ? `How much did you use? (${item.unit})` : `How much did you throw away? (${item.unit})`}
+                label={`How much did you use? (${item.unit})`}
                 type="number"
                 inputMode="decimal"
                 step="any"
                 min="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                hint={
-                  mode === 'PARTIALLY_USED'
-                    ? `Less than ${formatQuantity(item.quantity, item.unit)}. Used everything? Go back and choose “Used it all”.`
-                    : 'Change this if you only threw away part of it.'
-                }
+                hint={`Up to ${formatQuantity(item.quantity, item.unit)}. Using all of it closes the item.`}
               />
               <div className="flex gap-2">
                 <Button type="button" variant="secondary" className="flex-1" onClick={() => setMode('choose')}>

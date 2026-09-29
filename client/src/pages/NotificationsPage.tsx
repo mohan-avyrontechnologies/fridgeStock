@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { EstimateNote } from '../components/Urgency';
-import { Button, EmptyState, Spinner } from '../components/ui';
+import { EmptyState, Spinner } from '../components/ui';
 import { reminderTypeLabel, screenCopy } from '../copy';
 import { formatInstant } from '../lib/format';
 import { useNotificationStore } from '../stores/notificationStore';
@@ -16,7 +16,7 @@ const TYPE_DOT: Record<ReminderType, string> = {
 };
 
 export function NotificationsPage() {
-  const { items, total, loading, openFeed, loadMore } = useNotificationStore();
+  const { items, loading, openFeed } = useNotificationStore();
 
   // Opening this screen is what marks reminders as read.
   useEffect(() => {
@@ -36,11 +36,6 @@ export function NotificationsPage() {
             <ReminderRow key={n.id} n={n} />
           ))}
         </ul>
-        {items.length < total && (
-          <Button variant="secondary" className="w-full" onClick={() => loadMore()}>
-            Show older
-          </Button>
-        )}
         <EstimateNote />
       </PageBody>
     </>

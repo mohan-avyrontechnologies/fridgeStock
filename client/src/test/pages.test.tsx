@@ -87,7 +87,7 @@ describe('Cook First', () => {
     await user.click(within(dialog).getByRole('button', { name: /Used some/ }));
     await user.type(within(dialog).getByLabelText(/How much did you use/), '0.5');
     await user.click(within(dialog).getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(body).toEqual({ action: 'PARTIALLY_USED', quantityUsed: 0.5 }));
+    await waitFor(() => expect(body).toEqual({ quantity: 0.5 }));
   });
 });
 
@@ -97,7 +97,7 @@ describe('Add food', () => {
     renderSignedIn('/add', <AddFoodPage />);
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(screen.getByText('Food name is required.')).toBeInTheDocument();
-    expect(screen.getByText('Lifespan must be zero or a positive number of days.')).toBeInTheDocument();
+    expect(screen.getByText('Lifespan must be a whole number of days from 0 to 365.')).toBeInTheDocument();
   });
 
   it('previews expected expiry and sends the five fields', async () => {
@@ -220,7 +220,6 @@ describe('Add food units and notes', () => {
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(body).toMatchObject({ name: 'Paneer', notes: 'Opened, top shelf' }));
     expect(body).not.toHaveProperty('expiryDate');
-    expect(body).not.toHaveProperty('expectedExpiryDate');
   });
 });
 
@@ -233,11 +232,10 @@ describe('Reminders screen', () => {
           items: [
             { id: 'n1', foodId: 'c', type: 'APPROACHING_EXPIRY', message: 'Spinach: 2 days left.', scheduledDate: '2026-09-29', status: 'SENT', sentAt: '2026-09-29T08:00:00Z', readAt: null },
           ],
-          total: 1,
           unread: 1,
         }),
       ),
-      http.put(`${API_URL}/notifications/read-all`, () => {
+      http.post(`${API_URL}/notifications/read-all`, () => {
         markedRead = true;
         return new HttpResponse(null, { status: 204 });
       }),

@@ -23,7 +23,7 @@ export function HistoryPage() {
 
   useEffect(() => {
     api
-      .usageRecords()
+      .usage()
       .then((page) => {
         setRecords(page.items);
         setTotal(page.total);
@@ -33,7 +33,7 @@ export function HistoryPage() {
   }, []);
 
   async function more() {
-    const page = await api.usageRecords(records!.length);
+    const page = await api.usage(records!.length);
     setRecords([...records!, ...page.items]);
   }
 

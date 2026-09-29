@@ -1,5 +1,4 @@
 import type {
-  AppNotification,
   AuthResponse,
   CookFirstList,
   FoodInput,
@@ -94,24 +93,21 @@ export const api = {
   // DELETE /foods/:id
   removeFood: (id: string) => request<void>('DELETE', `/foods/${id}`),
   // POST /foods/:id/use
-  useFood: (id: string, action: 'USED' | 'PARTIALLY_USED', quantityUsed?: number) =>
-    request<UsageResult>('POST', `/foods/${id}/use`, { action, quantityUsed }),
+  // Without a quantity the whole item is used; a smaller quantity is a partial use.
+  useFood: (id: string, quantity?: number) =>
+    request<UsageResult>('POST', `/foods/${id}/use`, quantity === undefined ? {} : { quantity }),
   // POST /foods/:id/waste
-  wasteFood: (id: string, quantityUsed?: number) => request<UsageResult>('POST', `/foods/${id}/waste`, { quantityUsed }),
+  wasteFood: (id: string) => request<UsageResult>('POST', `/foods/${id}/waste`, {}),
 
-  // GET /usage-records
-  usageRecords: (offset = 0, limit = 20) =>
-    request<UsageHistory>('GET', `/usage-records?offset=${offset}&limit=${limit}`),
+  // GET /usage
+  usage: (offset = 0, limit = 20) => request<UsageHistory>('GET', `/usage?offset=${offset}&limit=${limit}`),
 
   // GET /notifications
-  notifications: (offset = 0, limit = 30) =>
-    request<NotificationFeed>('GET', `/notifications?offset=${offset}&limit=${limit}`),
+  notifications: () => request<NotificationFeed>('GET', '/notifications'),
   // GET /notifications/unread-count
   unreadCount: () => request<{ unread: number }>('GET', '/notifications/unread-count'),
-  // PUT /notifications/:id/read
-  markRead: (id: string) => request<AppNotification>('PUT', `/notifications/${id}/read`),
-  // PUT /notifications/read-all
-  markAllRead: () => request<void>('PUT', '/notifications/read-all'),
+  // POST /notifications/read-all
+  markAllRead: () => request<void>('POST', '/notifications/read-all'),
   // GET /notifications/preferences
   preferences: () => request<NotificationPreferences>('GET', '/notifications/preferences'),
   // PUT /notifications/preferences

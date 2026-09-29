@@ -49,6 +49,7 @@ router.put('/auth/me', validate(updateAccountSchema), authController.updateMe);
 
 router.get('/foods', foodController.list);
 router.post('/foods', validate(createFoodSchema), foodController.create);
+// /foods/cook-first must be registered before /foods/:id, or "cook-first" would be taken as an id.
 router.get('/foods/cook-first', foodController.cookFirst);
 router.get('/foods/:id', foodController.get);
 router.put('/foods/:id', validate(updateFoodSchema), foodController.update);
@@ -56,11 +57,10 @@ router.delete('/foods/:id', foodController.remove);
 router.post('/foods/:id/use', validate(useFoodSchema), foodController.use);
 router.post('/foods/:id/waste', validate(wasteFoodSchema), foodController.waste);
 
-router.get('/usage-records', validate(paginationSchema, 'query'), usageController.list);
+router.get('/usage', validate(paginationSchema, 'query'), usageController.list);
 
-router.get('/notifications', validate(paginationSchema, 'query'), notificationController.list);
+router.get('/notifications', notificationController.list);
 router.get('/notifications/unread-count', notificationController.unreadCount);
 router.get('/notifications/preferences', notificationController.getPreferences);
 router.put('/notifications/preferences', validate(preferencesSchema), notificationController.updatePreferences);
-router.put('/notifications/read-all', notificationController.markAllRead);
-router.put('/notifications/:id/read', notificationController.markRead);
+router.post('/notifications/read-all', notificationController.markAllRead);

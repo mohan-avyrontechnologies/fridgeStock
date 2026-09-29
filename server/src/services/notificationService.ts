@@ -2,22 +2,20 @@ import {
   addDays,
   diffDays,
   formatDisplay,
-  type AppNotification,
   type NotificationFeed,
+  type NotificationStatus,
   type NotificationPreferences,
-  type Pagination,
   type PreferenceKey,
   type PreferencesInput,
   type ReminderType,
 } from '@cook-first/shared';
-import { isValidObjectId, type Types } from 'mongoose';
+import type { Types } from 'mongoose';
 import { APPROACHING_EXPIRY_DAYS } from '../config/urgency.js';
 import { reminderCopy } from '../copy.js';
 import { FoodItemModel, type FoodItemDoc } from '../models/FoodItem.js';
 import { MAX_DELIVERY_ATTEMPTS, NotificationModel, type NotificationDoc } from '../models/Notification.js';
 import { UserModel, type UserDoc } from '../models/User.js';
 import { clock } from './clock.js';
-import { AppError } from './errors.js';
 import { toNotificationView, toUserView } from './views.js';
 
 const PREFERENCE_FOR: Record<ReminderType, PreferenceKey> = {
@@ -154,39 +152,30 @@ export async function sweep(): Promise<void> {
 
 // ---- Read and update operations used by the notification controller ----
 
-const SENT = { status: 'SENT' as const };
+/** The feed shows delivered reminders and ones whose delivery failed. */
+const VISIBLE = { status: { $in: ['SENT', 'FAILED'] as NotificationStatus[] } };
+export const FEED_LIMIT = 50;
 
-export async function listFeed(user: UserDoc, { limit, offset }: Pagination): Promise<NotificationFeed> {
+/** Sends any reminders that are due, then returns up to 50 SENT or FAILED ones, newest first. */
+export async function listFeed(user: UserDoc): Promise<NotificationFeed> {
   await dispatchForUser(user);
-  const filter = { userId: user._id, ...SENT };
-  const [items, total, unread] = await Promise.all([
-    NotificationModel.find(filter).sort({ sentAt: -1, _id: -1 }).skip(offset).limit(limit),
-    NotificationModel.countDocuments(filter),
+  const filter = { userId: user._id, ...VISIBLE };
+  const [items, unread] = await Promise.all([
+    NotificationModel.find(filter).sort({ scheduledDate: -1, sentAt: -1, _id: -1 }).limit(FEED_LIMIT),
     NotificationModel.countDocuments({ ...filter, readAt: null }),
   ]);
-  return { items: items.map(toNotificationView), total, unread };
+  return { items: items.map(toNotificationView), unread };
 }
 
 export async function unreadCount(user: UserDoc): Promise<{ unread: number }> {
   await dispatchForUser(user);
-  const unread = await NotificationModel.countDocuments({ userId: user._id, ...SENT, readAt: null });
+  const unread = await NotificationModel.countDocuments({ userId: user._id, ...VISIBLE, readAt: null });
   return { unread };
 }
 
-export async function markRead(user: UserDoc, id: string): Promise<AppNotification> {
-  const notFound = new AppError(404, 'NOT_FOUND', 'Notification not found.');
-  if (!isValidObjectId(id)) throw notFound;
-  const n = await NotificationModel.findOneAndUpdate(
-    { _id: id, userId: user._id, ...SENT },
-    { $set: { readAt: clock.now() } },
-    { returnDocument: 'after' },
-  );
-  if (!n) throw notFound;
-  return toNotificationView(n);
-}
-
+/** Marks every reminder in the feed as read (called when the Reminders screen opens). */
 export async function markAllRead(user: UserDoc): Promise<void> {
-  await NotificationModel.updateMany({ userId: user._id, ...SENT, readAt: null }, { $set: { readAt: clock.now() } });
+  await NotificationModel.updateMany({ userId: user._id, ...VISIBLE, readAt: null }, { $set: { readAt: clock.now() } });
 }
 
 export function getPreferences(user: UserDoc): NotificationPreferences {

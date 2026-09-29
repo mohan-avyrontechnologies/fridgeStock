@@ -33,8 +33,8 @@ export interface FoodItem {
   unit: Unit;
   addedDate: DateString;
   lifespanDays: number;
-  /** Always addedDate + lifespanDays, calculated by the server. */
-  expectedExpiryDate: DateString;
+  /** Always addedDate + lifespanDays, calculated by the server (never accepted from the client). */
+  expiryDate: DateString;
   notes: string | null;
   status: FoodStatus;
   /** Only while the item is active. */
@@ -98,8 +98,16 @@ export interface Page<T> {
 }
 
 export type UsageHistory = Page<UsageRecord> & { counts: Record<UsageAction, number> };
-export type NotificationFeed = Page<AppNotification> & { unread: number };
+/** Up to 50 delivered (SENT) or FAILED reminders, newest first. */
+export interface NotificationFeed {
+  items: AppNotification[];
+  unread: number;
+}
+
+/** Every error the API returns. Never includes a stack trace. */
+export const ERROR_CODES = ['VALIDATION_ERROR', 'UNAUTHENTICATED', 'NOT_FOUND', 'CONFLICT', 'RATE_LIMITED', 'INTERNAL'] as const;
+export type ErrorCode = (typeof ERROR_CODES)[number];
 
 export interface ApiErrorBody {
-  error: { code: string; message: string; field?: string };
+  error: { code: ErrorCode; message: string; field?: string };
 }

@@ -36,6 +36,6 @@ export const foodController = {
   },
 
   async waste(req: Request, res: Response) {
-    res.json(await foodService.wasteFood(currentUser(req), id(req), req.body));
+    res.json(await foodService.wasteFood(currentUser(req), id(req)));
   },
 };

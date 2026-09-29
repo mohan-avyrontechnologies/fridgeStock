@@ -1,13 +1,14 @@
-import type { AuthResponse, LoginInput, RegisterInput, UpdateAccountInput, User } from '@cook-first/shared';
+import { MESSAGES, type AuthResponse, type LoginInput, type RegisterInput, type UpdateAccountInput, type User } from '@cook-first/shared';
 import { UserModel, type UserDoc } from '../models/User.js';
-import { AppError } from './errors.js';
+import { AppError, conflict } from './errors.js';
 import { passwordHashService } from './passwordHash.js';
 import { isValidTimeZone } from './timeZone.js';
 import { signToken } from './token.js';
 import { toUserView } from './views.js';
 
-const emailTaken = () => new AppError(409, 'CONFLICT', 'An account with this email already exists.', 'email');
-const invalidCredentials = () => new AppError(401, 'INVALID_CREDENTIALS', 'Email or password is incorrect.');
+const emailTaken = () => conflict('An account with this email already exists.', 'email');
+// The same response for an unknown email and a wrong password.
+const invalidCredentials = () => new AppError(401, 'UNAUTHENTICATED', MESSAGES.invalidCredentials);
 
 function zoneOrDefault(timeZone: string | undefined, fallback: string): string {
   return timeZone && isValidTimeZone(timeZone) ? timeZone : fallback;

@@ -52,7 +52,7 @@ describe('scheduling', () => {
 
   it('cancels pending reminders when an item is used', async () => {
     const { id } = await add({ lifespanDays: 10 });
-    await s.auth(api().post(`/api/foods/${id}/use`).send({ action: 'USED' })).expect(200);
+    await s.auth(api().post(`/api/foods/${id}/use`).send({})).expect(200);
     expect(await scheduled(id)).toEqual([]);
   });
 });
@@ -75,24 +75,37 @@ describe('delivery', () => {
     body = await feed();
     expect(body.items[0].type).toBe('OVERDUE');
     expect(body.items[0].message).toContain('past its expected expiry');
-    expect(body.total).toBe(3);
+    expect(body.items).toHaveLength(3);
   });
 
   it('does not deliver the same reminder twice', async () => {
     await add({ lifespanDays: 2 });
     await feed();
     await feed();
-    expect((await feed()).total).toBe(1);
+    expect((await feed()).items).toHaveLength(1);
   });
 
-  it('marks reminders read individually and all at once', async () => {
+  it('POST /notifications/read-all marks every reminder as read', async () => {
     await add({ lifespanDays: 1 });
     await add({ lifespanDays: 0 });
     const body = await feed();
-    await s.auth(api().put(`/api/notifications/${body.items[0].id}/read`)).expect(200);
-    expect((await s.auth(api().get('/api/notifications/unread-count'))).body.unread).toBe(1);
-    await s.auth(api().put('/api/notifications/read-all')).expect(204);
+    expect(body.unread).toBe(2);
+    expect(body.items.every((n: { readAt: string | null }) => n.readAt === null)).toBe(true);
+    await s.auth(api().post('/api/notifications/read-all')).expect(204);
+    const after = await feed();
+    expect(after.unread).toBe(0);
+    expect(after.items.every((n: { readAt: string | null }) => n.readAt !== null)).toBe(true);
     expect((await s.auth(api().get('/api/notifications/unread-count'))).body.unread).toBe(0);
+  });
+
+  it('GET /notifications returns at most 50', async () => {
+    const { id } = await add({ lifespanDays: 1 });
+    const food = await NotificationModel.findOne({ foodId: id });
+    const base = { userId: food!.userId, foodId: food!.foodId, type: 'DUE', status: 'SENT', sentAt: new Date(0), attempts: 1 };
+    await NotificationModel.insertMany(
+      Array.from({ length: 60 }, (_, i) => ({ ...base, expiryDate: `2025-01-${String((i % 28) + 1).padStart(2, '0')}`, scheduledDate: '2025-01-01', type: (['DUE', 'OVERDUE', 'APPROACHING_EXPIRY'] as const)[Math.floor(i / 28)] })),
+    );
+    expect((await feed()).items).toHaveLength(50);
   });
 
   it('the background sweep delivers without the user opening the app', async () => {
@@ -139,11 +152,14 @@ describe('delivery failure', () => {
     await s.auth(api().get('/api/foods/cook-first')).expect(200);
   });
 
-  it('a failed reminder is retried and delivered once the channel recovers', async () => {
+  it('a failed reminder shows in the feed as FAILED, then is retried and delivered once the channel recovers', async () => {
     const spy = vi.spyOn(deliveryChannel, 'deliver').mockRejectedValueOnce(new Error('blip'));
     await add({ lifespanDays: 1 });
-    expect((await feed()).total).toBe(0);
-    expect((await feed()).total).toBe(1);
+    const first = await feed();
+    expect(first.items).toHaveLength(1);
+    expect(first.items[0]).toMatchObject({ status: 'FAILED', sentAt: null });
+    const second = await feed();
+    expect(second.items[0].status).toBe('SENT');
     expect(spy).toHaveBeenCalledTimes(2);
   });
 });

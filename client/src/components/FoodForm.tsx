@@ -4,6 +4,7 @@ import {
   diffDays,
   formatDisplay,
   isValidDate,
+  MESSAGES,
   todayInTz,
   UNITS,
   type FoodInput,
@@ -72,7 +73,7 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
     });
     const next: Errors = { ...found };
     if (!next.addedDate && isValidDate(addedDate) && addedDate > today) {
-      next.addedDate = 'Added date can’t be in the future.';
+      next.addedDate = MESSAGES.addedDate;
     }
     setErrors(next);
     return Object.keys(next).length ? null : data;

@@ -96,7 +96,7 @@ test('register → add food → Cook First → mark used → history', async ({ 
   await shot(page, '05-history');
 });
 
-test('partial use keeps the item; partial waste then full waste closes it', async ({ page }) => {
+test('partial use keeps the item; throwing it away closes the rest', async ({ page }) => {
   await register(page, 'Ben Okafor');
   await addFood(page, 'Milk', '4', 'l');
   await page.getByRole('link', { name: /Milk/ }).first().click();
@@ -110,22 +110,23 @@ test('partial use keeps the item; partial waste then full waste closes it', asyn
   await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('0.75 l')).toBeVisible();
 
-  // Throw away part of what's left, then the rest.
+  // Another partial use, then throw the rest away: one tap closes the whole item.
   await page.getByRole('button', { name: 'Used / wasted…' }).click();
-  await page.getByRole('dialog').getByRole('button', { name: /Threw it away/ }).click();
-  await page.getByLabel(/How much did you throw away/).fill('0.25');
+  await page.getByRole('dialog').getByRole('button', { name: /Used some/ }).click();
+  await page.getByLabel(/How much did you use/).fill('0.25');
   await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('0.5 l')).toBeVisible();
 
   await page.getByRole('button', { name: 'Used / wasted…' }).click();
   await page.getByRole('dialog').getByRole('button', { name: /Threw it away/ }).click();
-  await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
   await expect(page).toHaveURL('/');
   await expect(page.getByText('Nothing logged yet')).toBeVisible();
 
   await page.getByRole('link', { name: 'History' }).click();
   const history = page.getByRole('main').getByRole('listitem').filter({ hasText: 'Milk' });
   await expect(history).toHaveCount(3);
+  await expect(history.first()).toContainText('Wasted');
+  await expect(history.first()).toContainText('0.5 l');
 });
 
 test('validation messages and the expected-expiry preview', async ({ page }) => {
@@ -133,12 +134,16 @@ test('validation messages and the expected-expiry preview', async ({ page }) => 
   await page.getByRole('link', { name: 'Add food' }).click();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.getByText('Food name is required.')).toBeVisible();
-  await expect(page.getByText('Lifespan must be zero or a positive number of days.')).toBeVisible();
+  await expect(page.getByText('Lifespan must be a whole number of days from 0 to 365.')).toBeVisible();
 
   await page.getByLabel('Food', { exact: true }).fill('Bread');
   await expect(page.getByText('Food name is required.')).toBeHidden();
+  await page.getByLabel('Added on').fill('2099-01-01');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByText("Added date must be a valid date that isn't in the future.")).toBeVisible();
+  await page.getByRole('button', { name: 'Today' }).click();
   await page.getByRole('button', { name: '3 days' }).click();
-  await expect(page.getByText('Lifespan must be zero or a positive number of days.')).toBeHidden();
+  await expect(page.getByText('Lifespan must be a whole number of days from 0 to 365.')).toBeHidden();
   await expect(page.getByText('3 days left')).toBeVisible();
   await expect(page.getByText(REQUIRED_LINE)).toBeVisible();
   await expectNoSafetyClaim(page);

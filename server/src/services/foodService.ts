@@ -1,4 +1,4 @@
-import { addDays } from '@cook-first/shared';
+import { addDays, MESSAGES } from '@cook-first/shared';
 import type {
   ActiveFoodItem,
   CookFirstList,
@@ -6,18 +6,15 @@ import type {
   FoodInput,
   FoodItem,
   FoodList,
-  FoodStatus,
   FoodUpdateInput,
-  UsageAction,
   UsageResult,
   UseFoodInput,
-  WasteFoodInput,
 } from '@cook-first/shared';
 import { isValidObjectId } from 'mongoose';
 import { FoodItemModel, type FoodItemDoc } from '../models/FoodItem.js';
 import type { UserDoc } from '../models/User.js';
 import { clock } from './clock.js';
-import { AppError, foodNotFound, validationError } from './errors.js';
+import { conflict, foodNotFound, validationError } from './errors.js';
 import { cancelForFood, scheduleForFood } from './notificationService.js';
 import { prioritise } from './priorityEngine.js';
 import { createRecord } from './usageService.js';
@@ -37,15 +34,14 @@ async function findOwned(user: UserDoc, id: string): Promise<FoodItemDoc> {
   return food;
 }
 
+/** Any action on a used, wasted or removed item is a 409. */
 function assertActive(food: FoodItemDoc) {
-  if (food.status !== 'ACTIVE') {
-    throw new AppError(409, 'ITEM_CLOSED', 'This item is no longer in your active inventory.');
-  }
+  if (food.status !== 'ACTIVE') throw conflict(MESSAGES.itemClosed);
 }
 
-/** Past dates are fine (food bought earlier); future ones are almost always typos. */
+/** Past dates are fine (food bought earlier); a date after today in the user's time zone is not. */
 function assertNotFuture(addedDate: DateString, today: DateString) {
-  if (addedDate > today) throw validationError("Added date can't be in the future.", 'addedDate');
+  if (addedDate > today) throw validationError(MESSAGES.addedDate, 'addedDate');
 }
 
 async function prioritisedFor(user: UserDoc) {
@@ -65,31 +61,28 @@ const expiryFor = (addedDate: DateString, lifespanDays: number) => addDays(added
 /** An empty notes string clears the notes. */
 const cleanNotes = (notes: string | undefined) => (notes === undefined ? undefined : notes.trim() || null);
 
-const CLOSING_STATUS: Record<UsageAction, FoodStatus | null> = {
-  USED: 'USED',
-  PARTIALLY_USED: null,
-  WASTED: 'WASTED',
-  REMOVED: 'REMOVED',
-};
+type ClosingAction = 'USED' | 'WASTED' | 'REMOVED';
 
 /**
- * Applies a usage action and writes its usage record. Partial use, and
- * wasting only part of an item, reduce quantity and leave the item active.
+ * Closes an item: logs the quantity that was left, sets closedAt and deletes
+ * its pending reminders.
  */
-async function applyUsage(user: UserDoc, food: FoodItemDoc, action: UsageAction, quantityUsed: number): Promise<UsageResult> {
-  const remaining = round(food.quantity - quantityUsed);
-  const closingStatus = action === 'WASTED' && remaining > 0 ? null : CLOSING_STATUS[action];
-
-  if (closingStatus) {
-    food.status = closingStatus;
-    food.closedAt = clock.now();
-  } else {
-    food.quantity = remaining;
-  }
+async function close(user: UserDoc, food: FoodItemDoc, action: ClosingAction): Promise<UsageResult> {
+  const quantityLeft = food.quantity;
+  food.status = action;
+  food.closedAt = clock.now();
   await food.save();
+  const record = await createRecord(user, food, action, quantityLeft, 0);
+  await cancelForFood(user._id, food._id);
+  return { food: toFoodView(food, clock.today(user.timeZone)), usageRecord: toUsageView(record) };
+}
 
-  const record = await createRecord(user, food, action, quantityUsed, closingStatus ? 0 : remaining);
-  if (closingStatus) await cancelForFood(user._id, food._id);
+/** Uses part of an item: reduces its quantity, logs PARTIALLY_USED, and leaves it active. */
+async function usePart(user: UserDoc, food: FoodItemDoc, quantity: number): Promise<UsageResult> {
+  const remaining = round(food.quantity - quantity);
+  food.quantity = remaining;
+  await food.save();
+  const record = await createRecord(user, food, 'PARTIALLY_USED', quantity, remaining);
   return { food: toFoodView(food, clock.today(user.timeZone)), usageRecord: toUsageView(record) };
 }
 
@@ -103,6 +96,7 @@ export async function listCookFirst(user: UserDoc): Promise<CookFirstList> {
   return { today, items: cookFirst };
 }
 
+/** Any item the user owns, active or closed. */
 export async function getFood(user: UserDoc, id: string): Promise<FoodItem> {
   return toFoodView(await findOwned(user, id), clock.today(user.timeZone));
 }
@@ -125,6 +119,7 @@ export async function createFood(user: UserDoc, input: FoodInput): Promise<FoodI
   return toFoodView(food, today);
 }
 
+/** Edits an active item. Changing the added date or lifespan recalculates the expiry and reschedules reminders. */
 export async function updateFood(user: UserDoc, id: string, input: FoodUpdateInput): Promise<FoodItem> {
   const today = clock.today(user.timeZone);
   const food = await findOwned(user, id);
@@ -137,42 +132,40 @@ export async function updateFood(user: UserDoc, id: string, input: FoodUpdateInp
   if (addedDate !== undefined) food.addedDate = addedDate;
   if (lifespanDays !== undefined) food.lifespanDays = lifespanDays;
   if (notes !== undefined) food.notes = cleanNotes(notes) ?? undefined;
-  // Recalculate whenever the added date or lifespan changes (no Mongoose hook: hooks skip update queries).
-  if (addedDate !== undefined || lifespanDays !== undefined) {
-    food.expiryDate = expiryFor(food.addedDate, food.lifespanDays);
-  }
+
+  // No Mongoose hook for this: hooks don't run on update queries.
+  const datesChanged = addedDate !== undefined || lifespanDays !== undefined;
+  if (datesChanged) food.expiryDate = expiryFor(food.addedDate, food.lifespanDays);
   await food.save();
-  await scheduleForFood(food, user);
+  if (datesChanged) await scheduleForFood(food, user);
   return toFoodView(food, today);
 }
 
-/** Soft close: the item leaves active inventory but its history is kept. */
+/** Soft delete: closes the item as REMOVED; its history is kept. */
 export async function removeFood(user: UserDoc, id: string): Promise<void> {
   const food = await findOwned(user, id);
   assertActive(food);
-  await applyUsage(user, food, 'REMOVED', food.quantity);
+  await close(user, food, 'REMOVED');
 }
 
-export async function useFood(user: UserDoc, id: string, { action, quantityUsed }: UseFoodInput): Promise<UsageResult> {
+/**
+ * Without a quantity (or with all of it) the whole item is used. A smaller
+ * quantity reduces the item and logs PARTIALLY_USED. More than is left is a 400.
+ * Zero and negative quantities are rejected by the request schema.
+ */
+export async function useFood(user: UserDoc, id: string, { quantity }: UseFoodInput): Promise<UsageResult> {
   const food = await findOwned(user, id);
   assertActive(food);
-  if (action === 'USED') return applyUsage(user, food, 'USED', food.quantity);
-
-  if (quantityUsed === undefined) throw validationError('Enter how much you used.', 'quantityUsed');
-  if (quantityUsed >= food.quantity) {
-    throw validationError(
-      `That's all of it (${food.quantity} ${food.unit}). Mark it as fully used instead.`,
-      'quantityUsed',
-    );
+  if (quantity === undefined || quantity === food.quantity) return close(user, food, 'USED');
+  if (quantity > food.quantity) {
+    throw validationError(`There is only ${food.quantity} ${food.unit} left.`, 'quantity');
   }
-  return applyUsage(user, food, 'PARTIALLY_USED', quantityUsed);
+  return usePart(user, food, quantity);
 }
 
-export async function wasteFood(user: UserDoc, id: string, { quantityUsed }: WasteFoodInput): Promise<UsageResult> {
+/** Closes the whole item as WASTED. */
+export async function wasteFood(user: UserDoc, id: string): Promise<UsageResult> {
   const food = await findOwned(user, id);
   assertActive(food);
-  if (quantityUsed !== undefined && quantityUsed > food.quantity) {
-    throw validationError(`You only have ${food.quantity} ${food.unit} of this item.`, 'quantityUsed');
-  }
-  return applyUsage(user, food, 'WASTED', quantityUsed ?? food.quantity);
+  return close(user, food, 'WASTED');
 }

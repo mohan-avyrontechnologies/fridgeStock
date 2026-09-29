@@ -28,7 +28,7 @@ export function FoodCard({ item }: { item: ActiveFoodItem }) {
             </>
           )}
         </p>
-        <p className="text-sm text-muted">{cardExpiryLine(formatDisplay(item.expectedExpiryDate))}</p>
+        <p className="text-sm text-muted">{cardExpiryLine(formatDisplay(item.expiryDate))}</p>
         {item.notes && <p className="mt-0.5 truncate text-sm text-muted italic">{item.notes}</p>}
       </Link>
       <div className="flex items-center pr-3">

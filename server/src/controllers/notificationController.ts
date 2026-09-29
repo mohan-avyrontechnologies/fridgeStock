@@ -1,21 +1,15 @@
-import type { Pagination } from '@cook-first/shared';
 import type { Request, Response } from 'express';
 import { currentUser } from '../middleware/auth.js';
-import { validatedQuery } from '../middleware/validate.js';
 import * as notificationService from '../services/notificationService.js';
 
 /** Thin: parse the request, call the service, send the response. */
 export const notificationController = {
   async list(req: Request, res: Response) {
-    res.json(await notificationService.listFeed(currentUser(req), validatedQuery<Pagination>(req)));
+    res.json(await notificationService.listFeed(currentUser(req)));
   },
 
   async unreadCount(req: Request, res: Response) {
     res.json(await notificationService.unreadCount(currentUser(req)));
-  },
-
-  async markRead(req: Request, res: Response) {
-    res.json(await notificationService.markRead(currentUser(req), String(req.params.id)));
   },
 
   async markAllRead(req: Request, res: Response) {

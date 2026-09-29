@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { AppError } from '../services/errors.js';
 
 export function notFoundRoute(_req: Request, res: Response) {
@@ -12,11 +13,18 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
     });
     return;
   }
+  // A database-level rule caught something the request schema didn't.
+  if (err instanceof mongoose.Error.ValidationError) {
+    const [field, detail] = Object.entries(err.errors)[0] ?? [];
+    res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: detail?.message ?? 'Invalid data.', ...(field && { field }) } });
+    return;
+  }
   if (err instanceof SyntaxError && 'body' in err) {
     res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Request body is not valid JSON.' } });
     return;
   }
-  // Log the error only: request bodies (which may hold passwords) are never logged.
+  // Log it on the server only. The response never includes a stack trace, and
+  // request bodies (which may hold passwords) are never logged.
   console.error(err);
   res.status(500).json({ error: { code: 'INTERNAL', message: 'Something went wrong. Please try again.' } });
 }

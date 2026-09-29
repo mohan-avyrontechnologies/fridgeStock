@@ -119,7 +119,7 @@ export function FoodDetailPage() {
 
               <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line pt-4 text-sm">
                 <Detail label={active ? 'Quantity left' : 'Quantity'} value={formatQuantity(food.quantity, food.unit)} />
-                <Detail label={expectedExpiryLabel} value={formatDisplay(food.expectedExpiryDate)} />
+                <Detail label={expectedExpiryLabel} value={formatDisplay(food.expiryDate)} />
                 <Detail label="Added on" value={formatDisplay(food.addedDate)} />
                 <Detail label="Lifespan" value={`${food.lifespanDays} ${food.lifespanDays === 1 ? 'day' : 'days'}`} />
                 {food.notes && (

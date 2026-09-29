@@ -41,15 +41,14 @@ describe('every data query is scoped to the signed-in user', () => {
     await s.auth(api().get('/api/foods/cook-first'));
     await s.auth(api().get(`/api/foods/${a.id}`));
     await s.auth(api().put(`/api/foods/${a.id}`).send({ lifespanDays: 1 }));
-    await s.auth(api().post(`/api/foods/${a.id}/use`).send({ action: 'PARTIALLY_USED', quantityUsed: 1 }));
-    const feed = (await s.auth(api().get('/api/notifications'))).body;
+    await s.auth(api().post(`/api/foods/${a.id}/use`).send({ quantity: 1 }));
+    await s.auth(api().get('/api/notifications'));
     await s.auth(api().get('/api/notifications/unread-count'));
-    await s.auth(api().put(`/api/notifications/${feed.items[0].id}/read`));
-    await s.auth(api().put('/api/notifications/read-all'));
+    await s.auth(api().post('/api/notifications/read-all'));
     await s.auth(api().put('/api/notifications/preferences').send({ due: false }));
     await s.auth(api().post(`/api/foods/${a.id}/waste`).send({}));
     await s.auth(api().delete(`/api/foods/${b.id}`));
-    await s.auth(api().get('/api/usage-records'));
+    await s.auth(api().get('/api/usage'));
     mongoose.set('debug', false);
 
     const dataOps = ops.filter((op) => SCOPED.has(op.collection) && !IGNORED.has(op.method));

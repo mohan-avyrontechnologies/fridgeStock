@@ -46,8 +46,8 @@ export const useFoodStore = create<FoodState>()((set, get) => ({
 
   async act(id, action, quantity) {
     if (action === 'REMOVED') await api.removeFood(id);
-    else if (action === 'WASTED') await api.wasteFood(id, quantity);
-    else await api.useFood(id, action, quantity);
+    else if (action === 'WASTED') await api.wasteFood(id);
+    else await api.useFood(id, action === 'PARTIALLY_USED' ? quantity : undefined);
     await get().refresh();
   },
 
