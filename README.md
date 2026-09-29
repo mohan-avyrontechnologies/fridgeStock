@@ -6,8 +6,8 @@ A mobile-first web app that helps a household use perishable food before it goes
 
 | | |
 |---|---|
-| **Status** | MVP complete. Not yet deployed. |
-| **Version** | 2.4.0 (see the [Changelog](#changelog)) |
+| **Status** | MVP complete; post-MVP Phase 1 (faster entry) complete. Not yet deployed. |
+| **Version** | 2.5.0 (see the [Changelog](#changelog)) |
 | **Requires** | Node.js 20.19 or later |
 | **Specifications** | PFCP BRD v2.0, FRD v1.0, SRD v1.0, TDD v1.0 (internal documents, not stored in this repo) |
 | **Repository** | `github.com/rugvailabs/cook_first` |
@@ -48,9 +48,9 @@ These screenshots are captured automatically by the Playwright test suite.
 
 **Phone (Pixel 7)**
 
-| Dashboard | Cook First | Recording what happened | Add food |
-|---|---|---|---|
-| ![Dashboard on a phone](docs/screenshots/mobile-02-dashboard.png) | ![Cook First on a phone](docs/screenshots/mobile-03-cook-first.png) | ![Action sheet on a phone](docs/screenshots/mobile-04-action-sheet.png) | ![Add food on a phone](docs/screenshots/mobile-07-add-food.png) |
+| Dashboard | Cook First | Recording what happened | Add food | Bulk add |
+|---|---|---|---|---|
+| ![Dashboard on a phone](docs/screenshots/mobile-02-dashboard.png) | ![Cook First on a phone](docs/screenshots/mobile-03-cook-first.png) | ![Action sheet on a phone](docs/screenshots/mobile-04-action-sheet.png) | ![Add food on a phone](docs/screenshots/mobile-07-add-food.png) | ![Bulk add on a phone](docs/screenshots/mobile-11-bulk-add.png) |
 
 **Desktop (1440 × 900)**
 
@@ -65,15 +65,17 @@ These screenshots are captured automatically by the Playwright test suite.
 | Area | What it does |
 |---|---|
 | **Accounts** | Register and log in with email and password. JWT sessions last 7 days; passwords are hashed with bcrypt. Your time zone is captured silently from the browser at sign-up. |
-| **Add food** | One short form: name (focused automatically), quantity (defaults to 1), a unit dropdown (defaults to pcs), added date (defaults to today, never in the future), lifespan with 1/2/3/5/7/14-day quick picks plus a number box, and optional notes behind an "Add note" link. A live preview reads, for example, "Expected expiry: Thu, 1 Oct (2 days left)", with the disclaimer beneath it. Saving returns to the dashboard with a short confirmation. |
+| **Add food** | **Favourites** to re-add with one tap, then one short form, with suggestions from the reference list as you type and a **Kept in** dropdown: name (focused automatically), quantity (defaults to 1), a unit dropdown (defaults to pcs), added date (defaults to today, never in the future), lifespan with 1/2/3/5/7/14-day quick picks plus a number box, and optional notes behind an "Add note" link. A live preview reads, for example, "Expected expiry: Thu, 1 Oct (2 days left)", with the disclaimer beneath it. Saving returns to the dashboard with a short confirmation. |
 | **Expected expiry** | Added date + lifespan, calculated by the server's food service and never accepted from the client. It is recalculated whenever the added date or lifespan changes. A lifespan of 0 means the expected expiry is the day the item was added. |
 | **Urgency** | 🟢 Not urgent (more than 3 days left) · 🟡 Use soon (1–3) · 🟠 Expected expiry today (0) · 🔴 Past expected expiry (below 0). Always shown as a colour **and** a text label. Each card also says "5 days left", "1 day left", "1 day past expected expiry" and so on. |
 | **Priority order** | Sorted by expected expiry, then added date, then item ID, so the same data always gives the same order. |
 | **Cook First** | Every active item that isn't "Not urgent", most urgent first. |
 | **Dashboard** | A header with your name, a bell with the unread count and a settings icon. Then a summary bar (past, today, use soon, not urgent); a Cook First section with the top 3 urgent items and a "See all" link ("Nothing urgent right now." when empty); and the full list in priority order ("Your fridge is empty. Add your first item." when empty). A fixed **Add food** button is always in reach. |
-| **Recording what happened** | On the details screen: **Used all · Used some · Wasted · Remove**. Each card has **Used** (all or some) and **Wasted** buttons. Every action that closes an item asks for **one small confirmation**, and "Used some" asks for a quantity. Each action is saved as a usage record. |
+| **Recording what happened** | On the details screen: **Used all · Used some · Wasted · Remove**. Each card has **Used** (all or some) and **Wasted** buttons. Actions happen at once and the message offers **Undo** for a few seconds (the server allows undo for 10 minutes). "Used some" asks for a quantity. Each action is saved as a usage record. |
 | **History** | Every usage record, newest first, showing the food, action, quantity and date, with totals for each action and a "Load more" button. |
 | **Reminders** | In-app only. Sent 3 days before expiry, on the expiry day, and the day after. Each type can be turned off in Settings. They're delivered whenever you open the dashboard or the Reminders screen, and by an hourly job. They count as read once you open the Reminders screen. |
+| **Faster entry** | A **reference list of 43 common foods** with suggested lifespans for fridge, freezer and pantry. It suggests as you type, fills in the unit and lifespan, and the user can always change the number. **Favourites** save a food and re-add it with one tap. **Bulk add** handles a whole shopping haul (up to 50 items) in one go. |
+| **Where it's kept** | Every item is kept in the **Fridge**, **Freezer** or **Pantry**, and can record an **opened date**. |
 | **Settings** | Your name and email (read-only), switches for the three reminder types, a link to History, and Log out. |
 | **Privacy** | Each user only ever sees their own food, history and reminders. |
 | **Responsive** | Mobile-first and tested at **375 px** wide, with every button, link and field at least 44 px tall. From 1024 px wide: a sidebar and a two-column layout. Every screen has loading, empty and error states, and any 401 signs you out and returns you to the login page. |
@@ -261,8 +263,8 @@ Run these from the repository root:
 | `npm run lint` | ESLint across all three packages |
 | `npm run format` / `npm run format:check` | Format with Prettier / check formatting (CI runs the check) |
 | `npm run typecheck` | TypeScript check of `shared`, `server` and `client` |
-| `npm test` | Unit and API tests: shared (21) + server (149) + client (39) |
-| `npm run test:e2e` | Playwright end-to-end tests (14), at 375 px and 1440 px |
+| `npm test` | Unit and API tests: shared (25) + server (167) + client (45) |
+| `npm run test:e2e` | Playwright end-to-end tests (16), at 375 px and 1440 px |
 | `npm run build` | Build `shared/dist`, `server/dist` and `client/dist` |
 
 ---
@@ -271,14 +273,15 @@ Run these from the repository root:
 
 | Suite | Tools | Tests | What it covers |
 |---|---|---|---|
-| **Dates** (`shared/src/dates.test.ts`) | Vitest | 21 | Valid and invalid dates, leap years (including 2000 and 2100), today in several time zones, month and year ends, daylight-saving weekends, `addDays`/`diffDays` as inverses, the "Thu, 1 Oct" format |
+| **Dates and reference list** (`shared/src/*.test.ts`) | Vitest | 25 | Valid and invalid dates, leap years (including 2000 and 2100), today in several time zones, month and year ends, daylight-saving weekends, `addDays`/`diffDays` as inverses, the "Thu, 1 Oct" format; the reference list (unique names, valid units, 0–365 lifespans, freezer longer than fridge, search) |
 | **API and logic** (`server/src/tests`) | Vitest, Supertest, mongodb-memory-server | 107 | `auth`, `foods`, `notifications`, `security` and `priorityEngine` tests: registration and login, tokens, every validation message, limits and units, expiry never accepted from the client, `/use` (whole, partial, 0, negative or too much), `/waste`, `DELETE`, 409 on closed items, `/usage` paging, each reminder scheduling rule (including a zero-day lifespan), the three exact messages, `dispatchDue` on `GET /foods`, a dispatch failure never breaking the inventory or Cook First, `{n}` worked out at send time, delivery, failures and preferences, cross-user isolation, and all the required priority-engine cases |
+| **Phase 1** (`phase1.test.ts`) | Vitest, Supertest | 18 | Household, storage and opened-date fields (defaults, validation, editing, backfill of existing data); bulk add (shared date, per-row storage, reminders, the failing row's field path, all-or-nothing, 1–50 limit); favourites (create, duplicate 409, one-tap add, delete, privacy); undo for every action (quantity, status, reminders and usage record restored; stepping back; nothing to undo; 10-minute limit; other users get 404) |
 | **API contract** (`api.test.ts`) | Vitest, Supertest | 14 | Only the agreed error codes, never a stack trace, 500 is `INTERNAL`, database validation errors are 400, login 401 message, exact register messages, user and food response shapes, priority order and summary, `cook-first` matched before `/:id`, reminders scheduled on create and rescheduled only when dates change, pending reminders deleted on close, old routes removed |
 | **Wording guard** (`foodSafetyCopy.test.ts`) | Vitest | 5 | Scans every `.ts`/`.tsx` file in `client/src`, `server/src` and `shared/src`, comments included, for the banned phrases. Fails on the word "safe" in either copy file, or on expiry wording outside the copy files. Checks the required estimate line. |
 | **Project rules** (`rules.test.ts`) | Vitest, Supertest | 11 | Every database query carries the user's ID; the query-string `userId` is ignored; pure priority engine; bcrypt cost 12; passwords never returned or logged; `.env` ignored; helmet; CORS; rate limit of 20 per 15 minutes |
 | **Server structure** (`structure.test.ts`) | Vitest | 12 | The `server/src` folders; thin controllers; only models talk to MongoDB; no `new Date()` in date logic; dates only from `shared`; hourly node-cron job; env variable names and defaults; the threshold of 3 exists only in `config/urgency.ts` (checked across client, server and shared); expiry calculated in the food service with no Mongoose hook |
-| **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 39 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and preview, the required estimate line, all five remaining-days phrasings, colour always paired with a label, exactly seven units, notes, reminders marked read when the screen opens; the dashboard header, 3-item Cook First with "See all", and empty texts; Add Food defaults, the unit dropdown, the "Add note" link and the preview format; closing actions needing one confirmation; the Reminders error state; plus client structure checks |
-| **End-to-end** (`e2e/`) | Playwright in Chrome | 14 | 7 journeys, each run at **375 px phone size** and **desktop size (1440×900)** |
+| **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 45 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and preview, the required estimate line, all five remaining-days phrasings, colour always paired with a label, exactly seven units, notes, reminders marked read when the screen opens; the dashboard header, 3-item Cook First with "See all", and empty texts; Add Food defaults, the unit dropdown, the "Add note" link and the preview format; reference suggestions (including following the storage location), storage sent with the item, one-tap favourites, Undo instead of confirmations, bulk add (reference fill, one request, per-row errors); the Reminders error state; plus client structure checks |
+| **End-to-end** (`e2e/`) | Playwright in Chrome | 16 | 8 journeys, each run at **375 px phone size** and **desktop size (1440×900)** |
 
 The seven end-to-end journeys:
 
@@ -289,6 +292,7 @@ The seven end-to-end journeys:
 5. Reminders
 6. One user can't see another user's food
 7. Reminder settings and log out
+8. **Phase 1:** bulk add a haul → waste one and **Undo** it → save a favourite, use it up, and re-add it with one tap
 
 Every page visited is also checked for banned wording, sideways scrolling, and **tap targets under 44 px**.
 
@@ -400,8 +404,9 @@ The app is mobile-first and tested at **375 px** wide. Buttons, links and fields
 | **Sign up / Log in** | Email and password (plus name on sign-up). The time zone is captured silently. Errors appear next to each field. On success, the dashboard opens. |
 | **Dashboard** | **Header:** your name, a bell with the unread count, and a settings icon. **Summary bar:** past · today · use soon · not urgent. **Cook First:** the top 3 urgent items with "See all" ("Nothing urgent right now." when none). **Full list** in priority order ("Your fridge is empty. Add your first item." when empty). **Add food:** a fixed button. |
 | **Add food** | One short form: name (focused), quantity (1), unit dropdown (pcs), added date (today, never in the future), lifespan quick picks 1/2/3/5/7/14 plus a number box, and notes behind "Add note". A live preview such as "Expected expiry: Thu, 1 Oct (2 days left)", then the disclaimer. Saving returns to the dashboard with a short confirmation. |
-| **Food details** | Every field, plus expected expiry, remaining days and urgency. Active items can be edited or marked **Used all**, **Used some** (asks for a quantity), **Wasted** or **Remove**. Each closing action needs one confirmation. Closed items are read-only. |
+| **Food details** | Every field (including where it's kept and the opened date), plus expected expiry, remaining days and urgency. Active items can be edited, saved as a **favourite**, or marked **Used all**, **Used some** (asks for a quantity), **Wasted** or **Remove**, each with **Undo** afterwards. Closed items are read-only. |
 | **Cook First** | Urgent items in priority order: name, quantity, unit, expected expiry, remaining days, urgency and notes, with **Used** (all or some) and **Wasted** buttons, plus the disclaimer. "Nothing needs attention right now." when nothing is urgent. |
+| **Bulk add** | Rows of name, quantity, unit, lifespan and where it's kept, sharing one added date. Picking a reference food fills in the rest. Errors show on the exact row. |
 | **Reminders** | Newest first, 50 at a time with "Load more". Everything is marked read when the screen opens. |
 | **Settings** | Name and email (read-only), the three reminder switches, a link to History, and Log out. |
 | **History** | Usage records newest first: food, action, quantity and date, with "Load more". |
@@ -431,9 +436,10 @@ MongoDB collections:
 
 | Collection | Fields |
 |---|---|
-| **users** | `name` (1–50 characters), `email` (stored in lowercase, unique), `passwordHash` (bcrypt, never returned), `timeZone` (IANA, default `UTC`), `notificationPreferences {approachingExpiry, due, overdue}` (all default `true`) |
-| **fooditems** | `userId` (exactly one owner), `name` (1–60), `quantity` (> 0), `unit` (`pcs`/`g`/`kg`/`ml`/`l`/`pack`/`bunch`), `addedDate` (`YYYY-MM-DD`, not in the future in the user's time zone), `lifespanDays` (whole number 0–365), `expiryDate` (= `addedDate` + `lifespanDays`), `notes` (optional, ≤ 200), `status` (`ACTIVE`/`USED`/`WASTED`/`REMOVED`, default `ACTIVE`), `closedAt` (set when it stops being active) |
+| **users** | `householdId` (every user starts in their own household), `name` (1–50 characters), `email` (stored in lowercase, unique), `passwordHash` (bcrypt, never returned), `timeZone` (IANA, default `UTC`), `notificationPreferences {approachingExpiry, due, overdue}` (all default `true`) |
+| **fooditems** | `userId` (exactly one owner), `householdId` (the owner's), `storage` (`FRIDGE`/`FREEZER`/`PANTRY`, default `FRIDGE`), `openedDate` (`YYYY-MM-DD` or null; not in the future or before `addedDate`), `name` (1–60), `quantity` (> 0), `unit` (`pcs`/`g`/`kg`/`ml`/`l`/`pack`/`bunch`), `addedDate` (`YYYY-MM-DD`, not in the future in the user's time zone), `lifespanDays` (whole number 0–365), `expiryDate` (= `addedDate` + `lifespanDays`), `notes` (optional, ≤ 200), `status` (`ACTIVE`/`USED`/`WASTED`/`REMOVED`, default `ACTIVE`), `closedAt` (set when it stops being active) |
 | **usagerecords** | `userId`, `foodId`, `action` (`USED`/`PARTIALLY_USED`/`WASTED`/`REMOVED`), `date` (`YYYY-MM-DD` in the user's time zone), `quantityUsed`, `unit` (copied from the item), plus `foodName`, `quantityRemaining` and `createdAt` |
+| **favourites** | `userId`, `name`, `nameKey` (lower-case, unique per user), `quantity`, `unit`, `lifespanDays`, `storage` |
 | **notifications** | `userId`, `foodId`, `type` (`APPROACHING_EXPIRY`/`DUE`/`OVERDUE`), `scheduledDate` (`YYYY-MM-DD`), `status` (`PENDING`/`SENT`/`FAILED`, default `PENDING`), `message`, `sentAt`, `readAt` (empty until the Reminders screen is opened), `attempts` (starts at 0), plus `expiryDate` and `lastError` |
 
 **The expiry date is calculated in `services/foodService.ts`** when an item is created and whenever its added date or lifespan changes. There's deliberately no Mongoose hook, because hooks don't run on update queries. Any expiry date sent by the client is ignored.
@@ -444,7 +450,13 @@ MongoDB collections:
 - `notifications {userId, foodId, type, expiryDate}` (unique, so no duplicate reminders)
 - `usagerecords {userId, date, createdAt}`
 
-**Migrations:** `models/migrations.ts` runs at start-up. It converts any food dates saved by versions before 2.0 from timestamps to `YYYY-MM-DD` strings, and removes out-of-date indexes. It's safe to run repeatedly.
+**Migrations:** `models/migrations.ts` runs at start-up and is safe to run repeatedly. It:
+- converts food dates saved before v2.0 to `YYYY-MM-DD` strings
+- gives existing users a household and copies it onto their items (v2.5)
+- sets missing `storage` to `FRIDGE` and `openedDate` to null (v2.5)
+- removes out-of-date indexes
+
+The household ID, storage location and opened date were added **ahead of the later phases**, so shared households, location-based lifespans and the "Opened" action won't need another migration.
 
 **Stored in the browser:** only the login token and basic profile (`localStorage`, through Zustand `persist`), cleared at sign-out.
 
@@ -465,7 +477,9 @@ Base URL: `http://localhost:4000/api` (`VITE_API_URL`). Requests and responses a
 | GET | `/auth/me` | | `{user}` | 401 |
 | GET | `/foods` | | `{today, summary, items}`: active items in priority order; `summary` has a count for each urgency state plus `total` | 401 |
 | GET | `/foods/cook-first` | | `{today, items}`: urgent items only. Registered before `/foods/:id`. | 401 |
-| POST | `/foods` | `{name, quantity, unit, addedDate, lifespanDays, notes?}` | `201 FoodItem`, with reminders scheduled | 400 |
+| POST | `/foods` | `{name, quantity, unit, addedDate, lifespanDays, notes?, storage?, openedDate?}` | `201 FoodItem`, with reminders scheduled | 400 |
+| POST | `/foods/bulk` | `{addedDate, storage?, items: [{name, quantity, unit, lifespanDays, storage?, notes?}]}` (1–50) | `201 {items}`. All or nothing; errors name the row, e.g. `items.2.name` | 400 |
+| POST | `/foods/:id/undo` | | `FoodItem`: the item's most recent action is reversed and its usage record deleted (within 10 minutes) | 404, 409 |
 | GET | `/foods/:id` | | `FoodItem`, active or closed | 404 if missing or another user's |
 | PUT | `/foods/:id` | any food fields | `FoodItem`. Changing `addedDate` or `lifespanDays` recalculates `expiryDate` and reschedules reminders. | 400, 404, 409 |
 | POST | `/foods/:id/use` | `{quantity?}` | `{food, usageRecord}`: no quantity (or all of it) → `USED`; less → `PARTIALLY_USED` | 400 for 0, negative or too much; 404; 409 |
@@ -474,6 +488,10 @@ Base URL: `http://localhost:4000/api` (`VITE_API_URL`). Requests and responses a
 | GET | `/usage` | `?limit=20&offset=0` (defaults) | `{items, total, counts}`, newest first | 400 |
 | GET | `/notifications` | `?limit=50&offset=0` (defaults; max 50) | Sends due reminders, then `{items, total, unread}`: `SENT` or `FAILED`, newest first | 400, 401 |
 | POST | `/notifications/read-all` | | `204`: all marked as read | 401 |
+| GET | `/favourites` | | `{items}` in name order | 401 |
+| POST | `/favourites` | `{name, quantity, unit, lifespanDays, storage?}` | `201 Favourite` | 400, 409 name already a favourite |
+| DELETE | `/favourites/:id` | | `204` | 404 |
+| POST | `/favourites/:id/add` | | `201 FoodItem` added today | 404 |
 | PUT | `/notifications/preferences` | `{approachingExpiry?, due?, overdue?}` | preferences; pending reminders of any turned-off type are deleted | 400 |
 
 **Also available** (used by the app):
@@ -610,7 +628,7 @@ The project was built in these phases; each one is complete.
 |---|---|
 | All MVP functional requirements (FR-AUTH, FOOD, EXP, PRI, UI, NOT, USE, VAL) | ✅ Done |
 | Monorepo with `client`, `server` and `shared`; Node 20.19+ | ✅ Done |
-| Tests: 21 shared + 149 server + 39 client + 14 end-to-end = **223** | ✅ Passing |
+| Tests: 25 shared + 167 server + 45 client + 16 end-to-end = **253** | ✅ Passing |
 | ESLint, Prettier and typecheck on all packages | ✅ Clean |
 | All project rules (see [Project rules](#project-rules)) | ✅ Met, each one checked by a test |
 | Phone (375 px) and desktop layouts, 44 px tap targets | ✅ Done, checked in screenshots and by tests |
@@ -618,7 +636,8 @@ The project was built in these phases; each one is complete.
 | Code on GitHub (`rugvailabs/cook_first`) | ⏳ Not pushed yet: the repo is empty |
 | Online deployment | ⏳ Not started |
 | Opening on a phone over Wi-Fi | ⏸ Paused: the phone's requests didn't reach the PC |
-| Firebase push notifications | ⏳ Not started (optional in the SRD) |
+| Post-MVP Phase 1 (faster entry) | ✅ Done |
+| Post-MVP Phases 2–6 | ⏳ Planned (see [Roadmap](#roadmap)) |
 
 ---
 
@@ -628,6 +647,27 @@ All notable changes to this project are listed here, newest first. Versions foll
 
 ### [Unreleased]
 - *Nothing yet.*
+
+### [2.5.0] - 2026-09-29: Data model fields for later phases + Phase 1 (faster entry)
+**Added: data model (ahead of later phases)**
+- **`householdId`:** on users (each starts in their own household) and food items.
+- **`storage`:** `FRIDGE`, `FREEZER` or `PANTRY` on food items, defaulting to `FRIDGE`.
+- **`openedDate`:** on food items (optional; not in the future or before the added date).
+- **Backfill:** existing data is filled in automatically at start-up.
+
+**Added: Phase 1, faster entry**
+- **Reference list** (`shared/src/foodReference.ts`): 43 common foods with suggested lifespans for fridge, freezer and pantry.
+  - Add Food suggests matches as you type; picking one fills in the unit and lifespan, and changing "Kept in" follows the suggestion.
+  - Suggestions are labelled as planning estimates from the "Cook First reference list" and are always editable.
+- **Favourites:** "☆ Save as favourite" on the details screen, and a Favourites strip on Add Food that re-adds an item with one tap. API: `GET/POST /favourites`, `DELETE /favourites/:id`, `POST /favourites/:id/add`.
+- **Bulk add:** a screen for a whole shopping haul (up to 50 rows sharing one added date), with reference fill-in and per-row errors. API: `POST /foods/bulk`, all or nothing.
+- **Undo:** `POST /foods/:id/undo` reverses an item's most recent action (used, partly used, wasted or removed) within 10 minutes and deletes its usage record.
+- **Tests:** 18 server, 6 client, 4 shared, and a Phase 1 end-to-end journey (at 375 px and desktop).
+
+**Changed**
+- **Undo replaces confirmation dialogs.** Used all, Wasted and Remove now act at once, and the message offers **Undo** for 7 seconds. The v2.3.0 confirmation step is gone.
+- **Validation error fields** now give the full path (for example `items.2.name`) on both the server and the client.
+- **Usage-record timestamps** come from the app clock, so the undo window is measured consistently.
 
 ### [2.4.0] - 2026-09-29: Testing, build-phase and decisions requirements · `57f099a`
 **Added**
@@ -823,16 +863,21 @@ All notable changes to this project are listed here, newest first. Versions foll
 
 ## Roadmap
 
-Planned or possible next steps, in rough priority order:
+**Before any later phase:** push the code to GitHub (`git push -u origin main` from your own terminal), and deploy (see [Deployment](#deployment)).
 
-| # | Item | Notes |
-|---|---|---|
-| 1 | **Push the code to GitHub** | `git push -u origin main` from your own terminal, signed in as `rugvailabs`. CI then runs for the first time. |
-| 2 | **Deploy online** | MongoDB Atlas + Render + Vercel (see [Deployment](#deployment)). This also gives phone access over HTTPS. |
-| 3 | **Phone access over Wi-Fi** | Check that the phone and PC are on the same network, or use a temporary public link. |
-| 4 | **Firebase push notifications** | Add a push channel to `deliveryChannel` in `services/notificationService.ts`. Needs a Firebase project and keys. |
-| 5 | **Python backend (optional)** | FastAPI + Beanie + Pydantic with the same API. The React app and `shared` types wouldn't change; the SRD/TDD would need updating. |
-| 6 | **Future ideas from the BRD** | Recipe suggestions, barcode and receipt scanning, shared household accounts, waste reports. |
+Post-MVP phases are built one at a time, each with its tests passing before the next begins. Every phase keeps two rules:
+1. **AI features read the Cook First order but never change it.**
+2. **No screen, notification or AI-generated text ever calls food safe.** The wording guard scans all of `client/src`, `server/src` and `shared/src`.
+
+| Phase | Scope | Status | Needs from you |
+|---|---|---|---|
+| **0. Data model** | Household ID, storage location, opened date | ✅ Done (v2.5.0) | – |
+| **1. Faster entry** | Reference list with suggested lifespans · favourites with one-tap re-add · bulk add · Undo instead of confirmations | ✅ Done (v2.5.0) | – |
+| **2. Realistic estimates** | Fridge, freezer and pantry lifespans · an "Opened" action that shortens expected expiry · lifespan suggestions learned from your own history | Next | – |
+| **3. Better reminders** | Installable web app (PWA) · push notifications · a daily digest at a chosen time · "Used" and "Snooze" buttons in notifications | Planned | A decision on push delivery: self-hosted Web Push (VAPID keys) or Firebase Cloud Messaging |
+| **4. Using the food** | Leftovers as new short-lifespan items · a shopping list that warns about food already at home · AI recipe suggestions from Cook First · a weekly meal plan | Planned | An AI provider and API key for recipes |
+| **5. Insights** | Used-versus-wasted dashboard · optional prices showing money saved or lost · a weekly summary with tips | Planned | – |
+| **6. Sharing and scanning** | Shared households with invites and an activity log · voice entry · barcode scanning · receipt scanning · grocery integrations · multiple languages · dark mode · data export · account deletion | Planned | Barcode data source (e.g. Open Food Facts), receipt OCR service, which grocery partners (they need commercial API access), and which languages |
 
 ---
 

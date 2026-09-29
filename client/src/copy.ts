@@ -7,7 +7,7 @@
  * to eat. Use "expected expiry" wording only; the banned phrase list is in
  * server/test/foodSafetyCopy.test.ts.
  */
-import type { ReminderType, Urgency } from '@cook-first/shared';
+import { REFERENCE_SOURCE, type ReminderType, type StorageLocation, type Urgency } from '@cook-first/shared';
 
 /** Required on Add Food and Cook First (and shown elsewhere). Do not reword. */
 export const estimateNote = 'Expected expiry is an estimate to help you plan. Always check your food before eating it.';
@@ -124,12 +124,46 @@ export const actionCopy = {
 } as const;
 
 /** The one small confirmation shown before an item is closed. */
-export const confirmCopy = {
-  USED: (name: string) => ({ title: `Mark ${name} as used?`, confirm: 'Yes, used all' }),
-  WASTED: (name: string) => ({ title: `Mark ${name} as wasted?`, confirm: 'Yes, wasted' }),
-  REMOVED: (name: string) => ({ title: `Remove ${name} from your list?`, confirm: 'Yes, remove' }),
-  detail: 'This closes the item. It stays in your history.',
+/** Actions happen at once and offer "Undo" instead of asking for confirmation. */
+export const undoCopy = {
+  label: 'Undo',
+  restored: (name: string) => `Restored: ${name}`,
+  failed: 'Couldn’t undo that. It may be too late.',
   cancel: 'Cancel',
+};
+
+export const storageLabel: Record<StorageLocation, string> = {
+  FRIDGE: 'Fridge',
+  FREEZER: 'Freezer',
+  PANTRY: 'Pantry',
+};
+
+/** Suggested lifespans come from a clearly identified reference list, and are always editable. */
+export const referenceCopy = {
+  suggested: (days: number) => `Suggested ${days} ${days === 1 ? 'day' : 'days'}`,
+  hint: `Suggested lifespans are typical planning estimates from the ${REFERENCE_SOURCE}. Change the number if yours differs.`,
+  notUsuallyKept: (where: string) => `Not usually kept in the ${where.toLowerCase()}. Enter your own lifespan.`,
+};
+
+export const favouriteCopy = {
+  title: 'Favourites',
+  hint: 'Tap one to add it again today.',
+  save: '☆ Save as favourite',
+  saved: '★ Favourite',
+  savedToast: (name: string) => `Saved ${name} as a favourite`,
+  removedToast: (name: string) => `Removed ${name} from favourites`,
+  addedToast: (name: string) => `Added ${name}`,
+};
+
+export const bulkCopy = {
+  title: 'Bulk add',
+  subtitle: 'Add a whole shopping haul at once',
+  link: 'Adding a whole shop? Use bulk add',
+  addRow: 'Add another row',
+  removeRow: 'Remove row',
+  save: (n: number) => `Add ${n} ${n === 1 ? 'item' : 'items'}`,
+  added: (n: number) => `Added ${n} ${n === 1 ? 'item' : 'items'}`,
+  rowLabel: (n: number) => `Item ${n}`,
 };
 
 export const historyActionLabel = {

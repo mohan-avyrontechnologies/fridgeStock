@@ -8,6 +8,10 @@ export type Urgency = (typeof URGENCIES)[number];
 export const UNITS = ['pcs', 'g', 'kg', 'ml', 'l', 'pack', 'bunch'] as const;
 export type Unit = (typeof UNITS)[number];
 
+/** Where an item is kept. Each has its own typical lifespans (see foodReference.ts). */
+export const STORAGE_LOCATIONS = ['FRIDGE', 'FREEZER', 'PANTRY'] as const;
+export type StorageLocation = (typeof STORAGE_LOCATIONS)[number];
+
 /** Stored lifecycle status of a food item. A partly used item stays ACTIVE. */
 export const FOOD_STATUSES = ['ACTIVE', 'USED', 'WASTED', 'REMOVED'] as const;
 export type FoodStatus = (typeof FOOD_STATUSES)[number];

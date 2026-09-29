@@ -1,5 +1,7 @@
 import {
+  bulkCreateSchema,
   createFoodSchema,
+  favouriteSchema,
   loginSchema,
   notificationPageSchema,
   paginationSchema,
@@ -13,6 +15,7 @@ import {
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { authController } from '../controllers/authController.js';
+import { favouriteController } from '../controllers/favouriteController.js';
 import { foodController } from '../controllers/foodController.js';
 import { notificationController } from '../controllers/notificationController.js';
 import { usageController } from '../controllers/usageController.js';
@@ -50,6 +53,7 @@ router.put('/auth/me', validate(updateAccountSchema), authController.updateMe);
 
 router.get('/foods', foodController.list);
 router.post('/foods', validate(createFoodSchema), foodController.create);
+router.post('/foods/bulk', validate(bulkCreateSchema), foodController.bulkCreate);
 // /foods/cook-first must be registered before /foods/:id, or "cook-first" would be taken as an id.
 router.get('/foods/cook-first', foodController.cookFirst);
 router.get('/foods/:id', foodController.get);
@@ -57,6 +61,12 @@ router.put('/foods/:id', validate(updateFoodSchema), foodController.update);
 router.delete('/foods/:id', foodController.remove);
 router.post('/foods/:id/use', validate(useFoodSchema), foodController.use);
 router.post('/foods/:id/waste', validate(wasteFoodSchema), foodController.waste);
+router.post('/foods/:id/undo', foodController.undo);
+
+router.get('/favourites', favouriteController.list);
+router.post('/favourites', validate(favouriteSchema), favouriteController.create);
+router.delete('/favourites/:id', favouriteController.remove);
+router.post('/favourites/:id/add', favouriteController.add);
 
 router.get('/usage', validate(paginationSchema, 'query'), usageController.list);
 

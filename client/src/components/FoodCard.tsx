@@ -3,16 +3,17 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { cardExpiryLine, remainingText, urgencyCopy } from '../copy';
 import { formatQuantity } from '../lib/format';
-import { ActionSheet, type SheetStep } from './ActionSheet';
+import { ActionSheet, useFoodActions, type SheetStep } from './ActionSheet';
 import { URGENCY_STYLE, UrgencyBadge } from './Urgency';
 
 /**
  * One active item: name, urgency (colour and label), quantity and unit,
  * remaining days, expected expiry and notes, with "Used" (all or some) and
- * "Wasted" buttons.
+ * "Wasted" buttons. Wasted happens at once, with "Undo" in the toast.
  */
 export function FoodCard({ item }: { item: ActiveFoodItem }) {
   const [sheet, setSheet] = useState<SheetStep | null>(null);
+  const run = useFoodActions();
   const remaining = remainingText(item.remainingDays);
   return (
     <li className="relative flex overflow-hidden rounded-2xl border border-line bg-card">
@@ -47,7 +48,7 @@ export function FoodCard({ item }: { item: ActiveFoodItem }) {
           </button>
           <button
             type="button"
-            onClick={() => setSheet({ confirm: 'WASTED' })}
+            onClick={() => void run(item, 'WASTED')}
             className="min-h-11 flex-1 rounded-xl border border-line text-sm font-semibold text-danger hover:bg-past/40"
             aria-label={`Wasted: ${item.name}`}
           >

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { api, ApiError } from '../api/client';
-import type { FoodItem } from '@cook-first/shared';
-import { ActionSheet, type SheetStep } from '../components/ActionSheet';
+import type { Favourite, FoodItem } from '@cook-first/shared';
+import { ActionSheet, useFoodActions, type SheetStep } from '../components/ActionSheet';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { FoodForm } from '../components/FoodForm';
 import { EstimateNote, UrgencyBadge } from '../components/Urgency';
@@ -10,6 +10,8 @@ import { Button, EmptyState, Spinner } from '../components/ui';
 import {
   actionCopy,
   expectedExpiryLabel,
+  favouriteCopy,
+  storageLabel,
   historyActionLabel,
   pastExpectedExpiryNote,
   remainingText,
@@ -30,6 +32,50 @@ export function FoodDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [sheet, setSheet] = useState<SheetStep | null>(null);
+  const [favourite, setFavourite] = useState<Favourite | null>(null);
+  const run = useFoodActions();
+
+  // Is this food already a favourite? (Matched by name, as favourites are unique by name.)
+  useEffect(() => {
+    if (!food) return;
+    let current = true;
+    api.favourites().then(
+      ({ items }) =>
+        current && setFavourite(items.find((f) => f.name.toLowerCase() === food.name.toLowerCase()) ?? null),
+      () => {},
+    );
+    return () => {
+      current = false;
+    };
+  }, [food]);
+
+  async function toggleFavourite() {
+    if (!food) return;
+    try {
+      if (favourite) {
+        await api.removeFavourite(favourite.id);
+        setFavourite(null);
+        toast(favouriteCopy.removedToast(food.name));
+      } else {
+        const { name, quantity, unit, lifespanDays, storage } = food;
+        setFavourite(await api.createFavourite({ name, quantity, unit, lifespanDays, storage }));
+        toast(favouriteCopy.savedToast(food.name));
+      }
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+    }
+  }
+
+  /** Closing actions happen at once; the toast offers "Undo". */
+  async function close(action: 'USED' | 'WASTED' | 'REMOVED') {
+    if (!food) return;
+    try {
+      await run(food, action);
+      navigate('/');
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+    }
+  }
 
   const load = useCallback(
     (isCurrent: () => boolean = () => true) =>
@@ -128,6 +174,8 @@ export function FoodDetailPage() {
                   value={formatQuantity(food.quantity, food.unit)}
                 />
                 <Detail label="Unit" value={food.unit} />
+                <Detail label="Kept in" value={storageLabel[food.storage]} />
+                {food.openedDate && <Detail label="Opened on" value={formatDisplay(food.openedDate)} />}
                 <Detail label={expectedExpiryLabel} value={formatDisplay(food.expiryDate)} />
                 <Detail label="Added on" value={formatDisplay(food.addedDate)} />
                 <Detail label="Lifespan" value={`${food.lifespanDays} ${food.lifespanDays === 1 ? 'day' : 'days'}`} />
@@ -147,20 +195,25 @@ export function FoodDetailPage() {
             {active ? (
               <section aria-label="Actions" className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
-                  <Button onClick={() => setSheet({ confirm: 'USED' })}>{actionCopy.USED.label}</Button>
+                  <Button onClick={() => close('USED')}>{actionCopy.USED.label}</Button>
                   <Button variant="secondary" onClick={() => setSheet('amount')}>
                     {actionCopy.PARTIALLY_USED.label}
                   </Button>
-                  <Button variant="danger" onClick={() => setSheet({ confirm: 'WASTED' })}>
+                  <Button variant="danger" onClick={() => close('WASTED')}>
                     {actionCopy.WASTED.label}
                   </Button>
-                  <Button variant="secondary" onClick={() => setSheet({ confirm: 'REMOVED' })}>
+                  <Button variant="secondary" onClick={() => close('REMOVED')}>
                     {actionCopy.REMOVED.label}
                   </Button>
                 </div>
-                <Button variant="ghost" className="w-full" onClick={() => setEditing(true)}>
-                  Edit
-                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button variant="ghost" onClick={() => setEditing(true)}>
+                    Edit
+                  </Button>
+                  <Button variant="ghost" aria-pressed={Boolean(favourite)} onClick={toggleFavourite}>
+                    {favourite ? favouriteCopy.saved : favouriteCopy.save}
+                  </Button>
+                </div>
               </section>
             ) : (
               <p className="rounded-2xl bg-calm px-4 py-3 text-sm text-calm-ink">{screenCopy.detail.closedNote}</p>

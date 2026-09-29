@@ -1,6 +1,7 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router';
 import { AppShell } from './components/AppShell';
 import { AddFoodPage } from './pages/AddFoodPage';
+import { BulkAddPage } from './pages/BulkAddPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { CookFirstPage } from './pages/CookFirstPage';
@@ -33,6 +34,7 @@ export function App() {
           <Route index element={<DashboardPage />} />
           <Route path="/cook-first" element={<CookFirstPage />} />
           <Route path="/add" element={<AddFoodPage />} />
+          <Route path="/add/bulk" element={<BulkAddPage />} />
           <Route path="/food/:id" element={<FoodDetailPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/history" element={<HistoryPage />} />

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { api } from '../api/client';
-import type { ActiveFoodItem, FoodInput, FoodItem, FoodList, UsageAction } from '@cook-first/shared';
+import type { ActiveFoodItem, BulkCreateInput, FoodInput, FoodItem, FoodList, UsageAction } from '@cook-first/shared';
 import { useAuthStore } from './authStore';
 
 interface FoodState {
@@ -13,6 +13,10 @@ interface FoodState {
   add: (input: FoodInput) => Promise<FoodItem>;
   update: (id: string, input: Partial<FoodInput>) => Promise<FoodItem>;
   act: (id: string, action: UsageAction, quantity?: number) => Promise<void>;
+  /** Reverses the item's most recent action (offered as "Undo" for a few seconds). */
+  undo: (id: string) => Promise<FoodItem>;
+  addBulk: (input: BulkCreateInput) => Promise<FoodItem[]>;
+  addFavourite: (favouriteId: string) => Promise<FoodItem>;
   reset: () => void;
 }
 
@@ -49,6 +53,24 @@ export const useFoodStore = create<FoodState>()((set, get) => ({
     else if (action === 'WASTED') await api.wasteFood(id);
     else await api.useFood(id, action === 'PARTIALLY_USED' ? quantity : undefined);
     await get().refresh();
+  },
+
+  async undo(id) {
+    const food = await api.undo(id);
+    await get().refresh();
+    return food;
+  },
+
+  async addBulk(input) {
+    const { items } = await api.bulkCreate(input);
+    void get().refresh();
+    return items;
+  },
+
+  async addFavourite(favouriteId) {
+    const food = await api.addFavourite(favouriteId);
+    void get().refresh();
+    return food;
   },
 
   reset() {

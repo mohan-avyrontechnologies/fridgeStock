@@ -1,4 +1,13 @@
-import { FOOD_STATUSES, isValidDate, UNITS, type DateString, type FoodStatus, type Unit } from '@cook-first/shared';
+import {
+  FOOD_STATUSES,
+  isValidDate,
+  STORAGE_LOCATIONS,
+  UNITS,
+  type DateString,
+  type FoodStatus,
+  type StorageLocation,
+  type Unit,
+} from '@cook-first/shared';
 import { Schema, Types, model, type HydratedDocument } from 'mongoose';
 
 /**
@@ -12,6 +21,8 @@ import { Schema, Types, model, type HydratedDocument } from 'mongoose';
  */
 export interface FoodItem {
   userId: Types.ObjectId;
+  /** The owner's household; shared households (a later phase) will list items by it. */
+  householdId: Types.ObjectId;
   name: string;
   quantity: number;
   unit: Unit;
@@ -19,6 +30,9 @@ export interface FoodItem {
   lifespanDays: number;
   expiryDate: DateString;
   notes?: string;
+  storage: StorageLocation;
+  /** When the item was opened, if it has been. */
+  openedDate?: DateString | null;
   status: FoodStatus;
   closedAt?: Date;
 }
@@ -32,6 +46,7 @@ const calendarDate = {
 const foodItemSchema = new Schema<FoodItem>(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    householdId: { type: Schema.Types.ObjectId, required: true, index: true },
     name: { type: String, required: true, trim: true, minlength: 1, maxlength: 60 },
     quantity: {
       type: Number,
@@ -49,6 +64,15 @@ const foodItemSchema = new Schema<FoodItem>(
     },
     expiryDate: calendarDate,
     notes: { type: String, trim: true, maxlength: 200 },
+    storage: { type: String, enum: STORAGE_LOCATIONS, default: 'FRIDGE', required: true },
+    openedDate: {
+      type: String,
+      default: null,
+      validate: {
+        validator: (v: string | null) => v === null || isValidDate(v),
+        message: 'Must be a "YYYY-MM-DD" calendar date.',
+      },
+    },
     status: { type: String, enum: FOOD_STATUSES, default: 'ACTIVE', required: true },
     closedAt: { type: Date },
   },

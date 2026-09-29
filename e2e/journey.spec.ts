@@ -96,7 +96,6 @@ test('spec journey: chicken (1 day) and eggs (8 days); only chicken in Cook Firs
     .getByRole('dialog')
     .getByRole('button', { name: /Used all/ })
     .click();
-  await page.getByRole('dialog').getByRole('button', { name: 'Yes, used all' }).click();
   await expect(page.getByText('Nothing needs attention right now.')).toBeVisible();
   await expect(page.getByRole('main')).not.toContainText('Chicken');
 
@@ -144,16 +143,16 @@ test('register → add food → Cook First → mark used → history', async ({ 
   await expectNoSafetyClaim(page);
   await shot(page, '03-cook-first');
 
-  // One tap: used it all.
+  // Used → Used all: acts at once, with Undo in the toast.
   await page.getByRole('button', { name: 'Used: Chicken' }).click();
+  await expect(page.getByRole('dialog', { name: 'Chicken' })).toBeVisible();
+  await shot(page, '04-action-sheet');
   await page
     .getByRole('dialog')
     .getByRole('button', { name: /Used all/ })
     .click();
-  await expect(page.getByRole('dialog', { name: 'Mark Chicken as used?' })).toBeVisible();
-  await shot(page, '04-action-sheet');
-  await page.getByRole('dialog').getByRole('button', { name: 'Yes, used all' }).click();
   await expect(page.getByText('Marked as used: Chicken')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
   await expect(cookFirst).toHaveCount(2);
   await expect(page.getByRole('main')).not.toContainText('Chicken');
 
@@ -176,14 +175,13 @@ test('partial use keeps the item; throwing it away closes the rest', async ({ pa
   await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('0.75 l')).toBeVisible();
 
-  // Another partial use, then waste the rest (with one confirmation).
+  // Another partial use, then waste the rest.
   await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Used some' }).click();
   await page.getByLabel(/How much did you use/).fill('0.25');
   await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('0.5 l')).toBeVisible();
 
   await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Wasted' }).click();
-  await page.getByRole('dialog', { name: 'Mark Milk as wasted?' }).getByRole('button', { name: 'Yes, wasted' }).click();
   await expect(page).toHaveURL('/');
   await expect(page.getByText('Your fridge is empty. Add your first item.')).toBeVisible();
 
@@ -264,4 +262,47 @@ test('settings: reminder switches persist; sign out returns to login', async ({ 
   await page.getByRole('button', { name: 'Log out' }).click();
   await expect(page).toHaveURL('/login');
   await shot(page, '10-login');
+});
+
+test('phase 1: bulk add a shopping haul, undo a waste, and re-add a favourite with one tap', async ({ page }) => {
+  await register(page, 'Kai Tanaka');
+
+  // Bulk add: names from the reference list fill in unit and lifespan.
+  await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
+  await page.getByRole('link', { name: /bulk add/ }).click();
+  await page.getByLabel('Item 1 name').fill('Spinach');
+  await expect(page.getByLabel('Item 1 lifespan in days')).toHaveValue('4');
+  await page.getByLabel('Item 2 name').fill('Milk');
+  await page.getByLabel('Item 3 name').fill('Peas');
+  await page.getByLabel('Item 3 lifespan in days').fill('240');
+  await page.getByLabel('Item 3 kept in').selectOption('FREEZER');
+  await shot(page, '11-bulk-add');
+  await page.getByRole('button', { name: 'Add 3 items' }).click();
+  await expect(page.getByText('Added 3 items')).toBeVisible();
+  const rows = allFood(page);
+  await expect(rows).toHaveCount(3);
+
+  // Wasted acts at once; Undo brings it back.
+  await rows.filter({ hasText: 'Spinach' }).getByRole('button', { name: 'Wasted: Spinach' }).click();
+  await expect(page.getByText('Marked as wasted: Spinach')).toBeVisible();
+  await expect(rows).toHaveCount(2);
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(page.getByText('Restored: Spinach')).toBeVisible();
+  await expect(rows).toHaveCount(3);
+
+  // Save Milk as a favourite, use it up, then re-add it with one tap.
+  await rows.filter({ hasText: 'Milk' }).getByRole('link').first().click();
+  await expect(page.getByText('Kept in')).toBeVisible();
+  await page.getByRole('button', { name: /Save as favourite/ }).click();
+  await expect(page.getByText('Saved Milk as a favourite')).toBeVisible();
+  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Used all' }).click();
+  await expect(page).toHaveURL('/');
+  await expect(rows).toHaveCount(2);
+
+  await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
+  await page.getByRole('button', { name: 'Add Milk again' }).click();
+  await expect(page.getByText('Added Milk')).toBeVisible();
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Home' }).click();
+  await expect(rows).toHaveCount(3);
+  await expectNoSafetyClaim(page);
 });

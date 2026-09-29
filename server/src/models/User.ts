@@ -1,4 +1,4 @@
-import { Schema, model, type HydratedDocument } from 'mongoose';
+import { Schema, Types, model, type HydratedDocument } from 'mongoose';
 
 export interface NotificationPreferences {
   approachingExpiry: boolean;
@@ -12,6 +12,8 @@ export interface User {
   passwordHash: string;
   timeZone: string;
   notificationPreferences: NotificationPreferences;
+  /** Every user starts in their own household; shared households (a later phase) will reuse it. */
+  householdId: Types.ObjectId;
 }
 
 const userSchema = new Schema<User>(
@@ -26,6 +28,7 @@ const userSchema = new Schema<User>(
       due: { type: Boolean, default: true },
       overdue: { type: Boolean, default: true },
     },
+    householdId: { type: Schema.Types.ObjectId, required: true, default: () => new Types.ObjectId(), index: true },
   },
   { timestamps: true },
 );

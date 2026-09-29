@@ -1,5 +1,6 @@
 import { isValidDate, USAGE_ACTIONS, type DateString, type UsageAction } from '@cook-first/shared';
 import { Schema, Types, model, type HydratedDocument } from 'mongoose';
+import { clock } from '../services/clock.js';
 
 export interface UsageRecord {
   // userId is not in the TDD entity, but history is listed per user and every
@@ -33,7 +34,8 @@ const usageRecordSchema = new Schema<UsageRecord>(
     unit: { type: String, required: true },
     quantityRemaining: { type: Number, required: true, min: 0 },
   },
-  { timestamps: true, shardKey: { userId: 1 } },
+  // Timestamps come from the app clock, so "Undo" windows are measured on the same clock as everything else.
+  { timestamps: { currentTime: () => clock.now() }, shardKey: { userId: 1 } },
 );
 
 usageRecordSchema.index({ userId: 1, date: -1, createdAt: -1 });

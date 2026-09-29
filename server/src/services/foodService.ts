@@ -1,6 +1,8 @@
 import { addDays, MESSAGES } from '@cook-first/shared';
 import type {
   ActiveFoodItem,
+  BulkCreateInput,
+  BulkCreateResult,
   CookFirstList,
   DateString,
   FoodInput,
@@ -17,7 +19,7 @@ import { clock } from './clock.js';
 import { conflict, foodNotFound, validationError } from './errors.js';
 import { cancelForFood, dispatchDue, scheduleForFood } from './notificationService.js';
 import { prioritise } from './priorityEngine.js';
-import { createRecord } from './usageService.js';
+import { createRecord, deleteRecord, latestForFood } from './usageService.js';
 import { toFoodView, toUsageView } from './views.js';
 
 /** Avoids 0.30000000000000004-style leftovers after subtracting decimals. */
@@ -60,6 +62,16 @@ async function prioritisedFor(user: UserDoc) {
   const view = (list: typeof result.items) => list.map(({ doc }) => toFoodView(doc, today) as ActiveFoodItem);
   return { today, items: view(result.items), cookFirst: view(result.cookFirst), summary: result.summary };
 }
+
+/** An opened date can't be in the future or before the item was added. */
+function assertOpenedDate(openedDate: DateString | null | undefined, addedDate: DateString, today: DateString) {
+  if (openedDate && (openedDate > today || openedDate < addedDate)) {
+    throw validationError(MESSAGES.openedDate, 'openedDate');
+  }
+}
+
+/** How long after an action its "Undo" still works. */
+export const UNDO_WINDOW_MS = 10 * 60 * 1000;
 
 /** The expiry date is always calculated here, never accepted from the client. */
 const expiryFor = (addedDate: DateString, lifespanDays: number) => addDays(addedDate, lifespanDays);
@@ -117,12 +129,12 @@ export async function getFood(user: UserDoc, id: string): Promise<FoodItem> {
   return toFoodView(await findOwned(user, id), clock.today(user.timeZone));
 }
 
-export async function createFood(user: UserDoc, input: FoodInput): Promise<FoodItem> {
-  const today = clock.today(user.timeZone);
-  assertNotFuture(input.addedDate, today);
-  const { name, quantity, unit, addedDate, lifespanDays, notes } = input;
-  const food = await FoodItemModel.create({
+/** The fields of a new item: owner, household, calculated expiry and a FRIDGE default. */
+function newItem(user: UserDoc, input: FoodInput) {
+  const { name, quantity, unit, addedDate, lifespanDays, notes, storage, openedDate } = input;
+  return {
     userId: user._id,
+    householdId: user.householdId,
     name,
     quantity,
     unit,
@@ -130,7 +142,16 @@ export async function createFood(user: UserDoc, input: FoodInput): Promise<FoodI
     lifespanDays,
     expiryDate: expiryFor(addedDate, lifespanDays),
     notes: cleanNotes(notes) ?? undefined,
-  });
+    storage: storage ?? 'FRIDGE',
+    openedDate: openedDate ?? null,
+  };
+}
+
+export async function createFood(user: UserDoc, input: FoodInput): Promise<FoodItem> {
+  const today = clock.today(user.timeZone);
+  assertNotFuture(input.addedDate, today);
+  assertOpenedDate(input.openedDate, input.addedDate, today);
+  const food = await FoodItemModel.create(newItem(user, input));
   await scheduleForFood(food, user);
   return toFoodView(food, today);
 }
@@ -141,13 +162,16 @@ export async function updateFood(user: UserDoc, id: string, input: FoodUpdateInp
   const food = await findOwned(user, id);
   assertActive(food);
   if (input.addedDate !== undefined) assertNotFuture(input.addedDate, today);
-  const { name, quantity, unit, addedDate, lifespanDays, notes } = input;
+  const { name, quantity, unit, addedDate, lifespanDays, notes, storage, openedDate } = input;
+  assertOpenedDate(openedDate, addedDate ?? food.addedDate, today);
   if (name !== undefined) food.name = name;
   if (quantity !== undefined) food.quantity = quantity;
   if (unit !== undefined) food.unit = unit;
   if (addedDate !== undefined) food.addedDate = addedDate;
   if (lifespanDays !== undefined) food.lifespanDays = lifespanDays;
   if (notes !== undefined) food.notes = cleanNotes(notes) ?? undefined;
+  if (storage !== undefined) food.storage = storage;
+  if (openedDate !== undefined) food.openedDate = openedDate;
 
   // No Mongoose hook for this: hooks don't run on update queries.
   const datesChanged = addedDate !== undefined || lifespanDays !== undefined;
@@ -184,4 +208,43 @@ export async function wasteFood(user: UserDoc, id: string): Promise<UsageResult>
   const food = await findOwned(user, id);
   assertActive(food);
   return close(user, food, 'WASTED');
+}
+
+/**
+ * Adds a whole shopping haul: every row is checked first, then all are saved
+ * together (all or nothing), and each gets its reminders.
+ */
+export async function bulkCreate(user: UserDoc, input: BulkCreateInput): Promise<BulkCreateResult> {
+  const today = clock.today(user.timeZone);
+  assertNotFuture(input.addedDate, today);
+  const docs = input.items.map((row) =>
+    newItem(user, { ...row, addedDate: input.addedDate, storage: row.storage ?? input.storage }),
+  );
+  const saved = await FoodItemModel.insertMany(docs);
+  for (const food of saved) await scheduleForFood(food, user);
+  return { items: saved.map((food) => toFoodView(food, today)) };
+}
+
+/**
+ * Undoes the item's most recent action (used, partly used, wasted or removed)
+ * within UNDO_WINDOW_MS. This replaces confirmation dialogs: the app acts at
+ * once and offers "Undo". The usage record is deleted so history stays accurate.
+ */
+export async function undoLastAction(user: UserDoc, id: string): Promise<FoodItem> {
+  const food = await findOwned(user, id);
+  const record = await latestForFood(user, food._id);
+  if (!record) throw conflict(MESSAGES.nothingToUndo);
+  if (clock.now().getTime() - record.createdAt.getTime() > UNDO_WINDOW_MS) throw conflict(MESSAGES.undoExpired);
+
+  if (record.action === 'PARTIALLY_USED') {
+    food.quantity = round(food.quantity + record.quantityUsed);
+  } else {
+    food.status = 'ACTIVE';
+    food.closedAt = undefined;
+    food.quantity = record.quantityUsed;
+  }
+  await food.save();
+  await deleteRecord(user, record);
+  if (record.action !== 'PARTIALLY_USED') await scheduleForFood(food, user);
+  return toFoodView(food, clock.today(user.timeZone));
 }

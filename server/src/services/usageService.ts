@@ -1,4 +1,5 @@
 import { USAGE_ACTIONS, type Pagination, type UsageAction, type UsageHistory } from '@cook-first/shared';
+import type { Types } from 'mongoose';
 import type { FoodItemDoc } from '../models/FoodItem.js';
 import { UsageRecordModel, type UsageRecordDoc } from '../models/UsageRecord.js';
 import type { UserDoc } from '../models/User.js';
@@ -23,6 +24,15 @@ export function createRecord(
     unit: food.unit,
     quantityRemaining,
   });
+}
+
+/** The most recent usage record for one of the user's items. */
+export function latestForFood(user: UserDoc, foodId: Types.ObjectId): Promise<UsageRecordDoc | null> {
+  return UsageRecordModel.findOne({ userId: user._id, foodId }).sort({ createdAt: -1, _id: -1 });
+}
+
+export async function deleteRecord(user: UserDoc, record: UsageRecordDoc): Promise<void> {
+  await UsageRecordModel.deleteOne({ _id: record._id, userId: user._id });
 }
 
 /** The user's usage/waste history, newest first, with per-action totals. */

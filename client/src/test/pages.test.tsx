@@ -305,35 +305,6 @@ describe('Add food form', () => {
   });
 });
 
-describe('closing actions need one confirmation', () => {
-  it('Wasted on a card asks first, and only then calls the API', async () => {
-    const user = userEvent.setup();
-    let wasted = false;
-    server.use(
-      http.post(`${API_URL}/foods/c/waste`, () => {
-        wasted = true;
-        return HttpResponse.json({ food: item({ id: 'c', status: 'WASTED' }), usageRecord: {} });
-      }),
-    );
-    renderSignedIn('/cook-first', <CookFirstPage />);
-    await user.click(await screen.findByRole('button', { name: 'Wasted: Spinach' }));
-    const dialog = screen.getByRole('dialog', { name: 'Mark Spinach as wasted?' });
-    expect(wasted).toBe(false);
-    await user.click(within(dialog).getByRole('button', { name: 'Yes, wasted' }));
-    await waitFor(() => expect(wasted).toBe(true));
-  });
-
-  it('Cancel closes the confirmation without doing anything', async () => {
-    const user = userEvent.setup();
-    renderSignedIn('/cook-first', <CookFirstPage />);
-    await user.click(await screen.findByRole('button', { name: 'Used: Spinach' }));
-    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /Used all/ }));
-    const dialog = screen.getByRole('dialog', { name: 'Mark Spinach as used?' });
-    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  });
-});
-
 describe('Cook First', () => {
   it('shows "Nothing needs attention right now." when nothing is urgent', async () => {
     server.use(http.get(`${API_URL}/foods/cook-first`, () => HttpResponse.json({ today: '2026-09-29', items: [] })));

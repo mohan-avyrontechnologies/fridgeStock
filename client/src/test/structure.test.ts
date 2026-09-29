@@ -24,6 +24,7 @@ describe('client/src layout', () => {
     const pages = readdirSync(path.join(SRC, 'pages')).sort();
     expect(pages).toEqual([
       'AddFoodPage.tsx',
+      'BulkAddPage.tsx',
       'CookFirstPage.tsx',
       'DashboardPage.tsx',
       'FoodDetailPage.tsx',
@@ -58,7 +59,7 @@ describe('api', () => {
   it('has one function per endpoint', () => {
     const client = read('api/client.ts');
     const endpoints = [...client.matchAll(/^\s*\/\/ (GET|POST|PUT|DELETE) (\S+)$/gm)].map((m) => `${m[1]} ${m[2]}`);
-    expect(endpoints).toHaveLength(18);
+    expect(endpoints).toHaveLength(24);
     expect(new Set(endpoints).size).toBe(endpoints.length);
   });
 });

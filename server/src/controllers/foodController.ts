@@ -35,6 +35,14 @@ export const foodController = {
     res.json(await foodService.useFood(currentUser(req), id(req), req.body));
   },
 
+  async bulkCreate(req: Request, res: Response) {
+    res.status(201).json(await foodService.bulkCreate(currentUser(req), req.body));
+  },
+
+  async undo(req: Request, res: Response) {
+    res.json(await foodService.undoLastAction(currentUser(req), id(req)));
+  },
+
   async waste(req: Request, res: Response) {
     res.json(await foodService.wasteFood(currentUser(req), id(req)));
   },

@@ -10,7 +10,7 @@ import { api, food, registerUser, setToday } from './helpers.js';
 
 describe('every data query is scoped to the signed-in user', () => {
   type Op = { collection: string; method: string; args: unknown[] };
-  const SCOPED = new Set(['fooditems', 'usagerecords', 'notifications']);
+  const SCOPED = new Set(['fooditems', 'usagerecords', 'notifications', 'favourites']);
   const IGNORED = new Set(['createIndex', 'createIndexes', 'listIndexes', 'dropIndex']);
 
   afterEach(() => {
@@ -61,6 +61,18 @@ describe('every data query is scoped to the signed-in user', () => {
     await s.auth(api().post(`/api/foods/${a.id}/waste`).send({}));
     await s.auth(api().delete(`/api/foods/${b.id}`));
     await s.auth(api().get('/api/usage'));
+    await s.auth(api().post(`/api/foods/${b.id}/undo`));
+    await s.auth(
+      api()
+        .post('/api/foods/bulk')
+        .send({ addedDate: '2026-09-29', items: [{ name: 'Peas', quantity: 1, unit: 'pack', lifespanDays: 9 }] }),
+    );
+    const fav = (
+      await s.auth(api().post('/api/favourites').send({ name: 'Milk', quantity: 1, unit: 'l', lifespanDays: 5 }))
+    ).body;
+    await s.auth(api().get('/api/favourites'));
+    await s.auth(api().post(`/api/favourites/${fav.id}/add`));
+    await s.auth(api().delete(`/api/favourites/${fav.id}`));
     mongoose.set('debug', false);
 
     const dataOps = ops.filter((op) => SCOPED.has(op.collection) && !IGNORED.has(op.method));

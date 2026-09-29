@@ -4,6 +4,7 @@ import type {
   NotificationStatus,
   PreferenceKey,
   ReminderType,
+  StorageLocation,
   Unit,
   UsageAction,
   Urgency,
@@ -36,6 +37,8 @@ export interface FoodItem {
   /** Always addedDate + lifespanDays, calculated by the server (never accepted from the client). */
   expiryDate: DateString;
   notes: string | null;
+  storage: StorageLocation;
+  openedDate: DateString | null;
   status: FoodStatus;
   /** Only while the item is active. */
   remainingDays: number | null;
@@ -55,6 +58,19 @@ export interface FoodList {
   today: DateString;
   summary: UrgencySummary;
   items: ActiveFoodItem[];
+}
+
+export interface BulkCreateResult {
+  items: FoodItem[];
+}
+
+export interface Favourite {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: Unit;
+  lifespanDays: number;
+  storage: StorageLocation;
 }
 
 export interface CookFirstList {

@@ -15,7 +15,7 @@ export function validate(schema: ZodType, source: Source = 'body') {
     const result = schema.safeParse(req[source] ?? {});
     if (!result.success) {
       const issue = result.error.issues[0]!;
-      throw validationError(issue.message, issue.path.length ? String(issue.path[0]) : undefined);
+      throw validationError(issue.message, issue.path.length ? issue.path.map(String).join('.') : undefined);
     }
     if (source === 'body') req.body = result.data;
     else (req as WithQuery).validatedQuery = result.data;

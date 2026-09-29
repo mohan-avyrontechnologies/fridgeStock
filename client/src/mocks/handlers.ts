@@ -13,6 +13,8 @@ export function item(overrides: Partial<ActiveFoodItem>): ActiveFoodItem {
     lifespanDays: 4,
     expiryDate: '2026-10-03',
     notes: null,
+    storage: 'FRIDGE',
+    openedDate: null,
     status: 'ACTIVE',
     remainingDays: 4,
     urgency: 'NOT_URGENT',
@@ -42,4 +44,5 @@ export const handlers = [
     HttpResponse.json({ today: sampleList.today, items: sampleItems.filter((i) => i.urgency !== 'NOT_URGENT') }),
   ),
   http.get(`${API_URL}/notifications/unread-count`, () => HttpResponse.json({ unread: 2 })),
+  http.get(`${API_URL}/favourites`, () => HttpResponse.json({ items: [] })),
 ];

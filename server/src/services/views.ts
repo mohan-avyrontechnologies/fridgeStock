@@ -1,11 +1,13 @@
 import {
   diffDays,
+  type Favourite,
   type AppNotification,
   type DateString,
   type FoodItem,
   type UsageRecord,
   type User,
 } from '@cook-first/shared';
+import type { FavouriteDoc } from '../models/Favourite.js';
 import type { FoodItemDoc } from '../models/FoodItem.js';
 import type { NotificationDoc } from '../models/Notification.js';
 import type { UsageRecordDoc } from '../models/UsageRecord.js';
@@ -36,6 +38,8 @@ export function toFoodView(doc: FoodItemDoc, today: DateString): FoodItem {
     lifespanDays: doc.lifespanDays,
     expiryDate: doc.expiryDate,
     notes: doc.notes ?? null,
+    storage: doc.storage ?? 'FRIDGE',
+    openedDate: doc.openedDate ?? null,
     status: doc.status,
     remainingDays,
     urgency: remainingDays === null ? null : classifyUrgency(remainingDays),
@@ -69,5 +73,16 @@ export function toNotificationView(n: NotificationDoc): AppNotification {
     status: n.status,
     sentAt: n.sentAt ? n.sentAt.toISOString() : null,
     readAt: n.readAt ? n.readAt.toISOString() : null,
+  };
+}
+
+export function toFavouriteView(f: FavouriteDoc): Favourite {
+  return {
+    id: f._id.toString(),
+    name: f.name,
+    quantity: f.quantity,
+    unit: f.unit,
+    lifespanDays: f.lifespanDays,
+    storage: f.storage,
   };
 }

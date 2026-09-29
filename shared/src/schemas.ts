@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { isValidDate } from './dates.js';
-import { UNITS } from './enums.js';
+import { STORAGE_LOCATIONS, UNITS } from './enums.js';
 
 /**
  * Request schemas. The server's check is the only one that counts; the client
@@ -25,6 +25,13 @@ export const MESSAGES = {
   nameTooLong: 'Name must be at most 50 characters.',
   invalidCredentials: 'Email or password is incorrect.',
   itemClosed: 'This item is no longer active.',
+  storage: 'Choose where it is kept: fridge, freezer or pantry.',
+  openedDate: "Opened date must be a valid date that isn't in the future or before the added date.",
+  bulkEmpty: 'Add at least one item.',
+  bulkTooMany: 'Add at most 50 items at once.',
+  favouriteExists: 'This food is already a favourite.',
+  nothingToUndo: 'There is nothing to undo for this item.',
+  undoExpired: 'This action can no longer be undone.',
 } as const;
 
 const email = z
@@ -65,6 +72,10 @@ const foodFields = {
     .min(0, MESSAGES.lifespan)
     .max(365, MESSAGES.lifespan),
   notes: z.string({ error: MESSAGES.notes }).trim().max(200, MESSAGES.notes).optional(),
+  /** Defaults to FRIDGE when omitted. */
+  storage: z.enum(STORAGE_LOCATIONS, { error: MESSAGES.storage }).optional(),
+  /** When the item was opened, if it has been. Checked against today and the added date by the server. */
+  openedDate: z.string({ error: MESSAGES.openedDate }).refine(isValidDate, MESSAGES.openedDate).nullable().optional(),
 };
 
 /**
@@ -77,6 +88,32 @@ export const updateFoodSchema = z
   .object(foodFields)
   .partial()
   .refine((body) => Object.keys(body).length > 0, 'Provide at least one field to update.');
+
+/** One row of a bulk add; the added date (and default storage) come from the request. */
+const bulkItem = z.object({
+  name: foodFields.name,
+  quantity,
+  unit: foodFields.unit,
+  lifespanDays: foodFields.lifespanDays,
+  storage: foodFields.storage,
+  notes: foodFields.notes,
+});
+
+/** A whole shopping haul in one request: 1–50 items sharing an added date. */
+export const bulkCreateSchema = z.object({
+  addedDate: foodFields.addedDate,
+  storage: foodFields.storage,
+  items: z.array(bulkItem, { error: MESSAGES.bulkEmpty }).min(1, MESSAGES.bulkEmpty).max(50, MESSAGES.bulkTooMany),
+});
+
+/** A saved food the user can re-add with one tap. */
+export const favouriteSchema = z.object({
+  name: foodFields.name,
+  quantity,
+  unit: foodFields.unit,
+  lifespanDays: foodFields.lifespanDays,
+  storage: z.enum(STORAGE_LOCATIONS, { error: MESSAGES.storage }).default('FRIDGE'),
+});
 
 /** Omit `quantity` to use the whole item; a smaller quantity is a partial use. */
 export const useFoodSchema = z.object({ quantity: quantity.optional() });
@@ -109,3 +146,5 @@ export type FoodUpdateInput = z.infer<typeof updateFoodSchema>;
 export type UseFoodInput = z.infer<typeof useFoodSchema>;
 export type PreferencesInput = z.infer<typeof preferencesSchema>;
 export type Pagination = z.infer<typeof paginationSchema>;
+export type BulkCreateInput = z.infer<typeof bulkCreateSchema>;
+export type FavouriteInput = z.infer<typeof favouriteSchema>;

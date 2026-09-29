@@ -259,16 +259,29 @@ function NavItem({
   );
 }
 
+/** Short confirmation messages, with an optional action such as "Undo". */
 function Toast() {
-  const message = useToastStore((s) => s.message);
+  const { message, action, clear } = useToastStore();
   return (
     <div
       aria-live="polite"
       className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex justify-center px-4 lg:bottom-8 lg:left-64"
     >
       {message && (
-        <div className="sheet-in rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-white shadow-lg">
-          {message}
+        <div className="sheet-in pointer-events-auto flex items-center gap-2 rounded-full bg-ink py-1.5 pr-1.5 pl-4 text-sm font-medium text-white shadow-lg">
+          <span className="py-1">{message}</span>
+          {action && (
+            <button
+              type="button"
+              onClick={() => {
+                clear();
+                action.onClick();
+              }}
+              className="min-h-11 rounded-full px-4 font-semibold text-soon hover:bg-white/10"
+            >
+              {action.label}
+            </button>
+          )}
         </div>
       )}
     </div>

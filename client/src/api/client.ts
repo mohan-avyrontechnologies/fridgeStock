@@ -1,5 +1,9 @@
 import type {
   AuthResponse,
+  BulkCreateInput,
+  BulkCreateResult,
+  Favourite,
+  FavouriteInput,
   CookFirstList,
   FoodInput,
   FoodItem,
@@ -84,6 +88,10 @@ export const api = {
   listFoods: () => request<FoodList>('GET', '/foods'),
   // GET /foods/cook-first
   cookFirst: () => request<CookFirstList>('GET', '/foods/cook-first'),
+  // POST /foods/bulk
+  bulkCreate: (body: BulkCreateInput) => request<BulkCreateResult>('POST', '/foods/bulk', body),
+  // POST /foods/:id/undo
+  undo: (id: string) => request<FoodItem>('POST', `/foods/${id}/undo`),
   // GET /foods/:id
   getFood: (id: string) => request<FoodItem>('GET', `/foods/${id}`),
   // POST /foods
@@ -98,6 +106,15 @@ export const api = {
     request<UsageResult>('POST', `/foods/${id}/use`, quantity === undefined ? {} : { quantity }),
   // POST /foods/:id/waste
   wasteFood: (id: string) => request<UsageResult>('POST', `/foods/${id}/waste`, {}),
+
+  // GET /favourites
+  favourites: () => request<{ items: Favourite[] }>('GET', '/favourites'),
+  // POST /favourites
+  createFavourite: (body: FavouriteInput) => request<Favourite>('POST', '/favourites', body),
+  // DELETE /favourites/:id
+  removeFavourite: (id: string) => request<void>('DELETE', `/favourites/${id}`),
+  // POST /favourites/:id/add
+  addFavourite: (id: string) => request<FoodItem>('POST', `/favourites/${id}/add`),
 
   // GET /usage
   usage: (offset = 0, limit = 20) => request<UsageHistory>('GET', `/usage?offset=${offset}&limit=${limit}`),

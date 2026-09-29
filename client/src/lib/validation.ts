@@ -13,7 +13,8 @@ export function check<T>(
   if (result.success) return { data: result.data, errors: null };
   const errors: Record<string, string> = {};
   for (const issue of result.error.issues) {
-    const field = issue.path.length ? String(issue.path[0]) : 'form';
+    // Full path, e.g. "items.2.name" for a bulk-add row.
+    const field = issue.path.length ? issue.path.map(String).join('.') : 'form';
     errors[field] ??= issue.message;
   }
   return { data: null, errors };
