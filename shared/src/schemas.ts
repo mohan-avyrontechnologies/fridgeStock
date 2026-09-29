@@ -32,6 +32,12 @@ export const MESSAGES = {
   favouriteExists: 'This food is already a favourite.',
   nothingToUndo: 'There is nothing to undo for this item.',
   undoExpired: 'This action can no longer be undone.',
+  daysLeft: 'Days left must be a whole number from 0 to 365.',
+  alreadyOpened: 'This item is already marked as opened.',
+  notOpened: 'This item is not marked as opened.',
+  sameStorage: 'It is already kept there.',
+  openedDaysNeeded: 'Enter how many days it lasts once opened.',
+  storageDaysNeeded: 'Enter how many days it lasts there.',
 } as const;
 
 const email = z
@@ -115,6 +121,27 @@ export const favouriteSchema = z.object({
   storage: z.enum(STORAGE_LOCATIONS, { error: MESSAGES.storage }).default('FRIDGE'),
 });
 
+const daysLeft = z
+  .number({ error: MESSAGES.daysLeft })
+  .int(MESSAGES.daysLeft)
+  .min(0, MESSAGES.daysLeft)
+  .max(365, MESSAGES.daysLeft);
+
+/**
+ * Mark an item as opened (default: today). `daysLeft` is how long it lasts once
+ * opened; omitted, the server suggests one. The expected expiry only ever gets shorter.
+ */
+export const openFoodSchema = z.object({
+  openedDate: z.string({ error: MESSAGES.openedDate }).refine(isValidDate, MESSAGES.openedDate).optional(),
+  daysLeft: daysLeft.optional(),
+});
+
+/** Move an item to another location; `daysLeft` counts from today (omitted: the location's suggestion). */
+export const moveFoodSchema = z.object({
+  storage: z.enum(STORAGE_LOCATIONS, { error: MESSAGES.storage }),
+  daysLeft: daysLeft.optional(),
+});
+
 /** Omit `quantity` to use the whole item; a smaller quantity is a partial use. */
 export const useFoodSchema = z.object({ quantity: quantity.optional() });
 
@@ -148,3 +175,5 @@ export type PreferencesInput = z.infer<typeof preferencesSchema>;
 export type Pagination = z.infer<typeof paginationSchema>;
 export type BulkCreateInput = z.infer<typeof bulkCreateSchema>;
 export type FavouriteInput = z.infer<typeof favouriteSchema>;
+export type OpenFoodInput = z.infer<typeof openFoodSchema>;
+export type MoveFoodInput = z.infer<typeof moveFoodSchema>;

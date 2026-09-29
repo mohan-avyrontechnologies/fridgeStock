@@ -73,6 +73,17 @@ describe('every data query is scoped to the signed-in user', () => {
     await s.auth(api().get('/api/favourites'));
     await s.auth(api().post(`/api/favourites/${fav.id}/add`));
     await s.auth(api().delete(`/api/favourites/${fav.id}`));
+    const c = (
+      await s.auth(
+        api()
+          .post('/api/foods')
+          .send(food({ name: 'Milk', lifespanDays: 9 })),
+      )
+    ).body;
+    await s.auth(api().post(`/api/foods/${c.id}/open`).send({}));
+    await s.auth(api().delete(`/api/foods/${c.id}/open`));
+    await s.auth(api().post(`/api/foods/${c.id}/move`).send({ storage: 'FREEZER' }));
+    await s.auth(api().get('/api/suggestions/lifespans'));
     mongoose.set('debug', false);
 
     const dataOps = ops.filter((op) => SCOPED.has(op.collection) && !IGNORED.has(op.method));

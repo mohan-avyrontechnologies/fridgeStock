@@ -74,7 +74,11 @@ async function shot(page: Page, name: string) {
   await page.waitForTimeout(350);
   await expectNoHorizontalScroll(page);
   await expectLargeTapTargets(page);
-  await page.screenshot({ path: `e2e/screenshots/${test.info().project.name}/${name}.png` });
+  // Hide passing toasts so they don't cover the screen being shown.
+  await page.screenshot({
+    path: `e2e/screenshots/${test.info().project.name}/${name}.png`,
+    style: '[aria-live="polite"] { visibility: hidden !important; }',
+  });
 }
 
 test('spec journey: chicken (1 day) and eggs (8 days); only chicken in Cook First; used chicken disappears', async ({
@@ -305,4 +309,53 @@ test('phase 1: bulk add a shopping haul, undo a waste, and re-add a favourite wi
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Home' }).click();
   await expect(rows).toHaveCount(3);
   await expectNoSafetyClaim(page);
+});
+
+test('phase 2: opening shortens the expected expiry, moving recalculates it, and your usual lifespan is suggested', async ({
+  page,
+}) => {
+  await register(page, 'Noor Haddad');
+  await addFood(page, 'Milk', '7', 'l');
+  await addFood(page, 'Chicken', '2', 'g');
+  const rows = allFood(page);
+
+  // Opened: milk's 7-day lifespan drops to the typical 4 days once opened.
+  await rows.filter({ hasText: 'Milk' }).getByRole('link').first().click();
+  await expect(page.getByText('7 days', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Opened', exact: true }).click();
+  const openDialog = page.getByRole('dialog', { name: 'Opened Milk' });
+  await expect(openDialog.getByLabel('Days it lasts once opened')).toHaveValue('4');
+  await shot(page, '12-opened');
+  await openDialog.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByText(/Marked Milk as opened/)).toBeVisible();
+  await expect(page.getByText('4 days', { exact: true })).toBeVisible();
+  await expect(page.getByText('Opened on')).toBeVisible();
+
+  // Move: chicken goes into the freezer and gets the freezer lifespan from today.
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Home' }).click();
+  await rows.filter({ hasText: 'Chicken' }).getByRole('link').first().click();
+  await page.getByRole('button', { name: 'Move', exact: true }).click();
+  const moveDialog = page.getByRole('dialog', { name: 'Move Chicken' });
+  await expect(moveDialog.getByLabel(/Days it lasts in the freezer/)).toHaveValue('270');
+  await shot(page, '13-move');
+  await moveDialog.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByText(/Moved Chicken to the freezer/)).toBeVisible();
+  await expect(page.getByText('270 days', { exact: true })).toBeVisible();
+
+  // Learned: after two milks at 7 days, Add Food suggests 7 as your usual.
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Home' }).click();
+  await addFood(page, 'Milk', '7', 'l');
+  await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
+  await page.getByLabel('Food', { exact: true }).fill('Mil');
+  await page
+    .getByRole('group', { name: 'Suggestions' })
+    .getByRole('button', { name: /your usual.*Milk/ })
+    .click();
+  await expect(page.getByLabel('Lifespan (days)')).toHaveValue('7');
+  await expect(
+    page.getByText('You usually set 7 days for this (from your last 2). Change it if you like.'),
+  ).toBeVisible();
+  await expectNoSafetyClaim(page);
+  await expectNoHorizontalScroll(page);
+  await expectLargeTapTargets(page);
 });

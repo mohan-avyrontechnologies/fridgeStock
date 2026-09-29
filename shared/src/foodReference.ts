@@ -16,6 +16,8 @@ export interface ReferenceFood {
   name: string;
   unit: Unit;
   lifespanDays: Record<StorageLocation, number | null>;
+  /** Typical days it lasts once opened (packaged foods only; null when opening makes no difference). */
+  openedDays: number | null;
 }
 
 const food = (
@@ -24,7 +26,13 @@ const food = (
   fridge: number | null,
   freezer: number | null,
   pantry: number | null,
-): ReferenceFood => ({ name, unit, lifespanDays: { FRIDGE: fridge, FREEZER: freezer, PANTRY: pantry } });
+  opened: number | null = null,
+): ReferenceFood => ({
+  name,
+  unit,
+  lifespanDays: { FRIDGE: fridge, FREEZER: freezer, PANTRY: pantry },
+  openedDays: opened,
+});
 
 export const FOOD_REFERENCE: readonly ReferenceFood[] = [
   // Meat and fish
@@ -33,19 +41,19 @@ export const FOOD_REFERENCE: readonly ReferenceFood[] = [
   food('Steak', 'g', 3, 180, null),
   food('Fish fillets', 'g', 2, 180, null),
   food('Prawns', 'g', 2, 180, null),
-  food('Bacon', 'pack', 7, 30, null),
-  food('Sausages', 'pack', 3, 60, null),
-  food('Sliced ham', 'pack', 4, 60, null),
+  food('Bacon', 'pack', 7, 30, null, 5),
+  food('Sausages', 'pack', 3, 60, null, 2),
+  food('Sliced ham', 'pack', 4, 60, null, 3),
   // Dairy and eggs
-  food('Milk', 'l', 5, 90, null),
-  food('Yoghurt', 'g', 7, 60, null),
-  food('Hard cheese', 'g', 21, 180, null),
-  food('Soft cheese', 'g', 7, null, null),
-  food('Butter', 'g', 30, 180, null),
-  food('Cream', 'ml', 5, null, null),
+  food('Milk', 'l', 5, 90, null, 4),
+  food('Yoghurt', 'g', 7, 60, null, 5),
+  food('Hard cheese', 'g', 21, 180, null, 21),
+  food('Soft cheese', 'g', 7, null, null, 5),
+  food('Butter', 'g', 30, 180, null, 30),
+  food('Cream', 'ml', 5, null, null, 3),
   food('Eggs', 'pcs', 21, null, null),
-  food('Paneer', 'g', 5, 90, null),
-  food('Tofu', 'pack', 5, 90, null),
+  food('Paneer', 'g', 5, 90, null, 3),
+  food('Tofu', 'pack', 5, 90, null, 3),
   // Vegetables and herbs
   food('Spinach', 'bunch', 4, 240, null),
   food('Lettuce', 'pcs', 5, null, null),
@@ -67,14 +75,14 @@ export const FOOD_REFERENCE: readonly ReferenceFood[] = [
   food('Oranges', 'pcs', 21, null, 7),
   food('Avocado', 'pcs', 4, null, 3),
   // Bread, grains and cooked food
-  food('Bread', 'pack', 7, 90, 4),
-  food('Tortillas', 'pack', 21, 180, 7),
-  food('Fresh pasta', 'pack', 3, 60, null),
+  food('Bread', 'pack', 7, 90, 4, 5),
+  food('Tortillas', 'pack', 21, 180, 7, 7),
+  food('Fresh pasta', 'pack', 3, 60, null, 2),
   food('Cooked rice', 'g', 3, 30, null),
   food('Leftovers', 'pcs', 3, 60, null),
   food('Homemade soup', 'ml', 3, 90, null),
-  food('Hummus', 'g', 5, null, null),
-  food('Juice', 'l', 7, 240, null),
+  food('Hummus', 'g', 5, null, null, 4),
+  food('Juice', 'l', 7, 240, null, 5),
 ];
 
 /** Reference foods whose name contains the query (case-insensitive), best matches first. */

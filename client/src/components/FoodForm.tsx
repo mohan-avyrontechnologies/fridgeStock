@@ -5,19 +5,19 @@ import {
   formatDisplay,
   isValidDate,
   MESSAGES,
-  searchReference,
   STORAGE_LOCATIONS,
   todayInTz,
   UNITS,
   type FoodInput,
-  type ReferenceFood,
   type StorageLocation,
   type Unit,
 } from '@cook-first/shared';
-import { useId, useState, type FormEvent } from 'react';
+import { useEffect, useId, useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
 import { referenceCopy, screenCopy, storageLabel } from '../copy';
+import { searchSuggestions, suggestFor, type LifespanSuggestion } from '../lib/suggestions';
 import { check } from '../lib/validation';
+import { useSuggestionStore } from '../stores/suggestionStore';
 import { useAuthStore } from '../stores/authStore';
 import { EstimateNote } from './Urgency';
 import { Button, Chip, Field, FormError } from './ui';
@@ -58,8 +58,15 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
   const [addedDate, setAddedDate] = useState(initial?.addedDate ?? today);
   const [lifespan, setLifespan] = useState(initial ? String(initial.lifespanDays) : '');
   const [storage, setStorage] = useState<StorageLocation>(initial?.storage ?? 'FRIDGE');
-  // The reference food the lifespan was suggested from, if the user picked one.
-  const [suggestedFrom, setSuggestedFrom] = useState<ReferenceFood | null>(null);
+  // The food name the lifespan was suggested for, if the user picked a suggestion.
+  const [suggestedFrom, setSuggestedFrom] = useState<string | null>(null);
+  const learned = useSuggestionStore((s) => s.learned);
+  const loadLearned = useSuggestionStore((s) => s.load);
+
+  // Learned lifespans are only needed when adding (not when editing an item).
+  useEffect(() => {
+    if (!initial) void loadLearned();
+  }, [initial, loadLearned]);
   const [notes, setNotes] = useState(initial?.notes ?? '');
   // Notes sit behind an "Add note" link unless the item already has some.
   const [showNotes, setShowNotes] = useState(Boolean(initial?.notes));
@@ -69,18 +76,15 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
   const clearError = (field: keyof Errors) =>
     setErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
 
-  // Reference foods matching what's typed (hidden once the name is an exact match).
-  const suggestions = initial
-    ? []
-    : searchReference(name).filter((ref) => ref.name.toLowerCase() !== name.trim().toLowerCase());
+  // Your own foods first, then the reference list (hidden once the name is an exact match).
+  const suggestions = initial ? [] : searchSuggestions(name, storage, learned);
 
-  /** Picking a reference food fills in its name, unit and suggested lifespan for the chosen location. */
-  function pickReference(ref: ReferenceFood) {
-    setName(ref.name);
-    setUnit(ref.unit);
-    const days = ref.lifespanDays[storage];
-    setLifespan(days === null ? '' : String(days));
-    setSuggestedFrom(ref);
+  /** Picking a suggestion fills in its name, unit and lifespan for the chosen location. */
+  function pick(suggestion: LifespanSuggestion) {
+    setName(suggestion.name);
+    setUnit(suggestion.unit);
+    setLifespan(suggestion.days === null ? '' : String(suggestion.days));
+    setSuggestedFrom(suggestion.name);
     setErrors({});
   }
 
@@ -88,12 +92,12 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
     setStorage(next);
     // Follow the suggestion for the new location, unless the user has typed their own lifespan.
     if (suggestedFrom) {
-      const days = suggestedFrom.lifespanDays[next];
+      const days = suggestFor(suggestedFrom, next, learned)?.days ?? null;
       setLifespan(days === null ? '' : String(days));
     }
   }
 
-  const suggestedDays = suggestedFrom?.lifespanDays[storage];
+  const current = suggestedFrom ? suggestFor(suggestedFrom, storage, learned) : null;
 
   const lifespanNumber = Number(lifespan);
   const previewValid =
@@ -169,11 +173,12 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
       />
       {suggestions.length > 0 && (
         <div role="group" aria-label="Suggestions" className="-mx-4 -mt-3 flex gap-2 overflow-x-auto px-4 pb-1">
-          {suggestions.map((ref) => {
-            const days = ref.lifespanDays[storage];
+          {suggestions.map((suggestion) => {
+            const { days } = suggestion;
             return (
-              <Chip key={ref.name} onClick={() => pickReference(ref)}>
-                {ref.name}
+              <Chip key={suggestion.name} onClick={() => pick(suggestion)}>
+                {suggestion.source === 'learned' && <span aria-label="your usual">★ </span>}
+                {suggestion.name}
                 {days !== null && <span className="ml-1 text-muted">· {days}d</span>}
               </Chip>
             );
@@ -293,11 +298,13 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
           }}
           error={errors.lifespanDays}
           hint={
-            suggestedFrom
-              ? suggestedDays === null
-                ? referenceCopy.notUsuallyKept(storageLabel[storage])
-                : `${referenceCopy.suggested(suggestedDays!)}. ${referenceCopy.hint}`
-              : screenCopy.form.lifespanHint
+            !current
+              ? screenCopy.form.lifespanHint
+              : current.source === 'learned'
+                ? referenceCopy.learned(current.days!, current.basedOn!)
+                : current.days === null
+                  ? referenceCopy.notUsuallyKept(storageLabel[storage])
+                  : `${referenceCopy.suggested(current.days)}. ${referenceCopy.hint}`
           }
         />
         <div className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1">

@@ -43,6 +43,18 @@ export const foodController = {
     res.json(await foodService.undoLastAction(currentUser(req), id(req)));
   },
 
+  async open(req: Request, res: Response) {
+    res.json(await foodService.openFood(currentUser(req), id(req), req.body));
+  },
+
+  async undoOpen(req: Request, res: Response) {
+    res.json(await foodService.undoOpen(currentUser(req), id(req)));
+  },
+
+  async move(req: Request, res: Response) {
+    res.json(await foodService.moveFood(currentUser(req), id(req), req.body));
+  },
+
   async waste(req: Request, res: Response) {
     res.json(await foodService.wasteFood(currentUser(req), id(req)));
   },

@@ -59,7 +59,7 @@ describe('api', () => {
   it('has one function per endpoint', () => {
     const client = read('api/client.ts');
     const endpoints = [...client.matchAll(/^\s*\/\/ (GET|POST|PUT|DELETE) (\S+)$/gm)].map((m) => `${m[1]} ${m[2]}`);
-    expect(endpoints).toHaveLength(24);
+    expect(endpoints).toHaveLength(28);
     expect(new Set(endpoints).size).toBe(endpoints.length);
   });
 });

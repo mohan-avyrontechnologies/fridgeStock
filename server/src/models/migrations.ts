@@ -40,6 +40,10 @@ async function backfillHouseholdAndStorage() {
   }
   await FoodItemModel.collection.updateMany({ storage: { $exists: false } }, { $set: { storage: 'FRIDGE' } });
   await FoodItemModel.collection.updateMany({ openedDate: { $exists: false } }, { $set: { openedDate: null } });
+  // v2.6: what the user entered, used to learn their usual lifespans.
+  await FoodItemModel.collection.updateMany({ enteredLifespanDays: { $exists: false } }, [
+    { $set: { enteredLifespanDays: '$lifespanDays', enteredStorage: '$storage' } },
+  ]);
 }
 
 export async function runMigrations(): Promise<void> {

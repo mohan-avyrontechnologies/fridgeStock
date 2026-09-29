@@ -1,6 +1,15 @@
 import { create } from 'zustand';
 import { api } from '../api/client';
-import type { ActiveFoodItem, BulkCreateInput, FoodInput, FoodItem, FoodList, UsageAction } from '@cook-first/shared';
+import type {
+  ActiveFoodItem,
+  BulkCreateInput,
+  FoodInput,
+  FoodItem,
+  FoodList,
+  MoveFoodInput,
+  OpenFoodInput,
+  UsageAction,
+} from '@cook-first/shared';
 import { useAuthStore } from './authStore';
 
 interface FoodState {
@@ -17,6 +26,9 @@ interface FoodState {
   undo: (id: string) => Promise<FoodItem>;
   addBulk: (input: BulkCreateInput) => Promise<FoodItem[]>;
   addFavourite: (favouriteId: string) => Promise<FoodItem>;
+  open: (id: string, input: OpenFoodInput) => Promise<FoodItem>;
+  undoOpen: (id: string) => Promise<FoodItem>;
+  move: (id: string, input: MoveFoodInput) => Promise<FoodItem>;
   reset: () => void;
 }
 
@@ -69,6 +81,24 @@ export const useFoodStore = create<FoodState>()((set, get) => ({
 
   async addFavourite(favouriteId) {
     const food = await api.addFavourite(favouriteId);
+    void get().refresh();
+    return food;
+  },
+
+  async open(id, input) {
+    const food = await api.openFood(id, input);
+    void get().refresh();
+    return food;
+  },
+
+  async undoOpen(id) {
+    const food = await api.undoOpen(id);
+    void get().refresh();
+    return food;
+  },
+
+  async move(id, input) {
+    const food = await api.moveFood(id, input);
     void get().refresh();
     return food;
   },

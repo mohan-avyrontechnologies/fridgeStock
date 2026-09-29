@@ -143,6 +143,8 @@ export const referenceCopy = {
   suggested: (days: number) => `Suggested ${days} ${days === 1 ? 'day' : 'days'}`,
   hint: `Suggested lifespans are typical planning estimates from the ${REFERENCE_SOURCE}. Change the number if yours differs.`,
   notUsuallyKept: (where: string) => `Not usually kept in the ${where.toLowerCase()}. Enter your own lifespan.`,
+  learned: (days: number, basedOn: number) =>
+    `You usually set ${days} ${days === 1 ? 'day' : 'days'} for this (from your last ${basedOn}). Change it if you like.`,
 };
 
 export const favouriteCopy = {
@@ -153,6 +155,29 @@ export const favouriteCopy = {
   savedToast: (name: string) => `Saved ${name} as a favourite`,
   removedToast: (name: string) => `Removed ${name} from favourites`,
   addedToast: (name: string) => `Added ${name}`,
+};
+
+/** Phase 2: marking an item as opened (can only shorten the expected expiry). */
+export const openCopy = {
+  button: 'Opened',
+  title: (name: string) => `Opened ${name}`,
+  openedOn: 'Opened on',
+  daysLabel: 'Days it lasts once opened',
+  hint: 'The expected expiry becomes the opened date plus these days, if that is sooner.',
+  referenceHint: (days: number) => `Typical once opened: ${days} ${days === 1 ? 'day' : 'days'} (${REFERENCE_SOURCE}).`,
+  toast: (name: string, date: string) => `Marked ${name} as opened. Expected expiry ${date}`,
+  undo: 'Mark as not opened',
+  undone: (name: string) => `${name} is no longer marked as opened`,
+};
+
+/** Phase 2: moving between fridge, freezer and pantry. */
+export const moveCopy = {
+  button: 'Move',
+  title: (name: string) => `Move ${name}`,
+  where: 'Move to',
+  daysLabel: (where: string) => `Days it lasts in the ${where.toLowerCase()}, from today`,
+  toast: (name: string, where: string, date: string) =>
+    `Moved ${name} to the ${where.toLowerCase()}. Expected expiry ${date}`,
 };
 
 export const bulkCopy = {

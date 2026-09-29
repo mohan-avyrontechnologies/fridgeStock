@@ -3,6 +3,8 @@ import {
   createFoodSchema,
   favouriteSchema,
   loginSchema,
+  moveFoodSchema,
+  openFoodSchema,
   notificationPageSchema,
   paginationSchema,
   preferencesSchema,
@@ -17,6 +19,7 @@ import rateLimit from 'express-rate-limit';
 import { authController } from '../controllers/authController.js';
 import { favouriteController } from '../controllers/favouriteController.js';
 import { foodController } from '../controllers/foodController.js';
+import { suggestionController } from '../controllers/suggestionController.js';
 import { notificationController } from '../controllers/notificationController.js';
 import { usageController } from '../controllers/usageController.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -62,6 +65,11 @@ router.delete('/foods/:id', foodController.remove);
 router.post('/foods/:id/use', validate(useFoodSchema), foodController.use);
 router.post('/foods/:id/waste', validate(wasteFoodSchema), foodController.waste);
 router.post('/foods/:id/undo', foodController.undo);
+router.post('/foods/:id/open', validate(openFoodSchema), foodController.open);
+router.delete('/foods/:id/open', foodController.undoOpen);
+router.post('/foods/:id/move', validate(moveFoodSchema), foodController.move);
+
+router.get('/suggestions/lifespans', suggestionController.lifespans);
 
 router.get('/favourites', favouriteController.list);
 router.post('/favourites', validate(favouriteSchema), favouriteController.create);

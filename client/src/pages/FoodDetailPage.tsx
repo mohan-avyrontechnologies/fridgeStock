@@ -4,6 +4,7 @@ import { api, ApiError } from '../api/client';
 import type { Favourite, FoodItem } from '@cook-first/shared';
 import { ActionSheet, useFoodActions, type SheetStep } from '../components/ActionSheet';
 import { PageBody, PageHeader } from '../components/AppShell';
+import { MoveSheet, OpenSheet } from '../components/EstimateSheets';
 import { FoodForm } from '../components/FoodForm';
 import { EstimateNote, UrgencyBadge } from '../components/Urgency';
 import { Button, EmptyState, Spinner } from '../components/ui';
@@ -11,6 +12,8 @@ import {
   actionCopy,
   expectedExpiryLabel,
   favouriteCopy,
+  moveCopy,
+  openCopy,
   storageLabel,
   historyActionLabel,
   pastExpectedExpiryNote,
@@ -33,6 +36,8 @@ export function FoodDetailPage() {
   const [editing, setEditing] = useState(false);
   const [sheet, setSheet] = useState<SheetStep | null>(null);
   const [favourite, setFavourite] = useState<Favourite | null>(null);
+  const [estimate, setEstimate] = useState<'open' | 'move' | null>(null);
+  const undoOpen = useFoodStore((s) => s.undoOpen);
   const run = useFoodActions();
 
   // Is this food already a favourite? (Matched by name, as favourites are unique by name.)
@@ -48,6 +53,21 @@ export function FoodDetailPage() {
       current = false;
     };
   }, [food]);
+
+  function finishEstimate(updated: FoodItem) {
+    setEstimate(null);
+    setFood(updated);
+  }
+
+  async function markNotOpened() {
+    if (!food) return;
+    try {
+      setFood(await undoOpen(food.id));
+      toast(openCopy.undone(food.name));
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+    }
+  }
 
   async function toggleFavourite() {
     if (!food) return;
@@ -207,6 +227,20 @@ export function FoodDetailPage() {
                   </Button>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
+                  {food.openedDate ? (
+                    <Button variant="secondary" onClick={markNotOpened}>
+                      {openCopy.undo}
+                    </Button>
+                  ) : (
+                    <Button variant="secondary" onClick={() => setEstimate('open')}>
+                      {openCopy.button}
+                    </Button>
+                  )}
+                  <Button variant="secondary" onClick={() => setEstimate('move')}>
+                    {moveCopy.button}
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
                   <Button variant="ghost" onClick={() => setEditing(true)}>
                     Edit
                   </Button>
@@ -222,6 +256,12 @@ export function FoodDetailPage() {
           </>
         )}
       </PageBody>
+      {food && estimate === 'open' && (
+        <OpenSheet item={food} onDone={finishEstimate} onClose={() => setEstimate(null)} />
+      )}
+      {food && estimate === 'move' && (
+        <MoveSheet item={food} onDone={finishEstimate} onClose={() => setEstimate(null)} />
+      )}
       {sheet && (
         <ActionSheet
           item={food}

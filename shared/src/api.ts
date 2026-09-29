@@ -73,6 +73,17 @@ export interface Favourite {
   storage: StorageLocation;
 }
 
+/** A lifespan the user usually sets for a food in a location, learned from their own items. */
+export interface LearnedLifespan {
+  name: string;
+  storage: StorageLocation;
+  unit: Unit;
+  /** Median of the lifespans they entered, in days. */
+  days: number;
+  /** How many of their items this is based on (at least 2). */
+  basedOn: number;
+}
+
 export interface CookFirstList {
   today: DateString;
   items: ActiveFoodItem[];

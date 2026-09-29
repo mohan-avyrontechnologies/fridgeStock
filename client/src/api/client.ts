@@ -9,6 +9,9 @@ import type {
   FoodItem,
   FoodList,
   FoodUpdateInput,
+  LearnedLifespan,
+  MoveFoodInput,
+  OpenFoodInput,
   NotificationFeed,
   NotificationPreferences,
   PreferencesInput,
@@ -92,6 +95,14 @@ export const api = {
   bulkCreate: (body: BulkCreateInput) => request<BulkCreateResult>('POST', '/foods/bulk', body),
   // POST /foods/:id/undo
   undo: (id: string) => request<FoodItem>('POST', `/foods/${id}/undo`),
+  // POST /foods/:id/open
+  openFood: (id: string, body: OpenFoodInput) => request<FoodItem>('POST', `/foods/${id}/open`, body),
+  // DELETE /foods/:id/open
+  undoOpen: (id: string) => request<FoodItem>('DELETE', `/foods/${id}/open`),
+  // POST /foods/:id/move
+  moveFood: (id: string, body: MoveFoodInput) => request<FoodItem>('POST', `/foods/${id}/move`, body),
+  // GET /suggestions/lifespans
+  learnedLifespans: () => request<{ items: LearnedLifespan[] }>('GET', '/suggestions/lifespans'),
   // GET /foods/:id
   getFood: (id: string) => request<FoodItem>('GET', `/foods/${id}`),
   // POST /foods

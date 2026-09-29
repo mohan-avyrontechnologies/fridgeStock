@@ -33,6 +33,11 @@ export interface FoodItem {
   storage: StorageLocation;
   /** When the item was opened, if it has been. */
   openedDate?: DateString | null;
+  /** The lifespan before "Opened" shortened it, so opening can be undone. */
+  lifespanBeforeOpened?: number | null;
+  /** What the user chose when adding or editing (not changed by Move or Opened); used to learn their usual lifespans. */
+  enteredLifespanDays: number;
+  enteredStorage: StorageLocation;
   status: FoodStatus;
   closedAt?: Date;
 }
@@ -73,6 +78,9 @@ const foodItemSchema = new Schema<FoodItem>(
         message: 'Must be a "YYYY-MM-DD" calendar date.',
       },
     },
+    lifespanBeforeOpened: { type: Number, default: null },
+    enteredLifespanDays: { type: Number, required: true, min: 0, max: 365 },
+    enteredStorage: { type: String, enum: STORAGE_LOCATIONS, required: true },
     status: { type: String, enum: FOOD_STATUSES, default: 'ACTIVE', required: true },
     closedAt: { type: Date },
   },

@@ -2,7 +2,6 @@ import {
   addDays,
   bulkCreateSchema,
   FOOD_REFERENCE,
-  findReference,
   MESSAGES,
   STORAGE_LOCATIONS,
   todayInTz,
@@ -11,14 +10,16 @@ import {
   type StorageLocation,
   type Unit,
 } from '@cook-first/shared';
-import { useId, useState, type FormEvent } from 'react';
+import { useEffect, useId, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { EstimateNote } from '../components/Urgency';
 import { Button, Chip, Field, FormError } from '../components/ui';
 import { bulkCopy, referenceCopy, storageLabel } from '../copy';
+import { suggestFor } from '../lib/suggestions';
 import { check } from '../lib/validation';
+import { useSuggestionStore } from '../stores/suggestionStore';
 import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
 import { useToastStore } from '../stores/toastStore';
@@ -53,6 +54,12 @@ export function BulkAddPage() {
   // Errors keyed by "<row key>.<field>", plus "form" and "addedDate".
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const learned = useSuggestionStore((s) => s.learned);
+  const loadLearned = useSuggestionStore((s) => s.load);
+
+  useEffect(() => {
+    void loadLearned();
+  }, [loadLearned]);
 
   const filled = rows.filter((r) => !isBlank(r));
 
@@ -61,12 +68,11 @@ export function BulkAddPage() {
       prev.map((row) => {
         if (row.key !== key) return row;
         const next = { ...row, ...patch };
-        // Choosing a food from the reference list suggests its unit and lifespan.
+        // A known food (your usual first, then the reference list) suggests its unit and lifespan.
         if (patch.name !== undefined && !row.lifespan) {
-          const ref = findReference(patch.name);
-          const days = ref?.lifespanDays[next.storage];
-          if (ref && days !== null && days !== undefined)
-            Object.assign(next, { unit: ref.unit, lifespan: String(days) });
+          const suggestion = suggestFor(patch.name, next.storage, learned);
+          if (suggestion && suggestion.days !== null)
+            Object.assign(next, { unit: suggestion.unit, lifespan: String(suggestion.days) });
         }
         return next;
       }),
@@ -137,8 +143,8 @@ export function BulkAddPage() {
           </div>
 
           <datalist id={listId}>
-            {FOOD_REFERENCE.map((ref) => (
-              <option key={ref.name} value={ref.name} />
+            {[...new Set([...learned.map((l) => l.name), ...FOOD_REFERENCE.map((ref) => ref.name)])].map((name) => (
+              <option key={name} value={name} />
             ))}
           </datalist>
 
