@@ -15,7 +15,7 @@ import { FoodItemModel, type FoodItemDoc } from '../models/FoodItem.js';
 import type { UserDoc } from '../models/User.js';
 import { clock } from './clock.js';
 import { conflict, foodNotFound, validationError } from './errors.js';
-import { cancelForFood, scheduleForFood } from './notificationService.js';
+import { cancelForFood, dispatchDue, scheduleForFood } from './notificationService.js';
 import { prioritise } from './priorityEngine.js';
 import { createRecord } from './usageService.js';
 import { toFoodView, toUsageView } from './views.js';
@@ -86,7 +86,17 @@ async function usePart(user: UserDoc, food: FoodItemDoc, quantity: number): Prom
   return { food: toFoodView(food, clock.today(user.timeZone)), usageRecord: toUsageView(record) };
 }
 
+/** Delivers due reminders first. A reminder failure is logged and never blocks the inventory. */
+async function dispatchSafely(user: UserDoc): Promise<void> {
+  try {
+    await dispatchDue(user);
+  } catch (error) {
+    console.error('Reminder dispatch failed', error);
+  }
+}
+
 export async function listFoods(user: UserDoc): Promise<FoodList> {
+  await dispatchSafely(user);
   const { today, items, summary } = await prioritisedFor(user);
   return { today, summary, items };
 }

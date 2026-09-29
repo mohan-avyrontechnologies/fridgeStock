@@ -12,9 +12,10 @@ import {
 } from '@cook-first/shared';
 import { useId, useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
-import { remainingText, screenCopy } from '../copy';
+import { screenCopy } from '../copy';
 import { check } from '../lib/validation';
 import { useAuthStore } from '../stores/authStore';
+import { EstimateNote } from './Urgency';
 import { Button, Chip, Field, FormError } from './ui';
 
 /** Quick picks only; any whole number from 0 to 365 can be typed. */
@@ -45,12 +46,15 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
   const timeZone = useAuthStore((s) => s.user?.timeZone) ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
   const today = todayInTz(timeZone);
   const notesId = useId();
+  const unitId = useId();
   const [name, setName] = useState(initial?.name ?? '');
   const [quantity, setQuantity] = useState(String(initial?.quantity ?? 1));
   const [unit, setUnit] = useState<Unit>(initial?.unit ?? 'pcs');
   const [addedDate, setAddedDate] = useState(initial?.addedDate ?? today);
   const [lifespan, setLifespan] = useState(initial ? String(initial.lifespanDays) : '');
   const [notes, setNotes] = useState(initial?.notes ?? '');
+  // Notes sit behind an "Add note" link unless the item already has some.
+  const [showNotes, setShowNotes] = useState(Boolean(initial?.notes));
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
 
@@ -91,6 +95,7 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
         setQuantity('1');
         setLifespan('');
         setNotes('');
+        setShowNotes(false);
         setErrors({});
         document.getElementById('food-name')?.focus();
       }
@@ -137,24 +142,31 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
           }}
           error={errors.quantity}
         />
-        <fieldset className="mt-3 min-w-0">
-          <legend className="mb-1.5 text-sm font-medium text-ink">Unit</legend>
-          <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
-            {UNITS.map((u) => (
-              <Chip
-                key={u}
-                selected={unit === u}
-                onClick={() => {
-                  setUnit(u);
-                  clearError('unit');
-                }}
-              >
-                {u}
-              </Chip>
-            ))}
-          </div>
-          {errors.unit && <p className="mt-1.5 text-sm text-danger">{errors.unit}</p>}
-        </fieldset>
+      </div>
+
+      <div>
+        <label htmlFor={unitId} className="mb-1.5 block text-sm font-medium text-ink">
+          Unit
+        </label>
+        <select
+          id={unitId}
+          value={unit}
+          onChange={(e) => {
+            setUnit(e.target.value as Unit);
+            clearError('unit');
+          }}
+          aria-invalid={errors.unit ? true : undefined}
+          className={`block min-h-12 w-40 rounded-xl border bg-card px-3.5 text-base text-ink focus:border-brand focus:outline-none ${
+            errors.unit ? 'border-danger' : 'border-line'
+          }`}
+        >
+          {UNITS.map((u) => (
+            <option key={u} value={u}>
+              {u}
+            </option>
+          ))}
+        </select>
+        {errors.unit && <p className="mt-1.5 text-sm text-danger">{errors.unit}</p>}
       </div>
 
       <div>
@@ -224,6 +236,15 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
         </div>
       </div>
 
+      {!showNotes ? (
+        <button
+          type="button"
+          onClick={() => setShowNotes(true)}
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-brand underline-offset-2 hover:underline"
+        >
+          + {screenCopy.form.addNote}
+        </button>
+      ) : (
       <div>
         <label htmlFor={notesId} className="mb-1.5 block text-sm font-medium text-ink">
           Notes <span className="font-normal text-muted">(optional)</span>
@@ -247,12 +268,13 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
           {errors.notes ?? `${notes.length}/${NOTES_MAX}`}
         </p>
       </div>
+      )}
 
-      <div aria-live="polite" className="rounded-2xl bg-brand-soft px-4 py-3">
-        <p className="text-sm text-muted">{screenCopy.form.previewLabel}</p>
+      <div aria-live="polite" className="space-y-2 rounded-2xl bg-brand-soft px-4 py-3">
         <p className="text-base font-semibold text-ink">
-          {expiryDate ? `${formatDisplay(expiryDate)} · ${remainingText(diffDays(today, expiryDate))}` : screenCopy.form.previewEmpty}
+          {expiryDate ? screenCopy.form.preview(formatDisplay(expiryDate), diffDays(today, expiryDate)) : screenCopy.form.previewEmpty}
         </p>
+        <EstimateNote />
       </div>
 
       <div className="flex flex-col gap-2 pt-1">

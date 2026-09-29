@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { EstimateNote } from '../components/Urgency';
-import { EmptyState, Spinner } from '../components/ui';
+import { Button, EmptyState, Spinner } from '../components/ui';
 import { reminderTypeLabel, screenCopy } from '../copy';
 import { formatInstant } from '../lib/format';
 import { useNotificationStore } from '../stores/notificationStore';
@@ -16,7 +16,7 @@ const TYPE_DOT: Record<ReminderType, string> = {
 };
 
 export function NotificationsPage() {
-  const { items, loading, openFeed } = useNotificationStore();
+  const { items, loading, error, openFeed } = useNotificationStore();
 
   // Opening this screen is what marks reminders as read.
   useEffect(() => {
@@ -30,7 +30,16 @@ export function NotificationsPage() {
       <PageHeader title="Reminders" subtitle={newCount ? `${newCount} new` : undefined} back="/" />
       <PageBody narrow>
         {loading && items.length === 0 && <Spinner />}
-        {!loading && items.length === 0 && <EmptyState title="No reminders yet">{screenCopy.reminders.emptyBody}</EmptyState>}
+        {error && (
+          <EmptyState title={screenCopy.reminders.loadError}>
+            <Button variant="secondary" className="mt-4" onClick={() => openFeed()}>
+              Try again
+            </Button>
+          </EmptyState>
+        )}
+        {!loading && !error && items.length === 0 && (
+          <EmptyState title="No reminders yet">{screenCopy.reminders.emptyBody}</EmptyState>
+        )}
         <ul className="space-y-2">
           {items.map((n) => (
             <ReminderRow key={n.id} n={n} />

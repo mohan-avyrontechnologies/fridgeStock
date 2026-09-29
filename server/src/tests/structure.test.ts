@@ -113,9 +113,9 @@ describe('expiry date', () => {
 });
 
 describe('scheduled jobs', () => {
-  it('the reminder sweep is a node-cron job in jobs/, every 15 minutes', () => {
+  it('the reminder sweep is a node-cron job in jobs/, running hourly', () => {
     expect(imports(path.join(SRC, 'jobs/reminderJob.ts'))).toContain('node-cron');
-    expect(REMINDER_SCHEDULE).toBe('*/15 * * * *');
+    expect(REMINDER_SCHEDULE).toBe('0 * * * *');
     expect(source(path.join(SRC, 'index.ts'))).toContain('startReminderJob');
     for (const file of appFiles) expect(source(file), rel(file)).not.toMatch(/setInterval\(/);
   });

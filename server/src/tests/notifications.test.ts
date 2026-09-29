@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NotificationModel } from '../models/Notification.js';
-import { deliveryChannel, sweep } from '../services/notificationService.js';
+import { UserModel as UserModelForTests } from '../models/User.js';
+import * as notificationService from '../services/notificationService.js';
+import { deliveryChannel, scheduledDateFor, sweep } from '../services/notificationService.js';
 import { api, food, registerUser, setToday } from './helpers.js';
 
 let s: Awaited<ReturnType<typeof registerUser>>;
@@ -25,6 +27,34 @@ const scheduled = async (foodId: string) =>
   }));
 
 const feed = async () => (await s.auth(api().get('/api/notifications')).expect(200)).body;
+
+describe('scheduling rules', () => {
+  const today = '2026-09-29';
+  it.each([
+    // [type, expiry, expected scheduled date or null]
+    ['APPROACHING_EXPIRY', '2026-10-09', '2026-10-06'], // 3 days before
+    ['APPROACHING_EXPIRY', '2026-10-01', '2026-09-29'], // 3 days before has passed → today
+    ['APPROACHING_EXPIRY', '2026-09-30', '2026-09-29'], // today is still before expiry
+    ['APPROACHING_EXPIRY', '2026-09-29', null], // today is not before expiry
+    ['APPROACHING_EXPIRY', '2026-09-20', null],
+    ['DUE', '2026-10-09', '2026-10-09'],
+    ['DUE', '2026-09-29', '2026-09-29'], // expiry today still gets a due reminder
+    ['DUE', '2026-09-28', null], // expiry in the past: no due reminder
+    ['OVERDUE', '2026-10-09', '2026-10-10'], // day after expiry
+    ['OVERDUE', '2026-09-28', '2026-09-29'], // that day is today
+    ['OVERDUE', '2026-09-20', '2026-09-29'], // that day has passed → today
+  ] as const)('%s for expiry %s → %s', (type, expiry, expected) => {
+    expect(scheduledDateFor(type, expiry, today)).toBe(expected);
+  });
+
+  it('a zero-day lifespan gets a due reminder today and an overdue one tomorrow, but no approaching one', async () => {
+    const { id } = await add({ lifespanDays: 0 });
+    expect(await scheduled(id)).toEqual([
+      { type: 'DUE', date: '2026-09-29', status: 'PENDING' },
+      { type: 'OVERDUE', date: '2026-09-30', status: 'PENDING' },
+    ]);
+  });
+});
 
 describe('scheduling', () => {
   it('schedules approaching, due and overdue reminders from the expected expiry', async () => {
@@ -63,18 +93,18 @@ describe('delivery', () => {
     let body = await feed();
     expect(body.items).toHaveLength(1);
     expect(body.items[0]).toMatchObject({ type: 'APPROACHING_EXPIRY', status: 'SENT', readAt: null });
-    expect(body.items[0].message).toContain('Spinach: expected expiry in 2 days');
+    expect(body.items[0].message).toBe('Spinach: expected expiry in 2 days. Consider using it soon.');
     expect(body.unread).toBe(1);
 
     setToday('2026-10-01');
     body = await feed();
     expect(body.items[0]).toMatchObject({ type: 'DUE' });
-    expect(body.items[0].message).toBe('Spinach: expected expiry is today. A good one to cook first.');
+    expect(body.items[0].message).toBe('Spinach: expected expiry is today.');
 
     setToday('2026-10-02');
     body = await feed();
     expect(body.items[0].type).toBe('OVERDUE');
-    expect(body.items[0].message).toContain('past its expected expiry');
+    expect(body.items[0].message).toBe('Spinach is past its expected expiry. Check it before using.');
     expect(body.items).toHaveLength(3);
   });
 
@@ -112,6 +142,39 @@ describe('delivery', () => {
     await add({ lifespanDays: 1 });
     await sweep();
     expect(await NotificationModel.countDocuments({ status: 'SENT' })).toBe(1);
+  });
+});
+
+describe('dispatchDue', () => {
+  it('runs at the start of GET /foods', async () => {
+    const { id } = await add({ lifespanDays: 1 });
+    await s.auth(api().get('/api/foods')).expect(200);
+    expect(await NotificationModel.findOne({ foodId: id, type: 'APPROACHING_EXPIRY' })).toMatchObject({ status: 'SENT' });
+  });
+
+  it('a reminder failure never affects the inventory or Cook First', async () => {
+    await add({ name: 'Chicken', lifespanDays: 1 });
+    vi.spyOn(notificationService, 'dispatchDue').mockRejectedValue(new Error('reminders down'));
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const list = await s.auth(api().get('/api/foods')).expect(200);
+    expect(logged).toHaveBeenCalledWith('Reminder dispatch failed', expect.any(Error));
+    expect(list.body.items.map((i: { name: string }) => i.name)).toEqual(['Chicken']);
+    const cf = await s.auth(api().get('/api/foods/cook-first')).expect(200);
+    expect(cf.body.items).toHaveLength(1);
+  });
+
+  it('does not send reminders for a type the user has since turned off', async () => {
+    const { id } = await add({ lifespanDays: 1 });
+    await UserModelForTests.updateOne({ _id: s.user.id }, { $set: { 'notificationPreferences.approachingExpiry': false } });
+    await feed();
+    expect(await NotificationModel.countDocuments({ foodId: id, status: 'SENT' })).toBe(0);
+  });
+
+  it('works out {n} at the moment of sending, not when scheduled', async () => {
+    await add({ name: 'Kale', lifespanDays: 10 }); // approaching scheduled for 10-06
+    setToday('2026-10-07');
+    const body = await feed();
+    expect(body.items[0].message).toBe('Kale: expected expiry in 2 days. Consider using it soon.');
   });
 });
 

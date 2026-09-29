@@ -57,32 +57,42 @@ export const screenCopy = {
   },
   dashboard: {
     sortedHint: 'Sorted by expected expiry, soonest first.',
-    emptyBody: 'Add the perishables in your fridge and we’ll order them by expected expiry.',
+    emptyInventory: 'Your fridge is empty. Add your first item.',
+    nothingUrgent: 'Nothing urgent right now.',
+    seeAll: 'See all',
+    loadError: 'Couldn’t load your food.',
   },
   cookFirst: {
     subtitle: 'What to use first, soonest expected expiry at the top',
     intro: (count: number) =>
-      `${count} ${count === 1 ? 'item is' : 'items are'} at or near expected expiry. Tap “Update” once you’ve cooked with something.`,
-    emptyTitle: 'Nothing needs attention right now',
-    emptyBody: (total: number) =>
-      total > 0
-        ? `None of your ${total} items are close to their expected expiry yet.`
-        : 'Add food to see what to cook first.',
+      `${count} ${count === 1 ? 'item is' : 'items are'} at or near expected expiry. Tap “Used” or “Wasted” once you’ve dealt with something.`,
+    empty: 'Nothing needs attention right now.',
+    loadError: 'Couldn’t load Cook First.',
   },
   form: {
-    previewLabel: 'Expected expiry (estimate)',
-    previewEmpty: 'Enter a lifespan to see it',
+    /** "Expected expiry: Thu, 1 Oct (2 days left)". */
+    preview: (date: string, remainingDays: number) =>
+      `Expected expiry: ${date} (${remainingDays === 0 ? 'today' : remainingText(remainingDays)})`,
+    previewEmpty: 'Expected expiry: enter a lifespan to see it',
     lifespanHint: 'Your own estimate, counted from the added date. 0 means it expires the same day.',
+    addNote: 'Add note',
   },
   detail: {
     savedToast: 'Saved. Expected expiry updated.',
+    closedNote: 'This item is closed and can’t be changed.',
   },
   reminders: {
     emptyBody:
       'You’ll get a reminder here when an item is getting close to its expected expiry, on the day, and if it passes.',
+    loadError: 'Couldn’t load your reminders.',
   },
   settings: {
     aboutTitle: 'About expected expiry',
+    preferencesError: 'Couldn’t load your reminder settings.',
+  },
+  history: {
+    loadMore: 'Load more',
+    loadError: 'Couldn’t load your history.',
   },
 };
 
@@ -103,11 +113,20 @@ export const reminderPreferenceCopy: Record<
 };
 
 export const actionCopy = {
-  USED: { label: 'Used it all', past: 'Marked as used' },
+  USED: { label: 'Used all', past: 'Marked as used' },
   PARTIALLY_USED: { label: 'Used some', past: 'Recorded partial use' },
-  WASTED: { label: 'Threw it away', past: 'Marked as wasted' },
-  REMOVED: { label: 'Remove from list', past: 'Removed' },
+  WASTED: { label: 'Wasted', past: 'Marked as wasted' },
+  REMOVED: { label: 'Remove', past: 'Removed' },
 } as const;
+
+/** The one small confirmation shown before an item is closed. */
+export const confirmCopy = {
+  USED: (name: string) => ({ title: `Mark ${name} as used?`, confirm: 'Yes, used all' }),
+  WASTED: (name: string) => ({ title: `Mark ${name} as wasted?`, confirm: 'Yes, wasted' }),
+  REMOVED: (name: string) => ({ title: `Remove ${name} from your list?`, confirm: 'Yes, remove' }),
+  detail: 'This closes the item. It stays in your history.',
+  cancel: 'Cancel',
+};
 
 export const historyActionLabel = {
   USED: 'Used',

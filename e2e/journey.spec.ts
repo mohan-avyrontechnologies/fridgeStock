@@ -11,14 +11,14 @@ async function register(page: Page, name = 'Asha Rao') {
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password').fill(PASSWORD);
   await page.getByRole('button', { name: 'Create account' }).click();
-  await expect(page.getByRole('heading', { name: `Hi, ${name.split(' ')[0]}` })).toBeVisible();
+  await expect(page.getByRole('heading', { name: `Hi, ${name}` })).toBeVisible();
   return email;
 }
 
 async function addFood(page: Page, name: string, lifespan: string, unit = 'pcs') {
-  await page.getByRole('link', { name: 'Add food' }).click();
+  await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
   await page.getByLabel('Food', { exact: true }).fill(name);
-  await page.getByRole('button', { name: unit, exact: true }).click();
+  await page.getByLabel('Unit').selectOption(unit);
   await page.getByLabel('Lifespan (days)').fill(lifespan);
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page).toHaveURL('/');
@@ -39,6 +39,20 @@ async function expectNoHorizontalScroll(page: Page) {
   expect(overflow).toBeLessThanOrEqual(0);
 }
 
+/** Every visible button, link and field must be at least 44 px tall (large tap targets). */
+async function expectLargeTapTargets(page: Page) {
+  const small = await page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>('a[href], button, input:not([type=hidden]), select, textarea')]
+      .filter((el) => {
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0 && !el.classList.contains('sr-only') && getComputedStyle(el).visibility !== 'hidden';
+      })
+      .filter((el) => el.getBoundingClientRect().height < 44)
+      .map((el) => `${el.tagName} "${(el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 30)}" ${Math.round(el.getBoundingClientRect().height)}px`),
+  );
+  expect(small).toEqual([]);
+}
+
 /** Viewport-sized, after animations settle, as the user would see it. */
 const REQUIRED_LINE = 'Expected expiry is an estimate to help you plan. Always check your food before eating it.';
 
@@ -46,12 +60,13 @@ async function shot(page: Page, name: string) {
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(350);
   await expectNoHorizontalScroll(page);
+  await expectLargeTapTargets(page);
   await page.screenshot({ path: `e2e/screenshots/${test.info().project.name}/${name}.png` });
 }
 
 test('register → add food → Cook First → mark used → history', async ({ page }) => {
   await register(page);
-  await expect(page.getByText('Nothing logged yet')).toBeVisible();
+  await expect(page.getByText('Your fridge is empty. Add your first item.')).toBeVisible();
   await shot(page, '01-empty-dashboard');
 
   await addFood(page, 'Eggs', '8');
@@ -83,9 +98,11 @@ test('register → add food → Cook First → mark used → history', async ({ 
   await shot(page, '03-cook-first');
 
   // One tap: used it all.
-  await page.getByRole('button', { name: 'Update Chicken' }).click();
+  await page.getByRole('button', { name: 'Used: Chicken' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: /Used all/ }).click();
+  await expect(page.getByRole('dialog', { name: 'Mark Chicken as used?' })).toBeVisible();
   await shot(page, '04-action-sheet');
-  await page.getByRole('dialog').getByRole('button', { name: /Used it all/ }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Yes, used all' }).click();
   await expect(page.getByText('Marked as used: Chicken')).toBeVisible();
   await expect(cookFirst).toHaveCount(2);
   await expect(page.getByRole('main')).not.toContainText('Chicken');
@@ -104,23 +121,21 @@ test('partial use keeps the item; throwing it away closes the rest', async ({ pa
   await shot(page, '06-food-detail');
 
   // The quantity defaults to 1 l; use 0.25.
-  await page.getByRole('button', { name: 'Used / wasted…' }).click();
-  await page.getByRole('dialog').getByRole('button', { name: /Used some/ }).click();
+  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Used some' }).click();
   await page.getByLabel(/How much did you use/).fill('0.25');
   await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('0.75 l')).toBeVisible();
 
-  // Another partial use, then throw the rest away: one tap closes the whole item.
-  await page.getByRole('button', { name: 'Used / wasted…' }).click();
-  await page.getByRole('dialog').getByRole('button', { name: /Used some/ }).click();
+  // Another partial use, then waste the rest (with one confirmation).
+  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Used some' }).click();
   await page.getByLabel(/How much did you use/).fill('0.25');
   await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('0.5 l')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Used / wasted…' }).click();
-  await page.getByRole('dialog').getByRole('button', { name: /Threw it away/ }).click();
+  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Wasted' }).click();
+  await page.getByRole('dialog', { name: 'Mark Milk as wasted?' }).getByRole('button', { name: 'Yes, wasted' }).click();
   await expect(page).toHaveURL('/');
-  await expect(page.getByText('Nothing logged yet')).toBeVisible();
+  await expect(page.getByText('Your fridge is empty. Add your first item.')).toBeVisible();
 
   await page.getByRole('link', { name: 'History' }).click();
   const history = page.getByRole('main').getByRole('listitem').filter({ hasText: 'Milk' });
@@ -131,7 +146,7 @@ test('partial use keeps the item; throwing it away closes the rest', async ({ pa
 
 test('validation messages and the expected-expiry preview', async ({ page }) => {
   await register(page, 'Chen Wei');
-  await page.getByRole('link', { name: 'Add food' }).click();
+  await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.getByText('Food name is required.')).toBeVisible();
   await expect(page.getByText('Lifespan must be a whole number of days from 0 to 365.')).toBeVisible();
@@ -153,7 +168,7 @@ test('validation messages and the expected-expiry preview', async ({ page }) => 
 test('reminders appear under the bell', async ({ page }) => {
   await register(page, 'Dana Ruiz');
   await addFood(page, 'Prawns', '1', 'g');
-  await page.getByRole('link', { name: /Reminders/ }).click();
+  await page.getByRole('link', { name: /Reminders/ }).first().click();
   await expect(page.getByText('Prawns: expected expiry in 1 day', { exact: false })).toBeVisible();
   await expectNoSafetyClaim(page);
   await shot(page, '08-reminders');
@@ -172,7 +187,7 @@ test("one user never sees another user's food", async ({ browser }) => {
   const bCtx = await browser.newContext();
   const b = await bCtx.newPage();
   await register(b, 'Bo Second');
-  await expect(b.getByText('Nothing logged yet')).toBeVisible();
+  await expect(b.getByText('Your fridge is empty. Add your first item.')).toBeVisible();
   await b.goto(foodUrl!);
   await expect(b.getByText('This item doesn’t exist or isn’t yours.')).toBeVisible();
   await expect(b.locator('body')).not.toContainText('Secret salmon');
@@ -181,7 +196,7 @@ test("one user never sees another user's food", async ({ browser }) => {
 
 test('settings: reminder switches persist; sign out returns to login', async ({ page }) => {
   await register(page, 'Eli Stone');
-  await page.getByRole('link', { name: 'Settings' }).click();
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
   const onTheDay = page.getByRole('switch', { name: /On the day/ });
   await expect(onTheDay).toBeChecked();
   await onTheDay.uncheck({ force: true });
@@ -190,7 +205,7 @@ test('settings: reminder switches persist; sign out returns to login', async ({ 
   await page.reload();
   await expect(page.getByRole('switch', { name: /On the day/ })).not.toBeChecked();
 
-  await page.getByRole('button', { name: 'Sign out' }).click();
+  await page.getByRole('button', { name: 'Log out' }).click();
   await expect(page).toHaveURL('/login');
   await shot(page, '10-login');
 });

@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { FoodForm } from '../components/FoodForm';
-import { EstimateNote } from '../components/Urgency';
 import { useFoodStore } from '../stores/foodStore';
 import { useToastStore } from '../stores/toastStore';
 
@@ -24,7 +23,6 @@ export function AddFoodPage() {
             if (!addAnother) navigate('/');
           }}
         />
-        <EstimateNote />
       </PageBody>
     </>
   );

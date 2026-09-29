@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { api } from '../api/client';
-import type { UsageAction, UsageRecord } from '@cook-first/shared';
+import { formatDisplay, type UsageAction, type UsageRecord } from '@cook-first/shared';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { Button, EmptyState, Spinner } from '../components/ui';
-import { historyActionLabel } from '../copy';
-import { formatInstant, formatQuantity } from '../lib/format';
+import { historyActionLabel, screenCopy } from '../copy';
+import { formatQuantity } from '../lib/format';
 
 const ACTIONS: UsageAction[] = ['USED', 'PARTIALLY_USED', 'WASTED', 'REMOVED'];
 const ACTION_STYLE: Record<UsageAction, string> = {
@@ -29,7 +29,7 @@ export function HistoryPage() {
         setTotal(page.total);
         setCounts(page.counts);
       })
-      .catch(() => setError('Couldn’t load your history.'));
+      .catch(() => setError(screenCopy.history.loadError));
   }, []);
 
   async function more() {
@@ -66,7 +66,7 @@ export function HistoryPage() {
                     <p className="text-sm text-muted">
                       {formatQuantity(r.quantityUsed, r.unit)}
                       {r.quantityRemaining > 0 && ` · ${formatQuantity(r.quantityRemaining, r.unit)} left`} ·{' '}
-                      {formatInstant(r.recordedAt)}
+                      {formatDisplay(r.date)}
                     </p>
                   </div>
                   <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${ACTION_STYLE[r.action]}`}>
@@ -79,7 +79,7 @@ export function HistoryPage() {
         )}
         {records && records.length < total && (
           <Button variant="secondary" className="w-full" onClick={more}>
-            Show older
+            {screenCopy.history.loadMore}
           </Button>
         )}
       </PageBody>

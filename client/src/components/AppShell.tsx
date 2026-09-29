@@ -46,7 +46,22 @@ export function AppShell() {
   );
 }
 
-export function PageHeader({ title, subtitle, back }: { title: string; subtitle?: ReactNode; back?: string }) {
+/**
+ * Screen header. The dashboard passes `showIcons` to show the bell (with the
+ * unread count) and the settings icon at every screen size; elsewhere the bell
+ * shows on phones only, because the desktop sidebar has it.
+ */
+export function PageHeader({
+  title,
+  subtitle,
+  back,
+  showIcons = false,
+}: {
+  title: string;
+  subtitle?: ReactNode;
+  back?: string;
+  showIcons?: boolean;
+}) {
   const unread = useNotificationStore((s) => s.unread);
   return (
     <header className="top-inset sticky top-0 z-30 border-b border-line/70 bg-paper/95 backdrop-blur lg:static lg:border-0 lg:bg-transparent">
@@ -62,15 +77,19 @@ export function PageHeader({ title, subtitle, back }: { title: string; subtitle?
           <h1 className="truncate text-xl font-bold tracking-tight lg:text-3xl">{title}</h1>
           {subtitle && <p className="truncate text-sm text-muted lg:mt-1 lg:text-base">{subtitle}</p>}
         </div>
-        {/* The sidebar carries the bell on large screens. */}
         <Link
           to="/notifications"
           aria-label={unread ? `Reminders, ${unread} unread` : 'Reminders'}
-          className="relative grid size-11 place-items-center rounded-full hover:bg-brand-soft lg:hidden"
+          className={`relative grid size-11 place-items-center rounded-full hover:bg-brand-soft ${showIcons ? '' : 'lg:hidden'}`}
         >
           <BellIcon />
           <UnreadDot count={unread} className="absolute top-1.5 right-1.5" />
         </Link>
+        {showIcons && (
+          <Link to="/settings" aria-label="Open settings" className="grid size-11 place-items-center rounded-full hover:bg-brand-soft">
+            <GearIcon />
+          </Link>
+        )}
       </div>
     </header>
   );
@@ -106,7 +125,7 @@ function Sidebar() {
 
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-line bg-card px-4 py-6 lg:flex">
-      <Link to="/" className="flex items-center gap-2.5 px-2">
+      <Link to="/" className="flex min-h-11 items-center gap-2.5 px-2">
         <img src="/icon.svg" alt="" className="size-9" />
         <span className="text-lg font-bold tracking-tight">Cook First</span>
       </Link>
@@ -178,14 +197,13 @@ function BottomNav() {
         <NavItem to="/" label="Home" icon={<HomeIcon />} end />
         <NavItem to="/cook-first" label="Cook First" icon={<PanIcon />} badge={cookFirstCount} />
         <li className="flex justify-center">
-          <Link
-            to="/add"
-            aria-label="Add food"
-            className="-mt-5 grid size-14 place-items-center rounded-full bg-brand text-white shadow-lg shadow-brand/30 hover:bg-brand-hover"
-          >
-            <svg aria-hidden viewBox="0 0 24 24" className="size-7 fill-none stroke-current stroke-[2.5]">
-              <path d="M12 5v14M5 12h14" strokeLinecap="round" />
-            </svg>
+          <Link to="/add" className="flex flex-col items-center gap-0.5 pb-1.5 text-[11px] font-semibold text-brand">
+            <span className="-mt-5 grid size-14 place-items-center rounded-full bg-brand text-white shadow-lg shadow-brand/30 hover:bg-brand-hover">
+              <svg aria-hidden viewBox="0 0 24 24" className="size-7 fill-none stroke-current stroke-[2.5]">
+                <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+              </svg>
+            </span>
+            Add food
           </Link>
         </li>
         <NavItem to="/history" label="History" icon={<ListIcon />} />

@@ -8,16 +8,15 @@ import { useFoodStore } from '../stores/foodStore';
 export function CookFirstPage() {
   const cookFirst = useFoodStore((s) => s.cookFirst);
   const error = useFoodStore((s) => s.error);
-  const total = useFoodStore((s) => s.inventory?.items.length ?? 0);
 
   return (
     <>
       <PageHeader title="Cook First" subtitle={screenCopy.cookFirst.subtitle} />
       <PageBody>
         {!cookFirst && !error && <Spinner />}
-        {error && !cookFirst && <EmptyState title="Couldn’t load Cook First">{error}</EmptyState>}
+        {error && !cookFirst && <EmptyState title={screenCopy.cookFirst.loadError}>{error}</EmptyState>}
         {cookFirst && cookFirst.length === 0 && (
-          <EmptyState title={screenCopy.cookFirst.emptyTitle}>{screenCopy.cookFirst.emptyBody(total)}</EmptyState>
+          <EmptyState title={screenCopy.cookFirst.empty} />
         )}
         {cookFirst && cookFirst.length > 0 && (
           <>

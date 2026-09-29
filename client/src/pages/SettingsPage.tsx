@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { api } from '../api/client';
 import type { NotificationPreferences } from '@cook-first/shared';
 import { PageBody, PageHeader } from '../components/AppShell';
@@ -16,10 +17,11 @@ export function SettingsPage() {
   const { user, setUser, logout } = useAuthStore();
   const toast = useToastStore((s) => s.show);
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(user?.notificationPreferences ?? null);
+  const [prefsError, setPrefsError] = useState(false);
   const deviceZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
   useEffect(() => {
-    api.preferences().then(setPrefs).catch(() => {});
+    api.preferences().then(setPrefs, () => setPrefsError(true));
   }, []);
 
   async function toggle(key: keyof NotificationPreferences) {
@@ -47,8 +49,16 @@ export function SettingsPage() {
       <PageHeader title="Settings" />
       <PageBody narrow>
         <section className="rounded-2xl border border-line bg-card p-4">
-          <p className="font-semibold">{user?.name}</p>
-          <p className="text-sm text-muted">{user?.email}</p>
+          <dl className="space-y-2">
+            <div>
+              <dt className="text-sm text-muted">Name</dt>
+              <dd className="font-semibold">{user?.name}</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-muted">Email</dt>
+              <dd className="font-semibold">{user?.email}</dd>
+            </div>
+          </dl>
           <p className="mt-3 text-sm text-muted">
             “Today” is based on <span className="font-medium text-ink">{user?.timeZone}</span>.
           </p>
@@ -62,6 +72,11 @@ export function SettingsPage() {
         <section>
           <h2 className="mb-1 text-lg font-semibold">Reminders</h2>
           <p className="mb-3 text-sm text-muted">Shown in the app under the bell. Turn off any you don’t want.</p>
+          {prefsError && (
+            <p role="alert" className="mb-3 rounded-xl bg-past px-3.5 py-3 text-sm text-past-ink">
+              {screenCopy.settings.preferencesError}
+            </p>
+          )}
           <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
             {PREFS.map(({ key, title, detail }) => (
               <li key={key}>
@@ -93,8 +108,16 @@ export function SettingsPage() {
           <EstimateNote />
         </section>
 
+        <Link
+          to="/history"
+          className="flex min-h-14 items-center justify-between rounded-2xl border border-line bg-card px-4 font-medium hover:bg-paper"
+        >
+          History
+          <span aria-hidden className="text-muted">›</span>
+        </Link>
+
         <Button variant="danger" className="w-full" onClick={logout}>
-          Sign out
+          Log out
         </Button>
       </PageBody>
     </>

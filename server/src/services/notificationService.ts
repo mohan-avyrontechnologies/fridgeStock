@@ -1,7 +1,8 @@
 import {
+  REMINDER_TYPES,
   addDays,
   diffDays,
-  formatDisplay,
+  type DateString,
   type NotificationFeed,
   type NotificationStatus,
   type NotificationPreferences,
@@ -38,16 +39,26 @@ export const deliveryChannel = {
   async deliver(_notification: NotificationDoc): Promise<void> {},
 };
 
-function stagesFor(expiryDate: string) {
-  return [
-    {
-      type: 'APPROACHING_EXPIRY' as const,
-      starts: addDays(expiryDate, -APPROACHING_EXPIRY_DAYS),
-      endsBefore: expiryDate,
-    },
-    { type: 'DUE' as const, starts: expiryDate, endsBefore: addDays(expiryDate, 1) },
-    { type: 'OVERDUE' as const, starts: addDays(expiryDate, 1), endsBefore: null },
-  ];
+/**
+ * When each reminder type is scheduled, for an item with this expiry date:
+ * - APPROACHING_EXPIRY: 3 days before expiry, or today if that has passed;
+ *   only if that date is before the expiry date.
+ * - DUE: on the expiry date, only if that is today or later.
+ * - OVERDUE: the day after expiry, or today if that has passed.
+ * Returns null when the type shouldn't be created.
+ */
+export function scheduledDateFor(type: ReminderType, expiryDate: DateString, today: DateString): DateString | null {
+  const notBefore = (date: DateString) => (date < today ? today : date);
+  switch (type) {
+    case 'APPROACHING_EXPIRY': {
+      const date = notBefore(addDays(expiryDate, -APPROACHING_EXPIRY_DAYS));
+      return date < expiryDate ? date : null;
+    }
+    case 'DUE':
+      return expiryDate >= today ? expiryDate : null;
+    case 'OVERDUE':
+      return notBefore(addDays(expiryDate, 1));
+  }
 }
 
 export async function cancelForFood(userId: Types.ObjectId, foodId: Types.ObjectId): Promise<void> {
@@ -64,12 +75,12 @@ export async function scheduleForFood(food: FoodItemDoc, user: UserDoc): Promise
   if (food.status !== 'ACTIVE') return;
 
   const today = clock.today(user.timeZone);
-  for (const stage of stagesFor(food.expiryDate)) {
-    if (!user.notificationPreferences[PREFERENCE_FOR[stage.type]]) continue;
-    if (stage.endsBefore && stage.endsBefore <= today) continue;
-    const scheduledDate = stage.starts > today ? stage.starts : today;
+  for (const type of REMINDER_TYPES) {
+    if (!user.notificationPreferences[PREFERENCE_FOR[type]]) continue;
+    const scheduledDate = scheduledDateFor(type, food.expiryDate, today);
+    if (!scheduledDate) continue;
     await NotificationModel.updateOne(
-      { userId: user._id, foodId: food._id, type: stage.type, expiryDate: food.expiryDate },
+      { userId: user._id, foodId: food._id, type, expiryDate: food.expiryDate },
       { $setOnInsert: { scheduledDate, status: 'PENDING', attempts: 0 } },
       { upsert: true },
     );
@@ -81,20 +92,26 @@ async function rescheduleAllForUser(user: UserDoc): Promise<void> {
   for (const food of foods) await scheduleForFood(food, user);
 }
 
+/** Fills in the message from the server copy file; {n} is calculated now, at the moment of sending. */
 function messageFor(type: ReminderType, food: FoodItemDoc, today: string): string {
-  const expiryLabel = formatDisplay(food.expiryDate);
   switch (type) {
     case 'APPROACHING_EXPIRY':
-      return reminderCopy.APPROACHING_EXPIRY(food.name, diffDays(today, food.expiryDate), expiryLabel);
+      return reminderCopy.APPROACHING_EXPIRY(food.name, diffDays(today, food.expiryDate));
     case 'DUE':
       return reminderCopy.DUE(food.name);
     case 'OVERDUE':
-      return reminderCopy.OVERDUE(food.name, expiryLabel);
+      return reminderCopy.OVERDUE(food.name);
   }
 }
 
-/** Delivers every reminder for this user whose scheduled day has arrived. */
-export async function dispatchForUser(user: UserDoc): Promise<void> {
+/**
+ * Marks this user's pending reminders as sent once their scheduled date has
+ * arrived in the user's time zone, provided the item is still active and the
+ * reminder type is still enabled. A failed send is marked FAILED and retried
+ * on later runs until it has been attempted MAX_DELIVERY_ATTEMPTS (3) times.
+ * Runs at the start of GET /notifications and GET /foods, and hourly.
+ */
+export async function dispatchDue(user: UserDoc): Promise<void> {
   const today = clock.today(user.timeZone);
   const due = await NotificationModel.find({
     userId: user._id,
@@ -135,7 +152,7 @@ export async function dispatchForUser(user: UserDoc): Promise<void> {
  * Background sweep across every user with reminders waiting to go out. This
  * is the one query not scoped to a signed-in user (a system job has none); it
  * only collects user ids, and each user's reminders are then read by
- * dispatchForUser with that user's id.
+ * dispatchDue with that user's id.
  */
 export async function sweep(): Promise<void> {
   const horizon = clock.today(EARLIEST_ZONE);
@@ -146,7 +163,7 @@ export async function sweep(): Promise<void> {
   });
   for (const id of userIds) {
     const user = await UserModel.findById(id);
-    if (user) await dispatchForUser(user);
+    if (user) await dispatchDue(user);
   }
 }
 
@@ -158,7 +175,7 @@ export const FEED_LIMIT = 50;
 
 /** Sends any reminders that are due, then returns up to 50 SENT or FAILED ones, newest first. */
 export async function listFeed(user: UserDoc): Promise<NotificationFeed> {
-  await dispatchForUser(user);
+  await dispatchDue(user);
   const filter = { userId: user._id, ...VISIBLE };
   const [items, unread] = await Promise.all([
     NotificationModel.find(filter).sort({ scheduledDate: -1, sentAt: -1, _id: -1 }).limit(FEED_LIMIT),
@@ -168,7 +185,7 @@ export async function listFeed(user: UserDoc): Promise<NotificationFeed> {
 }
 
 export async function unreadCount(user: UserDoc): Promise<{ unread: number }> {
-  await dispatchForUser(user);
+  await dispatchDue(user);
   const unread = await NotificationModel.countDocuments({ userId: user._id, ...VISIBLE, readAt: null });
   return { unread };
 }

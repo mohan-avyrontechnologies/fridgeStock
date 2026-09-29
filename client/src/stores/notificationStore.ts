@@ -7,6 +7,7 @@ interface NotificationState {
   items: AppNotification[];
   unread: number;
   loading: boolean;
+  error: boolean;
   fetchUnread: () => Promise<void>;
   /**
    * Called when the Reminders screen opens: loads the feed, then marks every
@@ -20,6 +21,7 @@ export const useNotificationStore = create<NotificationState>()((set) => ({
   items: [],
   unread: 0,
   loading: false,
+  error: false,
 
   async fetchUnread() {
     try {
@@ -31,14 +33,14 @@ export const useNotificationStore = create<NotificationState>()((set) => ({
   },
 
   async openFeed() {
-    set({ loading: true });
+    set({ loading: true, error: false });
     try {
       const page = await api.notifications();
       set({ items: page.items, loading: false });
       if (page.unread > 0) await api.markAllRead();
       set({ unread: 0 });
     } catch {
-      set({ loading: false });
+      set({ loading: false, error: true });
     }
   },
 }));

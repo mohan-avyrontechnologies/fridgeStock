@@ -69,7 +69,7 @@ export function Chip({
     <button
       type="button"
       aria-pressed={selected}
-      className={`min-h-10 shrink-0 rounded-full border px-3.5 text-sm font-medium transition-colors ${
+      className={`min-h-11 shrink-0 rounded-full border px-3.5 text-sm font-medium transition-colors ${
         selected ? 'border-brand bg-brand text-white' : 'border-line bg-card text-ink hover:border-brand/50'
       }`}
       {...props}
@@ -106,10 +106,12 @@ export function Spinner({ label = 'Loading' }: { label?: string }) {
   );
 }
 
-export function SectionTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
+export function SectionTitle({ children, action, id }: { children: ReactNode; action?: ReactNode; id?: string }) {
   return (
-    <div className="mb-3 flex items-baseline justify-between">
-      <h2 className="text-lg font-semibold text-ink">{children}</h2>
+    <div className="mb-3 flex items-center justify-between">
+      <h2 id={id} className="text-lg font-semibold text-ink">
+        {children}
+      </h2>
       {action}
     </div>
   );

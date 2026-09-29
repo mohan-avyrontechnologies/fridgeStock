@@ -1,34 +1,34 @@
+import { formatDisplay, type Urgency } from '@cook-first/shared';
 import { Link } from 'react-router';
-import type { Urgency } from '@cook-first/shared';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { FoodList } from '../components/FoodCard';
 import { EstimateNote, URGENCY_STYLE } from '../components/Urgency';
 import { Button, EmptyState, SectionTitle, Spinner } from '../components/ui';
 import { screenCopy, urgencyCopy, urgencyShortLabel } from '../copy';
-import { formatDisplay } from '@cook-first/shared';
 import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
 
-/** How many Cook First items the phone dashboard previews (unrelated to urgency). */
-const PREVIEW_COUNT = 3;
+/** How many urgent items the dashboard's Cook First section shows (unrelated to the urgency threshold). */
+const COOK_FIRST_PREVIEW = 3;
 
+/** Summary bar order: past expected expiry, due today, use soon, not urgent. */
 const ORDER: Urgency[] = ['OVERDUE', 'DUE', 'APPROACHING_EXPIRY', 'NOT_URGENT'];
 
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const { inventory, cookFirst, error, refresh } = useFoodStore();
-  const firstName = user?.name.split(' ')[0];
 
   return (
     <>
       <PageHeader
-        title={firstName ? `Hi, ${firstName}` : 'Your fridge'}
+        title={user ? `Hi, ${user.name}` : 'Your fridge'}
         subtitle={inventory ? formatDisplay(inventory.today) : undefined}
+        showIcons
       />
       <PageBody>
         {!inventory && !error && <Spinner />}
         {error && !inventory && (
-          <EmptyState title="Couldn’t load your food">
+          <EmptyState title={screenCopy.dashboard.loadError}>
             <p>{error}</p>
             <Button variant="secondary" className="mt-4" onClick={() => refresh()}>
               Try again
@@ -50,46 +50,41 @@ export function DashboardPage() {
               </ul>
             </section>
 
-            {inventory.items.length === 0 ? (
-              <EmptyState title="Nothing logged yet">
-                <p>{screenCopy.dashboard.emptyBody}</p>
-                <Link to="/add" className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-brand px-4 font-semibold text-white">
-                  Add your first item
-                </Link>
-              </EmptyState>
-            ) : (
-              <div className="grid gap-7 lg:grid-cols-2 lg:items-start lg:gap-8">
-                {cookFirst && cookFirst.length > 0 && (
-                  <section>
-                    <SectionTitle
-                      action={
-                        <Link to="/cook-first" className="text-sm font-semibold text-brand">
-                          Open Cook First
-                        </Link>
-                      }
-                    >
-                      Needs attention
-                    </SectionTitle>
-                    {/* Phones show the top three; wide screens have room for all of them. */}
-                    <div className="lg:hidden">
-                      <FoodList items={cookFirst.slice(0, PREVIEW_COUNT)} />
-                      {cookFirst.length > PREVIEW_COUNT && (
-                        <p className="mt-2 text-sm text-muted">+{cookFirst.length - PREVIEW_COUNT} more in Cook First</p>
-                      )}
-                    </div>
-                    <div className="hidden lg:block">
-                      <FoodList items={cookFirst} />
-                    </div>
-                  </section>
+            <div className="grid gap-7 lg:grid-cols-2 lg:items-start lg:gap-8">
+              <section aria-labelledby="cook-first-heading">
+                <SectionTitle
+                  id="cook-first-heading"
+                  action={
+                    <Link to="/cook-first" className="inline-flex min-h-11 items-center text-sm font-semibold text-brand">
+                      {screenCopy.dashboard.seeAll}
+                    </Link>
+                  }
+                >
+                  Cook First
+                </SectionTitle>
+                {cookFirst && cookFirst.length > 0 ? (
+                  <FoodList items={cookFirst.slice(0, COOK_FIRST_PREVIEW)} />
+                ) : (
+                  <EmptyState title={screenCopy.dashboard.nothingUrgent} />
                 )}
+              </section>
 
-                <section className={cookFirst && cookFirst.length > 0 ? '' : 'lg:col-span-2'}>
-                  <SectionTitle>All food ({inventory.items.length})</SectionTitle>
-                  <p className="-mt-2 mb-3 text-sm text-muted">{screenCopy.dashboard.sortedHint}</p>
-                  <FoodList items={inventory.items} columns={cookFirst && cookFirst.length > 0 ? 1 : 2} />
-                </section>
-              </div>
-            )}
+              <section aria-labelledby="all-food-heading">
+                <SectionTitle id="all-food-heading">All food ({inventory.items.length})</SectionTitle>
+                {inventory.items.length === 0 ? (
+                  <EmptyState title={screenCopy.dashboard.emptyInventory}>
+                    <Link to="/add" className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-brand px-4 font-semibold text-white">
+                      Add food
+                    </Link>
+                  </EmptyState>
+                ) : (
+                  <>
+                    <p className="-mt-2 mb-3 text-sm text-muted">{screenCopy.dashboard.sortedHint}</p>
+                    <FoodList items={inventory.items} />
+                  </>
+                )}
+              </section>
+            </div>
             <EstimateNote />
           </>
         )}

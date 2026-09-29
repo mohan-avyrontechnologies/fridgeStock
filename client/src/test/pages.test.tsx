@@ -50,7 +50,8 @@ describe('Dashboard', () => {
       http.get(`${API_URL}/foods/cook-first`, () => HttpResponse.json({ today: '2026-09-29', items: [] })),
     );
     renderSignedIn('/', <DashboardPage />);
-    expect(await screen.findByText('Nothing logged yet')).toBeInTheDocument();
+    expect(await screen.findByText('Your fridge is empty. Add your first item.')).toBeInTheDocument();
+    expect(screen.getByText('Nothing urgent right now.')).toBeInTheDocument();
   });
 
   it('signs out when the token is rejected', async () => {
@@ -82,7 +83,7 @@ describe('Cook First', () => {
       }),
     );
     renderSignedIn('/cook-first', <CookFirstPage />);
-    await user.click(await screen.findByRole('button', { name: 'Update Spinach' }));
+    await user.click(await screen.findByRole('button', { name: 'Used: Spinach' }));
     const dialog = screen.getByRole('dialog', { name: 'Spinach' });
     await user.click(within(dialog).getByRole('button', { name: /Used some/ }));
     await user.type(within(dialog).getByLabelText(/How much did you use/), '0.5');
@@ -111,7 +112,7 @@ describe('Add food', () => {
     );
     renderSignedIn('/add', <AddFoodPage />);
     await user.type(screen.getByLabelText('Food'), 'Spinach');
-    await user.click(screen.getByRole('button', { name: 'bunch' }));
+    await user.selectOptions(screen.getByLabelText('Unit'), 'bunch');
     await user.click(screen.getByRole('button', { name: '2 days' }));
     expect(screen.getByText(/2 days left/)).toBeInTheDocument();
 
@@ -199,9 +200,10 @@ describe('urgency is never shown by colour alone', () => {
 describe('Add food units and notes', () => {
   it('offers exactly the seven units and no free-text unit', () => {
     renderSignedIn('/add', <AddFoodPage />);
-    const units = within(screen.getByRole('group', { name: 'Unit' })).getAllByRole('button');
-    expect(units.map((b) => b.textContent)).toEqual(['pcs', 'g', 'kg', 'ml', 'l', 'pack', 'bunch']);
-    expect(screen.queryByText(/Other/)).not.toBeInTheDocument();
+    const select = screen.getByLabelText('Unit') as HTMLSelectElement;
+    expect(select.tagName).toBe('SELECT');
+    expect([...select.options].map((o) => o.value)).toEqual(['pcs', 'g', 'kg', 'ml', 'l', 'pack', 'bunch']);
+    expect(select.value).toBe('pcs');
   });
 
   it('sends optional notes', async () => {
@@ -216,6 +218,8 @@ describe('Add food units and notes', () => {
     renderSignedIn('/add', <AddFoodPage />);
     await user.type(screen.getByLabelText('Food'), 'Paneer');
     await user.click(screen.getByRole('button', { name: '2 days' }));
+    expect(screen.queryByLabelText(/Notes/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Add note/ }));
     await user.type(screen.getByLabelText(/Notes/), 'Opened, top shelf');
     await user.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(body).toMatchObject({ name: 'Paneer', notes: 'Opened, top shelf' }));
@@ -244,5 +248,93 @@ describe('Reminders screen', () => {
     expect(await screen.findByText('Spinach: 2 days left.')).toBeInTheDocument();
     await waitFor(() => expect(markedRead).toBe(true));
     expect(screen.getByText('New')).toBeInTheDocument();
+  });
+});
+
+describe('dashboard layout', () => {
+  it('has the name, a bell with the unread count, a settings icon, and Cook First limited to three with "See all"', async () => {
+    server.use(
+      http.get(`${API_URL}/foods/cook-first`, () =>
+        HttpResponse.json({
+          today: '2026-09-29',
+          items: ['a', 'b', 'c', 'e'].map((id) => item({ id, name: `Urgent ${id}`, urgency: 'APPROACHING_EXPIRY', remainingDays: 2 })),
+        }),
+      ),
+    );
+    renderSignedIn('/', <DashboardPage />);
+    expect(await screen.findByRole('heading', { name: 'Hi, Asha Rao' })).toBeInTheDocument();
+    expect((await screen.findAllByRole('link', { name: 'Reminders, 2 unread' })).length).toBeGreaterThan(0);
+    expect(screen.getByRole('link', { name: 'Open settings' })).toHaveAttribute('href', '/settings');
+    const section = screen.getByRole('region', { name: 'Cook First' });
+    expect(within(section).getAllByRole('listitem')).toHaveLength(3);
+    expect(within(section).getByRole('link', { name: 'See all' })).toHaveAttribute('href', '/cook-first');
+    expect(screen.getAllByRole('link', { name: /Add food/ }).length).toBeGreaterThan(0);
+  });
+});
+
+describe('Add food form', () => {
+  it('focuses the name field, defaults quantity to 1, unit to pcs and the date to today', () => {
+    renderSignedIn('/add', <AddFoodPage />);
+    expect(screen.getByLabelText('Food')).toHaveFocus();
+    expect(screen.getByLabelText('Quantity')).toHaveValue(1);
+    expect(screen.getByLabelText('Unit')).toHaveValue('pcs');
+    expect((screen.getByLabelText('Added on') as HTMLInputElement).value).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    for (const d of ['1 day', '2 days', '3 days', '5 days', '7 days', '14 days']) {
+      expect(screen.getByRole('button', { name: d })).toBeInTheDocument();
+    }
+  });
+
+  it('shows the live preview as "Expected expiry: <date> (<n> days left)" with the disclaimer', async () => {
+    const user = userEvent.setup();
+    renderSignedIn('/add', <AddFoodPage />);
+    await user.click(screen.getByRole('button', { name: '2 days' }));
+    expect(screen.getByText(/^Expected expiry: \w{3}, \d{1,2} \w{3} \(2 days left\)$/)).toBeInTheDocument();
+    expect(screen.getByText(REQUIRED_LINE)).toBeInTheDocument();
+  });
+});
+
+describe('closing actions need one confirmation', () => {
+  it('Wasted on a card asks first, and only then calls the API', async () => {
+    const user = userEvent.setup();
+    let wasted = false;
+    server.use(
+      http.post(`${API_URL}/foods/c/waste`, () => {
+        wasted = true;
+        return HttpResponse.json({ food: item({ id: 'c', status: 'WASTED' }), usageRecord: {} });
+      }),
+    );
+    renderSignedIn('/cook-first', <CookFirstPage />);
+    await user.click(await screen.findByRole('button', { name: 'Wasted: Spinach' }));
+    const dialog = screen.getByRole('dialog', { name: 'Mark Spinach as wasted?' });
+    expect(wasted).toBe(false);
+    await user.click(within(dialog).getByRole('button', { name: 'Yes, wasted' }));
+    await waitFor(() => expect(wasted).toBe(true));
+  });
+
+  it('Cancel closes the confirmation without doing anything', async () => {
+    const user = userEvent.setup();
+    renderSignedIn('/cook-first', <CookFirstPage />);
+    await user.click(await screen.findByRole('button', { name: 'Used: Spinach' }));
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /Used all/ }));
+    const dialog = screen.getByRole('dialog', { name: 'Mark Spinach as used?' });
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+});
+
+describe('Cook First', () => {
+  it('shows "Nothing needs attention right now." when nothing is urgent', async () => {
+    server.use(http.get(`${API_URL}/foods/cook-first`, () => HttpResponse.json({ today: '2026-09-29', items: [] })));
+    renderSignedIn('/cook-first', <CookFirstPage />);
+    expect(await screen.findByText('Nothing needs attention right now.')).toBeInTheDocument();
+  });
+});
+
+describe('error states', () => {
+  it('the Reminders screen shows an error rather than "No reminders yet" when loading fails', async () => {
+    server.use(http.get(`${API_URL}/notifications`, () => HttpResponse.json({ error: { code: 'INTERNAL', message: 'x' } }, { status: 500 })));
+    renderSignedIn('/notifications', <NotificationsPage />);
+    expect(await screen.findByText('Couldn’t load your reminders.')).toBeInTheDocument();
+    expect(screen.queryByText('No reminders yet')).not.toBeInTheDocument();
   });
 });

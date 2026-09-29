@@ -2,12 +2,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { api, ApiError } from '../api/client';
 import type { FoodItem } from '@cook-first/shared';
-import { ActionSheet } from '../components/ActionSheet';
+import { ActionSheet, type SheetStep } from '../components/ActionSheet';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { FoodForm } from '../components/FoodForm';
 import { EstimateNote, UrgencyBadge } from '../components/Urgency';
 import { Button, EmptyState, Spinner } from '../components/ui';
 import {
+  actionCopy,
   expectedExpiryLabel,
   historyActionLabel,
   pastExpectedExpiryNote,
@@ -28,7 +29,7 @@ export function FoodDetailPage() {
   const [food, setFood] = useState<FoodItem | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheet, setSheet] = useState<SheetStep | null>(null);
 
   const load = useCallback(
     (isCurrent: () => boolean = () => true) =>
@@ -119,6 +120,7 @@ export function FoodDetailPage() {
 
               <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-line pt-4 text-sm">
                 <Detail label={active ? 'Quantity left' : 'Quantity'} value={formatQuantity(food.quantity, food.unit)} />
+                <Detail label="Unit" value={food.unit} />
                 <Detail label={expectedExpiryLabel} value={formatDisplay(food.expiryDate)} />
                 <Detail label="Added on" value={formatDisplay(food.addedDate)} />
                 <Detail label="Lifespan" value={`${food.lifespanDays} ${food.lifespanDays === 1 ? 'day' : 'days'}`} />
@@ -135,23 +137,37 @@ export function FoodDetailPage() {
               <p className="rounded-2xl bg-past px-4 py-3 text-sm text-past-ink">{pastExpectedExpiryNote}</p>
             )}
 
-            {active && (
-              <div className="grid grid-cols-2 gap-2">
-                <Button onClick={() => setSheetOpen(true)}>Used / wasted…</Button>
-                <Button variant="secondary" onClick={() => setEditing(true)}>
+            {active ? (
+              <section aria-label="Actions" className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <Button onClick={() => setSheet({ confirm: 'USED' })}>{actionCopy.USED.label}</Button>
+                  <Button variant="secondary" onClick={() => setSheet('amount')}>
+                    {actionCopy.PARTIALLY_USED.label}
+                  </Button>
+                  <Button variant="danger" onClick={() => setSheet({ confirm: 'WASTED' })}>
+                    {actionCopy.WASTED.label}
+                  </Button>
+                  <Button variant="secondary" onClick={() => setSheet({ confirm: 'REMOVED' })}>
+                    {actionCopy.REMOVED.label}
+                  </Button>
+                </div>
+                <Button variant="ghost" className="w-full" onClick={() => setEditing(true)}>
                   Edit
                 </Button>
-              </div>
+              </section>
+            ) : (
+              <p className="rounded-2xl bg-calm px-4 py-3 text-sm text-calm-ink">{screenCopy.detail.closedNote}</p>
             )}
             <EstimateNote />
           </>
         )}
       </PageBody>
-      {sheetOpen && (
+      {sheet && (
         <ActionSheet
           item={food}
+          initialStep={sheet}
           onClose={(closed) => {
-            setSheetOpen(false);
+            setSheet(null);
             if (closed) navigate('/');
             else void load();
           }}

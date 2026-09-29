@@ -23,7 +23,17 @@ export default defineConfig({
   },
   // Every journey runs on a phone and on a desktop screen.
   projects: [
-    { name: 'mobile', use: { ...devices['Pixel 7'] } },
+    // A 375 px-wide phone (the narrowest common size), in Chromium.
+    {
+      name: 'mobile',
+      use: {
+        viewport: { width: 375, height: 812 },
+        deviceScaleFactor: 3,
+        isMobile: true,
+        hasTouch: true,
+        userAgent: devices['Pixel 7'].userAgent,
+      },
+    },
     { name: 'desktop', use: { viewport: { width: 1440, height: 900 } } },
   ],
   webServer: [
