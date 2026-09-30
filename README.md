@@ -724,7 +724,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.8.0] - 2026-09-30: Phase 4 (using the food) · `COMMIT_HASH`
+### [2.8.0] - 2026-09-30: Phase 4 (using the food) · `2bd172b`
 **Added**
 - **AI setup:** Anthropic's Claude API through the official `@anthropic-ai/sdk`, behind an `AiClient` interface. The key comes from `ANTHROPIC_API_KEY` and the model from `AI_MODEL` (default `claude-sonnet-5-5`, checked in Anthropic's models overview). AI features are on only when the key is set.
 - **Safeguards on every AI request:** a daily limit of 20 per user (a failed request isn't counted), zod validation of the JSON answer, and a banned-wording check (the seven phrases plus "safe") with up to 3 attempts, then a 503.
