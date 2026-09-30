@@ -116,3 +116,23 @@ export function SectionTitle({ children, action, id }: { children: ReactNode; ac
     </div>
   );
 }
+
+/**
+ * A checkbox with a 44 px tap area: the real input covers the whole area (so
+ * keyboard, screen readers and labels work as normal) and a drawn box sits on top.
+ */
+export function Checkbox({ className = '', ...props }: Omit<InputHTMLAttributes<HTMLInputElement>, 'type'>) {
+  return (
+    <span className={`relative inline-grid size-11 shrink-0 place-items-center ${className}`}>
+      <input type="checkbox" className="peer absolute inset-0 size-full cursor-pointer opacity-0" {...props} />
+      <span
+        aria-hidden
+        className="pointer-events-none grid size-6 place-items-center rounded-md border-2 border-line bg-card text-transparent transition-colors peer-checked:border-brand peer-checked:bg-brand peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand"
+      >
+        <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-current stroke-[3]">
+          <path d="M5 12.5l4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
+    </span>
+  );
+}

@@ -15,6 +15,7 @@ export function item(overrides: Partial<ActiveFoodItem>): ActiveFoodItem {
     notes: null,
     storage: 'FRIDGE',
     openedDate: null,
+    leftover: false,
     status: 'ACTIVE',
     remainingDays: 4,
     urgency: 'NOT_URGENT',
@@ -48,4 +49,5 @@ export const handlers = [
   http.get(`${API_URL}/suggestions/lifespans`, () => HttpResponse.json({ items: [] })),
   http.get(`${API_URL}/notifications/delivery`, () => HttpResponse.json({ mode: 'DIGEST', hour: 8 })),
   http.get(`${API_URL}/push/config`, () => HttpResponse.json({ publicKey: null })),
+  http.get(`${API_URL}/ai/status`, () => HttpResponse.json({ enabled: false, dailyLimit: 20, usedToday: 0 })),
 ];

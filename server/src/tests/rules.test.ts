@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import { afterEach, describe, expect, it } from 'vitest';
 import { UserModel } from '../models/User.js';
 import { AUTH_RATE_LIMIT } from '../routes/index.js';
+import { setAiClient } from '../services/aiClient.js';
 import { signActionToken } from '../services/token.js';
 import { api, food, registerUser, setToday } from './helpers.js';
 
@@ -11,7 +12,16 @@ import { api, food, registerUser, setToday } from './helpers.js';
 
 describe('every data query is scoped to the signed-in user', () => {
   type Op = { collection: string; method: string; args: unknown[] };
-  const SCOPED = new Set(['fooditems', 'usagerecords', 'notifications', 'favourites', 'pushsubscriptions']);
+  const SCOPED = new Set([
+    'fooditems',
+    'usagerecords',
+    'notifications',
+    'favourites',
+    'pushsubscriptions',
+    'shoppingitems',
+    'mealplanentries',
+    'aiusages',
+  ]);
   const IGNORED = new Set(['createIndex', 'createIndexes', 'listIndexes', 'dropIndex']);
 
   afterEach(() => {
@@ -100,6 +110,40 @@ describe('every data query is scoped to the signed-in user', () => {
       .post('/api/push/actions')
       .send({ token: signActionToken(s.user.id, c.id), action: 'USED' });
     await s.auth(api().delete('/api/push/subscriptions').send({ endpoint }));
+    const d = (
+      await s.auth(
+        api()
+          .post('/api/foods')
+          .send(food({ name: 'Bread', lifespanDays: 0 })),
+      )
+    ).body;
+    setAiClient({
+      model: 'fake',
+      generate: async (request) =>
+        request.prompt.includes('dinner')
+          ? { days: [{ date: '2026-09-30', title: 'Toast', uses: ['F1'] }] }
+          : { recipes: [{ title: 'Toast', minutes: 5, uses: ['F1'], steps: ['Toast it.'] }] },
+    });
+    try {
+      await s.auth(api().get('/api/ai/status'));
+      await s.auth(api().post('/api/ai/recipes'));
+      await s.auth(api().post('/api/ai/meal-plan'));
+    } finally {
+      setAiClient(null);
+    }
+    await s.auth(api().get('/api/meal-plan'));
+    await s.auth(
+      api()
+        .put('/api/meal-plan/2026-09-30')
+        .send({ title: 'Toast', foodIds: [d.id] }),
+    );
+    await s.auth(api().delete('/api/meal-plan/2026-09-30'));
+    const item = (await s.auth(api().post('/api/shopping').send({ name: 'Bread' }))).body;
+    await s.auth(api().get('/api/shopping'));
+    await s.auth(api().put(`/api/shopping/${item.id}`).send({ checked: true }));
+    await s.auth(api().post('/api/shopping/clear-checked'));
+    const other = (await s.auth(api().post('/api/shopping').send({ name: 'Jam' }))).body;
+    await s.auth(api().delete(`/api/shopping/${other.id}`));
     mongoose.set('debug', false);
 
     const dataOps = ops.filter((op) => SCOPED.has(op.collection) && !IGNORED.has(op.method));

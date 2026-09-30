@@ -89,15 +89,14 @@ export function PageHeader({
           <BellIcon />
           <UnreadDot count={unread} className="absolute top-1.5 right-1.5" />
         </Link>
-        {showIcons && (
-          <Link
-            to="/settings"
-            aria-label="Open settings"
-            className="grid size-11 place-items-center rounded-full hover:bg-brand-soft"
-          >
-            <GearIcon />
-          </Link>
-        )}
+        {/* On phones Settings lives here (the bottom bar holds Shopping and Plan); on desktop it's in the sidebar. */}
+        <Link
+          to="/settings"
+          aria-label="Open settings"
+          className={`grid size-11 place-items-center rounded-full hover:bg-brand-soft ${showIcons ? '' : 'lg:hidden'}`}
+        >
+          <GearIcon />
+        </Link>
       </div>
     </header>
   );
@@ -164,6 +163,16 @@ function Sidebar() {
             </NavLink>
           </li>
           <li>
+            <NavLink to="/shopping" className={item}>
+              <CartIcon /> Shopping
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/plan" className={item}>
+              <CalendarIcon /> Meal plan
+            </NavLink>
+          </li>
+          <li>
             <NavLink
               to="/notifications"
               className={item}
@@ -216,8 +225,8 @@ function BottomNav() {
             Add food
           </Link>
         </li>
-        <NavItem to="/history" label="History" icon={<ListIcon />} />
-        <NavItem to="/settings" label="Settings" icon={<GearIcon />} />
+        <NavItem to="/shopping" label="Shopping" icon={<CartIcon />} />
+        <NavItem to="/plan" label="Plan" icon={<CalendarIcon />} />
       </ul>
     </nav>
   );
@@ -328,6 +337,29 @@ function BellIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </svg>
+  );
+}
+
+function CartIcon() {
+  return (
+    <svg aria-hidden viewBox="0 0 24 24" className="size-6 fill-none stroke-current stroke-[1.8]">
+      <path
+        d="M3 4h2l2.2 10.2a1.5 1.5 0 0 0 1.5 1.3h8.6a1.5 1.5 0 0 0 1.4-1.1L20.5 8H6.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="9.5" cy="19.5" r="1.3" />
+      <circle cx="17" cy="19.5" r="1.3" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg aria-hidden viewBox="0 0 24 24" className="size-6 fill-none stroke-current stroke-[1.8]">
+      <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" />
+      <path d="M3.5 10h17M8 3v4M16 3v4" strokeLinecap="round" />
     </svg>
   );
 }

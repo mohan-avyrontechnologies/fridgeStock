@@ -52,6 +52,9 @@ export default defineConfig({
         EPHEMERAL_DB: '1',
         // The journeys sign up more than 20 accounts from one IP; the limit itself is unit-tested (rules.test.ts).
         AUTH_RATE_LIMIT: 'off',
+        // Never the real Claude API: an empty key keeps AI off even if server/.env has one
+        // (dotenv doesn't override variables that are already set).
+        ANTHROPIC_API_KEY: '',
         MONGO_URI: '',
         CLIENT_ORIGIN: `http://localhost:${WEB_PORT}`,
         VAPID_PUBLIC_KEY: vapid.publicKey,

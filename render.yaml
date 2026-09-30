@@ -32,3 +32,8 @@ services:
         sync: false
       - key: VAPID_SUBJECT
         sync: false
+      # Claude API key for AI features (optional). AI_MODEL defaults to claude-sonnet-5-5.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: AI_MODEL
+        sync: false

@@ -1,7 +1,7 @@
 import { formatDisplay, type ActiveFoodItem } from '@cook-first/shared';
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { cardExpiryLine, remainingText, urgencyCopy } from '../copy';
+import { cardExpiryLine, remainingText, urgencyCopy, leftoverCopy } from '../copy';
 import { formatQuantity } from '../lib/format';
 import { ActionSheet, useFoodActions, type SheetStep } from './ActionSheet';
 import { URGENCY_STYLE, UrgencyBadge } from './Urgency';
@@ -23,6 +23,11 @@ export function FoodCard({ item }: { item: ActiveFoodItem }) {
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="truncate text-base font-semibold text-ink">{item.name}</span>
             <UrgencyBadge urgency={item.urgency} />
+            {item.leftover && (
+              <span className="rounded-full bg-paper px-2 py-0.5 text-xs font-semibold text-muted">
+                {leftoverCopy.tag}
+              </span>
+            )}
           </div>
           <p className="mt-1 text-sm text-ink">
             {formatQuantity(item.quantity, item.unit)}

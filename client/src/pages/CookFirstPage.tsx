@@ -1,5 +1,6 @@
 import { PageBody, PageHeader } from '../components/AppShell';
 import { FoodList } from '../components/FoodCard';
+import { RecipeIdeas } from '../components/RecipeIdeas';
 import { EstimateNote } from '../components/Urgency';
 import { EmptyState, Spinner } from '../components/ui';
 import { screenCopy } from '../copy';
@@ -20,6 +21,7 @@ export function CookFirstPage() {
           <>
             <p className="text-sm text-muted">{screenCopy.cookFirst.intro(cookFirst.length)}</p>
             <FoodList items={cookFirst} columns={2} />
+            <RecipeIdeas />
           </>
         )}
         <EstimateNote />

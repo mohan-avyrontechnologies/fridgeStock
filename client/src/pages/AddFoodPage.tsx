@@ -1,6 +1,6 @@
 import type { Favourite } from '@cook-first/shared';
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { FoodForm } from '../components/FoodForm';
@@ -14,6 +14,8 @@ export function AddFoodPage() {
   const addFavourite = useFoodStore((s) => s.addFavourite);
   const toast = useToastStore((s) => s.show);
   const navigate = useNavigate();
+  // Leftovers saved from a recipe idea arrive with a name and the leftovers box ticked.
+  const prefill = (useLocation().state ?? undefined) as { name?: string; leftover?: boolean } | undefined;
   const [favourites, setFavourites] = useState<Favourite[]>([]);
 
   useEffect(() => {
@@ -58,6 +60,7 @@ export function AddFoodPage() {
         )}
 
         <FoodForm
+          prefill={prefill}
           submitLabel="Save"
           allowAddAnother
           autoFocus

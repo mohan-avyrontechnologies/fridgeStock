@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { BANNED_PHRASES } from '@cook-first/shared';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -11,15 +12,8 @@ const THIS_FILE = fileURLToPath(import.meta.url);
 const SRC_ROOTS = [path.resolve('src'), path.resolve('../client/src'), path.resolve('../shared/src')];
 const COPY_FILES = [path.resolve('src/copy.ts'), path.resolve('../client/src/copy.ts')];
 
-const BANNED_PHRASES = [
-  'safe until',
-  'safe to eat',
-  'safe to consume',
-  'fresh until',
-  'good until',
-  'still good',
-  'guaranteed',
-];
+/** The banned phrases are defined once, in shared/src/wording.ts (also used to check AI output). */
+const WORDING_FILE = path.resolve('../shared/src/wording.ts');
 
 function files(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -29,7 +23,7 @@ function files(dir: string): string[] {
 }
 
 const sourceFiles = SRC_ROOTS.flatMap(files).filter(
-  (file) => /\.(ts|tsx)$/.test(file) && path.resolve(file) !== THIS_FILE,
+  (file) => /\.(ts|tsx)$/.test(file) && path.resolve(file) !== THIS_FILE && path.resolve(file) !== WORDING_FILE,
 );
 
 const rel = (file: string) => path.relative(path.resolve('..'), file).replaceAll('\\', '/');

@@ -26,6 +26,19 @@ function vapid() {
   return publicKey && privateKey && subject ? { publicKey, privateKey, subject } : null;
 }
 
+/**
+ * Claude API (Phase 4). AI features are on only when ANTHROPIC_API_KEY is set.
+ * Tests never read the key, so no test can call the real API.
+ */
+function ai() {
+  const apiKey = isTest ? '' : (process.env.ANTHROPIC_API_KEY ?? '');
+  const model = process.env.AI_MODEL || DEFAULT_AI_MODEL;
+  return apiKey ? { apiKey, model } : null;
+}
+
+/** Claude Sonnet 5.5; ID checked against Anthropic's models overview on 2026-09-30. */
+export const DEFAULT_AI_MODEL = 'claude-sonnet-5-5';
+
 /** Everything the server reads from its environment. Secrets come only from here. */
 export const env = {
   isProduction,
@@ -42,4 +55,6 @@ export const env = {
     .filter(Boolean),
   /** null when push isn't configured. */
   vapid: vapid(),
+  /** null when AI features are off. */
+  ai: ai(),
 };

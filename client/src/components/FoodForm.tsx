@@ -2,8 +2,10 @@ import {
   addDays,
   createFoodSchema,
   diffDays,
+  findReference,
   formatDisplay,
   isValidDate,
+  LEFTOVER_MAX_DAYS,
   MESSAGES,
   STORAGE_LOCATIONS,
   todayInTz,
@@ -14,13 +16,13 @@ import {
 } from '@cook-first/shared';
 import { useEffect, useId, useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
-import { referenceCopy, screenCopy, storageLabel } from '../copy';
+import { leftoverCopy, referenceCopy, screenCopy, storageLabel } from '../copy';
 import { searchSuggestions, suggestFor, type LifespanSuggestion } from '../lib/suggestions';
 import { check } from '../lib/validation';
 import { useSuggestionStore } from '../stores/suggestionStore';
 import { useAuthStore } from '../stores/authStore';
 import { EstimateNote } from './Urgency';
-import { Button, Chip, Field, FormError } from './ui';
+import { Button, Checkbox, Chip, Field, FormError } from './ui';
 
 /** Quick picks only; any whole number from 0 to 365 can be typed. */
 const LIFESPAN_PICKS = [1, 2, 3, 5, 7, 14];
@@ -30,6 +32,8 @@ type Errors = Partial<Record<keyof FoodInput | 'form', string>>;
 
 interface Props {
   initial?: FoodInput;
+  /** Starting values for a new item, e.g. leftovers saved from a recipe idea. */
+  prefill?: { name?: string; leftover?: boolean };
   submitLabel: string;
   /** Resolves when saved. `addAnother` is set when the secondary button was used. */
   onSubmit: (input: FoodInput, addAnother: boolean) => Promise<void>;
@@ -46,17 +50,26 @@ const toNumber = (value: string) => (value.trim() === '' ? undefined : Number(va
  * same shared schema as the server, purely so errors show instantly; the
  * server re-validates everything and calculates the expiry date itself.
  */
-export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, autoFocus }: Props) {
+/** Suggested lifespan for leftovers in a location (from the reference list), within the leftover limit. */
+function leftoverDays(storage: StorageLocation): number | null {
+  const days = findReference('Leftovers')?.lifespanDays[storage] ?? null;
+  return days === null ? null : storage === 'FREEZER' ? days : Math.min(days, LEFTOVER_MAX_DAYS);
+}
+
+export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnother, autoFocus }: Props) {
   const timeZone = useAuthStore((s) => s.user?.timeZone) ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
   const today = todayInTz(timeZone);
   const notesId = useId();
   const unitId = useId();
   const storageId = useId();
-  const [name, setName] = useState(initial?.name ?? '');
+  const [name, setName] = useState(initial?.name ?? prefill?.name ?? '');
   const [quantity, setQuantity] = useState(String(initial?.quantity ?? 1));
   const [unit, setUnit] = useState<Unit>(initial?.unit ?? 'pcs');
   const [addedDate, setAddedDate] = useState(initial?.addedDate ?? today);
-  const [lifespan, setLifespan] = useState(initial ? String(initial.lifespanDays) : '');
+  const [leftover, setLeftover] = useState(initial?.leftover ?? prefill?.leftover ?? false);
+  const [lifespan, setLifespan] = useState(
+    initial ? String(initial.lifespanDays) : prefill?.leftover ? String(leftoverDays('FRIDGE') ?? '') : '',
+  );
   const [storage, setStorage] = useState<StorageLocation>(initial?.storage ?? 'FRIDGE');
   // The food name the lifespan was suggested for, if the user picked a suggestion.
   const [suggestedFrom, setSuggestedFrom] = useState<string | null>(null);
@@ -88,8 +101,24 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
     setErrors({});
   }
 
+  function toggleLeftover(next: boolean) {
+    setLeftover(next);
+    clearError('lifespanDays');
+    // Leftovers start from a short lifespan the user can still change.
+    if (next) {
+      const days = leftoverDays(storage);
+      setLifespan(days === null ? '' : String(days));
+      setSuggestedFrom(null);
+    }
+  }
+
   function changeStorage(next: StorageLocation) {
     setStorage(next);
+    if (leftover) {
+      const days = leftoverDays(next);
+      setLifespan(days === null ? '' : String(days));
+      return;
+    }
     // Follow the suggestion for the new location, unless the user has typed their own lifespan.
     if (suggestedFrom) {
       const days = suggestFor(suggestedFrom, next, learned)?.days ?? null;
@@ -117,8 +146,12 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
       lifespanDays: toNumber(lifespan),
       notes,
       storage,
+      leftover,
     });
     const next: Errors = { ...found };
+    if (!next.lifespanDays && leftover && storage !== 'FREEZER' && Number(lifespan) > LEFTOVER_MAX_DAYS) {
+      next.lifespanDays = MESSAGES.leftoverLifespan;
+    }
     if (!next.addedDate && isValidDate(addedDate) && addedDate > today) {
       next.addedDate = MESSAGES.addedDate;
     }
@@ -140,6 +173,7 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
         setNotes('');
         setShowNotes(false);
         setSuggestedFrom(null);
+        setLeftover(false);
         setErrors({});
         document.getElementById('food-name')?.focus();
       }
@@ -185,6 +219,14 @@ export function FoodForm({ initial, submitLabel, onSubmit, allowAddAnother, auto
           })}
         </div>
       )}
+
+      <label className="-ml-2.5 flex min-h-11 cursor-pointer items-center gap-1">
+        <Checkbox checked={leftover} onChange={(e) => toggleLeftover(e.target.checked)} />
+        <span>
+          <span className="block font-medium">{leftoverCopy.label}</span>
+          <span className="block text-sm text-muted">{leftoverCopy.hint(LEFTOVER_MAX_DAYS)}</span>
+        </span>
+      </label>
 
       <div>
         <Field

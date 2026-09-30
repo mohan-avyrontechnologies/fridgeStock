@@ -31,3 +31,60 @@ export const pushCopy = {
   digestMore: (count: number) => `and ${count} more`,
   actions: { USED: 'Used', SNOOZE: 'Snooze' },
 };
+
+/** AI features (Phase 4): messages shown to the user. */
+export const aiCopy = {
+  notEnabled: 'AI suggestions aren’t turned on for this app.',
+  failed: 'Couldn’t get suggestions right now. Try again later.',
+  limitReached: (limit: number) => `You’ve used all ${limit} AI suggestions for today. Try again tomorrow.`,
+};
+
+/** One line describing an item for an AI prompt, e.g. "F1: Chicken (500 g), expected expiry today". */
+export function promptLine(code: string, name: string, quantity: number, unit: string, remainingDays: number): string {
+  return `${code}: ${pushCopy.digestLine(`${name} (${quantity} ${unit})`, remainingDays)}`;
+}
+
+/**
+ * Instructions sent to the AI model. They live here with the other expiry
+ * wording. They must never contain a banned phrase or comment on food condition.
+ */
+export const aiPrompts = {
+  system: [
+    'You help a home cook plan meals that use up perishable food before its expected expiry.',
+    'Every date is a planning estimate, never a promise about the food.',
+    'Rules for everything you write:',
+    '- Never say or suggest that any food is fit, okay or fine to eat, and never comment on the condition of food.',
+    '- Refer to dates only as "expected expiry".',
+    '- Never suggest eating something because of its date; the cook always checks their food first.',
+    '- The lists you receive are already in priority order, most urgent first. Keep to that order and never re-rank items.',
+    '- Refer to food only by the codes given (like F1).',
+    '- Plain, friendly British English. Short sentences.',
+    'Reply only with JSON that matches the schema.',
+  ].join('\n'),
+
+  recipes: (cookFirst: string[], others: string[]) =>
+    [
+      'My Cook First list, most urgent first:',
+      ...cookFirst,
+      ...(others.length ? ['', 'Other food I have:', ...others] : []),
+      '',
+      'Suggest up to 3 simple home recipes.',
+      'Each recipe must use at least one item from the Cook First list, and the most urgent items should be used first.',
+      'Only use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).',
+      'For each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps.',
+    ].join('\n'),
+
+  mealPlan: (dates: string[], items: string[]) =>
+    [
+      'Food I have, most urgent first:',
+      ...items,
+      '',
+      `Plan one simple dinner for each of these dates: ${dates.join(', ')}.`,
+      'Use the most urgent items on the earliest dates. A dinner may use no listed items.',
+      'For each date: the date exactly as given, a short meal title, and the codes of the items it uses.',
+    ].join('\n'),
+
+  fixFormat: 'Your previous answer did not match the required format. Follow the schema exactly.',
+  fixWording:
+    'Your previous answer used wording that is not allowed. Do not describe any food as fit, okay or fine to eat, do not promise how long food lasts, and refer to dates only as "expected expiry".',
+};

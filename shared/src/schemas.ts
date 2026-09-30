@@ -9,7 +9,16 @@ import { PUSH_ACTIONS, REMINDER_MODES, STORAGE_LOCATIONS, UNITS } from './enums.
  */
 
 /** Validation messages. The API and forms must use exactly these wordings. */
+/** Leftovers kept anywhere but the freezer can have a lifespan of at most this many days. */
+export const LEFTOVER_MAX_DAYS = 4;
+
 export const MESSAGES = {
+  leftoverLifespan: 'Leftovers can have a lifespan of at most 4 days, unless they are frozen.',
+  shoppingName: 'Enter what you need to buy.',
+  shoppingNameTooLong: 'Keep it to 60 characters or fewer.',
+  mealTitle: 'Enter a meal of up to 80 characters.',
+  mealDate: 'Choose a day from today to six days ahead.',
+  mealFoods: 'Choose up to 10 items from your own food.',
   reminderMode: 'Choose a daily summary or one reminder per item.',
   reminderHour: 'Choose an hour from 0 to 23.',
   pushSubscription: 'That push subscription isn’t valid.',
@@ -86,6 +95,7 @@ const foodFields = {
   storage: z.enum(STORAGE_LOCATIONS, { error: MESSAGES.storage }).optional(),
   /** When the item was opened, if it has been. Checked against today and the added date by the server. */
   openedDate: z.string({ error: MESSAGES.openedDate }).refine(isValidDate, MESSAGES.openedDate).nullable().optional(),
+  leftover: z.boolean().optional(),
 };
 
 /**
@@ -195,6 +205,33 @@ export const pushActionSchema = z.object({
   action: z.enum(PUSH_ACTIONS, { error: MESSAGES.pushAction }),
 });
 
+/** POST /shopping */
+export const shoppingItemSchema = z.object({
+  name: z
+    .string({ error: MESSAGES.shoppingName })
+    .trim()
+    .min(1, MESSAGES.shoppingName)
+    .max(60, MESSAGES.shoppingNameTooLong),
+  quantity: z
+    .number({ error: MESSAGES.quantity })
+    .positive(MESSAGES.quantity)
+    .max(100000, MESSAGES.quantity)
+    .nullable()
+    .optional(),
+  unit: z.enum(UNITS, { error: MESSAGES.unit }).nullable().optional(),
+});
+
+/** PUT /shopping/:id */
+export const shoppingUpdateSchema = shoppingItemSchema.partial().extend({ checked: z.boolean().optional() }).strict();
+
+const objectId = z.string().regex(/^[0-9a-f]{24}$/i, MESSAGES.mealFoods);
+
+/** PUT /meal-plan/:date */
+export const mealPlanEntrySchema = z.object({
+  title: z.string({ error: MESSAGES.mealTitle }).trim().min(1, MESSAGES.mealTitle).max(80, MESSAGES.mealTitle),
+  foodIds: z.array(objectId, { error: MESSAGES.mealFoods }).max(10, MESSAGES.mealFoods).default([]),
+});
+
 /** GET /usage: limit defaults to 20 and offset to 0. */
 export const paginationSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -215,6 +252,9 @@ export type FoodUpdateInput = z.infer<typeof updateFoodSchema>;
 export type UseFoodInput = z.infer<typeof useFoodSchema>;
 export type PreferencesInput = z.infer<typeof preferencesSchema>;
 export type DeliveryInput = z.infer<typeof deliverySchema>;
+export type ShoppingItemInput = z.infer<typeof shoppingItemSchema>;
+export type ShoppingUpdateInput = z.infer<typeof shoppingUpdateSchema>;
+export type MealPlanEntryInput = z.infer<typeof mealPlanEntrySchema>;
 export type PushSubscriptionInput = z.infer<typeof pushSubscriptionSchema>;
 export type PushActionInput = z.infer<typeof pushActionSchema>;
 export type Pagination = z.infer<typeof paginationSchema>;

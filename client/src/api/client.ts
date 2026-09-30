@@ -1,4 +1,5 @@
 import type {
+  AiStatus,
   AuthResponse,
   BulkCreateInput,
   BulkCreateResult,
@@ -11,6 +12,10 @@ import type {
   FoodList,
   FoodUpdateInput,
   LearnedLifespan,
+  MealPlan,
+  MealPlanDraft,
+  MealPlanEntry,
+  MealPlanEntryInput,
   MoveFoodInput,
   OpenFoodInput,
   NotificationFeed,
@@ -19,7 +24,11 @@ import type {
   PushConfig,
   PushDevice,
   PushSubscriptionInput,
+  RecipeIdeas,
   ReminderDelivery,
+  ShoppingItem,
+  ShoppingItemInput,
+  ShoppingUpdateInput,
   UpdateAccountInput,
   UsageHistory,
   UsageResult,
@@ -160,4 +169,29 @@ export const api = {
   // DELETE /push/subscriptions
   unsubscribePush: (endpoint: string, token?: string) =>
     request<void>('DELETE', '/push/subscriptions', { endpoint }, token),
+
+  // GET /ai/status
+  aiStatus: () => request<AiStatus>('GET', '/ai/status'),
+  // POST /ai/recipes
+  suggestRecipes: () => request<RecipeIdeas>('POST', '/ai/recipes'),
+  // POST /ai/meal-plan
+  suggestMealPlan: () => request<MealPlanDraft>('POST', '/ai/meal-plan'),
+
+  // GET /meal-plan
+  mealPlan: () => request<MealPlan>('GET', '/meal-plan'),
+  // PUT /meal-plan/:date
+  setMeal: (date: string, body: MealPlanEntryInput) => request<MealPlanEntry>('PUT', `/meal-plan/${date}`, body),
+  // DELETE /meal-plan/:date
+  clearMeal: (date: string) => request<void>('DELETE', `/meal-plan/${date}`),
+
+  // GET /shopping
+  shopping: () => request<{ items: ShoppingItem[] }>('GET', '/shopping'),
+  // POST /shopping
+  addShopping: (body: ShoppingItemInput) => request<ShoppingItem>('POST', '/shopping', body),
+  // PUT /shopping/:id
+  updateShopping: (id: string, body: ShoppingUpdateInput) => request<ShoppingItem>('PUT', `/shopping/${id}`, body),
+  // DELETE /shopping/:id
+  removeShopping: (id: string) => request<void>('DELETE', `/shopping/${id}`),
+  // POST /shopping/clear-checked
+  clearCheckedShopping: () => request<void>('POST', '/shopping/clear-checked'),
 };

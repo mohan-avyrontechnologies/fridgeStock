@@ -15,6 +15,7 @@ import type {
   UseFoodInput,
 } from '@cook-first/shared';
 import { isValidObjectId } from 'mongoose';
+import { LEFTOVER_MAX_DAYS } from '../config/ai.js';
 import { FoodItemModel, type FoodItemDoc } from '../models/FoodItem.js';
 import type { UserDoc } from '../models/User.js';
 import { clock } from './clock.js';
@@ -133,7 +134,7 @@ export async function getFood(user: UserDoc, id: string): Promise<FoodItem> {
 
 /** The fields of a new item: owner, household, calculated expiry and a FRIDGE default. */
 function newItem(user: UserDoc, input: FoodInput) {
-  const { name, quantity, unit, addedDate, lifespanDays, notes, storage, openedDate } = input;
+  const { name, quantity, unit, addedDate, lifespanDays, notes, storage, openedDate, leftover } = input;
   return {
     userId: user._id,
     householdId: user.householdId,
@@ -148,13 +149,27 @@ function newItem(user: UserDoc, input: FoodInput) {
     openedDate: openedDate ?? null,
     enteredLifespanDays: lifespanDays,
     enteredStorage: storage ?? 'FRIDGE',
+    leftover: leftover ?? false,
   };
+}
+
+/** Leftovers have a short lifespan: at most LEFTOVER_MAX_DAYS unless frozen. */
+function assertLeftoverLifespan(
+  leftover: boolean,
+  storage: StorageLocation,
+  lifespanDays: number,
+  field = 'lifespanDays',
+) {
+  if (leftover && storage !== 'FREEZER' && lifespanDays > LEFTOVER_MAX_DAYS) {
+    throw validationError(MESSAGES.leftoverLifespan, field);
+  }
 }
 
 export async function createFood(user: UserDoc, input: FoodInput): Promise<FoodItem> {
   const today = clock.today(user.timeZone);
   assertNotFuture(input.addedDate, today);
   assertOpenedDate(input.openedDate, input.addedDate, today);
+  assertLeftoverLifespan(input.leftover ?? false, input.storage ?? 'FRIDGE', input.lifespanDays);
   const food = await FoodItemModel.create(newItem(user, input));
   await scheduleForFood(food, user);
   return toFoodView(food, today);
@@ -166,8 +181,9 @@ export async function updateFood(user: UserDoc, id: string, input: FoodUpdateInp
   const food = await findOwned(user, id);
   assertActive(food);
   if (input.addedDate !== undefined) assertNotFuture(input.addedDate, today);
-  const { name, quantity, unit, addedDate, lifespanDays, notes, storage, openedDate } = input;
+  const { name, quantity, unit, addedDate, lifespanDays, notes, storage, openedDate, leftover } = input;
   assertOpenedDate(openedDate, addedDate ?? food.addedDate, today);
+  assertLeftoverLifespan(leftover ?? food.leftover, storage ?? food.storage, lifespanDays ?? food.lifespanDays);
   if (name !== undefined) food.name = name;
   if (quantity !== undefined) food.quantity = quantity;
   if (unit !== undefined) food.unit = unit;
@@ -176,6 +192,7 @@ export async function updateFood(user: UserDoc, id: string, input: FoodUpdateInp
   if (notes !== undefined) food.notes = cleanNotes(notes) ?? undefined;
   if (storage !== undefined) food.storage = food.enteredStorage = storage;
   if (openedDate !== undefined) food.openedDate = openedDate;
+  if (leftover !== undefined) food.leftover = leftover;
 
   // No Mongoose hook for this: hooks don't run on update queries.
   const datesChanged = addedDate !== undefined || lifespanDays !== undefined;
@@ -312,6 +329,7 @@ export async function moveFood(user: UserDoc, id: string, input: MoveFoodInput):
   if (food.storage === input.storage) throw validationError(MESSAGES.sameStorage, 'storage');
   const daysLeft = input.daysLeft ?? suggestedDaysIn(food.name, input.storage);
   if (daysLeft === null) throw validationError(MESSAGES.storageDaysNeeded, 'daysLeft');
+  assertLeftoverLifespan(food.leftover, input.storage, daysLeft, 'daysLeft');
 
   food.storage = input.storage;
   setExpiry(food, addDays(today, daysLeft));

@@ -12,6 +12,7 @@ import {
   actionCopy,
   expectedExpiryLabel,
   favouriteCopy,
+  leftoverCopy,
   moveCopy,
   openCopy,
   storageLabel,
@@ -157,6 +158,8 @@ export function FoodDetailPage() {
                 addedDate: food.addedDate,
                 lifespanDays: food.lifespanDays,
                 notes: food.notes ?? undefined,
+                storage: food.storage,
+                leftover: food.leftover,
               }}
               onSubmit={async (input) => {
                 setFood(await update(food.id, input));
@@ -195,6 +198,7 @@ export function FoodDetailPage() {
                 />
                 <Detail label="Unit" value={food.unit} />
                 <Detail label="Kept in" value={storageLabel[food.storage]} />
+                {food.leftover && <Detail label="Type" value={leftoverCopy.tag} />}
                 {food.openedDate && <Detail label="Opened on" value={formatDisplay(food.openedDate)} />}
                 <Detail label={expectedExpiryLabel} value={formatDisplay(food.expiryDate)} />
                 <Detail label="Added on" value={formatDisplay(food.addedDate)} />

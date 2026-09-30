@@ -41,6 +41,7 @@ export function toFoodView(doc: FoodItemDoc, today: DateString): FoodItem {
     notes: doc.notes ?? null,
     storage: doc.storage ?? 'FRIDGE',
     openedDate: doc.openedDate ?? null,
+    leftover: doc.leftover ?? false,
     status: doc.status,
     remainingDays,
     urgency: remainingDays === null ? null : classifyUrgency(remainingDays),

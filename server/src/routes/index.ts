@@ -4,6 +4,7 @@ import {
   deliverySchema,
   favouriteSchema,
   loginSchema,
+  mealPlanEntrySchema,
   moveFoodSchema,
   openFoodSchema,
   notificationPageSchema,
@@ -13,6 +14,8 @@ import {
   pushSubscriptionSchema,
   pushUnsubscribeSchema,
   registerSchema,
+  shoppingItemSchema,
+  shoppingUpdateSchema,
   updateAccountSchema,
   updateFoodSchema,
   useFoodSchema,
@@ -20,12 +23,15 @@ import {
 } from '@cook-first/shared';
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
+import { aiController } from '../controllers/aiController.js';
 import { authController } from '../controllers/authController.js';
 import { favouriteController } from '../controllers/favouriteController.js';
 import { foodController } from '../controllers/foodController.js';
+import { mealPlanController } from '../controllers/mealPlanController.js';
 import { suggestionController } from '../controllers/suggestionController.js';
 import { notificationController } from '../controllers/notificationController.js';
 import { pushController } from '../controllers/pushController.js';
+import { shoppingController } from '../controllers/shoppingController.js';
 import { usageController } from '../controllers/usageController.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -109,3 +115,18 @@ router.put('/notifications/delivery', validate(deliverySchema), notificationCont
 router.get('/push/config', pushController.config);
 router.post('/push/subscriptions', validate(pushSubscriptionSchema), pushController.subscribe);
 router.delete('/push/subscriptions', validate(pushUnsubscribeSchema), pushController.unsubscribe);
+
+// Phase 4: using the food. AI routes read the Cook First order and never change it.
+router.get('/ai/status', aiController.status);
+router.post('/ai/recipes', aiController.recipes);
+router.post('/ai/meal-plan', aiController.mealPlan);
+
+router.get('/shopping', shoppingController.list);
+router.post('/shopping', validate(shoppingItemSchema), shoppingController.add);
+router.post('/shopping/clear-checked', shoppingController.clearChecked);
+router.put('/shopping/:id', validate(shoppingUpdateSchema), shoppingController.update);
+router.delete('/shopping/:id', shoppingController.remove);
+
+router.get('/meal-plan', mealPlanController.get);
+router.put('/meal-plan/:date', validate(mealPlanEntrySchema), mealPlanController.set);
+router.delete('/meal-plan/:date', mealPlanController.clear);

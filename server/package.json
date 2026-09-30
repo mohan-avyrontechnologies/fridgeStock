@@ -12,6 +12,7 @@
     "vapid:keys": "web-push generate-vapid-keys"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.129.0",
     "@cook-first/shared": "^1.0.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",

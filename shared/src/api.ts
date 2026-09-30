@@ -49,6 +49,8 @@ export interface FoodItem {
   notes: string | null;
   storage: StorageLocation;
   openedDate: DateString | null;
+  /** Leftovers from a cooked meal: a new item with a short lifespan. */
+  leftover: boolean;
   status: FoodStatus;
   /** Only while the item is active. */
   remainingDays: number | null;
@@ -149,6 +151,7 @@ export const ERROR_CODES = [
   'NOT_FOUND',
   'CONFLICT',
   'RATE_LIMITED',
+  'AI_UNAVAILABLE',
   'INTERNAL',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
@@ -181,4 +184,72 @@ export interface PushPayload {
   actions: { action: PushAction; title: string }[];
   /** Lets the service worker call POST /push/actions without the login token. Only on single-item pushes. */
   actionToken?: string;
+}
+
+// ---- Phase 4: using the food ----
+
+/** GET /ai/status. AI features are shown only when `enabled`. */
+export interface AiStatus {
+  enabled: boolean;
+  dailyLimit: number;
+  usedToday: number;
+}
+
+/** A food item referred to by an AI suggestion or a meal plan entry. */
+export interface FoodRef {
+  id: string;
+  name: string;
+}
+
+/** One recipe idea built from the Cook First list. */
+export interface RecipeIdea {
+  title: string;
+  minutes: number;
+  /** Items from your list that it uses, most urgent first. */
+  uses: FoodRef[];
+  steps: string[];
+}
+
+/** POST /ai/recipes */
+export interface RecipeIdeas {
+  /** The Cook First list the ideas were built from, in its (unchanged) order. */
+  basedOn: FoodRef[];
+  recipes: RecipeIdea[];
+}
+
+/** An active item already at home that matches a shopping list entry. */
+export interface AtHomeMatch {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: Unit;
+  expiryDate: DateString;
+  urgency: Urgency;
+}
+
+export interface ShoppingItem {
+  id: string;
+  name: string;
+  quantity: number | null;
+  unit: Unit | null;
+  checked: boolean;
+  createdAt: string;
+  /** Matching food you already have, so you don't buy it twice. */
+  atHome: AtHomeMatch[];
+}
+
+export interface MealPlanEntry {
+  title: string;
+  foods: (FoodRef & { status: FoodStatus })[];
+}
+
+/** GET /meal-plan: today and the next six days. */
+export interface MealPlan {
+  today: DateString;
+  days: { date: DateString; entry: MealPlanEntry | null }[];
+}
+
+/** POST /ai/meal-plan: a draft for the empty days. Nothing is saved until the user adds it. */
+export interface MealPlanDraft {
+  days: { date: DateString; title: string; foods: FoodRef[] }[];
 }

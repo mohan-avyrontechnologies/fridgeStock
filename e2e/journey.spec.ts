@@ -24,6 +24,22 @@ async function addFood(page: Page, name: string, lifespan: string, unit = 'pcs')
   await expect(page).toHaveURL('/');
 }
 
+/** Settings: the header gear on phones, the sidebar on desktop. */
+async function openSettings(page: Page) {
+  await page
+    .getByRole('link', { name: /^(Settings|Open settings)$/ })
+    .first()
+    .click();
+  await expect(page).toHaveURL('/settings');
+}
+
+/** History is linked from Settings (and from the sidebar on desktop). */
+async function openHistory(page: Page) {
+  await openSettings(page);
+  await page.getByRole('link', { name: 'History' }).first().click();
+  await expect(page).toHaveURL('/history');
+}
+
 const allFood = (page: Page) =>
   page
     .getByRole('heading', { name: /^All food/ })
@@ -161,7 +177,7 @@ test('register → add food → Cook First → mark used → history', async ({ 
   await expect(page.getByRole('main')).not.toContainText('Chicken');
 
   // History records it.
-  await page.getByRole('link', { name: 'History' }).click();
+  await openHistory(page);
   await expect(page.getByRole('main').getByRole('link', { name: /Chicken/ })).toContainText('Used');
   await shot(page, '05-history');
 });
@@ -189,7 +205,7 @@ test('partial use keeps the item; throwing it away closes the rest', async ({ pa
   await expect(page).toHaveURL('/');
   await expect(page.getByText('Your fridge is empty. Add your first item.')).toBeVisible();
 
-  await page.getByRole('link', { name: 'History' }).click();
+  await openHistory(page);
   const history = page.getByRole('main').getByRole('listitem').filter({ hasText: 'Milk' });
   await expect(history).toHaveCount(3);
   await expect(history.first()).toContainText('Wasted');
@@ -254,7 +270,7 @@ test("one user never sees another user's food", async ({ browser }) => {
 
 test('settings: reminder switches persist; sign out returns to login', async ({ page }) => {
   await register(page, 'Eli Stone');
-  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   const onTheDay = page.getByRole('switch', { name: /On the day/ });
   await expect(onTheDay).toBeChecked();
   await onTheDay.uncheck({ force: true });
@@ -373,7 +389,7 @@ test('phase 3: installable app; push reminders ask for permission only after "Tu
   const worker = await page.evaluate(async () => (await navigator.serviceWorker.ready).active?.scriptURL ?? '');
   expect(worker).toContain('/sw.js?api=');
 
-  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  await openSettings(page);
   const turnOn = page.getByRole('button', { name: 'Turn on reminders' });
   await expect(turnOn).toBeVisible();
   // Nothing has asked for permission yet.
@@ -408,8 +424,61 @@ test('phase 3: installable app; push reminders ask for permission only after "Tu
   });
   const phone = await iphone.newPage();
   await register(phone, 'Ivo Park');
-  await phone.getByRole('link', { name: 'Settings', exact: true }).click();
+  await openSettings(phone);
   await expect(phone.getByText(/On iPhone, reminders need the app on your Home Screen first/)).toBeVisible();
   await expect(phone.getByRole('button', { name: 'Turn on reminders' })).toHaveCount(0);
   await iphone.close();
+});
+
+test('phase 4: leftovers, a shopping list that warns about food at home, and a weekly meal plan', async ({ page }) => {
+  await register(page, 'Sam Okafor');
+  await addFood(page, 'Chicken', '2', 'g');
+
+  // Leftovers get a short lifespan and a tag.
+  await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
+  await page.getByLabel('Food', { exact: true }).fill('Leftover curry');
+  await page.getByRole('checkbox', { name: /These are leftovers/ }).check();
+  await expect(page.getByLabel('Lifespan (days)')).toHaveValue('3');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page).toHaveURL('/');
+  await expect(allFood(page).filter({ hasText: 'Leftover curry' }).getByText('Leftovers')).toBeVisible();
+
+  // AI is off in the tests, so no AI buttons appear.
+  await page
+    .getByRole('link', { name: /^Cook First/ })
+    .first()
+    .click();
+  await expect(page.getByRole('heading', { name: 'Cook First', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Suggest recipes' })).toHaveCount(0);
+
+  // Shopping list: a warning when it's already at home.
+  await page.getByRole('link', { name: 'Shopping', exact: true }).first().click();
+  await page.getByLabel('Item').fill('Chicken breasts');
+  await page.getByRole('button', { name: 'Add to list' }).click();
+  await expect(page.getByText('Added Chicken breasts. You already have some at home.')).toBeVisible();
+  await expect(page.getByRole('link', { name: /^Already at home: Chicken \(1 g\), expected expiry/ })).toBeVisible();
+  await page.getByLabel('Item').fill('Flour');
+  await page.getByRole('button', { name: 'Add to list' }).click();
+  await page.getByRole('checkbox', { name: 'Bought Flour' }).check();
+  await expect(page.getByRole('heading', { name: 'Bought' })).toBeVisible();
+  await shot(page, '15-shopping');
+  await page.getByRole('button', { name: 'Clear bought items' }).click();
+  await expect(page.getByRole('checkbox', { name: 'Bought Flour' })).toHaveCount(0);
+
+  // Meal plan: plan tomorrow's dinner with the chicken.
+  await page
+    .getByRole('link', { name: /^(Plan|Meal plan)$/ })
+    .first()
+    .click();
+  await expect(page.getByRole('heading', { name: 'Today' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Suggest meals for empty days' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Plan a meal' }).nth(1).click();
+  await page.getByLabel('Meal').fill('Chicken curry');
+  await page.getByRole('button', { name: 'Chicken', exact: true }).click();
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByText('Chicken curry')).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('Chicken curry')).toBeVisible();
+  await shot(page, '16-plan');
+  await expectNoSafetyClaim(page);
 });

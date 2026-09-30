@@ -20,3 +20,7 @@ export const unauthenticated = () => new AppError(401, 'UNAUTHENTICATED', 'Authe
 export const foodNotFound = () => new AppError(404, 'NOT_FOUND', 'Food item not found.');
 
 export const conflict = (message: string, field?: string) => new AppError(409, 'CONFLICT', message, field);
+
+export const aiUnavailable = (message: string) => new AppError(503, 'AI_UNAVAILABLE', message);
+
+export const aiLimitReached = (message: string) => new AppError(429, 'RATE_LIMITED', message);

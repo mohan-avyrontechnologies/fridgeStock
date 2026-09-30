@@ -31,8 +31,10 @@ describe('client/src layout', () => {
       'HistoryPage.tsx',
       'LoginPage.tsx',
       'NotificationsPage.tsx',
+      'PlanPage.tsx',
       'RegisterPage.tsx',
       'SettingsPage.tsx',
+      'ShoppingPage.tsx',
     ]);
     for (const page of pages) {
       const exported = [...read(`pages/${page}`).matchAll(/export function (\w+Page)\b/g)].map((m) => m[1]);
@@ -59,7 +61,7 @@ describe('api', () => {
   it('has one function per endpoint', () => {
     const client = read('api/client.ts');
     const endpoints = [...client.matchAll(/^\s*\/\/ (GET|POST|PUT|DELETE) (\S+)$/gm)].map((m) => `${m[1]} ${m[2]}`);
-    expect(endpoints).toHaveLength(33);
+    expect(endpoints).toHaveLength(44);
     expect(new Set(endpoints).size).toBe(endpoints.length);
   });
 });

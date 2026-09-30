@@ -9,7 +9,9 @@ import { DashboardPage } from './pages/DashboardPage';
 import { FoodDetailPage } from './pages/FoodDetailPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { NotificationsPage } from './pages/NotificationsPage';
+import { PlanPage } from './pages/PlanPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { ShoppingPage } from './pages/ShoppingPage';
 import { useAuthStore } from './stores/authStore';
 
 function RequireAuth() {
@@ -39,6 +41,8 @@ export function App() {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/shopping" element={<ShoppingPage />} />
+          <Route path="/plan" element={<PlanPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

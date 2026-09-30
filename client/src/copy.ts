@@ -230,3 +230,77 @@ export const pushSettingsCopy = {
   hour: (hour: number) => `${String(hour).padStart(2, '0')}:00`,
   saveFailed: 'Couldn’t save that. Try again.',
 };
+
+/** Phase 4: leftovers. */
+export const leftoverCopy = {
+  label: 'These are leftovers',
+  hint: (max: number) => `Leftovers get a short lifespan: at most ${max} days, unless frozen.`,
+  tag: 'Leftovers',
+  save: 'Save leftovers',
+  name: (meal: string) => `Leftover ${meal}`.slice(0, 60),
+};
+
+/** Phase 4: AI features. */
+export const aiCopy = {
+  left: (used: number, limit: number) => `${Math.max(limit - used, 0)} of ${limit} AI suggestions left today`,
+  note: 'These are AI suggestions built from your Cook First list. Always check your food before cooking with it.',
+  busy: 'Thinking…',
+};
+
+export const recipeCopy = {
+  title: 'Recipe ideas',
+  intro: 'Ideas that use your most urgent food first.',
+  button: 'Suggest recipes',
+  again: 'Suggest again',
+  minutes: (n: number) => `About ${n} min`,
+  uses: 'Uses',
+  none: 'No ideas this time. Try again in a moment.',
+};
+
+export const shoppingCopy = {
+  title: 'Shopping',
+  subtitle: 'See what’s already at home before you buy it',
+  nameLabel: 'Item',
+  namePlaceholder: 'e.g. Milk',
+  quantityLabel: 'How many (optional)',
+  unitLabel: 'Unit (optional)',
+  noUnit: '—',
+  add: 'Add to list',
+  empty: 'Your shopping list is empty.',
+  toBuy: 'To buy',
+  bought: 'Bought',
+  atHome: (name: string, quantity: string, date: string) =>
+    `Already at home: ${name} (${quantity}), expected expiry ${date}`,
+  addedWithWarning: (name: string) => `Added ${name}. You already have some at home.`,
+  added: (name: string) => `Added ${name}`,
+  tick: (name: string) => `Bought ${name}`,
+  remove: (name: string) => `Remove ${name}`,
+  clear: 'Clear bought items',
+  loadError: 'Couldn’t load your shopping list.',
+};
+
+export const planCopy = {
+  title: 'Meal plan',
+  subtitle: 'This week, using what needs cooking first',
+  today: 'Today',
+  tomorrow: 'Tomorrow',
+  nothing: 'Nothing planned',
+  add: 'Plan a meal',
+  edit: 'Edit',
+  clear: 'Clear',
+  mealLabel: 'Meal',
+  mealPlaceholder: 'e.g. Chicken curry',
+  foodsLabel: 'Uses (optional)',
+  foodsHint: 'Your food, most urgent first.',
+  save: 'Save',
+  cancel: 'Cancel',
+  gone: 'no longer at home',
+  suggest: 'Suggest meals for empty days',
+  draftTitle: 'Suggested meals',
+  draftHint: 'Nothing is added until you choose to.',
+  addDraft: 'Add these to my plan',
+  discard: 'Discard',
+  added: 'Added to your plan',
+  full: 'Every day this week already has a meal.',
+  loadError: 'Couldn’t load your meal plan.',
+};
