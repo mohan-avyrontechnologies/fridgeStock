@@ -695,7 +695,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.7.0] - 2026-09-30: Phase 3 (better reminders) · `COMMIT_HASH`
+### [2.7.0] - 2026-09-30: Phase 3 (better reminders) · `dc1c904`
 **Added**
 - **Installable web app:** `manifest.webmanifest`, PNG icons (192, 512, maskable, Apple touch icon) and a service worker (`client/public/sw.js`).
 - **Self-hosted Web Push** with the `web-push` library and VAPID keys from `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `VAPID_SUBJECT`. Only the public key reaches the client (`GET /push/config`).
