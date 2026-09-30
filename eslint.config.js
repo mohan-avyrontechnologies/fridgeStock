@@ -24,4 +24,8 @@ export default tseslint.config(
     plugins: { 'react-hooks': reactHooks },
     rules: reactHooks.configs.recommended.rules,
   },
+  {
+    files: ['client/public/sw.js'],
+    languageOptions: { globals: globals.serviceworker },
+  },
 );

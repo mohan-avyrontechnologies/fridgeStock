@@ -324,3 +324,19 @@ export async function moveFood(user: UserDoc, id: string, input: MoveFoodInput):
 function suggestedDaysIn(name: string, storage: StorageLocation): number | null {
   return findReference(name)?.lifespanDays[storage] ?? null;
 }
+
+/** How long "Snooze" on a push notification keeps an item out of push reminders. */
+export const SNOOZE_DAYS = 1;
+
+/**
+ * Leaves an item out of push reminders until tomorrow, when it is reminded
+ * about again. It stays in the Cook First list and in-app reminders as usual.
+ */
+export async function snoozeFood(user: UserDoc, id: string): Promise<FoodItem> {
+  const today = clock.today(user.timeZone);
+  const food = await findOwned(user, id);
+  assertActive(food);
+  food.snoozedUntil = addDays(today, SNOOZE_DAYS);
+  await food.save();
+  return toFoodView(food, today);
+}

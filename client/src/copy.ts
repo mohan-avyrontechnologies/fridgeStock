@@ -7,7 +7,13 @@
  * to eat. Use "expected expiry" wording only; the banned phrase list is in
  * server/test/foodSafetyCopy.test.ts.
  */
-import { REFERENCE_SOURCE, type ReminderType, type StorageLocation, type Urgency } from '@cook-first/shared';
+import {
+  REFERENCE_SOURCE,
+  type ReminderMode,
+  type ReminderType,
+  type StorageLocation,
+  type Urgency,
+} from '@cook-first/shared';
 
 /** Required on Add Food and Cook First (and shown elsewhere). Do not reword. */
 export const estimateNote = 'Expected expiry is an estimate to help you plan. Always check your food before eating it.';
@@ -197,3 +203,30 @@ export const historyActionLabel = {
   WASTED: 'Wasted',
   REMOVED: 'Removed',
 } as const;
+
+/** Phase 3: push reminders on this device (Settings). */
+export const pushSettingsCopy = {
+  title: 'Push reminders',
+  intro: 'Get reminders on this device, even when Cook First is closed.',
+  turnOn: 'Turn on reminders',
+  turnOff: 'Turn off on this device',
+  on: 'Reminders are on for this device.',
+  onToast: 'Reminders are on for this device',
+  offToast: 'Reminders are off for this device',
+  blocked: 'Notifications are blocked for this site. Allow them in your browser’s site settings, then try again.',
+  dismissed: 'Reminders weren’t turned on. Tap the button again whenever you’re ready.',
+  failed: 'Couldn’t turn on reminders. Try again.',
+  unsupported: 'This browser can’t show push reminders. You’ll still see every reminder under the bell.',
+  iosHomeScreen:
+    'On iPhone, reminders need the app on your Home Screen first. Tap Share, then “Add to Home Screen”, and open Cook First from there.',
+  notConfigured: 'Push reminders aren’t set up on this server yet. You’ll still see every reminder under the bell.',
+  inAppNote: 'Every reminder also appears under the bell, even if a push doesn’t arrive.',
+  modeTitle: 'How they arrive',
+  modes: {
+    DIGEST: { title: 'One daily summary', detail: 'Your Cook First list in one message' },
+    EACH_ITEM: { title: 'One per item', detail: 'A separate message for each reminder' },
+  } satisfies Record<ReminderMode, { title: string; detail: string }>,
+  timeLabel: 'Time',
+  hour: (hour: number) => `${String(hour).padStart(2, '0')}:00`,
+  saveFailed: 'Couldn’t save that. Try again.',
+};

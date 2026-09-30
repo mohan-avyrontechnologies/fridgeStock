@@ -5,6 +5,7 @@ import type {
   Favourite,
   FavouriteInput,
   CookFirstList,
+  DeliveryInput,
   FoodInput,
   FoodItem,
   FoodList,
@@ -15,6 +16,10 @@ import type {
   NotificationFeed,
   NotificationPreferences,
   PreferencesInput,
+  PushConfig,
+  PushDevice,
+  PushSubscriptionInput,
+  ReminderDelivery,
   UpdateAccountInput,
   UsageHistory,
   UsageResult,
@@ -44,10 +49,11 @@ export function configureApi(options: { getToken: () => string | null; onUnauthe
   onUnauthenticated = options.onUnauthenticated;
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
+/** `explicitToken` is for calls made while signing out, after the stored token is cleared. */
+async function request<T>(method: string, path: string, body?: unknown, explicitToken?: string): Promise<T> {
   const headers: Record<string, string> = {};
   if (body !== undefined) headers['Content-Type'] = 'application/json';
-  const token = getToken();
+  const token = explicitToken ?? getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
 
   let res: Response;
@@ -65,7 +71,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     const error = data?.error ?? {};
-    if (res.status === 401 && token) onUnauthenticated();
+    if (res.status === 401 && token && !explicitToken) onUnauthenticated();
     throw new ApiError(res.status, error.code ?? 'UNKNOWN', error.message ?? 'Something went wrong.', error.field);
   }
   return data as T;
@@ -142,4 +148,16 @@ export const api = {
   // PUT /notifications/preferences
   updatePreferences: (body: PreferencesInput) =>
     request<NotificationPreferences>('PUT', '/notifications/preferences', body),
+  // GET /notifications/delivery
+  delivery: () => request<ReminderDelivery>('GET', '/notifications/delivery'),
+  // PUT /notifications/delivery
+  updateDelivery: (body: DeliveryInput) => request<ReminderDelivery>('PUT', '/notifications/delivery', body),
+
+  // GET /push/config
+  pushConfig: () => request<PushConfig>('GET', '/push/config'),
+  // POST /push/subscriptions
+  subscribePush: (body: PushSubscriptionInput) => request<PushDevice>('POST', '/push/subscriptions', body),
+  // DELETE /push/subscriptions
+  unsubscribePush: (endpoint: string, token?: string) =>
+    request<void>('DELETE', '/push/subscriptions', { endpoint }, token),
 };

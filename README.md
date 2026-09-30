@@ -6,8 +6,8 @@ A mobile-first web app that helps a household use perishable food before it goes
 
 | | |
 |---|---|
-| **Status** | MVP complete; post-MVP Phases 1 (faster entry) and 2 (realistic estimates) complete. Not yet deployed. |
-| **Version** | 2.6.0 (see the [Changelog](#changelog)) |
+| **Status** | MVP complete; post-MVP Phases 1 (faster entry), 2 (realistic estimates) and 3 (better reminders) complete. Not yet deployed. |
+| **Version** | 2.7.0 (see the [Changelog](#changelog)) |
 | **Requires** | Node.js 20.19 or later |
 | **Specifications** | PFCP BRD v2.0, FRD v1.0, SRD v1.0, TDD v1.0 (internal documents, not stored in this repo) |
 | **Repository** | `github.com/rugvailabs/cook_first` |
@@ -48,9 +48,9 @@ These screenshots are captured automatically by the Playwright test suite.
 
 **Phone (Pixel 7)**
 
-| Dashboard | Cook First | Recording what happened | Add food | Bulk add | Opened | Move |
-|---|---|---|---|---|---|---|
-| ![Dashboard on a phone](docs/screenshots/mobile-02-dashboard.png) | ![Cook First on a phone](docs/screenshots/mobile-03-cook-first.png) | ![Action sheet on a phone](docs/screenshots/mobile-04-action-sheet.png) | ![Add food on a phone](docs/screenshots/mobile-07-add-food.png) | ![Bulk add on a phone](docs/screenshots/mobile-11-bulk-add.png) | ![Marking milk as opened on a phone](docs/screenshots/mobile-12-opened.png) | ![Moving chicken to the freezer on a phone](docs/screenshots/mobile-13-move.png) |
+| Dashboard | Cook First | Recording what happened | Add food | Bulk add | Opened | Move | Push reminders |
+|---|---|---|---|---|---|---|---|
+| ![Dashboard on a phone](docs/screenshots/mobile-02-dashboard.png) | ![Cook First on a phone](docs/screenshots/mobile-03-cook-first.png) | ![Action sheet on a phone](docs/screenshots/mobile-04-action-sheet.png) | ![Add food on a phone](docs/screenshots/mobile-07-add-food.png) | ![Bulk add on a phone](docs/screenshots/mobile-11-bulk-add.png) | ![Marking milk as opened on a phone](docs/screenshots/mobile-12-opened.png) | ![Moving chicken to the freezer on a phone](docs/screenshots/mobile-13-move.png) | ![Push reminder settings on a phone](docs/screenshots/mobile-14-push-settings.png) |
 
 **Desktop (1440 × 900)**
 
@@ -73,11 +73,12 @@ These screenshots are captured automatically by the Playwright test suite.
 | **Dashboard** | A header with your name, a bell with the unread count and a settings icon. Then a summary bar (past, today, use soon, not urgent); a Cook First section with the top 3 urgent items and a "See all" link ("Nothing urgent right now." when empty); and the full list in priority order ("Your fridge is empty. Add your first item." when empty). A fixed **Add food** button is always in reach. |
 | **Recording what happened** | On the details screen: **Used all · Used some · Wasted · Remove**. Each card has **Used** (all or some) and **Wasted** buttons. Actions happen at once and the message offers **Undo** for a few seconds (the server allows undo for 10 minutes). "Used some" asks for a quantity. Each action is saved as a usage record. |
 | **History** | Every usage record, newest first, showing the food, action, quantity and date, with totals for each action and a "Load more" button. |
-| **Reminders** | In-app only. Sent 3 days before expiry, on the expiry day, and the day after. Each type can be turned off in Settings. They're delivered whenever you open the dashboard or the Reminders screen, and by an hourly job. They count as read once you open the Reminders screen. |
+| **Reminders** | In-app under the bell, always. Sent 3 days before expiry, on the expiry day, and the day after. Each type can be turned off in Settings. They're delivered whenever you open the dashboard or the Reminders screen, and by an hourly job. They count as read once you open the Reminders screen. |
 | **Faster entry** | A **reference list of 43 common foods** with suggested lifespans for fridge, freezer and pantry. It suggests as you type, fills in the unit and lifespan, and the user can always change the number. **Favourites** save a food and re-add it with one tap. **Bulk add** handles a whole shopping haul (up to 50 items) in one go. |
 | **Where it's kept** | Every item is kept in the **Fridge**, **Freezer** or **Pantry**, and can record an **opened date**. |
 | **Realistic estimates** | **Opened** (on the details screen) records the opened date and a days-once-opened value, prefilled from the reference list. The expected expiry becomes the opened date plus those days, but only if that's sooner; opening never makes it later. "Mark as not opened" (or Undo) puts it back. **Move** sends an item to another location and recalculates the expected expiry from today, using that location's suggested lifespan. **Your usual lifespans:** once you've entered the same food in the same location at least twice, Add Food and Bulk add suggest the median of your last 10 (marked ★), ahead of the reference list. |
-| **Settings** | Your name and email (read-only), switches for the three reminder types, a link to History, and Log out. |
+| **Push reminders** | The app is **installable** (web app manifest, icons, service worker). In Settings, **Turn on reminders** asks for notification permission only when tapped, then registers this browser with the server. Reminders arrive as **one daily summary** of the Cook First list (the default) or **one per item**, at an hour you choose (default 08:00 in your time zone). Per-item notifications have **Used** and **Snooze** buttons; if a button can't be completed, the notification opens Food Details instead. Snooze leaves the item out of push reminders until tomorrow. On an iPhone, Settings explains that the app must be added to the Home Screen first. If push fails or isn't available, reminders still appear in the app. |
+| **Settings** | Your name and email (read-only), switches for the three reminder types, push reminders for this device (on/off, daily summary or one per item, and the time), a link to History, and Log out. Logging out turns push off for that account on this device. |
 | **Privacy** | Each user only ever sees their own food, history and reminders. |
 | **Responsive** | Mobile-first and tested at **375 px** wide, with every button, link and field at least 44 px tall. From 1024 px wide: a sidebar and a two-column layout. Every screen has loading, empty and error states, and any 401 signs you out and returns you to the login page. |
 
@@ -90,6 +91,7 @@ The project is a **TypeScript monorepo** using npm workspaces, with three packag
 | Layer | Technology | Version |
 |---|---|---|
 | **Frontend** (`client`) | React | 19.3 |
+| | Service worker + web app manifest (installable app, push notifications; no extra library) | |
 | | Vite (build and dev server) | 8.3 |
 | | React Router | 7.18 |
 | | Tailwind CSS | 4.3 |
@@ -100,6 +102,7 @@ The project is a **TypeScript monorepo** using npm workspaces, with three packag
 | | bcrypt | 6.0 |
 | | zod (validation) | 4.6 |
 | | node-cron (scheduled jobs) | 4.6 |
+| | web-push (self-hosted Web Push with VAPID keys) | 3.6 |
 | | helmet, cors, express-rate-limit | 8.3 / 2.8 / 8.7 |
 | **Shared** (`shared`) | Enums, API request and response types, zod schemas, date utilities | |
 | **Language** | TypeScript | 6.0 |
@@ -240,6 +243,11 @@ Open http://localhost:5173 and create an account.
 | `JWT_SECRET` | development-only value | **Yes** | Key for signing login tokens (HS256). Generate one with `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` |
 | `JWT_EXPIRES_IN` | `7d` | No | How long a login lasts |
 | `CLIENT_ORIGIN` | `http://localhost:5173` | **Yes** | The web app's address, allowed by CORS (comma-separate several) |
+| `VAPID_PUBLIC_KEY` | *(empty)* | For push | Web Push public key. The only key the client ever sees (`GET /push/config`). |
+| `VAPID_PRIVATE_KEY` | *(empty)* | For push | Web Push private key. Secret; never leaves the server. |
+| `VAPID_SUBJECT` | *(empty)* | For push | Contact for push services, a `mailto:` or `https:` URL |
+
+Generate the VAPID key pair once with `npm run vapid:keys -w server`. Push is switched on only when all three VAPID variables are set; without them, reminders stay in-app and Settings says push isn't set up.
 
 In production the server **refuses to start** if `MONGO_URI` or `JWT_SECRET` is missing.
 
@@ -264,7 +272,8 @@ Run these from the repository root:
 | `npm run lint` | ESLint across all three packages |
 | `npm run format` / `npm run format:check` | Format with Prettier / check formatting (CI runs the check) |
 | `npm run typecheck` | TypeScript check of `shared`, `server` and `client` |
-| `npm test` | Unit and API tests: shared (25) + server (183) + client (50) |
+| `npm run vapid:keys -w server` | Generate a Web Push (VAPID) key pair for `server/.env` |
+| `npm test` | Unit and API tests: shared (26) + server (214) + client (68) |
 | `npm run test:e2e` | Playwright end-to-end tests (16), at 375 px and 1440 px |
 | `npm run build` | Build `shared/dist`, `server/dist` and `client/dist` |
 
@@ -274,18 +283,19 @@ Run these from the repository root:
 
 | Suite | Tools | Tests | What it covers |
 |---|---|---|---|
-| **Dates and reference list** (`shared/src/*.test.ts`) | Vitest | 25 | Valid and invalid dates, leap years (including 2000 and 2100), today in several time zones, month and year ends, daylight-saving weekends, `addDays`/`diffDays` as inverses, the "Thu, 1 Oct" format; the reference list (unique names, valid units, 0–365 lifespans, freezer longer than fridge, search) |
+| **Dates and reference list** (`shared/src/*.test.ts`) | Vitest | 26 | Valid and invalid dates, the hour in a time zone (for push timing), leap years (including 2000 and 2100), today in several time zones, month and year ends, daylight-saving weekends, `addDays`/`diffDays` as inverses, the "Thu, 1 Oct" format; the reference list (unique names, valid units, 0–365 lifespans, freezer longer than fridge, search) |
 | **API and logic** (`server/src/tests`) | Vitest, Supertest, mongodb-memory-server | 107 | `auth`, `foods`, `notifications`, `security` and `priorityEngine` tests: registration and login, tokens, every validation message, limits and units, expiry never accepted from the client, `/use` (whole, partial, 0, negative or too much), `/waste`, `DELETE`, 409 on closed items, `/usage` paging, each reminder scheduling rule (including a zero-day lifespan), the three exact messages, `dispatchDue` on `GET /foods`, a dispatch failure never breaking the inventory or Cook First, `{n}` worked out at send time, delivery, failures and preferences, cross-user isolation, and all the required priority-engine cases |
 | **Phase 1** (`phase1.test.ts`) | Vitest, Supertest | 18 | Household, storage and opened-date fields (defaults, validation, editing, backfill of existing data); bulk add (shared date, per-row storage, reminders, the failing row's field path, all-or-nothing, 1–50 limit); favourites (create, duplicate 409, one-tap add, delete, privacy); undo for every action (quantity, status, reminders and usage record restored; stepping back; nothing to undo; 10-minute limit; other users get 404) |
 | **Phase 2** (`phase2.test.ts`) | Vitest, Supertest | 16 | Opened: milk shortens to its typical 4 days and reminders move; opening never lengthens the expiry; custom days and past opened dates; 400 when there's no typical value; 409 when already opened or closed; invalid dates; mark as not opened restores the lifespan. Move: chicken to the freezer and back, custom days, the 365-day cap, 400 for no freezer value, the same location or bad days, 404 for another user. Learned lifespans: median of your entries per food and location, at least 2 needed, closed items count, only the last 10, never another user's, backfill |
+| **Phase 3** (`phase3.test.ts`) | Vitest, Supertest, a fake `PushProvider` | 30 | Only the VAPID public key is exposed (null when push isn't set up); subscriptions store user, endpoint, keys, browser and last use, re-subscribing updates, https endpoints only, users can only remove their own; delivery settings (daily summary at 08:00 by default, one per item, hour 0–23); the digest waits for the user's hour in their own time zone, goes out once a day, lists the Cook First items in Cook First order ("and N more" after 4), is skipped when nothing needs attention, and never changes the order; one push per item with Used and Snooze and a Food Details link, sent to every browser; 404/410 deletes the subscription, other errors keep it and in-app reminders still arrive; Used closes the item with a usage record; Snooze drops it from today's summary and brings it back tomorrow (and re-pushes it in per-item mode); bad or login tokens rejected, action tokens can't sign in or touch another user's item; the web-push provider's payload, VAPID keys and 404/410 handling |
 | **API contract** (`api.test.ts`) | Vitest, Supertest | 14 | Only the agreed error codes, never a stack trace, 500 is `INTERNAL`, database validation errors are 400, login 401 message, exact register messages, user and food response shapes, priority order and summary, `cook-first` matched before `/:id`, reminders scheduled on create and rescheduled only when dates change, pending reminders deleted on close, old routes removed |
-| **Wording guard** (`foodSafetyCopy.test.ts`) | Vitest | 5 | Scans every `.ts`/`.tsx` file in `client/src`, `server/src` and `shared/src`, comments included, for the banned phrases. Fails on the word "safe" in either copy file, or on expiry wording outside the copy files. Checks the required estimate line. |
+| **Wording guard** (`foodSafetyCopy.test.ts`) | Vitest | 6 | Scans every `.ts`/`.tsx` file in `client/src`, `server/src` and `shared/src`, comments included, for the banned phrases, plus the service worker, app manifest and `index.html`. Fails on the word "safe" in either copy file, or on expiry wording outside the copy files. Checks the required estimate line. |
 | **Project rules** (`rules.test.ts`) | Vitest, Supertest | 11 | Every database query carries the user's ID; the query-string `userId` is ignored; pure priority engine; bcrypt cost 12; passwords never returned or logged; `.env` ignored; helmet; CORS; rate limit of 20 per 15 minutes |
 | **Server structure** (`structure.test.ts`) | Vitest | 12 | The `server/src` folders; thin controllers; only models talk to MongoDB; no `new Date()` in date logic; dates only from `shared`; hourly node-cron job; env variable names and defaults; the threshold of 3 exists only in `config/urgency.ts` (checked across client, server and shared); expiry calculated in the food service with no Mongoose hook |
-| **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 50 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and preview, the required estimate line, all five remaining-days phrasings, colour always paired with a label, exactly seven units, notes, reminders marked read when the screen opens; the dashboard header, 3-item Cook First with "See all", and empty texts; Add Food defaults, the unit dropdown, the "Add note" link and the preview format; reference suggestions (including following the storage location), storage sent with the item, one-tap favourites, Undo instead of confirmations, bulk add (reference fill, one request, per-row errors); learned lifespans (★ chip, the "You usually set" hint, falling back to the reference list per location); Opened (prefilled days, missing-days message, mark as not opened) and Move (other locations only, per-location suggestion, request body); the Reminders error state; plus client structure checks |
-| **End-to-end** (`e2e/`) | Playwright in Chrome | 18 | 9 journeys, each run at **375 px phone size** and **desktop size (1440×900)** |
+| **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 68 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and preview, the required estimate line, all five remaining-days phrasings, colour always paired with a label, exactly seven units, notes, reminders marked read when the screen opens; the dashboard header, 3-item Cook First with "See all", and empty texts; Add Food defaults, the unit dropdown, the "Add note" link and the preview format; reference suggestions (including following the storage location), storage sent with the item, one-tap favourites, Undo instead of confirmations, bulk add (reference fill, one request, per-row errors); learned lifespans (★ chip, the "You usually set" hint, falling back to the reference list per location); Opened (prefilled days, missing-days message, mark as not opened) and Move (other locations only, per-location suggestion, request body); push reminders (permission asked only on tapping "Turn on reminders", on/off, blocked and dismissed messages, the iPhone Home Screen hint, unsupported browser, no server key, the in-app note, saving mode and time, turning push off at logout with the old token); the browser push layer (iPhone detection, subscribing with the VAPID key and registering the browser, unsubscribing on server and browser, key decoding, browser names); the Reminders error state; plus client structure checks |
+| **End-to-end** (`e2e/`) | Playwright in Chrome | 20 | 10 journeys, each run at **375 px phone size** and **desktop size (1440×900)** |
 
-The nine end-to-end journeys:
+The ten end-to-end journeys:
 
 1. **The spec journey:** sign up → add chicken (1-day lifespan) and eggs (8-day) → Cook First shows only the chicken → mark it used → it has disappeared from both the dashboard and Cook First
 2. Register → add food → Cook First → mark used → History
@@ -296,8 +306,9 @@ The nine end-to-end journeys:
 7. Reminder settings and log out
 8. **Phase 1:** bulk add a haul → waste one and **Undo** it → save a favourite, use it up, and re-add it with one tap
 9. **Phase 2:** open milk (7 → 4 days) → move chicken to the freezer (270 days) → add milk again and see "You usually set 7 days" on Add Food
+10. **Phase 3:** the manifest and icons are served and the service worker runs → Settings shows "Turn on reminders" with permission still unasked → switch to one per item at 18:00 and reload → tapping asks for permission → an iPhone in a browser tab sees the Home Screen hint instead
 
-Every page visited is also checked for banned wording, sideways scrolling, and **tap targets under 44 px**.
+Every page visited is also checked for banned wording, sideways scrolling, and **tap targets under 44 px**. The end-to-end API runs with a freshly generated VAPID key pair, and with the sign-up rate limit off (the journeys create more than 20 accounts; the limit itself is unit-tested).
 
 **Required coverage.** Where each testing requirement is covered:
 
@@ -375,7 +386,7 @@ Every closing action sets `closedAt` and deletes the item's pending reminders. A
 
 ### Reminders
 
-Reminders are **in-app only** for the MVP.
+Every reminder is delivered **in-app** (under the bell). Since v2.7 they can also arrive as **push notifications**; push is an extra layer and in-app delivery never depends on it.
 
 **Scheduling.** Whenever an item is created, or its added date or lifespan changes, its pending reminders are deleted and one is created for each type the user has enabled (`scheduledDateFor` in `services/notificationService.ts`):
 
@@ -399,6 +410,18 @@ A failed send is marked `FAILED` and retried until it has been attempted 3 times
 
 In `GET /foods` it's wrapped so that any reminder failure is only logged: it can never affect the inventory or the Cook First list.
 
+**Push (v2.7).** The hourly job runs `pushDue(user)` after `dispatchDue`, for users with at least one registered browser, once the user's chosen hour has arrived in their time zone:
+
+| Mode | What is sent |
+|---|---|
+| `DIGEST` (default) | Once a day: "Cook First: N items to check", listing up to 4 items from the Cook First list **in Cook First order** ("Bread: expected expiry today", "Chicken: expected expiry in 1 day", "and 2 more"). Opens the Cook First screen. With a single item it opens that item and has the Used and Snooze buttons. Nothing is sent when nothing needs attention. |
+| `EACH_ITEM` | One notification per reminder delivered that day, with the same text as the in-app reminder, opening that item's Food Details, with **Used** and **Snooze** buttons. |
+
+- **Buttons.** The service worker (`client/public/sw.js`) calls `POST /push/actions` with a narrow **action token** carried in the notification: signed with the server secret, valid 7 days, naming one user and one item, and rejected as a login token. **Used** closes the item exactly like "Used all" (with a usage record). **Snooze** sets `snoozedUntil` to tomorrow: the item is left out of push reminders until then, then reminded about again (per-item) or back in the summary (digest). It stays in Cook First and in-app reminders throughout. If the call fails (expired token, item already closed, offline), Food Details opens instead.
+- **Delivery goes through a `PushProvider` interface** (`services/pushProvider.ts`). The Web Push provider uses the `web-push` library with the VAPID keys; a Firebase provider for native apps could be added without touching the notification service.
+- **Failures.** 404 or 410 from the push service deletes that subscription. Any other error is logged and the subscription kept. A push failure never changes in-app reminders, and one user's failure doesn't stop others.
+- **Wording.** All notification text comes from `server/src/copy.ts`; the service worker has none of its own. The Cook First order is read, never changed.
+
 **Feed.** Paginated: pages of up to 50 reminders (`SENT` or `FAILED`), newest first, with the total and the unread count. The Reminders screen has "Load more". `readAt` stays empty until the user opens the Reminders screen, which calls `POST /notifications/read-all`. New ones still show a "New" tag during that visit.
 
 ---
@@ -416,7 +439,7 @@ The app is mobile-first and tested at **375 px** wide. Buttons, links and fields
 | **Cook First** | Urgent items in priority order: name, quantity, unit, expected expiry, remaining days, urgency and notes, with **Used** (all or some) and **Wasted** buttons, plus the disclaimer. "Nothing needs attention right now." when nothing is urgent. |
 | **Bulk add** | Rows of name, quantity, unit, lifespan and where it's kept, sharing one added date. Picking a reference food fills in the rest. Errors show on the exact row. |
 | **Reminders** | Newest first, 50 at a time with "Load more". Everything is marked read when the screen opens. |
-| **Settings** | Name and email (read-only), the three reminder switches, a link to History, and Log out. |
+| **Settings** | Name and email (read-only), the three reminder switches, **Push reminders** (Turn on reminders / Turn off on this device, or the reason push isn't available: iPhone Home Screen hint, unsupported browser, blocked permission, or not set up on the server), daily summary or one per item, the time, a link to History, and Log out. |
 | **History** | Usage records newest first: food, action, quantity and date, with "Load more". |
 
 ---
@@ -444,11 +467,12 @@ MongoDB collections:
 
 | Collection | Fields |
 |---|---|
-| **users** | `householdId` (every user starts in their own household), `name` (1–50 characters), `email` (stored in lowercase, unique), `passwordHash` (bcrypt, never returned), `timeZone` (IANA, default `UTC`), `notificationPreferences {approachingExpiry, due, overdue}` (all default `true`) |
-| **fooditems** | `userId` (exactly one owner), `householdId` (the owner's), `storage` (`FRIDGE`/`FREEZER`/`PANTRY`, default `FRIDGE`), `openedDate` (`YYYY-MM-DD` or null; not in the future or before `addedDate`), `name` (1–60), `quantity` (> 0), `unit` (`pcs`/`g`/`kg`/`ml`/`l`/`pack`/`bunch`), `addedDate` (`YYYY-MM-DD`, not in the future in the user's time zone), `lifespanDays` (whole number 0–365), `expiryDate` (= `addedDate` + `lifespanDays`), `notes` (optional, ≤ 200), `status` (`ACTIVE`/`USED`/`WASTED`/`REMOVED`, default `ACTIVE`), `closedAt` (set when it stops being active), `lifespanBeforeOpened` (null unless opened), `enteredLifespanDays` and `enteredStorage` (what the user typed, used to learn their usual lifespans) |
+| **users** | `householdId` (every user starts in their own household), `name` (1–50 characters), `email` (stored in lowercase, unique), `passwordHash` (bcrypt, never returned), `timeZone` (IANA, default `UTC`), `notificationPreferences {approachingExpiry, due, overdue}` (all default `true`), `reminderDelivery` (`mode`: `DIGEST`/`EACH_ITEM`, default `DIGEST`; `hour`: 0–23, default 8), `lastDigestDate` |
+| **fooditems** | `userId` (exactly one owner), `householdId` (the owner's), `storage` (`FRIDGE`/`FREEZER`/`PANTRY`, default `FRIDGE`), `openedDate` (`YYYY-MM-DD` or null; not in the future or before `addedDate`), `name` (1–60), `quantity` (> 0), `unit` (`pcs`/`g`/`kg`/`ml`/`l`/`pack`/`bunch`), `addedDate` (`YYYY-MM-DD`, not in the future in the user's time zone), `lifespanDays` (whole number 0–365), `expiryDate` (= `addedDate` + `lifespanDays`), `notes` (optional, ≤ 200), `status` (`ACTIVE`/`USED`/`WASTED`/`REMOVED`, default `ACTIVE`), `closedAt` (set when it stops being active), `snoozedUntil` (`YYYY-MM-DD` or null; set by Snooze on a notification), `lifespanBeforeOpened` (null unless opened), `enteredLifespanDays` and `enteredStorage` (what the user typed, used to learn their usual lifespans) |
 | **usagerecords** | `userId`, `foodId`, `action` (`USED`/`PARTIALLY_USED`/`WASTED`/`REMOVED`), `date` (`YYYY-MM-DD` in the user's time zone), `quantityUsed`, `unit` (copied from the item), plus `foodName`, `quantityRemaining` and `createdAt` |
 | **favourites** | `userId`, `name`, `nameKey` (lower-case, unique per user), `quantity`, `unit`, `lifespanDays`, `storage` |
-| **notifications** | `userId`, `foodId`, `type` (`APPROACHING_EXPIRY`/`DUE`/`OVERDUE`), `scheduledDate` (`YYYY-MM-DD`), `status` (`PENDING`/`SENT`/`FAILED`, default `PENDING`), `message`, `sentAt`, `readAt` (empty until the Reminders screen is opened), `attempts` (starts at 0), plus `expiryDate` and `lastError` |
+| **notifications** | `userId`, `foodId`, `type` (`APPROACHING_EXPIRY`/`DUE`/`OVERDUE`), `scheduledDate` (`YYYY-MM-DD`), `status` (`PENDING`/`SENT`/`FAILED`, default `PENDING`), `message`, `sentAt`, `readAt` (empty until the Reminders screen is opened), `attempts` (starts at 0), plus `expiryDate`, `lastError` and `pushedAt` (when it went out as a push, alone or in a digest) |
+| **pushsubscriptions** | `userId`, `endpoint` (unique per user; never returned by the API), `keys.p256dh`, `keys.auth`, `browser` (e.g. "Chrome on Android"), `lastUsedAt`, `createdAt`. Deleted when the push service answers 404 or 410, on "Turn off on this device", and at logout. |
 
 **The expiry date is calculated in `services/foodService.ts`** when an item is created and whenever its added date or lifespan changes. There's deliberately no Mongoose hook, because hooks don't run on update queries. Any expiry date sent by the client is ignored.
 
@@ -465,9 +489,11 @@ MongoDB collections:
 - copies `lifespanDays` and `storage` into `enteredLifespanDays` and `enteredStorage` where missing (v2.6)
 - removes out-of-date indexes
 
+The v2.7 fields (`reminderDelivery`, `lastDigestDate`, `snoozedUntil`, `pushedAt`) need no migration: their defaults apply when older documents are read.
+
 The household ID, storage location and opened date were added **ahead of the later phases**, so shared households, location-based lifespans and the "Opened" action won't need another migration.
 
-**Stored in the browser:** only the login token and basic profile (`localStorage`, through Zustand `persist`), cleared at sign-out.
+**Stored in the browser:** only the login token and basic profile (`localStorage`, through Zustand `persist`), cleared at sign-out, plus the browser's own push subscription when reminders are turned on (removed at sign-out).
 
 ---
 
@@ -505,6 +531,12 @@ Base URL: `http://localhost:4000/api` (`VITE_API_URL`). Requests and responses a
 | POST | `/favourites` | `{name, quantity, unit, lifespanDays, storage?}` | `201 Favourite` | 400, 409 name already a favourite |
 | DELETE | `/favourites/:id` | | `204` | 404 |
 | POST | `/favourites/:id/add` | | `201 FoodItem` added today | 404 |
+| GET | `/notifications/delivery` | | `{mode, hour}` | 401 |
+| PUT | `/notifications/delivery` | `{mode?: "DIGEST" \| "EACH_ITEM", hour?: 0–23}` | `{mode, hour}` | 400 |
+| GET | `/push/config` | | `{publicKey}`: the VAPID public key, or `null` when push isn't set up | 401 |
+| POST | `/push/subscriptions` | `{endpoint (https), keys: {p256dh, auth}, browser?}` (the browser's `PushSubscription.toJSON()`) | `201 {id, browser, createdAt, lastUsedAt}`. Subscribing again updates it. | 400 |
+| DELETE | `/push/subscriptions` | `{endpoint}` | `204` (only your own) | 400 |
+| POST | `/push/actions` | `{token, action: "USED" \| "SNOOZE"}`. **No login token:** called by the service worker with the notification's action token. | `204`. USED = "Used all"; SNOOZE = out of push reminders until tomorrow. | 400, 401 bad or expired token, 404, 409 already closed |
 | PUT | `/notifications/preferences` | `{approachingExpiry?, due?, overdue?}` | preferences; pending reminders of any turned-off type are deleted | 400 |
 
 **Also available** (used by the app):
@@ -568,10 +600,10 @@ These rules must never be broken. Each one is enforced in code and checked by an
 
 - **Passwords:** hashed with bcrypt (cost 12) and never stored, logged or returned in plain text. A wrong email and a wrong password give the same response.
 - **Login tokens:** JWT, HS256, 7-day expiry. The token carries only the user ID. Expired or tampered tokens are rejected, and the app signs the user out.
-- **Access control:** the identity comes only from the verified JWT. Every query on food items, usage records and reminders includes the user's ID. Any `userId` in the body, query string or URL is ignored. Another user's item returns 404.
+- **Access control:** the identity comes only from the verified JWT. Every query on food items, usage records, reminders, favourites and push subscriptions includes the user's ID. Notification buttons use a separate single-item action token that can't sign in. Any `userId` in the body, query string or URL is ignored. Another user's item returns 404.
 - **Input:** everything is checked on the server with the shared zod schemas.
-- **HTTP:** Helmet headers, CORS limited to `CLIENT_ORIGIN`, a 20 KB request size limit, and `/auth/*` limited to 20 requests per 15 minutes per IP address.
-- **Secrets:** read only from environment variables and never committed.
+- **HTTP:** Helmet headers, CORS limited to `CLIENT_ORIGIN`, a 20 KB request size limit, `/auth/*` limited to 20 requests per 15 minutes per IP address, and `/push/actions` to 60.
+- **Secrets:** read only from environment variables and never committed. The VAPID private key never leaves the server; the end-to-end tests generate a fresh key pair on every run.
 
 ---
 
@@ -580,7 +612,7 @@ These rules must never be broken. Each one is enforced in code and checked by an
 The configuration is ready but **nothing has been deployed yet**.
 
 1. **Database: MongoDB Atlas.** Create a free cluster and copy its connection string.
-2. **API: Render** (or any Node host). New → Blueprint → select this repo. `render.yaml` builds `shared` and `server`, starts `node server/dist/index.js`, checks `/api/health`, and generates `JWT_SECRET`. Set `MONGO_URI` and `CLIENT_ORIGIN`.
+2. **API: Render** (or any Node host). New → Blueprint → select this repo. `render.yaml` builds `shared` and `server`, starts `node server/dist/index.js`, checks `/api/health`, and generates `JWT_SECRET`. Set `MONGO_URI` and `CLIENT_ORIGIN`, and, for push reminders, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `VAPID_SUBJECT`.
 3. **Web app: Vercel.** Import the repo and set the root directory to `client`. Set `VITE_API_URL` to `https://<api-host>/api`.
 4. **Finish up.** Put the Vercel address into `CLIENT_ORIGIN` on the API host and redeploy.
 
@@ -641,7 +673,7 @@ The project was built in these phases; each one is complete.
 |---|---|
 | All MVP functional requirements (FR-AUTH, FOOD, EXP, PRI, UI, NOT, USE, VAL) | ✅ Done |
 | Monorepo with `client`, `server` and `shared`; Node 20.19+ | ✅ Done |
-| Tests: 25 shared + 183 server + 50 client + 18 end-to-end = **276** | ✅ Passing |
+| Tests: 26 shared + 214 server + 68 client + 20 end-to-end = **328** | ✅ Passing |
 | ESLint, Prettier and typecheck on all packages | ✅ Clean |
 | All project rules (see [Project rules](#project-rules)) | ✅ Met, each one checked by a test |
 | Phone (375 px) and desktop layouts, 44 px tap targets | ✅ Done, checked in screenshots and by tests |
@@ -651,7 +683,8 @@ The project was built in these phases; each one is complete.
 | Opening on a phone over Wi-Fi | ⏸ Paused: the phone's requests didn't reach the PC |
 | Post-MVP Phase 1 (faster entry) | ✅ Done |
 | Post-MVP Phase 2 (realistic estimates) | ✅ Done |
-| Post-MVP Phases 3–6 | ⏳ Planned (see [Roadmap](#roadmap)) |
+| Post-MVP Phase 3 (better reminders) | ✅ Done. Push needs VAPID keys set on the server. |
+| Post-MVP Phases 4–6 | ⏳ Planned (see [Roadmap](#roadmap)) |
 
 ---
 
@@ -661,6 +694,26 @@ All notable changes to this project are listed here, newest first. Versions foll
 
 ### [Unreleased]
 - *Nothing yet.*
+
+### [2.7.0] - 2026-09-30: Phase 3 (better reminders) · `COMMIT_HASH`
+**Added**
+- **Installable web app:** `manifest.webmanifest`, PNG icons (192, 512, maskable, Apple touch icon) and a service worker (`client/public/sw.js`).
+- **Self-hosted Web Push** with the `web-push` library and VAPID keys from `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `VAPID_SUBJECT`. Only the public key reaches the client (`GET /push/config`).
+- **`PushProvider` interface** (`services/pushProvider.ts`): the notification service never talks to web-push directly, so Firebase could be added later for native apps.
+- **`PushSubscription` collection:** user ID, endpoint, p256dh and auth keys, browser, last used. Deleted automatically when the push service returns 404 or 410. API: `POST` and `DELETE /push/subscriptions`.
+- **Daily digest or one per item** at a chosen hour in the user's time zone (default: a daily summary at 08:00). API: `GET` and `PUT /notifications/delivery`.
+- **Used and Snooze buttons** in notifications, via `POST /push/actions` and a single-item action token. If a button can't be completed, Food Details opens instead.
+- **Settings → Push reminders:** permission is asked only after tapping "Turn on reminders". Also: Turn off on this device, blocked/unsupported/not-set-up messages, and an iPhone hint that the app must be added to the Home Screen first.
+- `hourInTz` in `shared/src/dates.ts`; `npm run vapid:keys -w server`.
+- **Tests:** 30 server, 18 client, 1 shared, a wording-guard check of the public files, and a Phase 3 end-to-end journey (at 375 px and desktop).
+
+**Changed**
+- In-app reminders are unchanged and never depend on push: push runs after in-app delivery in the hourly job, and its failures are logged and isolated.
+- Login tokens with an audience are rejected, so an action token can never sign in.
+- Logging out removes this device's push subscription (server and browser).
+- `.env.example` and `render.yaml` list the three VAPID variables.
+- The end-to-end API runs with a fresh VAPID key pair and the sign-up rate limit off.
+- There was no `DeviceToken` collection to replace; `PushSubscription` is new.
 
 ### [2.6.0] - 2026-09-29: Phase 2 (realistic estimates) · `f59037d`
 **Added**
@@ -899,8 +952,8 @@ Post-MVP phases are built one at a time, each with its tests passing before the 
 | **0. Data model** | Household ID, storage location, opened date | ✅ Done (v2.5.0) | – |
 | **1. Faster entry** | Reference list with suggested lifespans · favourites with one-tap re-add · bulk add · Undo instead of confirmations | ✅ Done (v2.5.0) | – |
 | **2. Realistic estimates** | Fridge, freezer and pantry lifespans · an "Opened" action that shortens expected expiry · lifespan suggestions learned from your own history | ✅ Done (v2.6.0) | – |
-| **3. Better reminders** | Installable web app (PWA) · push notifications · a daily digest at a chosen time · "Used" and "Snooze" buttons in notifications | Next | A decision on push delivery: self-hosted Web Push (VAPID keys) or Firebase Cloud Messaging |
-| **4. Using the food** | Leftovers as new short-lifespan items · a shopping list that warns about food already at home · AI recipe suggestions from Cook First · a weekly meal plan | Planned | An AI provider and API key for recipes |
+| **3. Better reminders** | Installable web app (PWA) · push notifications · a daily digest at a chosen time · "Used" and "Snooze" buttons in notifications | ✅ Done (v2.7.0), self-hosted Web Push | VAPID keys on the deployed server (`npm run vapid:keys -w server`) |
+| **4. Using the food** | Leftovers as new short-lifespan items · a shopping list that warns about food already at home · AI recipe suggestions from Cook First · a weekly meal plan | Next | An AI provider and API key for recipes |
 | **5. Insights** | Used-versus-wasted dashboard · optional prices showing money saved or lost · a weekly summary with tips | Planned | – |
 | **6. Sharing and scanning** | Shared households with invites and an activity log · voice entry · barcode scanning · receipt scanning · grocery integrations · multiple languages · dark mode · data export · account deletion | Planned | Barcode data source (e.g. Open Food Facts), receipt OCR service, which grocery partners (they need commercial API access), and which languages |
 

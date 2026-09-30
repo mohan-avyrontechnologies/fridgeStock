@@ -74,9 +74,16 @@ describe('errors', () => {
 });
 
 describe('responses', () => {
-  it('users have id, name, email, time zone and preferences only', async () => {
+  it('users have id, name, email, time zone, preferences and reminder delivery only', async () => {
     const me = await s.auth(api().get('/api/auth/me')).expect(200);
-    expect(Object.keys(me.body.user).sort()).toEqual(['email', 'id', 'name', 'notificationPreferences', 'timeZone']);
+    expect(Object.keys(me.body.user).sort()).toEqual([
+      'email',
+      'id',
+      'name',
+      'notificationPreferences',
+      'reminderDelivery',
+      'timeZone',
+    ]);
   });
 
   it('food items have their stored fields plus remaining days and urgency', async () => {

@@ -25,3 +25,10 @@ services:
         sync: false
       - key: CLIENT_ORIGIN
         sync: false
+      # Web Push keys (npm run vapid:keys -w server). Optional: without them reminders stay in-app.
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        sync: false

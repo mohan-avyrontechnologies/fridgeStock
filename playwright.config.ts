@@ -1,10 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
+import webpush from 'web-push';
 
 /**
  * End-to-end: real API (throwaway in-memory MongoDB) + real client, driven in
  * the locally installed Chrome, once at phone size and once at desktop size. Uses its own ports so
  * it never collides with a running dev setup.
  */
+// Fresh Web Push keys for each run, so push is switched on without committing a key.
+const vapid = webpush.generateVAPIDKeys();
+
 const API_PORT = 4100;
 const WEB_PORT = 5174;
 
@@ -46,8 +50,13 @@ export default defineConfig({
       env: {
         PORT: String(API_PORT),
         EPHEMERAL_DB: '1',
+        // The journeys sign up more than 20 accounts from one IP; the limit itself is unit-tested (rules.test.ts).
+        AUTH_RATE_LIMIT: 'off',
         MONGO_URI: '',
         CLIENT_ORIGIN: `http://localhost:${WEB_PORT}`,
+        VAPID_PUBLIC_KEY: vapid.publicKey,
+        VAPID_PRIVATE_KEY: vapid.privateKey,
+        VAPID_SUBJECT: 'mailto:e2e@example.com',
       },
     },
     {

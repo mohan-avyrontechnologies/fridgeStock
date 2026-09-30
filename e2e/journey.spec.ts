@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { devices, expect, test, type Page } from '@playwright/test';
 
 let counter = 0;
 const uniqueEmail = () => `e2e-${Date.now()}-${++counter}@example.com`;
@@ -358,4 +358,58 @@ test('phase 2: opening shortens the expected expiry, moving recalculates it, and
   await expectNoSafetyClaim(page);
   await expectNoHorizontalScroll(page);
   await expectLargeTapTargets(page);
+});
+
+test('phase 3: installable app; push reminders ask for permission only after "Turn on reminders"', async ({
+  page,
+  browser,
+}) => {
+  await register(page, 'Mira Holt');
+
+  // Installable: a manifest with real icons, and the service worker is running.
+  const manifest = await (await page.request.get('/manifest.webmanifest')).json();
+  expect(manifest).toMatchObject({ name: 'Cook First', display: 'standalone', start_url: '/' });
+  for (const icon of manifest.icons) expect((await page.request.get(icon.src)).ok()).toBe(true);
+  const worker = await page.evaluate(async () => (await navigator.serviceWorker.ready).active?.scriptURL ?? '');
+  expect(worker).toContain('/sw.js?api=');
+
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  const turnOn = page.getByRole('button', { name: 'Turn on reminders' });
+  await expect(turnOn).toBeVisible();
+  // Nothing has asked for permission yet.
+  expect(await page.evaluate(() => Notification.permission)).toBe('default');
+
+  // Daily summary or one per item, at a chosen hour; both are saved.
+  await expect(page.getByRole('button', { name: /One daily summary/ })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: /One per item/ }).click();
+  await expect(page.getByRole('button', { name: /One per item/ })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByLabel('Time').selectOption('18');
+  await expect(page.getByText('Every reminder also appears under the bell')).toBeVisible();
+  await page.waitForTimeout(300);
+  await shot(page, '14-settings-full');
+  await page.getByRole('region', { name: 'Push reminders' }).screenshot({
+    path: `e2e/screenshots/${test.info().project.name}/14-push-settings.png`,
+    style: '[aria-live="polite"], nav { visibility: hidden !important; }',
+  });
+  await page.reload();
+  await expect(page.getByRole('button', { name: /One per item/ })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByLabel('Time')).toHaveValue('18');
+
+  // Tapping asks. The test browser doesn't grant it, and the page says what to do next.
+  await page.getByRole('button', { name: 'Turn on reminders' }).click();
+  await expect(page.getByText(/Reminders weren’t turned on|Notifications are blocked for this site/)).toBeVisible();
+  await expectNoSafetyClaim(page);
+
+  // On an iPhone in a browser tab, a hint explains the Home Screen step instead.
+  const iphone = await browser.newContext({
+    ...devices['iPhone 15'],
+    defaultBrowserType: undefined,
+    baseURL: test.info().project.use.baseURL,
+  });
+  const phone = await iphone.newPage();
+  await register(phone, 'Ivo Park');
+  await phone.getByRole('link', { name: 'Settings', exact: true }).click();
+  await expect(phone.getByText(/On iPhone, reminders need the app on your Home Screen first/)).toBeVisible();
+  await expect(phone.getByRole('button', { name: 'Turn on reminders' })).toHaveCount(0);
+  await iphone.close();
 });

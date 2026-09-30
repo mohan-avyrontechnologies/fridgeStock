@@ -1,9 +1,15 @@
+import { REMINDER_MODES, type DateString, type ReminderMode } from '@cook-first/shared';
 import { Schema, Types, model, type HydratedDocument } from 'mongoose';
 
 export interface NotificationPreferences {
   approachingExpiry: boolean;
   due: boolean;
   overdue: boolean;
+}
+
+export interface ReminderDelivery {
+  mode: ReminderMode;
+  hour: number;
 }
 
 export interface User {
@@ -14,6 +20,9 @@ export interface User {
   notificationPreferences: NotificationPreferences;
   /** Every user starts in their own household; shared households (a later phase) will reuse it. */
   householdId: Types.ObjectId;
+  reminderDelivery: ReminderDelivery;
+  /** The user's calendar day the last daily digest was pushed on. */
+  lastDigestDate: DateString | null;
 }
 
 const userSchema = new Schema<User>(
@@ -29,6 +38,12 @@ const userSchema = new Schema<User>(
       overdue: { type: Boolean, default: true },
     },
     householdId: { type: Schema.Types.ObjectId, required: true, default: () => new Types.ObjectId(), index: true },
+    // Push reminders: a daily summary by default, at 8:00 in the user's time zone.
+    reminderDelivery: {
+      mode: { type: String, enum: REMINDER_MODES, default: 'DIGEST' },
+      hour: { type: Number, min: 0, max: 23, default: 8 },
+    },
+    lastDigestDate: { type: String, default: null },
   },
   { timestamps: true },
 );

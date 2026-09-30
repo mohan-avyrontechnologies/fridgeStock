@@ -55,6 +55,15 @@ describe('food-safety wording', () => {
     expect(offenders).toEqual([]);
   });
 
+  it('the service worker, app manifest and index.html never call food safe', () => {
+    const publicFiles = ['../client/public/sw.js', '../client/public/manifest.webmanifest', '../client/index.html'];
+    for (const file of publicFiles.map((f) => path.resolve(f))) {
+      const text = readFileSync(file, 'utf8').toLowerCase();
+      for (const phrase of BANNED_PHRASES) expect(text, rel(file)).not.toContain(phrase);
+      expect(text, rel(file)).not.toMatch(/\bsafe\b/);
+    }
+  });
+
   it('neither copy file contains the standalone word "safe"', () => {
     for (const file of COPY_FILES) {
       expect(readFileSync(file, 'utf8'), rel(file)).not.toMatch(/\bsafe\b/i);

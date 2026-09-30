@@ -3,6 +3,8 @@ import type {
   FoodStatus,
   NotificationStatus,
   PreferenceKey,
+  PushAction,
+  ReminderMode,
   ReminderType,
   StorageLocation,
   Unit,
@@ -14,12 +16,20 @@ import type {
 
 export type NotificationPreferences = Record<PreferenceKey, boolean>;
 
+/** How and when push reminders arrive. In-app reminders under the bell are not affected. */
+export interface ReminderDelivery {
+  mode: ReminderMode;
+  /** Hour of the day (0–23, in the user's time zone) when push reminders go out. */
+  hour: number;
+}
+
 export interface User {
   id: string;
   name: string;
   email: string;
   timeZone: string;
   notificationPreferences: NotificationPreferences;
+  reminderDelivery: ReminderDelivery;
 }
 
 export interface AuthResponse {
@@ -145,4 +155,30 @@ export type ErrorCode = (typeof ERROR_CODES)[number];
 
 export interface ApiErrorBody {
   error: { code: ErrorCode; message: string; field?: string };
+}
+
+/** GET /push/config: the VAPID public key, or null when push isn't set up on this server. */
+export interface PushConfig {
+  publicKey: string | null;
+}
+
+/** A browser registered for push reminders. */
+export interface PushDevice {
+  id: string;
+  browser: string | null;
+  createdAt: string;
+  lastUsedAt: string | null;
+}
+
+/** What the service worker receives in a push message. All wording comes from the server. */
+export interface PushPayload {
+  title: string;
+  body: string;
+  /** Same tag replaces an earlier notification instead of stacking. */
+  tag: string;
+  /** Page opened when the notification is tapped, or when an action can't be completed. */
+  url: string;
+  actions: { action: PushAction; title: string }[];
+  /** Lets the service worker call POST /push/actions without the login token. Only on single-item pushes. */
+  actionToken?: string;
 }

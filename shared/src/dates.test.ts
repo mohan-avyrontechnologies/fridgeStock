@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addDays, diffDays, formatDisplay, isValidDate, todayInTz } from './dates.js';
+import { addDays, diffDays, formatDisplay, hourInTz, isValidDate, todayInTz } from './dates.js';
 
 describe('isValidDate', () => {
   it.each(['2026-09-29', '2028-02-29', '2026-12-31', '1999-01-01'])('accepts %s', (d) => {
@@ -86,5 +86,15 @@ describe('formatDisplay', () => {
     expect(formatDisplay('2026-10-01')).toBe('Thu, 1 Oct');
     expect(formatDisplay('2026-09-29')).toBe('Tue, 29 Sep');
     expect(formatDisplay('2027-01-10')).toBe('Sun, 10 Jan');
+  });
+});
+
+describe('hourInTz', () => {
+  it('gives the hour 0–23 in the time zone, including across midnight and half-hour zones', () => {
+    const instant = new Date('2026-09-29T23:30:00Z');
+    expect(hourInTz('UTC', instant)).toBe(23);
+    expect(hourInTz('Asia/Kolkata', instant)).toBe(5);
+    expect(hourInTz('America/New_York', instant)).toBe(19);
+    expect(hourInTz('UTC', new Date('2026-09-29T00:10:00Z'))).toBe(0);
   });
 });

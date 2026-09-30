@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { api } from '../api/client';
 import type { NotificationPreferences } from '@cook-first/shared';
 import { PageBody, PageHeader } from '../components/AppShell';
+import { PushReminders } from '../components/PushReminders';
 import { EstimateNote } from '../components/Urgency';
 import { Button } from '../components/ui';
 import { reminderPreferenceCopy, screenCopy } from '../copy';
@@ -102,6 +103,8 @@ export function SettingsPage() {
             ))}
           </ul>
         </section>
+
+        <PushReminders />
 
         <section>
           <h2 className="mb-2 text-lg font-semibold">{screenCopy.settings.aboutTitle}</h2>

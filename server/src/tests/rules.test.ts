@@ -4,13 +4,14 @@ import mongoose from 'mongoose';
 import { afterEach, describe, expect, it } from 'vitest';
 import { UserModel } from '../models/User.js';
 import { AUTH_RATE_LIMIT } from '../routes/index.js';
+import { signActionToken } from '../services/token.js';
 import { api, food, registerUser, setToday } from './helpers.js';
 
 /** Project rules that must never be broken, each checked directly. */
 
 describe('every data query is scoped to the signed-in user', () => {
   type Op = { collection: string; method: string; args: unknown[] };
-  const SCOPED = new Set(['fooditems', 'usagerecords', 'notifications', 'favourites']);
+  const SCOPED = new Set(['fooditems', 'usagerecords', 'notifications', 'favourites', 'pushsubscriptions']);
   const IGNORED = new Set(['createIndex', 'createIndexes', 'listIndexes', 'dropIndex']);
 
   afterEach(() => {
@@ -84,6 +85,21 @@ describe('every data query is scoped to the signed-in user', () => {
     await s.auth(api().delete(`/api/foods/${c.id}/open`));
     await s.auth(api().post(`/api/foods/${c.id}/move`).send({ storage: 'FREEZER' }));
     await s.auth(api().get('/api/suggestions/lifespans'));
+    const endpoint = 'https://push.example.com/send/rules';
+    await s.auth(
+      api()
+        .post('/api/push/subscriptions')
+        .send({ endpoint, keys: { p256dh: 'p', auth: 'a' } }),
+    );
+    await s.auth(api().get('/api/push/config'));
+    await s.auth(api().put('/api/notifications/delivery').send({ mode: 'EACH_ITEM', hour: 9 }));
+    await api()
+      .post('/api/push/actions')
+      .send({ token: signActionToken(s.user.id, c.id), action: 'SNOOZE' });
+    await api()
+      .post('/api/push/actions')
+      .send({ token: signActionToken(s.user.id, c.id), action: 'USED' });
+    await s.auth(api().delete('/api/push/subscriptions').send({ endpoint }));
     mongoose.set('debug', false);
 
     const dataOps = ops.filter((op) => SCOPED.has(op.collection) && !IGNORED.has(op.method));

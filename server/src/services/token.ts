@@ -13,7 +13,39 @@ export function signToken(userId: string): string {
 export function verifyToken(token: string): string | null {
   try {
     const payload = jwt.verify(token, env.jwtSecret, { algorithms: ['HS256'] });
-    return typeof payload === 'object' && typeof payload.sub === 'string' ? payload.sub : null;
+    // Tokens with an audience (such as notification-action tokens) are never login tokens.
+    if (typeof payload !== 'object' || payload.aud !== undefined) return null;
+    return typeof payload.sub === 'string' ? payload.sub : null;
+  } catch {
+    return null;
+  }
+}
+
+const ACTION_AUDIENCE = 'push-action';
+/** How long the buttons on a push notification keep working. */
+export const ACTION_TOKEN_TTL = '7d';
+
+/**
+ * A narrow token carried inside one push notification, so its "Used" and
+ * "Snooze" buttons work without the login token. It names one user and one
+ * food item, and can't be used to sign in.
+ */
+export function signActionToken(userId: string, foodId: string): string {
+  return jwt.sign({ foodId }, env.jwtSecret, {
+    algorithm: 'HS256',
+    subject: userId,
+    audience: ACTION_AUDIENCE,
+    expiresIn: ACTION_TOKEN_TTL,
+  });
+}
+
+export function verifyActionToken(token: string): { userId: string; foodId: string } | null {
+  try {
+    const payload = jwt.verify(token, env.jwtSecret, { algorithms: ['HS256'], audience: ACTION_AUDIENCE });
+    if (typeof payload !== 'object' || typeof payload.sub !== 'string' || typeof payload.foodId !== 'string') {
+      return null;
+    }
+    return { userId: payload.sub, foodId: payload.foodId };
   } catch {
     return null;
   }

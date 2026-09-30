@@ -140,6 +140,10 @@ describe('environment variables', () => {
     expect(env).toContain('process.env.JWT_SECRET');
     expect(env).toMatch(/process\.env\.JWT_EXPIRES_IN \?\? '7d'/);
     expect(env).toMatch(/process\.env\.CLIENT_ORIGIN \?\? 'http:\/\/localhost:5173'/);
+    for (const name of ['VAPID_PUBLIC_KEY', 'VAPID_PRIVATE_KEY', 'VAPID_SUBJECT']) {
+      expect(env).toContain(`process.env.${name}`);
+      expect(source(path.resolve('.env.example'))).toMatch(new RegExp(`^${name}=`, 'm'));
+    }
     const all = appFiles.map(source).join('\n');
     expect(all).not.toMatch(/MONGODB_URI|CORS_ORIGIN/);
   });

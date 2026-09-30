@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { isValidDate } from './dates.js';
-import { STORAGE_LOCATIONS, UNITS } from './enums.js';
+import { PUSH_ACTIONS, REMINDER_MODES, STORAGE_LOCATIONS, UNITS } from './enums.js';
 
 /**
  * Request schemas. The server's check is the only one that counts; the client
@@ -10,6 +10,10 @@ import { STORAGE_LOCATIONS, UNITS } from './enums.js';
 
 /** Validation messages. The API and forms must use exactly these wordings. */
 export const MESSAGES = {
+  reminderMode: 'Choose a daily summary or one reminder per item.',
+  reminderHour: 'Choose an hour from 0 to 23.',
+  pushSubscription: 'That push subscription isn’t valid.',
+  pushAction: 'Unknown notification action.',
   foodName: 'Food name is required.',
   foodNameTooLong: 'Food name must be at most 60 characters.',
   quantity: 'Quantity must be a positive number.',
@@ -153,6 +157,44 @@ export const preferencesSchema = z
   .partial()
   .strict();
 
+/** PUT /notifications/delivery: how and when push reminders arrive. */
+export const deliverySchema = z
+  .object({
+    mode: z.enum(REMINDER_MODES, { error: MESSAGES.reminderMode }),
+    hour: z
+      .number({ error: MESSAGES.reminderHour })
+      .int(MESSAGES.reminderHour)
+      .min(0, MESSAGES.reminderHour)
+      .max(23, MESSAGES.reminderHour),
+  })
+  .partial()
+  .strict();
+
+const pushEndpoint = z
+  .string({ error: MESSAGES.pushSubscription })
+  .max(1000, MESSAGES.pushSubscription)
+  .refine((value) => URL.canParse(value) && new URL(value).protocol === 'https:', MESSAGES.pushSubscription);
+const pushKey = z
+  .string({ error: MESSAGES.pushSubscription })
+  .min(1, MESSAGES.pushSubscription)
+  .max(200, MESSAGES.pushSubscription);
+
+/** POST /push/subscriptions: the browser's PushSubscription.toJSON(), plus a short browser name. */
+export const pushSubscriptionSchema = z.object({
+  endpoint: pushEndpoint,
+  keys: z.object({ p256dh: pushKey, auth: pushKey }, { error: MESSAGES.pushSubscription }),
+  browser: z.string().trim().max(40).optional(),
+});
+
+/** DELETE /push/subscriptions */
+export const pushUnsubscribeSchema = z.object({ endpoint: pushEndpoint });
+
+/** POST /push/actions: sent by the service worker when a notification button is tapped. */
+export const pushActionSchema = z.object({
+  token: z.string().min(1).max(2000),
+  action: z.enum(PUSH_ACTIONS, { error: MESSAGES.pushAction }),
+});
+
 /** GET /usage: limit defaults to 20 and offset to 0. */
 export const paginationSchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
@@ -172,6 +214,9 @@ export type FoodInput = z.infer<typeof createFoodSchema>;
 export type FoodUpdateInput = z.infer<typeof updateFoodSchema>;
 export type UseFoodInput = z.infer<typeof useFoodSchema>;
 export type PreferencesInput = z.infer<typeof preferencesSchema>;
+export type DeliveryInput = z.infer<typeof deliverySchema>;
+export type PushSubscriptionInput = z.infer<typeof pushSubscriptionSchema>;
+export type PushActionInput = z.infer<typeof pushActionSchema>;
 export type Pagination = z.infer<typeof paginationSchema>;
 export type BulkCreateInput = z.infer<typeof bulkCreateSchema>;
 export type FavouriteInput = z.infer<typeof favouriteSchema>;

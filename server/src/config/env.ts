@@ -14,6 +14,18 @@ function jwtSecret(): string {
   return DEV_JWT_SECRET;
 }
 
+/**
+ * Web Push (VAPID) keys. Push is switched on only when all three are set;
+ * without them, reminders still appear in the app. Only the public key is
+ * ever sent to the client.
+ */
+function vapid() {
+  const publicKey = process.env.VAPID_PUBLIC_KEY ?? '';
+  const privateKey = process.env.VAPID_PRIVATE_KEY ?? '';
+  const subject = process.env.VAPID_SUBJECT ?? '';
+  return publicKey && privateKey && subject ? { publicKey, privateKey, subject } : null;
+}
+
 /** Everything the server reads from its environment. Secrets come only from here. */
 export const env = {
   isProduction,
@@ -28,4 +40,6 @@ export const env = {
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean),
+  /** null when push isn't configured. */
+  vapid: vapid(),
 };

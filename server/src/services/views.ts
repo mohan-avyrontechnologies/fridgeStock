@@ -24,6 +24,7 @@ export function toUserView(user: UserDoc): User {
     email: user.email,
     timeZone: user.timeZone,
     notificationPreferences: { approachingExpiry: prefs.approachingExpiry, due: prefs.due, overdue: prefs.overdue },
+    reminderDelivery: { mode: user.reminderDelivery.mode, hour: user.reminderDelivery.hour },
   };
 }
 

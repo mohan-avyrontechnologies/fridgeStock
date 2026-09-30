@@ -24,6 +24,8 @@ export interface Notification {
   message?: string;
   sentAt?: Date;
   readAt?: Date;
+  /** When it went out as a push notification (per-item mode or in a digest). */
+  pushedAt?: Date;
 }
 
 const calendarDate = {
@@ -46,6 +48,7 @@ const notificationSchema = new Schema<Notification>(
     message: { type: String },
     sentAt: { type: Date },
     readAt: { type: Date },
+    pushedAt: { type: Date },
   },
   // shardKey adds userId to the filter of every save()/deleteOne() on a document.
   { timestamps: true, shardKey: { userId: 1 } },

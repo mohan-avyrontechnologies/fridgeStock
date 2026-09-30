@@ -1,6 +1,7 @@
 import {
   bulkCreateSchema,
   createFoodSchema,
+  deliverySchema,
   favouriteSchema,
   loginSchema,
   moveFoodSchema,
@@ -8,6 +9,9 @@ import {
   notificationPageSchema,
   paginationSchema,
   preferencesSchema,
+  pushActionSchema,
+  pushSubscriptionSchema,
+  pushUnsubscribeSchema,
   registerSchema,
   updateAccountSchema,
   updateFoodSchema,
@@ -21,6 +25,7 @@ import { favouriteController } from '../controllers/favouriteController.js';
 import { foodController } from '../controllers/foodController.js';
 import { suggestionController } from '../controllers/suggestionController.js';
 import { notificationController } from '../controllers/notificationController.js';
+import { pushController } from '../controllers/pushController.js';
 import { usageController } from '../controllers/usageController.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -47,6 +52,21 @@ router.get('/health', (_req, res) => {
 
 router.post('/auth/register', authLimiter, validate(registerSchema), authController.register);
 router.post('/auth/login', authLimiter, validate(loginSchema), authController.login);
+
+/** Notification buttons: 60 requests per 15 minutes per IP address. */
+export const PUSH_ACTION_RATE_LIMIT = { windowMs: 15 * 60 * 1000, limit: 60 };
+
+const pushActionLimiter = rateLimit({
+  ...PUSH_ACTION_RATE_LIMIT,
+  skip: () => process.env.AUTH_RATE_LIMIT === 'off',
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { error: { code: 'RATE_LIMITED', message: 'Too many attempts. Try again later.' } },
+});
+
+// "Used" and "Snooze" inside a push notification. The service worker has no
+// login token; the body carries a single-item action token instead.
+router.post('/push/actions', pushActionLimiter, validate(pushActionSchema), pushController.action);
 
 // Everything below requires a valid bearer token.
 router.use(requireAuth);
@@ -83,3 +103,9 @@ router.get('/notifications/unread-count', notificationController.unreadCount);
 router.get('/notifications/preferences', notificationController.getPreferences);
 router.put('/notifications/preferences', validate(preferencesSchema), notificationController.updatePreferences);
 router.post('/notifications/read-all', notificationController.markAllRead);
+router.get('/notifications/delivery', notificationController.getDelivery);
+router.put('/notifications/delivery', validate(deliverySchema), notificationController.updateDelivery);
+
+router.get('/push/config', pushController.config);
+router.post('/push/subscriptions', validate(pushSubscriptionSchema), pushController.subscribe);
+router.delete('/push/subscriptions', validate(pushUnsubscribeSchema), pushController.unsubscribe);

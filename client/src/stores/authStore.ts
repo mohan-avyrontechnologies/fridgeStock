@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { api, configureApi } from '../api/client';
+import { turnOff } from '../lib/push';
 import type { User } from '@cook-first/shared';
 
 interface AuthState {
@@ -14,7 +15,7 @@ interface AuthState {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       token: null,
       user: null,
       async login(email, password) {
@@ -26,6 +27,10 @@ export const useAuthStore = create<AuthState>()(
         set({ token, user });
       },
       logout() {
+        // Stop push reminders for this account on this device. Uses the token
+        // before it is cleared; a failure never blocks signing out.
+        const { token } = get();
+        if (token) void turnOff(token).catch(() => {});
         set({ token: null, user: null });
       },
       setUser(user) {

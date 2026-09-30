@@ -46,4 +46,6 @@ export const handlers = [
   http.get(`${API_URL}/notifications/unread-count`, () => HttpResponse.json({ unread: 2 })),
   http.get(`${API_URL}/favourites`, () => HttpResponse.json({ items: [] })),
   http.get(`${API_URL}/suggestions/lifespans`, () => HttpResponse.json({ items: [] })),
+  http.get(`${API_URL}/notifications/delivery`, () => HttpResponse.json({ mode: 'DIGEST', hour: 8 })),
+  http.get(`${API_URL}/push/config`, () => HttpResponse.json({ publicKey: null })),
 ];

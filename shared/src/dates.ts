@@ -53,6 +53,14 @@ export function todayInTz(timeZone: string, now: Date = new Date()): DateString 
   return `${get('year')}-${get('month')}-${get('day')}`;
 }
 
+/** The hour (0–23) it is now in the given IANA time zone. */
+export function hourInTz(timeZone: string, now: Date = new Date()): number {
+  const hour = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', hourCycle: 'h23' })
+    .formatToParts(now)
+    .find((p) => p.type === 'hour')!.value;
+  return Number(hour);
+}
+
 /** The date `days` days after `date` (negative goes back). */
 export function addDays(date: DateString, days: number): DateString {
   return fromUtcMidnight(mustParse(date) + days * DAY_MS);

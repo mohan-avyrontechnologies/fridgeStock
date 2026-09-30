@@ -27,4 +27,12 @@ export const notificationController = {
   async updatePreferences(req: Request, res: Response) {
     res.json(await notificationService.updatePreferences(currentUser(req), req.body));
   },
+
+  getDelivery(req: Request, res: Response) {
+    res.json(notificationService.getDelivery(currentUser(req)));
+  },
+
+  async updateDelivery(req: Request, res: Response) {
+    res.json(await notificationService.updateDelivery(currentUser(req), req.body));
+  },
 };

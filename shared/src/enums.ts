@@ -28,3 +28,11 @@ export type NotificationStatus = (typeof NOTIFICATION_STATUSES)[number];
 
 export const PREFERENCE_KEYS = ['approachingExpiry', 'due', 'overdue'] as const;
 export type PreferenceKey = (typeof PREFERENCE_KEYS)[number];
+
+/** How push reminders arrive: one summary a day, or one per reminder (both at the user's chosen hour). */
+export const REMINDER_MODES = ['DIGEST', 'EACH_ITEM'] as const;
+export type ReminderMode = (typeof REMINDER_MODES)[number];
+
+/** Buttons inside a push notification. */
+export const PUSH_ACTIONS = ['USED', 'SNOOZE'] as const;
+export type PushAction = (typeof PUSH_ACTIONS)[number];
