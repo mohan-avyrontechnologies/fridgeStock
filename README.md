@@ -693,7 +693,8 @@ The project was built in these phases; each one is complete.
 All notable changes to this project are listed here, newest first. Versions follow [Semantic Versioning](https://semver.org/).
 
 ### [Unreleased]
-- *Nothing yet.*
+**Added**
+- **Roadmap: Phase 7, Photo Check**, specified in full under [Roadmap](#phase-7-photo-check-specification). Not built yet: it comes after Phase 6 and needs the AI setup from Phase 4 and the activity log from Phase 6.
 
 ### [2.7.0] - 2026-09-30: Phase 3 (better reminders) · `dc1c904`
 **Added**
@@ -956,6 +957,56 @@ Post-MVP phases are built one at a time, each with its tests passing before the 
 | **4. Using the food** | Leftovers as new short-lifespan items · a shopping list that warns about food already at home · AI recipe suggestions from Cook First · a weekly meal plan | Next | An AI provider and API key for recipes |
 | **5. Insights** | Used-versus-wasted dashboard · optional prices showing money saved or lost · a weekly summary with tips | Planned | – |
 | **6. Sharing and scanning** | Shared households with invites and an activity log · voice entry · barcode scanning · receipt scanning · grocery integrations · multiple languages · dark mode · data export · account deletion | Planned | Barcode data source (e.g. Open Food Facts), receipt OCR service, which grocery partners (they need commercial API access), and which languages |
+| **7. Photo Check** | Take or upload a photo from Add Food, or "Check with photo" on Food Details, to identify a product and point out visible warning signs. Behind a feature flag; only when AI is enabled. See the [specification](#phase-7-photo-check-specification). | Planned (after Phase 6) | Comes with the Phase 4 AI provider; the provider must support images |
+
+### Phase 7: Photo Check specification
+
+Recorded on 2026-09-30. To be built after the scanning features in Phase 6, using the AI setup from Phase 4 (provider, "AI enabled" setting, daily limit, banned-phrase retry) and the activity log from Phase 6.
+
+**Availability**
+- Behind a feature flag, and available only when AI is enabled. With either off, no photo controls are shown.
+
+**Flow**
+1. The user takes or uploads a photo, either from **Add Food** or from a **"Check with photo"** button on **Food Details**.
+2. The browser resizes it to at most **1600 px** on its longest side and sends it to `POST /api/parse/photo`.
+3. The server passes it to the AI and **discards the image after processing**. It is never stored or logged.
+
+**AI result:** JSON, validated with zod.
+- `name`: the product name
+- `category`
+- `confidence`: how sure the identification is
+- `warningSigns`: a list of `{ type, description }`, where `type` is one of `MOULD`, `DISCOLOURATION`, `WILTING`, `SLIME`, `BRUISING`, `DAMAGED_PACKAGING`, `SWOLLEN_PACKAGING` or `OTHER`, and `description` is short
+
+The schema has **no field for good or normal condition**. Anything outside it fails validation.
+
+**Identification (Add Food)**
+- Pre-fill Add Food with the name and the reference-list lifespan suggestion.
+- When confidence is low, ask the user to type the name instead of pre-filling it.
+
+**Condition**
+- **No signs found:** show **nothing about condition at all**. The app never shows a positive condition message.
+- **Signs found:** show "Visible signs noticed: {descriptions}. A photo can't show everything, so check the item yourself before using it." with three options:
+  - **Mark as wasted**
+  - **Use today:** after confirmation, sets the expected expiry to today
+  - **Dismiss**
+
+**Rules**
+- Photo results may only make an item **more urgent**. They never extend its expected expiry.
+- **Nothing changes without the user's confirmation.**
+- The Cook First order is only ever changed by the resulting expected expiry, never by the AI directly.
+- Add **`PHOTO_CHECKED`** to the activity event types.
+- Each photo check counts toward the **AI daily limit**.
+- The **banned-phrase retry** applies to all AI text, including every warning-sign description.
+
+**Tests (with a mocked AI client)**
+- Low-confidence identification asks the user to type the name.
+- No signs found: no condition text is shown.
+- Signs found: the warning and the three options are shown.
+- The expected expiry only ever moves earlier.
+
+**To confirm when this phase starts**
+- **"Use today" on an item already past its expected expiry.** Setting the expiry to today would move it later, which the rules forbid. Proposal: in that case "Use today" leaves the expiry unchanged (or is hidden), and only "Mark as wasted" and "Dismiss" apply.
+- **What counts as low confidence.** Proposal: below 0.6 on a 0–1 scale, as a single constant.
 
 ---
 
