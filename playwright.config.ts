@@ -11,6 +11,7 @@ const vapid = webpush.generateVAPIDKeys();
 
 const API_PORT = 4100;
 const WEB_PORT = 5174;
+const PRODUCTS_PORT = 4101;
 
 export default defineConfig({
   testDir: 'e2e',
@@ -42,6 +43,14 @@ export default defineConfig({
   ],
   webServer: [
     {
+      // A stand-in for the product database, so barcode look-ups never reach the internet.
+      command: 'node e2e/stub-products.mjs',
+      url: `http://localhost:${PRODUCTS_PORT}/health`,
+      timeout: 30_000,
+      reuseExistingServer: false,
+      env: { STUB_PRODUCTS_PORT: String(PRODUCTS_PORT) },
+    },
+    {
       command: 'npx tsx --conditions=source src/index.ts',
       cwd: 'server',
       url: `http://localhost:${API_PORT}/api/health`,
@@ -50,6 +59,7 @@ export default defineConfig({
       env: {
         PORT: String(API_PORT),
         EPHEMERAL_DB: '1',
+        PRODUCT_LOOKUP_URL: `http://localhost:${PRODUCTS_PORT}`,
         // The journeys sign up more than 20 accounts from one IP; the limit itself is unit-tested (rules.test.ts).
         AUTH_RATE_LIMIT: 'off',
         // Never the real Claude API: an empty key keeps AI off even if server/.env has one

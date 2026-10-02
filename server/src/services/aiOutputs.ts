@@ -1,3 +1,4 @@
+import { UNITS } from '@cook-first/shared';
 import { z } from 'zod';
 
 /**
@@ -68,3 +69,41 @@ export const mealPlanOutput = z.object({
     .max(14),
 });
 export type MealPlanOutput = z.infer<typeof mealPlanOutput>;
+
+export const receiptJsonSchema = {
+  type: 'object',
+  properties: {
+    purchaseDate: { type: ['string', 'null'] },
+    items: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          quantity: { type: 'number' },
+          unit: { type: 'string', enum: [...UNITS] },
+          price: { type: ['number', 'null'] },
+        },
+        required: ['name', 'quantity', 'unit', 'price'],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ['purchaseDate', 'items'],
+  additionalProperties: false,
+};
+
+export const receiptOutput = z.object({
+  purchaseDate: z.string().nullable(),
+  items: z
+    .array(
+      z.object({
+        name: z.string().trim().min(1).max(60),
+        quantity: z.number().positive().max(1_000_000),
+        unit: z.enum(UNITS),
+        price: z.number().min(0).max(100_000).nullable(),
+      }),
+    )
+    .max(60),
+});
+export type ReceiptOutput = z.infer<typeof receiptOutput>;

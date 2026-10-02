@@ -16,8 +16,10 @@ import {
   registerSchema,
   shoppingItemSchema,
   shoppingUpdateSchema,
+  barcodeSchema,
   deleteAccountSchema,
   joinHouseholdSchema,
+  receiptSchema,
   updateAccountSchema,
   updateFoodSchema,
   useFoodSchema,
@@ -38,6 +40,7 @@ import { accountController } from '../controllers/accountController.js';
 import { householdController } from '../controllers/householdController.js';
 import { insightsController } from '../controllers/insightsController.js';
 import { usageController } from '../controllers/usageController.js';
+import { productController } from '../controllers/productController.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
 
@@ -69,6 +72,17 @@ export const PUSH_ACTION_RATE_LIMIT = { windowMs: 15 * 60 * 1000, limit: 60 };
 
 const pushActionLimiter = rateLimit({
   ...PUSH_ACTION_RATE_LIMIT,
+  skip: () => process.env.AUTH_RATE_LIMIT === 'off',
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { error: { code: 'RATE_LIMITED', message: 'Too many attempts. Try again later.' } },
+});
+
+/** Barcode lookups and receipt reads call other services, so each person is limited. */
+export const SCAN_RATE_LIMIT = { windowMs: 15 * 60 * 1000, limit: 60 };
+
+const scanLimiter = rateLimit({
+  ...SCAN_RATE_LIMIT,
   skip: () => process.env.AUTH_RATE_LIMIT === 'off',
   standardHeaders: 'draft-8',
   legacyHeaders: false,
@@ -136,6 +150,9 @@ router.delete('/push/subscriptions', validate(pushUnsubscribeSchema), pushContro
 router.get('/ai/status', aiController.status);
 router.post('/ai/recipes', aiController.recipes);
 router.post('/ai/meal-plan', aiController.mealPlan);
+
+router.get('/products/barcode', scanLimiter, validate(barcodeSchema, 'query'), productController.barcode);
+router.post('/parse/receipt', scanLimiter, validate(receiptSchema), productController.receipt);
 
 router.get('/shopping', shoppingController.list);
 router.post('/shopping', validate(shoppingItemSchema), shoppingController.add);

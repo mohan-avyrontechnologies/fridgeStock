@@ -640,3 +640,45 @@ test('phase 6: two people share a household, see each other’s food and activit
   await alicePage.getByRole('link', { name: 'Home', exact: true }).first().click();
   await expect(allFood(alicePage).filter({ hasText: 'Milk' })).toHaveCount(1);
 });
+
+test('phase 6: scanning a barcode fills in the form; receipt scanning needs AI so it is not offered', async ({
+  page,
+}) => {
+  await register(page, 'Kiran Rao');
+  await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
+
+  // The camera isn't used in tests: the number under the barcode is typed instead.
+  await page.getByRole('button', { name: 'Scan a barcode' }).click();
+  const panel = page.getByRole('region', { name: 'Scan a barcode' });
+  await panel.getByLabel('Or type the number under the barcode').fill('4006381333932');
+  await panel.getByRole('button', { name: 'Look up' }).click();
+  await expect(panel.getByText('Enter the 8 to 14 digits printed under the barcode.')).toBeVisible();
+
+  // A valid number that is not in the product list.
+  await panel.getByLabel('Or type the number under the barcode').fill('96385074');
+  await panel.getByRole('button', { name: 'Look up' }).click();
+  await expect(panel.getByText('That barcode isn’t in the product list. Type the name instead.')).toBeVisible();
+  await expect(page.getByLabel('Food', { exact: true })).toHaveValue('');
+  await shot(page, '21-barcode');
+
+  // A product it knows fills in the form (spaces and dashes are fine).
+  await panel.getByLabel('Or type the number under the barcode').fill('4006 3813-33931');
+  await panel.getByRole('button', { name: 'Look up' }).click();
+  await expect(page.getByLabel('Food', { exact: true })).toHaveValue('Whole milk');
+  await expect(page.getByLabel('Quantity')).toHaveValue('1000');
+  await expect(page.getByLabel('Unit')).toHaveValue('ml');
+  await expect(page.getByLabel(/Notes/)).toHaveValue('Acme Dairy');
+  await expect(page.getByRole('region', { name: 'Scan a barcode' })).toHaveCount(0);
+
+  // How long it lasts is still the person's choice.
+  await page.getByLabel('Lifespan (days)').fill('5');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page).toHaveURL('/');
+  await expect(allFood(page).filter({ hasText: 'Whole milk' })).toHaveCount(1);
+  await expectNoSafetyClaim(page);
+
+  // Receipts are read by the AI, which is off in the tests.
+  await page.goto('/add/bulk');
+  await expect(page.getByLabel('Item 1 name')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Scan a receipt' })).toHaveCount(0);
+});

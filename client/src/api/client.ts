@@ -35,6 +35,9 @@ import type {
   Household,
   HouseholdInvite,
   JoinHouseholdInput,
+  ProductLookup,
+  ReceiptDraft,
+  ReceiptInput,
   DeleteAccountInput,
   Insights,
   UsageHistory,
@@ -173,6 +176,12 @@ export const api = {
   // GET /household/activity
   householdActivity: (offset = 0, limit = 20) =>
     request<ActivityLog>('GET', `/household/activity?offset=${offset}&limit=${limit}`),
+
+  // GET /products/barcode
+  lookupBarcode: (code: string) => request<ProductLookup>('GET', `/products/barcode?code=${encodeURIComponent(code)}`),
+
+  // POST /parse/receipt
+  readReceipt: (body: ReceiptInput) => request<ReceiptDraft>('POST', '/parse/receipt', body),
 
   // GET /insights
   insights: () => request<Insights>('GET', '/insights'),

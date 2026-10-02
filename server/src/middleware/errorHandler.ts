@@ -25,6 +25,11 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
     res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Request body is not valid JSON.' } });
     return;
   }
+  // A request body over the size limit: say so, rather than a 500.
+  if (typeof err === 'object' && err !== null && (err as { type?: string }).type === 'entity.too.large') {
+    res.status(413).json({ error: { code: 'VALIDATION_ERROR', message: 'That request is too large.' } });
+    return;
+  }
   // Log it on the server only. The response never includes a stack trace, and
   // request bodies (which may hold passwords) are never logged.
   console.error(err);

@@ -7,18 +7,22 @@ import {
   todayInTz,
   UNITS,
   type BulkCreateInput,
+  type LearnedLifespan,
+  type ReceiptItem,
   type StorageLocation,
   type Unit,
 } from '@cook-first/shared';
-import { useEffect, useId, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router';
-import { ApiError } from '../api/client';
+import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { EstimateNote } from '../components/Urgency';
-import { Button, Chip, Field, FormError } from '../components/ui';
-import { bulkCopy, referenceCopy, storageLabel } from '../copy';
+import { Button, Chip, Field, FormError, Spinner } from '../components/ui';
+import { bulkCopy, receiptCopy, referenceCopy, storageLabel } from '../copy';
+import { photoForReceipt } from '../lib/image';
 import { suggestFor } from '../lib/suggestions';
 import { check } from '../lib/validation';
+import { useAiStore } from '../stores/aiStore';
 import { useSuggestionStore } from '../stores/suggestionStore';
 import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
@@ -31,10 +35,39 @@ interface Row {
   unit: Unit;
   lifespan: string;
   storage: StorageLocation;
+  /** Optional: what the line cost. */
+  price: string;
 }
 
 let nextKey = 0;
-const emptyRow = (): Row => ({ key: nextKey++, name: '', quantity: '1', unit: 'pcs', lifespan: '', storage: 'FRIDGE' });
+const emptyRow = (): Row => ({
+  key: nextKey++,
+  name: '',
+  quantity: '1',
+  unit: 'pcs',
+  lifespan: '',
+  storage: 'FRIDGE',
+  price: '',
+});
+
+/** Where a food is most often kept, in the order to try when a receipt doesn't say. */
+const STORAGE_ORDER: StorageLocation[] = ['FRIDGE', 'PANTRY', 'FREEZER'];
+
+/** A row from a receipt line, with a lifespan suggested from your own usual first, then the reference list. */
+function rowFromReceipt(item: ReceiptItem, learned: LearnedLifespan[]): Row {
+  const base: Row = {
+    ...emptyRow(),
+    name: item.name,
+    quantity: String(item.quantity),
+    unit: item.unit,
+    price: item.price === null ? '' : String(item.price),
+  };
+  for (const storage of STORAGE_ORDER) {
+    const suggestion = suggestFor(item.name, storage, learned);
+    if (suggestion && suggestion.days !== null) return { ...base, storage, lifespan: String(suggestion.days) };
+  }
+  return base;
+}
 const toNumber = (value: string) => (value.trim() === '' ? undefined : Number(value));
 const isBlank = (row: Row) => !row.name.trim() && !row.lifespan.trim();
 
@@ -56,12 +89,43 @@ export function BulkAddPage() {
   const [busy, setBusy] = useState(false);
   const learned = useSuggestionStore((s) => s.learned);
   const loadLearned = useSuggestionStore((s) => s.load);
+  const aiEnabled = useAiStore((s) => s.status?.enabled ?? false);
+  const loadAi = useAiStore((s) => s.load);
+  const photoInput = useRef<HTMLInputElement>(null);
+  const [reading, setReading] = useState(false);
+  const [fromReceipt, setFromReceipt] = useState(false);
 
   useEffect(() => {
     void loadLearned();
-  }, [loadLearned]);
+    void loadAi();
+  }, [loadLearned, loadAi]);
 
   const filled = rows.filter((r) => !isBlank(r));
+
+  /** The receipt photo is read by the AI; the lines become rows to check. Nothing is saved here. */
+  async function readReceipt(file: File) {
+    setReading(true);
+    setErrors({});
+    try {
+      const draft = await api.readReceipt(await photoForReceipt(file));
+      if (draft.items.length === 0) {
+        toast(receiptCopy.none);
+        return;
+      }
+      setRows((prev) => [
+        ...prev.filter((row) => !isBlank(row)),
+        ...draft.items.map((i) => rowFromReceipt(i, learned)),
+      ]);
+      if (draft.purchaseDate) setAddedDate(draft.purchaseDate);
+      setFromReceipt(true);
+      toast(receiptCopy.found(draft.items.length));
+    } catch (err) {
+      setErrors({ form: err instanceof Error ? err.message : receiptCopy.error });
+    } finally {
+      setReading(false);
+      if (photoInput.current) photoInput.current.value = '';
+    }
+  }
 
   function update(key: number, patch: Partial<Row>) {
     setRows((prev) =>
@@ -90,6 +154,7 @@ export function BulkAddPage() {
         unit: r.unit,
         lifespanDays: toNumber(r.lifespan),
         storage: r.storage,
+        price: r.price.trim() === '' ? undefined : Number(r.price),
       })),
     };
     const { data, errors: found } = check(bulkCreateSchema, input);
@@ -122,6 +187,33 @@ export function BulkAddPage() {
       <PageBody narrow>
         <form onSubmit={submit} className="space-y-5" noValidate>
           <FormError message={errors.form ?? null} />
+
+          {aiEnabled && (
+            <section aria-labelledby="receipt-title" className="space-y-2 rounded-2xl border border-line bg-card p-4">
+              <h2 id="receipt-title" className="text-base font-semibold">
+                {receiptCopy.title}
+              </h2>
+              <p className="text-sm text-muted">{receiptCopy.hint}</p>
+              <input
+                ref={photoInput}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                aria-label="Receipt photo"
+                className="sr-only"
+                tabIndex={-1}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) void readReceipt(file);
+                }}
+              />
+              <Button type="button" variant="secondary" disabled={reading} onClick={() => photoInput.current?.click()}>
+                {reading ? receiptCopy.reading : receiptCopy.button}
+              </Button>
+              {reading && <Spinner label={receiptCopy.reading} />}
+              {fromReceipt && !reading && <p className="text-sm text-muted">{receiptCopy.checkNote}</p>}
+            </section>
+          )}
 
           <div>
             <Field
@@ -219,6 +311,20 @@ export function BulkAddPage() {
                       />
                     </label>
                     <label className="flex flex-col gap-1 text-xs font-medium text-muted">
+                      Price (optional)
+                      <input
+                        aria-label={`${label} price`}
+                        type="number"
+                        inputMode="decimal"
+                        step="0.01"
+                        min="0"
+                        placeholder="e.g. 2.50"
+                        value={row.price}
+                        onChange={(e) => update(row.key, { price: e.target.value })}
+                        className={`${inputClass} ${err('price') ? 'border-danger' : 'border-line'}`}
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1 text-xs font-medium text-muted">
                       Kept in
                       <select
                         aria-label={`${label} kept in`}
@@ -234,7 +340,7 @@ export function BulkAddPage() {
                       </select>
                     </label>
                   </div>
-                  {['name', 'quantity', 'lifespanDays', 'unit', 'storage'].map(
+                  {['name', 'quantity', 'lifespanDays', 'unit', 'storage', 'price'].map(
                     (f) =>
                       err(f) && (
                         <p key={f} className="text-sm text-danger">

@@ -62,6 +62,31 @@ export const aiPrompts = {
     'Reply only with JSON that matches the schema.',
   ].join('\n'),
 
+  /** Receipt scanning. It reads text off a photo and says nothing about food. */
+  receiptSystem: [
+    'You read grocery receipts for a home cook who wants to log what they bought.',
+    'Rules for everything you write:',
+    '- Report only what is printed. Never guess at an unreadable line: leave it out.',
+    '- Never say anything about the condition or freshness of food.',
+    '- Plain, short names. British English.',
+    'Reply only with JSON that matches the schema.',
+  ].join('\n'),
+
+  receipt: (knownNames: string[], today: string) =>
+    [
+      `Today is ${today}. This is a photo of a grocery receipt.`,
+      'List only the food and drink lines that would be kept in a fridge, freezer or cupboard.',
+      'Leave out anything else: cleaning, toiletries, bags, totals, tax, discounts, loyalty and payment lines.',
+      'For each item give:',
+      '- name: a short generic name without brand or size, like "Milk" or "Chicken". Use one of these exact names when it fits: ' +
+        knownNames.join(', ') +
+        '.',
+      '- quantity: how many, as a number. Use 1 if it is not printed. Use a weight or volume only when it is printed on that line.',
+      '- unit: one of pcs, g, kg, ml, l, pack, bunch. Use pcs for single things and pack for packets.',
+      "- price: that line's price as a number, or null if it is not printed.",
+      'Also give purchaseDate as YYYY-MM-DD if the shopping date is clearly printed, otherwise null.',
+    ].join('\n'),
+
   recipes: (cookFirst: string[], others: string[]) =>
     [
       'My Cook First list, most urgent first:',

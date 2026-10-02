@@ -1,11 +1,12 @@
-import type { Favourite } from '@cook-first/shared';
+import type { Favourite, ProductLookup } from '@cook-first/shared';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
+import { BarcodeScanner } from '../components/BarcodeScanner';
 import { FoodForm } from '../components/FoodForm';
-import { Chip } from '../components/ui';
-import { bulkCopy, favouriteCopy } from '../copy';
+import { Button, Chip } from '../components/ui';
+import { bulkCopy, favouriteCopy, scanCopy } from '../copy';
 import { useFoodStore } from '../stores/foodStore';
 import { useToastStore } from '../stores/toastStore';
 
@@ -17,6 +18,9 @@ export function AddFoodPage() {
   // Leftovers saved from a recipe idea arrive with a name and the leftovers box ticked.
   const prefill = (useLocation().state ?? undefined) as { name?: string; leftover?: boolean } | undefined;
   const [favourites, setFavourites] = useState<Favourite[]>([]);
+  const [scanning, setScanning] = useState(false);
+  // A scanned product pre-fills the form; a new key starts the form again from it.
+  const [scanned, setScanned] = useState<{ key: number; prefill: NonNullable<typeof prefill> } | null>(null);
 
   useEffect(() => {
     let current = true;
@@ -28,6 +32,19 @@ export function AddFoodPage() {
       current = false;
     };
   }, []);
+
+  function applyProduct(product: ProductLookup) {
+    setScanned((previous) => ({
+      key: (previous?.key ?? 0) + 1,
+      prefill: {
+        name: product.name ?? '',
+        ...(product.quantity !== null && product.unit !== null && { quantity: product.quantity, unit: product.unit }),
+        ...(product.brand && { notes: product.brand }),
+      },
+    }));
+    setScanning(false);
+    toast(scanCopy.found(product.name ?? ''));
+  }
 
   /** One tap re-adds a favourite, added today. */
   async function reAdd(favourite: Favourite) {
@@ -59,8 +76,17 @@ export function AddFoodPage() {
           </section>
         )}
 
+        {scanning ? (
+          <BarcodeScanner onFound={applyProduct} onClose={() => setScanning(false)} />
+        ) : (
+          <Button variant="secondary" onClick={() => setScanning(true)}>
+            {scanCopy.open}
+          </Button>
+        )}
+
         <FoodForm
-          prefill={prefill}
+          key={scanned?.key ?? 0}
+          prefill={scanned?.prefill ?? prefill}
           submitLabel="Save"
           allowAddAnother
           autoFocus

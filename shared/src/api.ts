@@ -160,6 +160,7 @@ export const ERROR_CODES = [
   'CONFLICT',
   'RATE_LIMITED',
   'AI_UNAVAILABLE',
+  'SERVICE_UNAVAILABLE',
   'INTERNAL',
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
@@ -359,4 +360,30 @@ export interface ActivityEvent {
 export interface ActivityLog {
   items: ActivityEvent[];
   hasMore: boolean;
+}
+
+/** A product found by barcode (from Open Food Facts), or "not found". Names are as the maker printed them. */
+export interface ProductLookup {
+  found: boolean;
+  barcode: string;
+  name: string | null;
+  brand: string | null;
+  /** The pack size, when the product lists one in a unit the app knows. */
+  quantity: number | null;
+  unit: Unit | null;
+}
+
+/** One food line read from a receipt. A draft: nothing is saved until the person reviews it. */
+export interface ReceiptItem {
+  name: string;
+  quantity: number;
+  unit: Unit;
+  /** What this line cost, if the receipt shows it. */
+  price: number | null;
+}
+
+export interface ReceiptDraft {
+  /** The shopping date printed on the receipt, if it is clear and not in the future. */
+  purchaseDate: DateString | null;
+  items: ReceiptItem[];
 }

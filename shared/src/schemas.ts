@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isValidBarcode } from './barcode.js';
 import { isValidDate } from './dates.js';
 import { CURRENCIES, PUSH_ACTIONS, REMINDER_MODES, STORAGE_LOCATIONS, UNITS } from './enums.js';
 
@@ -49,6 +50,9 @@ export const MESSAGES = {
   householdFull: 'That household is full.',
   notShared: 'You aren’t in a shared household.',
   tooManyInvites: 'You already have the most open invites. Cancel one first.',
+  barcode: 'Enter the 8 to 14 digits printed under the barcode.',
+  receiptImage: 'Choose a photo of your receipt (JPEG, PNG or WebP).',
+  receiptTooBig: 'That photo is too large. Try a smaller one.',
   openedDate: "Opened date must be a valid date that isn't in the future or before the added date.",
   bulkEmpty: 'Add at least one item.',
   bulkTooMany: 'Add at most 50 items at once.',
@@ -137,6 +141,29 @@ export const updateFoodSchema = z
   .partial()
   .refine((body) => Object.keys(body).length > 0, 'Provide at least one field to update.');
 
+/** The longest base64 text accepted for a receipt photo (about 3 MB of image). */
+export const MAX_RECEIPT_BASE64 = 4_000_000;
+/** Photos are scaled down to this many pixels on their longest side before they are sent. */
+export const RECEIPT_MAX_SIDE = 1600;
+
+/** POST /parse/receipt: one photo, as base64 text without the "data:" prefix. */
+export const receiptSchema = z.object({
+  mediaType: z.enum(['image/jpeg', 'image/png', 'image/webp'], { error: MESSAGES.receiptImage }),
+  image: z
+    .string({ error: MESSAGES.receiptImage })
+    .min(1, MESSAGES.receiptImage)
+    .max(MAX_RECEIPT_BASE64, MESSAGES.receiptTooBig)
+    .regex(/^[A-Za-z0-9+/]+={0,2}$/, MESSAGES.receiptImage),
+});
+
+/** GET /products/barcode/:code */
+export const barcodeSchema = z.object({
+  code: z
+    .string({ error: MESSAGES.barcode })
+    .transform((value) => value.replace(/[\s-]/g, ''))
+    .refine(isValidBarcode, MESSAGES.barcode),
+});
+
 /** One row of a bulk add; the added date (and default storage) come from the request. */
 const bulkItem = z.object({
   name: foodFields.name,
@@ -145,6 +172,7 @@ const bulkItem = z.object({
   lifespanDays: foodFields.lifespanDays,
   storage: foodFields.storage,
   notes: foodFields.notes,
+  price: foodFields.price,
 });
 
 /** A whole shopping haul in one request: 1–50 items sharing an added date. */
@@ -275,6 +303,7 @@ export const notificationPageSchema = z.object({
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type JoinHouseholdInput = z.infer<typeof joinHouseholdSchema>;
+export type ReceiptInput = z.infer<typeof receiptSchema>;
 export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
 export type UpdateAccountInput = z.infer<typeof updateAccountSchema>;
 export type FoodInput = z.infer<typeof createFoodSchema>;

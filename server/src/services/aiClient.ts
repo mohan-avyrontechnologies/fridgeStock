@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { env } from '../config/env.js';
 
-/** An image sent with a request (Photo Check, a later phase). */
+/** An image sent with a request (receipt scanning, and Photo Check later). */
 export interface AiImage {
   mediaType: 'image/jpeg' | 'image/png' | 'image/webp';
   base64: string;

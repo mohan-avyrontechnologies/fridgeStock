@@ -33,7 +33,7 @@ type Errors = Partial<Record<keyof FoodInput | 'form', string>>;
 interface Props {
   initial?: FoodInput;
   /** Starting values for a new item, e.g. leftovers saved from a recipe idea. */
-  prefill?: { name?: string; leftover?: boolean };
+  prefill?: { name?: string; leftover?: boolean; quantity?: number; unit?: Unit; notes?: string };
   submitLabel: string;
   /** Resolves when saved. `addAnother` is set when the secondary button was used. */
   onSubmit: (input: FoodInput, addAnother: boolean) => Promise<void>;
@@ -63,8 +63,8 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
   const unitId = useId();
   const storageId = useId();
   const [name, setName] = useState(initial?.name ?? prefill?.name ?? '');
-  const [quantity, setQuantity] = useState(String(initial?.quantity ?? 1));
-  const [unit, setUnit] = useState<Unit>(initial?.unit ?? 'pcs');
+  const [quantity, setQuantity] = useState(String(initial?.quantity ?? prefill?.quantity ?? 1));
+  const [unit, setUnit] = useState<Unit>(initial?.unit ?? prefill?.unit ?? 'pcs');
   const [addedDate, setAddedDate] = useState(initial?.addedDate ?? today);
   const [leftover, setLeftover] = useState(initial?.leftover ?? prefill?.leftover ?? false);
   const [lifespan, setLifespan] = useState(
@@ -82,9 +82,9 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
   useEffect(() => {
     if (!initial) void loadLearned();
   }, [initial, loadLearned]);
-  const [notes, setNotes] = useState(initial?.notes ?? '');
+  const [notes, setNotes] = useState(initial?.notes ?? prefill?.notes ?? '');
   // Notes sit behind an "Add note" link unless the item already has some.
-  const [showNotes, setShowNotes] = useState(Boolean(initial?.notes));
+  const [showNotes, setShowNotes] = useState(Boolean(initial?.notes ?? prefill?.notes));
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
 

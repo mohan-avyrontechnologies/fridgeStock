@@ -408,3 +408,34 @@ export const householdCopy = {
     MEMBER_LEFT: (who: string) => `${who} left the household`,
   },
 } as const;
+
+/** Phase 6: barcode and receipt scanning. */
+export const scanCopy = {
+  open: 'Scan a barcode',
+  title: 'Scan a barcode',
+  close: 'Close',
+  useCamera: 'Use the camera',
+  cameraLabel: 'Camera view for scanning a barcode',
+  pointCamera: 'Hold the barcode steady inside the picture.',
+  cameraFailed: 'The camera isn’t available. Type the number under the barcode instead.',
+  numberLabel: 'Or type the number under the barcode',
+  numberHint: 'Eight to fourteen digits. Spaces and dashes are fine.',
+  lookUp: 'Look up',
+  looking: 'Looking…',
+  notFound: 'That barcode isn’t in the product list. Type the name instead.',
+  lookupError: 'The product look-up isn’t available right now. Type the name instead.',
+  found: (name: string) => `Found: ${name}. Check the details, then choose how long it lasts.`,
+} as const;
+
+export const receiptCopy = {
+  title: 'Scan a receipt',
+  hint: 'Take a photo of your receipt and the food on it is filled in below. You check every line before anything is saved.',
+  button: 'Scan a receipt',
+  reading: 'Reading your receipt…',
+  none: 'No food lines were found on that receipt. Try a clearer photo.',
+  found: (count: number) => `Found ${count} ${count === 1 ? 'item' : 'items'}. Check each one before saving.`,
+  error: 'Couldn’t read that photo. Try again.',
+  checkNote:
+    'Read from a photo, so check each line. The app is only guessing how long each item lasts: fill in any that are blank.',
+  dateSet: 'The added date was set from the receipt.',
+} as const;
