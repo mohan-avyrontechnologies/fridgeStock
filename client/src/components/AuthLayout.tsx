@@ -20,18 +20,18 @@ export function AuthLayout({ title, children, footer }: { title: string; childre
     <div className="min-h-dvh lg:grid lg:grid-cols-2">
       <aside className="hidden flex-col justify-between bg-brand p-12 text-on-brand lg:flex">
         <div className="flex items-center gap-3">
-          <img src="/icon.svg" alt="" className="size-10 rounded-xl ring-1 ring-white/20" />
+          <img src="/icon.svg" alt="" className="size-10 rounded-button ring-1 ring-white/20" />
           <span className="text-xl font-bold tracking-tight">Cook First</span>
         </div>
         <div className="max-w-md">
           <p className="text-4xl leading-tight font-bold tracking-tight">{screenCopy.auth.headline}</p>
-          <ul className="mt-8 space-y-3 text-lg text-on-brand/85">
+          <ul className="mt-8 space-y-3 text-lg text-on-brand">
             {screenCopy.auth.points.map((point) => (
               <li key={point}>{point}</li>
             ))}
           </ul>
         </div>
-        <p className="max-w-md text-sm text-on-brand/70">{estimateNote}</p>
+        <p className="max-w-md text-sm text-on-brand">{estimateNote}</p>
       </aside>
 
       <main className="top-inset mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-8 lg:justify-center lg:py-12">

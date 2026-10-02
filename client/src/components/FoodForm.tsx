@@ -1,3 +1,4 @@
+import { Star } from 'lucide-react';
 import {
   addDays,
   createFoodSchema,
@@ -230,7 +231,7 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
             const { days } = suggestion;
             return (
               <Chip key={suggestion.name} onClick={() => pick(suggestion)}>
-                {suggestion.source === 'learned' && <span aria-label="your usual">★ </span>}
+                {suggestion.source === 'learned' && <Star aria-label="your usual" className="size-4 fill-current" />}
                 {suggestion.name}
                 {days !== null && <span className="ml-1 text-muted">· {days}d</span>}
               </Chip>
@@ -239,7 +240,7 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
         </div>
       )}
 
-      <label className="-ml-2.5 flex min-h-11 cursor-pointer items-center gap-1">
+      <label className="-ml-2.5 flex min-h-12 cursor-pointer items-center gap-1">
         <Checkbox checked={leftover} onChange={(e) => toggleLeftover(e.target.checked)} />
         <span>
           <span className="block font-medium">{leftoverCopy.label}</span>
@@ -293,7 +294,7 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
             clearError('unit');
           }}
           aria-invalid={errors.unit ? true : undefined}
-          className={`block min-h-12 w-40 rounded-xl border bg-card px-3.5 text-base text-ink focus:border-brand focus:outline-none ${
+          className={`block min-h-12 w-40 rounded-button border bg-card px-3.5 text-base text-ink focus:border-brand focus:outline-none ${
             errors.unit ? 'border-danger' : 'border-line'
           }`}
         >
@@ -314,7 +315,7 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
           id={storageId}
           value={storage}
           onChange={(e) => changeStorage(e.target.value as StorageLocation)}
-          className="block min-h-12 w-40 rounded-xl border border-line bg-card px-3.5 text-base text-ink focus:border-brand focus:outline-none"
+          className="block min-h-12 w-40 rounded-button border border-line bg-card px-3.5 text-base text-ink focus:border-brand focus:outline-none"
         >
           {STORAGE_LOCATIONS.map((loc) => (
             <option key={loc} value={loc}>
@@ -406,7 +407,7 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
         <button
           type="button"
           onClick={() => setShowNotes(true)}
-          className="inline-flex min-h-11 items-center text-sm font-semibold text-brand underline-offset-2 hover:underline"
+          className="inline-flex min-h-12 items-center text-sm font-semibold text-brand underline-offset-2 hover:underline"
         >
           + {screenCopy.form.addNote}
         </button>
@@ -426,7 +427,7 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
               clearError('notes');
             }}
             aria-invalid={errors.notes ? true : undefined}
-            className={`block w-full rounded-xl border bg-card px-3.5 py-3 text-base text-ink placeholder:text-muted/70 focus:border-brand focus:outline-none ${
+            className={`block w-full rounded-button border bg-card px-3.5 py-3 text-base text-ink placeholder:text-muted/70 focus:border-brand focus:outline-none ${
               errors.notes ? 'border-danger' : 'border-line'
             }`}
           />
@@ -436,7 +437,7 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
         </div>
       )}
 
-      <div aria-live="polite" className="space-y-2 rounded-2xl bg-brand-soft px-4 py-3">
+      <div aria-live="polite" className="space-y-2 rounded-card bg-brand-soft px-4 py-3">
         <p className="text-base font-semibold text-ink">
           {expiryDate
             ? screenCopy.form.preview(formatDisplay(expiryDate), diffDays(today, expiryDate))

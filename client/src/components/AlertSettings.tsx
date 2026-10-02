@@ -13,9 +13,9 @@ import { api } from '../api/client';
 import { alertCopy, mealSettingsCopy } from '../copy';
 import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
-import { Switch } from './ui';
+import { Switch, Card } from './ui';
 
-const timeClass = 'min-h-11 rounded-xl border border-line bg-card px-3 text-base';
+const timeClass = 'min-h-12 rounded-button border border-line bg-card px-3 text-base';
 
 /**
  * Settings: reminder sounds, vibration and quiet hours, and the breakfast, lunch and dinner cooking reminders.
@@ -79,7 +79,7 @@ export function AlertSettings() {
           {alertCopy.title}
         </h2>
         <p className="mb-3 text-sm text-muted">{alertCopy.intro}</p>
-        <div className="space-y-4 rounded-2xl border border-line bg-card p-4">
+        <Card className="space-y-4 p-4">
           <Switch
             label={alertCopy.sound}
             hint={alertCopy.soundHint}
@@ -121,7 +121,7 @@ export function AlertSettings() {
               <p className="basis-full text-sm text-muted">{alertCopy.zone(user?.timeZone ?? 'UTC')}</p>
             </div>
           )}
-        </div>
+        </Card>
       </section>
 
       <section aria-labelledby="meals-title">
@@ -129,7 +129,7 @@ export function AlertSettings() {
           {mealSettingsCopy.title}
         </h2>
         <p className="mb-3 text-sm text-muted">{mealSettingsCopy.intro}</p>
-        <ul className="space-y-3 rounded-2xl border border-line bg-card p-4">
+        <Card as="ul" className="space-y-3 p-4">
           {MEAL_TYPES.map((meal: MealType) => (
             <li key={meal} className="space-y-2">
               <Switch
@@ -151,7 +151,7 @@ export function AlertSettings() {
               )}
             </li>
           ))}
-        </ul>
+        </Card>
         <p className="mt-2 text-sm text-muted">{mealSettingsCopy.note}</p>
       </section>
     </>

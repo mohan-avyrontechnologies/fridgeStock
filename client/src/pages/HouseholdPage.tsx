@@ -2,7 +2,7 @@ import { formatDisplay, type ActivityEvent, type Household } from '@cook-first/s
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { Button, EmptyState, Field, FormError, SectionTitle, Spinner } from '../components/ui';
+import { Button, EmptyState, Field, FormError, SectionTitle, Spinner, Card } from '../components/ui';
 import { householdCopy as copy } from '../copy';
 import { formatInstant } from '../lib/format';
 import { useFoodStore } from '../stores/foodStore';
@@ -134,7 +134,7 @@ export function HouseholdPage() {
 
             <section aria-labelledby="members">
               <SectionTitle id="members">{copy.membersTitle}</SectionTitle>
-              <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
+              <Card as="ul" className="divide-y divide-line overflow-hidden">
                 {household.members.map((m) => (
                   <li key={m.id} className="flex items-center gap-3 px-4 py-3">
                     <span className="min-w-0 flex-1 truncate font-semibold">{m.name}</span>
@@ -145,7 +145,7 @@ export function HouseholdPage() {
                     )}
                   </li>
                 ))}
-              </ul>
+              </Card>
               <p className="mt-3 text-sm text-muted">{shared ? copy.shared : copy.alone}</p>
             </section>
 
@@ -154,7 +154,7 @@ export function HouseholdPage() {
                 <SectionTitle id="invite">{copy.inviteTitle}</SectionTitle>
                 <p className="mb-3 text-sm text-muted">{copy.inviteHint}</p>
                 {newCode && (
-                  <div className="mb-3 rounded-2xl bg-brand-soft p-4" role="status">
+                  <div className="mb-3 rounded-card bg-brand-soft p-4" role="status">
                     <p className="text-sm text-muted">{copy.newInvite}</p>
                     <p className="my-1 text-3xl font-bold tracking-widest text-ink tabular-nums">{newCode}</p>
                     <Button variant="secondary" onClick={() => copyCode(newCode)}>
@@ -171,7 +171,7 @@ export function HouseholdPage() {
             {household.invites.length > 0 && (
               <section aria-labelledby="open-invites">
                 <SectionTitle id="open-invites">{copy.openInvites}</SectionTitle>
-                <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
+                <Card as="ul" className="divide-y divide-line overflow-hidden">
                   {household.invites.map((invite) => (
                     <li key={invite.code} className="flex items-center gap-3 px-4 py-2">
                       <div className="min-w-0 flex-1">
@@ -190,7 +190,7 @@ export function HouseholdPage() {
                       </Button>
                     </li>
                   ))}
-                </ul>
+                </Card>
               </section>
             )}
 
@@ -244,14 +244,14 @@ export function HouseholdPage() {
               <SectionTitle id="activity">{copy.activityTitle}</SectionTitle>
               {events && events.length === 0 && <EmptyState title={copy.activityEmpty} />}
               {events && events.length > 0 && (
-                <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
+                <Card as="ul" className="divide-y divide-line overflow-hidden">
                   {events.map((event) => (
                     <li key={event.id} className="px-4 py-3">
                       <p className="font-medium">{activityText(event)}</p>
                       <p className="text-sm text-muted">{formatInstant(event.at)}</p>
                     </li>
                   ))}
-                </ul>
+                </Card>
               )}
               {hasMore && (
                 <Button variant="secondary" className="mt-3 w-full" onClick={more}>

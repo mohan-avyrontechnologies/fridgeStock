@@ -1,3 +1,4 @@
+import { ChevronRight } from 'lucide-react';
 import { formatDisplay, type Urgency } from '@cook-first/shared';
 import { Link } from 'react-router';
 import { PageBody, PageHeader } from '../components/AppShell';
@@ -43,10 +44,10 @@ export function DashboardPage() {
                 {ORDER.map((u) => (
                   <li
                     key={u}
-                    className={`rounded-2xl px-2 py-3 text-center lg:px-5 lg:py-5 lg:text-left ${URGENCY_STYLE[u].tile}`}
+                    className={`rounded-card px-2 py-3 text-center lg:px-5 lg:py-5 lg:text-left ${URGENCY_STYLE[u].tile}`}
                   >
                     <p className="text-2xl font-bold tabular-nums lg:text-4xl">{inventory.summary[u]}</p>
-                    <p className="text-[11px] leading-tight font-semibold lg:hidden">{urgencyShortLabel[u]}</p>
+                    <p className="text-xs leading-tight font-semibold lg:hidden">{urgencyShortLabel[u]}</p>
                     <p className="hidden text-sm font-semibold lg:block">{urgencyCopy[u].label}</p>
                   </li>
                 ))}
@@ -60,7 +61,7 @@ export function DashboardPage() {
                   action={
                     <Link
                       to="/cook-first"
-                      className="inline-flex min-h-11 items-center text-sm font-semibold text-brand"
+                      className="inline-flex min-h-12 items-center text-sm font-semibold text-brand"
                     >
                       {screenCopy.dashboard.seeAll}
                     </Link>
@@ -81,7 +82,7 @@ export function DashboardPage() {
                   <EmptyState title={screenCopy.dashboard.emptyInventory}>
                     <Link
                       to="/add"
-                      className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-brand px-4 font-semibold text-on-brand"
+                      className="mt-4 inline-flex min-h-12 items-center rounded-button bg-brand px-4 font-semibold text-on-brand"
                     >
                       Add food
                     </Link>
@@ -96,12 +97,10 @@ export function DashboardPage() {
             </div>
             <Link
               to="/insights"
-              className="flex min-h-14 items-center justify-between rounded-2xl border border-line bg-card px-4 font-medium hover:bg-paper"
+              className="flex min-h-14 items-center justify-between rounded-card border border-line bg-card px-4 font-medium hover:bg-paper"
             >
               {screenCopy.dashboard.insightsLink}
-              <span aria-hidden className="text-muted">
-                ›
-              </span>
+              <ChevronRight aria-hidden className="size-5 text-muted" />
             </Link>
             <EstimateNote />
           </>

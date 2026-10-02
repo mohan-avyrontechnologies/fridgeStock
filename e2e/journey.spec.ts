@@ -73,7 +73,7 @@ async function expectLargeTapTargets(page: Page) {
           getComputedStyle(el).visibility !== 'hidden'
         );
       })
-      .filter((el) => el.getBoundingClientRect().height < 44)
+      .filter((el) => el.getBoundingClientRect().height < 48)
       .map(
         (el) =>
           `${el.tagName} "${(el.getAttribute('aria-label') ?? el.textContent ?? '').trim().slice(0, 30)}" ${Math.round(el.getBoundingClientRect().height)}px`,

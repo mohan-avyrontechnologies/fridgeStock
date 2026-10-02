@@ -7,7 +7,7 @@ A mobile-first web app that helps a household use perishable food before it goes
 | | |
 |---|---|
 | **Status** | MVP complete; post-MVP Phases 1 (faster entry), 2 (realistic estimates), 3 (better reminders), 4 (using the food), 5 (insights) and 6 (dark mode, data export, account deletion, shared households) complete, barcode and receipt scanning, and 7 (Photo Check, behind a feature flag) complete, with a camera screen and product photos, ready-made Android and iOS apps (Capacitor, not yet built on a device), and reminder sounds, quiet hours and meal-time cooking reminders (the sounds are placeholders); voice entry, extra languages and grocery integrations are not built. Not yet deployed. |
-| **Version** | 2.17.0 (see the [Changelog](#changelog)) |
+| **Version** | 2.18.0 (see the [Changelog](#changelog)) |
 | **Requires** | Node.js 20.19 or later |
 | **Specifications** | PFCP BRD v2.0, FRD v1.0, SRD v1.0, TDD v1.0 (internal documents, not stored in this repo) |
 | **Repository** | `github.com/rugvailabs/cook_first` |
@@ -112,7 +112,7 @@ The project is a **TypeScript monorepo** using npm workspaces, with three packag
 | | Service worker + web app manifest (installable app, push notifications; no extra library) | |
 | | Vite (build and dev server) | 8.3 |
 | | React Router | 7.18 |
-| | Tailwind CSS | 4.3 |
+| | Tailwind CSS (design tokens in `index.css`), `lucide-react` icons, `@fontsource` fonts (Bricolage Grotesque, Figtree) | 4.3 |
 | | @zxing/browser (reads barcodes from the camera where the browser has no `BarcodeDetector`; loaded only when needed) | 0.2 |
 | | Capacitor (Android and iOS apps) with `@capacitor/camera`, `@capacitor/push-notifications`, `@capacitor-mlkit/barcode-scanning` and `@aparajita/capacitor-secure-storage` | 8 |
 | | Zustand (app state; the login token is saved in `localStorage` through its `persist` middleware) | 5.0 |
@@ -322,12 +322,13 @@ Run these from the repository root:
 | `npm run typecheck` | TypeScript check of `shared`, `server` and `client` |
 | `npm run seed -w server` | With the server running, create a demo account (`demo@cookfirst.local` / `cookfirst-demo`) with 10 priced sample items at every urgency level, plus 5 used or wasted ones so Insights has data. Add `-- --reset` to re-seed. |
 | `npm run vapid:keys -w server` | Generate a Web Push (VAPID) key pair for `server/.env` |
-| `npm test` | Unit and API tests: shared (45) + server (468) + client (311) |
-| `npm run test:e2e` | Playwright end-to-end tests (36), at 375 px and 1440 px |
+| `npm test` | Unit and API tests: shared (45) + server (468) + client (331) |
+| `npm run test:e2e` | Playwright end-to-end tests (40), at 375 px and 1440 px |
 | `npm run check:staging -- --api <api-url> --client <web-url>` | Check a deployment from the outside (HTTPS, health, CORS, headers, push, install files) |
 | `npm run cap:sync -w client` | Build the web app for the apps and copy it into the Android and iOS projects |
 | `npm run android -w client` / `npm run ios -w client` | Open the Android project in Android Studio / the iOS project in Xcode (see [Native apps](#native-apps-android-and-ios)) |
 | `npm run sounds:sync -w client` / `sounds:check` / `sounds:generate` | Copy the reminder sounds into the Android and iOS projects / check them / write the placeholder tones (see [Native apps](#native-apps-android-and-ios)) |
+| `npm run design:shots -- <stage>` | Screenshots of every main screen at 375 px, light and dark, in `docs/design-review/stage-<stage>/` |
 | `npm run native:set-app-id -w client -- <id>` | Set the app ID everywhere (`--check` shows where it is set) |
 | `npm run build` | Build `shared/dist`, `server/dist` and `client/dist` |
 
@@ -357,6 +358,8 @@ Run these from the repository root:
 | **Server structure** (`structure.test.ts`) | Vitest | 12 | The `server/src` folders; thin controllers; only models talk to MongoDB; no `new Date()` in date logic; dates only from `shared`; hourly node-cron job; env variable names and defaults; the threshold of 3 exists only in `config/urgency.ts` (checked across client, server and shared); expiry calculated in the food service with no Mongoose hook |
 | **Sounds, quiet hours and meals** (`sounds.test.tsx`, `native-sounds.test.ts`, in the native tests) | Vitest, Testing Library, MSW, file checks | 69 | **The chime** (three different files, not before a touch, the matching sound per kind, never in quiet hours in the person's own time zone, sound switch, a refusing browser, a push from the service worker or the app, stopped on close); **Settings** (defaults, each switch saved, quiet hours off and the times, failure puts it back; meal switches and times); **the meal screen** (recipe, plan, items, Cooked it, none today, a bad meal); Add Food from "Cooked it"; the plan one meal at a time; **native**: the Android channels are created at start (not on iPhone), the push kind is passed on, and the three meal buttons; **the project files**: the six channels agree between JavaScript and Java and cover everything the server can choose, the sound files are where the apps look, under 30 seconds and registered in Xcode, `sounds:sync` (placeholders, licensed files win, once in the project, too long refused), nothing asks for an alarm, a ringing notification or a critical alert, and the service worker's vibration, `requireInteraction`, tag and silent handling |
 | **Native platform** (`platform*.test.ts`, `native*.test.ts*`) | Vitest, Testing Library, MSW, fake Capacitor plugins | 78 | **Platform choice** (web in a browser and in tests, iOS or Android in the apps); the web platform is localStorage, the file input and the live camera, unchanged; the **login token in secure storage** (not localStorage, not synced, the app waits for it to be read); the **native camera** (system photo, scaled and upright, cancel is not an error), the **ML Kit scanner** (grocery formats, camera permission, the Android Google module install and its failure), **native push** (permission, registration, token and platform sent to the server, blocked and dismissed, turning off, the listeners started once, **Used and Snooze buttons call the API and fall back to opening the page**); the camera screen, Photo Check, product photos, receipts and Settings push in the app; the app opens a tapped notification's page and refreshes on a push; **native project files**: permissions and the text explaining them, one app ID everywhere, Firebase and notification set-up that matches the server, and `native:set-app-id` |
+| **Design tokens** (`tokens.test.ts`) | Vitest | 20 | The colours from the design brief in both themes; WCAG AA contrast (text 4.5:1, badge text 7:1, bars and field outlines 3:1) for every pair the interface uses; card and button corners; the two fonts, bundled and not fetched from a CDN |
+| **Accessibility** (`e2e/a11y.spec.ts`) | Playwright, axe | 2 | axe (WCAG 2.0 and 2.1, A and AA) finds nothing on any main screen, signed in or out, in light and dark mode, at phone and desktop size |
 | **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 164 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and preview, the required estimate line, all five remaining-days phrasings, colour always paired with a label, exactly seven units, notes, reminders marked read when the screen opens; the dashboard header, 3-item Cook First with "See all", and empty texts; Add Food defaults, the unit dropdown, the "Add note" link and the preview format; reference suggestions (including following the storage location), storage sent with the item, one-tap favourites, Undo instead of confirmations, bulk add (reference fill, one request, per-row errors); learned lifespans (★ chip, the "You usually set" hint, falling back to the reference list per location); Opened (prefilled days, missing-days message, mark as not opened) and Move (other locations only, per-location suggestion, request body); push reminders (permission asked only on tapping "Turn on reminders", on/off, blocked and dismissed messages, the iPhone Home Screen hint, unsupported browser, no server key, the in-app note, saving mode and time, turning push off at logout with the old token); Phase 4 (recipe ideas hidden when AI is off, shown with the AI note and allowance, the limit message; leftovers prefilled from a recipe, the leftovers box with per-location lifespans and the 4-day check; editing keeps where an item is kept; the shopping warning with expected expiry, add/tick/remove/clear, name required; the meal plan week, planning a meal with your food, and the AI draft saved only on "Add these to my plan"); the browser push layer (iPhone detection, subscribing with the VAPID key and registering the browser, unsubscribing on server and browser, key decoding, browser names); the Reminders error state; plus client structure checks |
 | **End-to-end** (`e2e/`) | Playwright in Chrome | 34 | 17 journeys, each run at **375 px phone size** and **desktop size (1440×900)** |
 
@@ -534,6 +537,29 @@ Recipe ideas are cached per household, per day and per meal (`recipeideacaches`,
 **The meal plan** (`mealplanentries`) now has a `meal` (breakfast, lunch or dinner, default dinner, one entry per meal per day). Existing plans were all dinners and are migrated. `GET /meal-plan` returns each day's `entry` (the dinner, as before) and `meals`; the Plan screen has a Breakfast / Lunch / Dinner chooser, and the AI draft is for dinners only.
 
 **Wording.** All new text is in `server/src/copy.ts` and `client/src/copy.ts`, uses expected-expiry wording where it names items, and is checked by the banned-phrase tests.
+
+### Design system (v2.18)
+
+Tailwind 4 is configured in CSS: the tokens are in `client/src/index.css` (`@theme`, with the dark values below it).
+
+| Token | Light | Dark |
+|---|---|---|
+| Background / cards | `#F6F8F5` / `#FFFFFF` | `#0F1C1A` / `#182826` |
+| Text / muted text | `#17332A` / `#5B6F66` | `#E8F0EC` / `#A8BAB2` |
+| Primary buttons and links | `#1E5F74` | `#7CC3DA` (dark text on it) |
+| Not urgent | `#2F7D4F` | `#72A787` |
+| Use soon | `#B7791F` | `#C5944C` |
+| Expected expiry today | `#D4570E` | `#E08651` |
+| Past expected expiry | `#A1253B` | `#CC8995` |
+
+- **Urgency badges** use a light tint of their colour as the background and dark text of the same hue (7:1 contrast), with a different **icon** for each state (check, clock, triangle, octagon) **and** the text label: never colour alone. The strong colour is only for the card's side bar and icons.
+- **Type:** Bricolage Grotesque (600, 700) for headings and food names, Figtree (400 to 600) for body text, bundled with `@fontsource` so they work offline in the apps, with system fonts as the fallback. All sizes are in `rem`, so the phone's text-size setting scales everything.
+- **Shape and spacing:** Tailwind's 4-point scale; cards 16 px corners (`rounded-card`), buttons 12 px (`rounded-button`), chips fully round; every tap target is at least 48 px (`min-h-12`).
+- **Icons:** `lucide-react` throughout. A food with no photo shows an icon for its kind of food (`lib/foodIcon.ts`: carrot, milk, egg, fish, beef, bread and so on) on a soft tile (`FoodThumb`).
+- **Shared components** (`components/ui.tsx`, `Urgency.tsx`): `Button`, `Card`, `Chip`, `Field`, `UrgencyBadge`, `BottomSheet` (a real dialog: focus moves in, Tab stays inside, Escape closes, focus returns), `Toast`, `Skeleton`, `Switch`, `EmptyState`.
+- **Checks:** `tokens.test.ts` reads the stylesheet and checks every text/background pair for WCAG AA in both themes; the end-to-end `a11y.spec.ts` runs **axe** (WCAG 2.0 and 2.1, A and AA) on every main screen in light and dark mode, at phone and desktop size.
+- **Review screenshots:** `npm run design:shots -- <stage>` saves every main screen at 375 px, light and dark, to `docs/design-review/stage-<stage>/` (not committed).
+
 
 ## Screens
 
@@ -998,7 +1024,7 @@ The project was built in these phases; each one is complete.
 |---|---|
 | All MVP functional requirements (FR-AUTH, FOOD, EXP, PRI, UI, NOT, USE, VAL) | ✅ Done |
 | Monorepo with `client`, `server` and `shared`; Node 20.19+ | ✅ Done |
-| Tests: 45 shared + 468 server + 311 client + 36 end-to-end = **860** | ✅ Passing |
+| Tests: 45 shared + 468 server + 331 client + 40 end-to-end = **884** | ✅ Passing |
 | ESLint, Prettier and typecheck on all packages | ✅ Clean |
 | All project rules (see [Project rules](#project-rules)) | ✅ Met, each one checked by a test |
 | Phone (375 px) and desktop layouts, 44 px tap targets | ✅ Done, checked in screenshots and by tests |
@@ -1026,6 +1052,23 @@ All notable changes to this project are listed here, newest first. Versions foll
 
 ### [Unreleased]
 - *Nothing yet.*
+
+### [2.18.0] - 2026-10-03: design and usability, stage 1 (design system) · `COMMIT_HASH`
+**Added**
+- **Design tokens** in `client/src/index.css`: the light and dark palettes and urgency colours from the design brief, 16 px card and 12 px button corners, and the type scale (see [Design system](#design-system-v218)).
+- **Fonts:** Bricolage Grotesque (600, 700) for headings and food names and Figtree (400 to 600) for body text, installed with `@fontsource` (bundled, so they work offline in the apps).
+- **Urgency badges** with a tinted background, dark text of the same hue, an icon for each state and the label.
+- **Category icons** (`lib/foodIcon.ts`, `FoodThumb`) as the picture for food without a photo.
+- **Shared components:** `Card`, `BottomSheet` (with a focus trap and focus return), `Toast`, `Skeleton` and `SkeletonList`, joining `Button`, `Chip` and `UrgencyBadge`; the existing sheets (Used, Opened, Move) and the card containers now use them.
+- **lucide-react** icons replace the hand-drawn SVGs and symbols in the navigation, headers, lists and buttons.
+- **Tests:** `tokens.test.ts` (20: the brief's colours and WCAG AA contrast of every pair in both themes) and an end-to-end **axe** check (`a11y.spec.ts`) of every main screen in both themes at phone and desktop size. There were no axe checks before this; they are new.
+- **`npm run design:shots -- <stage>`** captures every main screen at 375 px in light and dark mode for review.
+
+**Changed**
+- Every tap target is at least 48 px (was 44); the end-to-end tap-target check is 48 px. Pixel font sizes became `rem`.
+- The food name on a card is a heading, so tests and screen readers find it by role.
+- Text on brand-coloured backgrounds is full strength (translucent text failed contrast).
+
 
 `### [2.17.0] - 2026-10-03: reminder sounds and meal-time cooking reminders · `fa453f1`
 `**Added**

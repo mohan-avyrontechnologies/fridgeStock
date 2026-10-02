@@ -1,3 +1,4 @@
+import { ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { api } from '../api/client';
@@ -7,7 +8,7 @@ import { AlertSettings } from '../components/AlertSettings';
 import { PushReminders } from '../components/PushReminders';
 import { YourData } from '../components/YourData';
 import { EstimateNote } from '../components/Urgency';
-import { Button, Chip } from '../components/ui';
+import { Button, Chip, Card } from '../components/ui';
 import { appearanceCopy, insightsCopy, productPhotoCopy, reminderPreferenceCopy, screenCopy } from '../copy';
 import { useAuthStore } from '../stores/authStore';
 import { useThemeStore, type Theme } from '../stores/themeStore';
@@ -73,7 +74,7 @@ export function SettingsPage() {
     <>
       <PageHeader title="Settings" />
       <PageBody narrow>
-        <section className="rounded-2xl border border-line bg-card p-4">
+        <Card as="section" className="p-4">
           <dl className="space-y-2">
             <div>
               <dt className="text-sm text-muted">Name</dt>
@@ -92,17 +93,17 @@ export function SettingsPage() {
               Use this device’s time zone ({deviceZone})
             </Button>
           )}
-        </section>
+        </Card>
 
         <section>
           <h2 className="mb-1 text-lg font-semibold">Reminders</h2>
           <p className="mb-3 text-sm text-muted">Shown in the app under the bell. Turn off any you don’t want.</p>
           {prefsError && (
-            <p role="alert" className="mb-3 rounded-xl bg-past px-3.5 py-3 text-sm text-past-ink">
+            <p role="alert" className="mb-3 rounded-button bg-past px-3.5 py-3 text-sm text-past-ink">
               {screenCopy.settings.preferencesError}
             </p>
           )}
-          <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
+          <Card as="ul" className="divide-y divide-line overflow-hidden">
             {PREFS.map(({ key, title, detail }) => (
               <li key={key}>
                 <label className="flex min-h-16 cursor-pointer items-center gap-4 px-4 py-3">
@@ -125,7 +126,7 @@ export function SettingsPage() {
                 </label>
               </li>
             ))}
-          </ul>
+          </Card>
         </section>
 
         <section>
@@ -135,7 +136,7 @@ export function SettingsPage() {
             aria-label={insightsCopy.currencyTitle}
             value={user?.currency ?? 'USD'}
             onChange={(e) => changeCurrency(e.target.value as Currency)}
-            className="block min-h-12 w-40 rounded-xl border border-line bg-card px-3.5 text-base text-ink focus:border-brand focus:outline-none"
+            className="block min-h-12 w-40 rounded-button border border-line bg-card px-3.5 text-base text-ink focus:border-brand focus:outline-none"
           >
             {CURRENCIES.map((c) => (
               <option key={c} value={c}>
@@ -161,7 +162,7 @@ export function SettingsPage() {
           <h2 id="photos-title" className="mb-1 text-lg font-semibold">
             {productPhotoCopy.settingTitle}
           </h2>
-          <label className="flex min-h-16 cursor-pointer items-center gap-4 rounded-2xl border border-line bg-card px-4 py-3">
+          <label className="flex min-h-16 cursor-pointer items-center gap-4 rounded-card border border-line bg-card px-4 py-3">
             <span className="flex-1">
               <span className="block font-medium">{productPhotoCopy.settingLabel}</span>
               <span className="block text-sm text-muted">{productPhotoCopy.settingHint}</span>
@@ -191,32 +192,26 @@ export function SettingsPage() {
 
         <Link
           to="/household"
-          className="flex min-h-14 items-center justify-between rounded-2xl border border-line bg-card px-4 font-medium hover:bg-paper"
+          className="flex min-h-14 items-center justify-between rounded-card border border-line bg-card px-4 font-medium hover:bg-paper"
         >
           Household
-          <span aria-hidden className="text-muted">
-            ›
-          </span>
+          <ChevronRight aria-hidden className="size-5 text-muted" />
         </Link>
 
         <Link
           to="/insights"
-          className="flex min-h-14 items-center justify-between rounded-2xl border border-line bg-card px-4 font-medium hover:bg-paper"
+          className="flex min-h-14 items-center justify-between rounded-card border border-line bg-card px-4 font-medium hover:bg-paper"
         >
           Insights
-          <span aria-hidden className="text-muted">
-            ›
-          </span>
+          <ChevronRight aria-hidden className="size-5 text-muted" />
         </Link>
 
         <Link
           to="/history"
-          className="flex min-h-14 items-center justify-between rounded-2xl border border-line bg-card px-4 font-medium hover:bg-paper"
+          className="flex min-h-14 items-center justify-between rounded-card border border-line bg-card px-4 font-medium hover:bg-paper"
         >
           History
-          <span aria-hidden className="text-muted">
-            ›
-          </span>
+          <ChevronRight aria-hidden className="size-5 text-muted" />
         </Link>
 
         <YourData />

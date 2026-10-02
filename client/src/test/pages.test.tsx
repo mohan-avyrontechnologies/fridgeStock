@@ -17,11 +17,10 @@ import { server } from '../mocks/server';
 describe('Dashboard', () => {
   it('shows every item in server order with its urgency label and counts', async () => {
     renderSignedIn('/', <DashboardPage />);
-    const all = await screen.findByRole('heading', { name: 'All food (4)' });
-    const list = all.parentElement!.parentElement!.querySelector('ul')!;
+    const list = await screen.findByRole('region', { name: 'All food (4)' });
     const names = within(list)
       .getAllByRole('listitem')
-      .map((li) => li.querySelector('a span')!.textContent);
+      .map((li) => within(li).getByRole('heading', { level: 3 }).textContent);
     expect(names).toEqual(['Bread', 'Yoghurt', 'Spinach', 'Eggs']);
 
     expect(within(list).getByText('Past expected expiry')).toBeInTheDocument();

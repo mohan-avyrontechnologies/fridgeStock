@@ -5,7 +5,7 @@ import { pushSettingsCopy as copy } from '../copy';
 import { platform } from '../platform';
 import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
-import { Button, Chip } from './ui';
+import { Button, Chip, Card } from './ui';
 
 type State = 'loading' | 'ios' | 'unsupported' | 'not-configured' | 'blocked' | 'off' | 'on';
 
@@ -111,9 +111,9 @@ export function PushReminders() {
       </h2>
       <p className="mb-3 text-sm text-muted">{copy.intro}</p>
 
-      <div className="space-y-3 rounded-2xl border border-line bg-card p-4">
+      <Card className="space-y-3 p-4">
         {message && (
-          <p role="status" className="rounded-xl bg-paper px-3.5 py-3 text-sm text-ink">
+          <p role="status" className="rounded-button bg-paper px-3.5 py-3 text-sm text-ink">
             {message}
           </p>
         )}
@@ -148,7 +148,7 @@ export function PushReminders() {
               <Chip key={mode} selected={delivery.mode === mode} onClick={() => save({ mode })}>
                 <span className="block py-1 text-left">
                   <span className="block">{copy.modes[mode].title}</span>
-                  <span className={`block text-xs ${delivery.mode === mode ? 'text-on-brand/80' : 'text-muted'}`}>
+                  <span className={`block text-xs ${delivery.mode === mode ? 'text-on-brand' : 'text-muted'}`}>
                     {copy.modes[mode].detail}
                   </span>
                 </span>
@@ -160,7 +160,7 @@ export function PushReminders() {
         <label className="block">
           <span className="mb-1.5 block text-sm font-medium text-ink">{copy.timeLabel}</span>
           <select
-            className="min-h-11 w-full rounded-xl border border-line bg-card px-3 text-base"
+            className="min-h-12 w-full rounded-button border border-line bg-card px-3 text-base"
             value={delivery.hour}
             onChange={(e) => save({ hour: Number(e.target.value) })}
           >
@@ -173,7 +173,7 @@ export function PushReminders() {
         </label>
 
         <p className="text-sm text-muted">{copy.inAppNote}</p>
-      </div>
+      </Card>
     </section>
   );
 }

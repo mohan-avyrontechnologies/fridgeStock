@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router';
 import { api, ApiError } from '../api/client';
 import { aiCopy, leftoverCopy, recipeCopy } from '../copy';
 import { useAiStore } from '../stores/aiStore';
-import { Button } from './ui';
+import { Button, Card } from './ui';
 
 /**
  * AI recipe ideas built from the Cook First list. Shown only when AI is on.
@@ -52,7 +52,7 @@ export function RecipeIdeas() {
         <span className="text-sm text-muted">{aiCopy.left(status.usedToday, status.dailyLimit)}</span>
       </div>
       {error && (
-        <p role="alert" className="rounded-xl bg-past px-3.5 py-3 text-sm text-past-ink">
+        <p role="alert" className="rounded-button bg-past px-3.5 py-3 text-sm text-past-ink">
           {error}
         </p>
       )}
@@ -61,7 +61,7 @@ export function RecipeIdeas() {
         <>
           <ul className="grid gap-3 lg:grid-cols-2">
             {ideas.recipes.map((recipe) => (
-              <li key={recipe.title} className="rounded-2xl border border-line bg-card p-4">
+              <Card as="li" key={recipe.title} className="p-4">
                 <h3 className="font-semibold">{recipe.title}</h3>
                 <p className="text-sm text-muted">{recipeCopy.minutes(recipe.minutes)}</p>
                 <p className="mt-2 text-sm">
@@ -87,7 +87,7 @@ export function RecipeIdeas() {
                 >
                   {leftoverCopy.save}
                 </Button>
-              </li>
+              </Card>
             ))}
           </ul>
           <p className="text-sm text-muted">{aiCopy.note}</p>

@@ -1,9 +1,10 @@
+import { X } from 'lucide-react';
 import { UNITS, formatDisplay, shoppingItemSchema, type ShoppingItem, type Unit } from '@cook-first/shared';
 import { useCallback, useEffect, useId, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { Button, Checkbox, EmptyState, Field, Spinner } from '../components/ui';
+import { Button, Checkbox, EmptyState, Field, Spinner, Card } from '../components/ui';
 import { shoppingCopy as copy } from '../copy';
 import { formatQuantity } from '../lib/format';
 import { check } from '../lib/validation';
@@ -86,7 +87,7 @@ export function ShoppingPage() {
     <>
       <PageHeader title={copy.title} subtitle={copy.subtitle} />
       <PageBody narrow>
-        <form onSubmit={add} noValidate className="space-y-3 rounded-2xl border border-line bg-card p-4">
+        <Card as="form" onSubmit={add} noValidate className="space-y-3 p-4">
           <Field
             label={copy.nameLabel}
             placeholder={copy.namePlaceholder}
@@ -116,7 +117,7 @@ export function ShoppingPage() {
                 id={unitId}
                 value={unit}
                 onChange={(e) => setUnit(e.target.value as Unit | '')}
-                className="block min-h-12 w-full rounded-xl border border-line bg-card px-3.5 text-base text-ink focus:border-brand focus:outline-none"
+                className="block min-h-12 w-full rounded-button border border-line bg-card px-3.5 text-base text-ink focus:border-brand focus:outline-none"
               >
                 <option value="">{copy.noUnit}</option>
                 {UNITS.map((u) => (
@@ -130,7 +131,7 @@ export function ShoppingPage() {
           <Button type="submit" className="w-full" disabled={busy}>
             {copy.add}
           </Button>
-        </form>
+        </Card>
 
         {!items && !loadError && <Spinner />}
         {loadError && !items && <EmptyState title={copy.loadError} />}
@@ -141,11 +142,11 @@ export function ShoppingPage() {
             <h2 id="to-buy" className="mb-2 text-lg font-semibold">
               {copy.toBuy}
             </h2>
-            <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
+            <Card as="ul" className="divide-y divide-line overflow-hidden">
               {toBuy.map((item) => (
                 <Row key={item.id} item={item} change={change} toggle={toggle} />
               ))}
-            </ul>
+            </Card>
           </section>
         )}
 
@@ -154,11 +155,11 @@ export function ShoppingPage() {
             <h2 id="bought" className="mb-2 text-lg font-semibold">
               {copy.bought}
             </h2>
-            <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
+            <Card as="ul" className="divide-y divide-line overflow-hidden">
               {bought.map((item) => (
                 <Row key={item.id} item={item} change={change} toggle={toggle} />
               ))}
-            </ul>
+            </Card>
             <Button variant="secondary" className="mt-3 w-full" onClick={() => change(api.clearCheckedShopping)}>
               {copy.clear}
             </Button>
@@ -193,7 +194,7 @@ function Row({
             <p key={match.id} className="mt-1 rounded-lg bg-soon text-sm text-soon-ink">
               <Link
                 to={`/food/${match.id}`}
-                className="flex min-h-11 items-center px-2.5 py-1.5 underline-offset-2 hover:underline"
+                className="flex min-h-12 items-center px-2.5 py-1.5 underline-offset-2 hover:underline"
               >
                 {copy.atHome(match.name, formatQuantity(match.quantity, match.unit), formatDisplay(match.expiryDate))}
               </Link>
@@ -203,12 +204,10 @@ function Row({
       <button
         type="button"
         aria-label={copy.remove(item.name)}
-        className="-mr-2 mt-0.5 grid size-11 shrink-0 place-items-center rounded-full text-muted hover:bg-paper hover:text-ink"
+        className="-mr-2 mt-0.5 grid size-12 shrink-0 place-items-center rounded-full text-muted hover:bg-paper hover:text-ink"
         onClick={() => change(() => api.removeShopping(item.id))}
       >
-        <svg aria-hidden viewBox="0 0 24 24" className="size-5 fill-none stroke-current stroke-2">
-          <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-        </svg>
+        <X aria-hidden className="size-5" />
       </button>
     </li>
   );

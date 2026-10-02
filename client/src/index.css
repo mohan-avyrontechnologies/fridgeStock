@@ -1,114 +1,163 @@
 @import 'tailwindcss';
 
+/*
+ * Design tokens. Tailwind 4 is configured here, in CSS, rather than in a tailwind.config file.
+ *
+ * - Colours: calm greens and a teal primary. Every urgency colour is used three ways: a strong colour for
+ *   bars and icons (`-bar`), a light tint for the badge background, and a dark text of the same hue
+ *   (`-ink`) for contrast. A badge always has an icon and a text label, never colour alone.
+ * - Type: Bricolage Grotesque (600 and 700) for headings and food names, Figtree (400 to 600) for body
+ *   text. Both are bundled with @fontsource, so they work offline in the native app; the system fonts are
+ *   the fallback while they load.
+ * - Spacing: Tailwind's scale is a 4-point grid (1 unit = 4 px). Cards have 16 px corners, buttons 12 px,
+ *   chips are fully rounded, and every tap target is at least 48 px (`min-h-12`).
+ * - Sizes are in rem, so the phone's text-size setting scales the whole interface.
+ *
+ * Every text/background pair is checked for WCAG AA contrast, in both themes, by src/test/tokens.test.ts.
+ */
 @theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Figtree', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display:
+    'Bricolage Grotesque', 'Figtree', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 
-  --color-paper: #fbfaf7;
+  --radius-card: 1rem;
+  --radius-button: 0.75rem;
+
+  --color-paper: #f6f8f5;
   --color-card: #ffffff;
-  --color-ink: #1c2521;
-  --color-muted: #5b6661;
-  --color-line: #e5e1d8;
-  --color-brand: #1f3b33;
-  --color-brand-hover: #2a4d43;
-  --color-brand-soft: #e6eee9;
+  --color-ink: #17332a;
+  --color-muted: #5b6f66;
+  /* Hairlines and dividers (decorative). */
+  --color-line: #d5ddd8;
+  /* The outline of a field or control, which has to be seen (3:1 against its background). */
+  --color-field: #7d8f86;
+  /* Primary buttons and links. */
+  --color-brand: #1e5f74;
+  --color-brand-hover: #174c5e;
+  --color-brand-soft: #e3eef1;
   /* Text and icons on a brand-coloured background. */
   --color-on-brand: #ffffff;
 
-  /* Urgency colours. Every use is paired with a text label (never colour alone). */
-  --color-ok: #e2f2e6;
-  --color-ok-ink: #1d5c33;
-  --color-ok-bar: #3d9a5b;
+  /* Urgency: Not urgent. */
+  --color-ok: #e6efea;
+  --color-ok-ink: #215837;
+  --color-ok-bar: #2f7d4f;
+  /* Urgency: Use soon. */
+  --color-soon: #f6efe4;
+  --color-soon-ink: #6e4913;
+  --color-soon-bar: #b7791f;
+  /* Urgency: Expected expiry today. */
+  --color-today: #faebe2;
+  --color-today-ink: #833609;
+  --color-today-bar: #d4570e;
+  /* Urgency: Past expected expiry. */
+  --color-past: #f4e5e7;
+  --color-past-ink: #8e2134;
+  --color-past-bar: #a1253b;
   /* Neutral grey, for closed items and "Removed". */
-  --color-calm: #eef0ef;
+  --color-calm: #edf0ee;
   --color-calm-ink: #3d4843;
-  --color-calm-bar: #b5bdb9;
-  --color-soon: #fcefd2;
-  --color-soon-ink: #744700;
-  --color-soon-bar: #e0a232;
-  --color-today: #fde0c8;
-  --color-today-ink: #873100;
-  --color-today-bar: #e46b1f;
-  --color-past: #fadada;
-  --color-past-ink: #8c1c1c;
-  --color-past-bar: #cf3b3b;
+  --color-calm-bar: #8a9690;
 
-  --color-danger: #b42318;
+  --color-danger: #a1253b;
 }
 
 /*
- * Dark theme: the same tokens with dark values. It follows the device unless the
- * person picked Light or Dark in Settings (data-theme on <html>, set by themeStore).
+ * Dark theme: the same tokens with dark values and lightened urgency colours. It follows the device unless
+ * the person picked Light or Dark in Settings (data-theme on <html>, set by themeStore).
  */
 :root {
   color-scheme: light;
 }
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --color-paper: #121a17;
-  --color-card: #1a2420;
-  --color-ink: #e8eeea;
-  --color-muted: #9aa8a1;
-  --color-line: #2c3a34;
-  --color-brand: #86c5a8;
-  --color-brand-hover: #9dd3ba;
-  --color-brand-soft: #22322b;
-  --color-on-brand: #0e1a15;
-  --color-ok: #1c3324;
-  --color-ok-ink: #8fd4a3;
-  --color-calm: #232d29;
-  --color-calm-ink: #b9c4be;
-  --color-calm-bar: #5f6d66;
-  --color-soon: #3a2f14;
-  --color-soon-ink: #f0c36a;
-  --color-today: #3d2314;
-  --color-today-ink: #f5a878;
-  --color-past: #3f1d1d;
-  --color-past-ink: #f2a0a0;
-  --color-danger: #f07a70;
+  --color-paper: #0f1c1a;
+  --color-card: #182826;
+  --color-ink: #e8f0ec;
+  --color-muted: #a8bab2;
+  --color-line: #2e4440;
+  --color-field: #6f8880;
+  --color-brand: #7cc3da;
+  --color-brand-hover: #8bcbe0;
+  --color-brand-soft: #1f3a40;
+  --color-on-brand: #0a1f26;
+  --color-ok: #283f37;
+  --color-ok-ink: #b9d3c3;
+  --color-ok-bar: #72a787;
+  --color-soon: #373b2d;
+  --color-soon-ink: #e1c7a2;
+  --color-soon-bar: #c5944c;
+  --color-today: #3c392e;
+  --color-today-ink: #efc0a5;
+  --color-today-bar: #e08651;
+  --color-past: #38393a;
+  --color-past-ink: #e4c2c8;
+  --color-past-bar: #cc8995;
+  --color-calm: #232f2c;
+  --color-calm-ink: #bccac3;
+  --color-calm-bar: #6a7c75;
+  --color-danger: #e89aa7;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --color-paper: #121a17;
-    --color-card: #1a2420;
-    --color-ink: #e8eeea;
-    --color-muted: #9aa8a1;
-    --color-line: #2c3a34;
-    --color-brand: #86c5a8;
-    --color-brand-hover: #9dd3ba;
-    --color-brand-soft: #22322b;
-    --color-on-brand: #0e1a15;
-    --color-ok: #1c3324;
-    --color-ok-ink: #8fd4a3;
-    --color-calm: #232d29;
-    --color-calm-ink: #b9c4be;
-    --color-calm-bar: #5f6d66;
-    --color-soon: #3a2f14;
-    --color-soon-ink: #f0c36a;
-    --color-today: #3d2314;
-    --color-today-ink: #f5a878;
-    --color-past: #3f1d1d;
-    --color-past-ink: #f2a0a0;
-    --color-danger: #f07a70;
+    --color-paper: #0f1c1a;
+    --color-card: #182826;
+    --color-ink: #e8f0ec;
+    --color-muted: #a8bab2;
+    --color-line: #2e4440;
+    --color-field: #6f8880;
+    --color-brand: #7cc3da;
+    --color-brand-hover: #8bcbe0;
+    --color-brand-soft: #1f3a40;
+    --color-on-brand: #0a1f26;
+    --color-ok: #283f37;
+    --color-ok-ink: #b9d3c3;
+    --color-ok-bar: #72a787;
+    --color-soon: #373b2d;
+    --color-soon-ink: #e1c7a2;
+    --color-soon-bar: #c5944c;
+    --color-today: #3c392e;
+    --color-today-ink: #efc0a5;
+    --color-today-bar: #e08651;
+    --color-past: #38393a;
+    --color-past-ink: #e4c2c8;
+    --color-past-bar: #cc8995;
+    --color-calm: #232f2c;
+    --color-calm-ink: #bccac3;
+    --color-calm-bar: #6a7c75;
+    --color-danger: #e89aa7;
   }
 }
 
-html {
-  background: var(--color-paper);
-  color: var(--color-ink);
-  -webkit-tap-highlight-color: transparent;
-}
+@layer base {
+  html {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    -webkit-tap-highlight-color: transparent;
+    /* Follow the phone's text-size setting; never shrink it. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
 
-body {
-  margin: 0;
-  min-height: 100dvh;
-  background: var(--color-paper);
-  font-family: var(--font-sans);
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--color-paper);
+    font-family: var(--font-sans);
+  }
+
+  /* Headings and food names use the display face. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+  }
 }
 
 /* Room for the fixed bottom nav and the phone's home indicator. */
 .pb-nav {
-  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom));
 }
 .bottom-inset {
   padding-bottom: env(safe-area-inset-bottom);
@@ -130,6 +179,14 @@ body {
     from {
       transform: translateY(24px);
       opacity: 0;
+    }
+  }
+  .skeleton {
+    animation: skeleton-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes skeleton-pulse {
+    50% {
+      opacity: 0.55;
     }
   }
 }

@@ -1,3 +1,4 @@
+import { X } from 'lucide-react';
 import { cleanBarcode, isValidBarcode, MESSAGES, PHOTO_CONFIDENCE_MIN } from '@cook-first/shared';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
@@ -11,7 +12,7 @@ import { photoForUpload } from '../lib/image';
 import { formatQuantity } from '../lib/format';
 import type { ScannedItem } from '../lib/scanned';
 import { useAiStore } from '../stores/aiStore';
-import { Button, Field, Spinner } from './ui';
+import { Button, Field, Spinner, Card } from './ui';
 
 type Mode = 'barcode' | 'photo';
 
@@ -67,7 +68,7 @@ function CameraView({
       playsInline
       muted
       aria-label={cameraCopy.cameraLabel}
-      className="aspect-[4/3] w-full rounded-2xl bg-ink object-cover"
+      className="aspect-[4/3] w-full rounded-card bg-ink object-cover"
     />
   );
 }
@@ -197,7 +198,7 @@ export function CameraScreen({ onDone, onClose }: Props) {
         setMessage(null);
         setError(undefined);
       }}
-      className={`min-h-11 rounded-xl border px-3 text-[15px] font-semibold ${
+      className={`min-h-12 rounded-button border px-3 text-base font-semibold ${
         mode === value ? 'border-brand bg-brand text-on-brand' : 'border-line bg-card text-ink hover:border-brand/50'
       }`}
     >
@@ -251,7 +252,7 @@ export function CameraScreen({ onDone, onClose }: Props) {
               </>
             )}
             {!nativeScan && camera === 'unavailable' && (
-              <p role="status" className="rounded-xl bg-calm px-3.5 py-3 text-sm text-calm-ink">
+              <p role="status" className="rounded-button bg-calm px-3.5 py-3 text-sm text-calm-ink">
                 {cameraCopy.unavailable}
               </p>
             )}
@@ -301,7 +302,7 @@ export function CameraScreen({ onDone, onClose }: Props) {
 
         {busy && <Spinner label={mode === 'photo' ? cameraCopy.reading : cameraCopy.looking} />}
         {message && (
-          <p role="status" className="rounded-xl bg-calm px-3.5 py-3 text-sm text-calm-ink">
+          <p role="status" className="rounded-button bg-calm px-3.5 py-3 text-sm text-calm-ink">
             {message}
           </p>
         )}
@@ -311,7 +312,7 @@ export function CameraScreen({ onDone, onClose }: Props) {
             <h3 id="scanned-title" className="text-base font-semibold">
               {cameraCopy.trayTitle}
             </h3>
-            <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
+            <Card as="ul" className="divide-y divide-line overflow-hidden">
               {items.map((item) => (
                 <li key={item.key} className="space-y-1 px-3 py-2">
                   <div className="flex items-center gap-3">
@@ -337,17 +338,19 @@ export function CameraScreen({ onDone, onClose }: Props) {
                       type="button"
                       aria-label={cameraCopy.remove(item.name)}
                       onClick={() => setItems((prev) => prev.filter((i) => i.key !== item.key))}
-                      className="grid size-11 shrink-0 place-items-center rounded-full text-muted hover:bg-paper"
+                      className="grid size-12 shrink-0 place-items-center rounded-full text-muted hover:bg-paper"
                     >
-                      ✕
+                      <X aria-hidden className="size-5" />
                     </button>
                   </div>
                   {item.signs && (
-                    <p className="rounded-xl bg-soon px-3 py-2 text-sm text-soon-ink">{photoCopy.signs(item.signs)}</p>
+                    <p className="rounded-button bg-soon px-3 py-2 text-sm text-soon-ink">
+                      {photoCopy.signs(item.signs)}
+                    </p>
                   )}
                 </li>
               ))}
-            </ul>
+            </Card>
             <Button className="w-full" onClick={() => onDone(items)}>
               {items.length === 1 ? cameraCopy.useOne : cameraCopy.useMany(items.length)}
             </Button>

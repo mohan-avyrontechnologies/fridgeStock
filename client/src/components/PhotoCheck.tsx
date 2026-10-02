@@ -101,7 +101,7 @@ export function PhotoCheck({ food, onWaste, onFoodChanged }: Props) {
       </Button>
       {reading && <Spinner label={photoCopy.reading} />}
       {error && (
-        <p role="alert" className="rounded-xl bg-past px-3.5 py-3 text-sm text-past-ink">
+        <p role="alert" className="rounded-button bg-past px-3.5 py-3 text-sm text-past-ink">
           {error}
         </p>
       )}
@@ -110,7 +110,7 @@ export function PhotoCheck({ food, onWaste, onFoodChanged }: Props) {
         <div
           role="group"
           aria-label={photoCopy.signsRegion}
-          className="space-y-3 rounded-2xl bg-soon px-4 py-3 text-soon-ink"
+          className="space-y-3 rounded-card bg-soon px-4 py-3 text-soon-ink"
         >
           <p>{photoCopy.signs(signs)}</p>
           {confirming ? (

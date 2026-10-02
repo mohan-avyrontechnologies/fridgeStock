@@ -62,15 +62,15 @@ function ReminderRow({ n }: { n: AppNotification }) {
     <li>
       <Link
         to={`/food/${n.foodId}`}
-        className={`flex gap-3 rounded-2xl border px-4 py-3 ${isNew ? 'border-brand/30 bg-brand-soft' : 'border-line bg-card'}`}
+        className={`flex gap-3 rounded-card border px-4 py-3 ${isNew ? 'border-brand/30 bg-brand-soft' : 'border-line bg-card'}`}
       >
         <span aria-hidden className={`mt-1.5 size-2.5 shrink-0 rounded-full ${TYPE_DOT[n.type]}`} />
         <div className="min-w-0">
           <p className="text-xs font-semibold text-muted">
             {reminderTypeLabel[n.type]}
-            {isNew && <span className="ml-1.5 rounded-full bg-brand px-1.5 py-px text-[10px] text-on-brand">New</span>}
+            {isNew && <span className="ml-1.5 rounded-full bg-brand px-1.5 py-px text-xs text-on-brand">New</span>}
           </p>
-          <p className="text-[15px] text-ink">{n.message}</p>
+          <p className="text-base text-ink">{n.message}</p>
           {n.sentAt && <p className="mt-0.5 text-xs text-muted">{formatInstant(n.sentAt)}</p>}
         </div>
       </Link>

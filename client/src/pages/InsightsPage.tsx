@@ -12,7 +12,7 @@ const hasActivity = (p: InsightsPeriod) => p.used + p.wasted > 0;
 
 function Tile({ value, label, className }: { value: string | number; label: string; className: string }) {
   return (
-    <li className={`rounded-2xl px-3 py-4 text-center ${className}`}>
+    <li className={`rounded-card px-3 py-4 text-center ${className}`}>
       <p className="text-3xl font-bold tabular-nums">{value}</p>
       <p className="text-xs leading-tight font-semibold">{label}</p>
     </li>
@@ -27,7 +27,7 @@ function WeeksChart({ weeks }: { weeks: InsightsWeek[] }) {
       <div
         role="img"
         aria-label={insightsCopy.chartLabel}
-        className="flex h-40 items-end gap-2 rounded-2xl border border-line bg-card px-3 pt-3 pb-2"
+        className="flex h-40 items-end gap-2 rounded-card border border-line bg-card px-3 pt-3 pb-2"
       >
         {weeks.map((w) => (
           <div key={w.from} className="flex h-full min-w-0 flex-1 flex-col justify-end gap-0.5">
@@ -46,7 +46,7 @@ function WeeksChart({ weeks }: { weeks: InsightsWeek[] }) {
           </div>
         ))}
       </div>
-      <div aria-hidden className="mt-1 flex gap-2 px-3 text-[10px] text-muted">
+      <div aria-hidden className="mt-1 flex gap-2 px-3 text-xs text-muted">
         {weeks.map((w) => (
           <span key={w.from} className="min-w-0 flex-1 truncate text-center">
             {formatDisplay(w.from).replace(/ \d{4}$/, '')}
@@ -107,7 +107,7 @@ export function InsightsPage() {
         {empty && (
           <EmptyState title={insightsCopy.emptyTitle}>
             {insightsCopy.emptyBody}
-            <Link to="/history" className="mt-4 inline-flex min-h-11 items-center font-semibold text-brand">
+            <Link to="/history" className="mt-4 inline-flex min-h-12 items-center font-semibold text-brand">
               {insightsCopy.seeHistory}
             </Link>
           </EmptyState>
@@ -165,7 +165,7 @@ export function InsightsPage() {
             {data.topWasted.length > 0 && (
               <section aria-labelledby="top-wasted">
                 <SectionTitle id="top-wasted">{insightsCopy.topWastedTitle}</SectionTitle>
-                <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-card">
+                <ul className="divide-y divide-line overflow-hidden rounded-card border border-line bg-card">
                   {data.topWasted.map((f) => (
                     <li key={f.name} className="flex items-center gap-3 px-4 py-3">
                       <span className="min-w-0 flex-1 truncate font-semibold">{f.name}</span>
@@ -186,7 +186,7 @@ export function InsightsPage() {
                 <SectionTitle id="tips">{insightsCopy.tipsTitle}</SectionTitle>
                 <ul className="space-y-2">
                   {data.tips.map((tip) => (
-                    <li key={tip.id} className="rounded-2xl bg-brand-soft px-4 py-3 text-ink">
+                    <li key={tip.id} className="rounded-card bg-brand-soft px-4 py-3 text-ink">
                       {tip.text}
                     </li>
                   ))}

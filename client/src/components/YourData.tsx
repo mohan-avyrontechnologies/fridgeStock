@@ -3,7 +3,7 @@ import { ApiError, api } from '../api/client';
 import { dataCopy } from '../copy';
 import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
-import { Button, Field, FormError } from './ui';
+import { Button, Field, FormError, Card } from './ui';
 
 /** Settings: download everything as a JSON file, or delete the account (password required). */
 export function YourData() {
@@ -62,7 +62,7 @@ export function YourData() {
         </Button>
       </div>
 
-      <div className="rounded-2xl border border-line bg-card p-4">
+      <Card className="p-4">
         <p className="mb-3 text-sm text-muted">{dataCopy.deleteHint}</p>
         {!confirming ? (
           <Button variant="danger" onClick={() => setConfirming(true)}>
@@ -101,7 +101,7 @@ export function YourData() {
             </div>
           </form>
         )}
-      </div>
+      </Card>
     </section>
   );
 }

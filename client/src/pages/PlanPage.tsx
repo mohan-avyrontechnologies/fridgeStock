@@ -11,7 +11,7 @@ import {
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { Button, Chip, EmptyState, Field, Spinner } from '../components/ui';
+import { Button, Chip, EmptyState, Field, Spinner, Card } from '../components/ui';
 import { aiCopy, mealSettingsCopy, planCopy as copy } from '../copy';
 import { check } from '../lib/validation';
 import { useAiStore } from '../stores/aiStore';
@@ -132,7 +132,7 @@ export function PlanPage() {
               <p className="text-sm text-muted">{copy.full}</p>
             )}
             {aiError && (
-              <p role="alert" className="rounded-xl bg-past px-3.5 py-3 text-sm text-past-ink">
+              <p role="alert" className="rounded-button bg-past px-3.5 py-3 text-sm text-past-ink">
                 {aiError}
               </p>
             )}
@@ -140,7 +140,7 @@ export function PlanPage() {
         )}
 
         {meal === 'dinner' && draft && draft.days.length > 0 && (
-          <section aria-labelledby="draft-title" className="rounded-2xl border border-brand/40 bg-brand-soft p-4">
+          <section aria-labelledby="draft-title" className="rounded-card border border-brand/40 bg-brand-soft p-4">
             <h2 id="draft-title" className="font-semibold">
               {copy.draftTitle}
             </h2>
@@ -170,7 +170,7 @@ export function PlanPage() {
         {plan && (
           <ul className="space-y-3">
             {plan.days.map((day) => (
-              <li key={day.date} className="rounded-2xl border border-line bg-card p-4">
+              <Card as="li" key={day.date} className="p-4">
                 <h2 className="text-sm font-semibold text-muted">{dayLabel(day.date)}</h2>
                 {editing === day.date ? (
                   <MealForm
@@ -210,7 +210,7 @@ export function PlanPage() {
                     </Button>
                   </>
                 )}
-              </li>
+              </Card>
             ))}
           </ul>
         )}

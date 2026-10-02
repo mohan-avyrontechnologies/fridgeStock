@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { api } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { Button, EmptyState, Spinner } from '../components/ui';
+import { Button, EmptyState, Spinner, Card } from '../components/ui';
 import { mealPageCopy as copy, recipeCopy } from '../copy';
 
 /** The title the "Cooked it" form starts from: the planned meal's or the recipe's. */
@@ -50,7 +50,7 @@ export function MealReminderPage() {
           </EmptyState>
         )}
         {view && (
-          <article className="space-y-3 rounded-2xl border border-line bg-card p-4">
+          <Card as="article" className="space-y-3 p-4">
             {view.content.source === 'plan' && (
               <>
                 <p className="text-sm font-medium text-muted">{copy.planned}</p>
@@ -118,7 +118,7 @@ export function MealReminderPage() {
             >
               {copy.cooked}
             </Button>
-          </article>
+          </Card>
         )}
       </PageBody>
     </>

@@ -8,7 +8,7 @@ import {
   type FoodItem,
   type StorageLocation,
 } from '@cook-first/shared';
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
 import { moveCopy, openCopy, referenceCopy, storageLabel, undoCopy } from '../copy';
 import { suggestFor } from '../lib/suggestions';
@@ -16,44 +16,12 @@ import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
 import { useSuggestionStore } from '../stores/suggestionStore';
 import { useToastStore } from '../stores/toastStore';
-import { Button, Chip, Field, FormError } from './ui';
+import { BottomSheet, Button, Chip, Field, FormError } from './ui';
 
 /** Phase 2 sheets: "Opened" and "Move", both of which change the expected expiry. */
 
 const toDays = (value: string) => (value.trim() === '' ? undefined : Number(value));
 const validDays = (n: number | undefined) => n !== undefined && Number.isInteger(n) && n >= 0 && n <= 365;
-
-function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const onCloseRef = useRef(onClose);
-  useEffect(() => {
-    onCloseRef.current = onClose;
-  });
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onCloseRef.current();
-    document.addEventListener('keydown', onKey);
-    ref.current?.querySelector<HTMLElement>('input, select, button[data-autofocus]')?.focus();
-    return () => document.removeEventListener('keydown', onKey);
-  }, []);
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
-      <button aria-label="Close" className="absolute inset-0 bg-ink/40" onClick={onClose} />
-      <div
-        ref={ref}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="estimate-sheet-title"
-        className="sheet-in bottom-inset relative w-full max-w-md rounded-t-3xl bg-card px-4 pt-3 pb-4 shadow-xl sm:rounded-3xl"
-      >
-        <div aria-hidden className="mx-auto mb-3 h-1 w-10 rounded-full bg-line sm:hidden" />
-        <h2 id="estimate-sheet-title" className="mb-4 px-1 text-lg font-semibold">
-          {title}
-        </h2>
-        {children}
-      </div>
-    </div>
-  );
-}
 
 function SheetButtons({ busy, onCancel }: { busy: boolean; onCancel: () => void }) {
   return (
@@ -110,7 +78,7 @@ export function OpenSheet({
   }
 
   return (
-    <Sheet title={openCopy.title(item.name)} onClose={onClose}>
+    <BottomSheet title={openCopy.title(item.name)} onClose={onClose}>
       <form onSubmit={submit} className="space-y-4" noValidate>
         <FormError message={error} />
         <div>
@@ -140,7 +108,7 @@ export function OpenSheet({
         />
         <SheetButtons busy={busy} onCancel={onClose} />
       </form>
-    </Sheet>
+    </BottomSheet>
   );
 }
 
@@ -194,7 +162,7 @@ export function MoveSheet({
   const suggestion = suggestFor(item.name, storage, learned);
 
   return (
-    <Sheet title={moveCopy.title(item.name)} onClose={onClose}>
+    <BottomSheet title={moveCopy.title(item.name)} onClose={onClose}>
       <form onSubmit={submit} className="space-y-4" noValidate>
         <FormError message={error} />
         <fieldset>
@@ -225,6 +193,6 @@ export function MoveSheet({
         />
         <SheetButtons busy={busy} onCancel={onClose} />
       </form>
-    </Sheet>
+    </BottomSheet>
   );
 }

@@ -1,3 +1,4 @@
+import { Star } from 'lucide-react';
 import type { Favourite } from '@cook-first/shared';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
@@ -98,7 +99,7 @@ export function AddFoodPage() {
             <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
               {favourites.map((f) => (
                 <Chip key={f.id} aria-label={`Add ${f.name} again`} onClick={() => reAdd(f)}>
-                  ★ {f.name}
+                  <Star aria-hidden className="size-4 fill-current" /> {f.name}
                 </Chip>
               ))}
             </div>
@@ -109,7 +110,7 @@ export function AddFoodPage() {
           <div
             role="group"
             aria-label={photoCopy.signsRegion}
-            className="space-y-2 rounded-2xl bg-soon px-4 py-3 text-soon-ink"
+            className="space-y-2 rounded-card bg-soon px-4 py-3 text-soon-ink"
           >
             <p>{photoCopy.signs(signs)}</p>
             <Button variant="ghost" onClick={() => setSigns(null)}>
@@ -146,7 +147,7 @@ export function AddFoodPage() {
 
         <Link
           to="/add/bulk"
-          className="flex min-h-11 items-center justify-center text-sm font-semibold text-brand underline-offset-2 hover:underline"
+          className="flex min-h-12 items-center justify-center text-sm font-semibold text-brand underline-offset-2 hover:underline"
         >
           {bulkCopy.link}
         </Link>

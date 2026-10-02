@@ -11,7 +11,7 @@ import { FoodPhoto } from '../lib/foodPhoto';
 import { photoForUpload } from '../lib/image';
 import { pickPhoto } from '../platform/pickPhoto';
 import { EstimateNote, UrgencyBadge } from '../components/Urgency';
-import { Button, EmptyState, Spinner } from '../components/ui';
+import { Button, EmptyState, Spinner, Card } from '../components/ui';
 import {
   actionCopy,
   expectedExpiryLabel,
@@ -208,14 +208,14 @@ export function FoodDetailPage() {
           </>
         ) : (
           <>
-            <section className="rounded-2xl border border-line bg-card p-4">
+            <Card as="section" className="p-4">
               {food.photoAt && (
                 <FoodPhoto
                   foodId={food.id}
                   photoAt={food.photoAt}
                   name={food.name}
                   size="full"
-                  className="mb-4 aspect-[4/3] w-full rounded-xl object-cover"
+                  className="mb-4 aspect-[4/3] w-full rounded-button object-cover"
                 />
               )}
               {active && food.urgency !== null && food.remainingDays !== null ? (
@@ -255,10 +255,10 @@ export function FoodDetailPage() {
                   </div>
                 )}
               </dl>
-            </section>
+            </Card>
 
             {food.urgency === 'OVERDUE' && (
-              <p className="rounded-2xl bg-past px-4 py-3 text-sm text-past-ink">{pastExpectedExpiryNote}</p>
+              <p className="rounded-card bg-past px-4 py-3 text-sm text-past-ink">{pastExpectedExpiryNote}</p>
             )}
 
             {active ? (
@@ -327,7 +327,7 @@ export function FoodDetailPage() {
                 </div>
               </section>
             ) : (
-              <p className="rounded-2xl bg-calm px-4 py-3 text-sm text-calm-ink">{screenCopy.detail.closedNote}</p>
+              <p className="rounded-card bg-calm px-4 py-3 text-sm text-calm-ink">{screenCopy.detail.closedNote}</p>
             )}
             <EstimateNote />
           </>

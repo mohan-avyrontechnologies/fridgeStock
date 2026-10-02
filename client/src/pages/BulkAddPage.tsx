@@ -1,3 +1,4 @@
+import { X } from 'lucide-react';
 import {
   addDays,
   bulkCreateSchema,
@@ -18,7 +19,7 @@ import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { CameraScreen } from '../components/CameraScreen';
 import { EstimateNote } from '../components/Urgency';
-import { Button, Chip, Field, FormError, Spinner } from '../components/ui';
+import { Button, Chip, Field, FormError, Spinner, Card } from '../components/ui';
 import { bulkCopy, cameraCopy, productPhotoCopy, receiptCopy, referenceCopy, storageLabel } from '../copy';
 import { BlobThumb } from '../lib/foodPhoto';
 import { fieldsFor, type ScannedItem } from '../lib/scanned';
@@ -88,7 +89,7 @@ const toNumber = (value: string) => (value.trim() === '' ? undefined : Number(va
 const isBlank = (row: Row) => !row.name.trim() && !row.lifespan.trim();
 
 const inputClass =
-  'block min-h-11 w-full rounded-xl border bg-card px-2.5 text-base text-ink focus:border-brand focus:outline-none';
+  'block min-h-12 w-full rounded-button border bg-card px-2.5 text-base text-ink focus:border-brand focus:outline-none';
 
 /** Add a whole shopping haul at once: one row per item, sharing an added date. */
 export function BulkAddPage() {
@@ -243,7 +244,7 @@ export function BulkAddPage() {
           <FormError message={errors.form ?? null} />
 
           {fromScan && (
-            <p className="rounded-xl bg-brand-soft px-3.5 py-3 text-sm text-ink">
+            <p className="rounded-button bg-brand-soft px-3.5 py-3 text-sm text-ink">
               {cameraCopy.fromScan(filled.length)}
             </p>
           )}
@@ -252,7 +253,7 @@ export function BulkAddPage() {
           </Button>
 
           {aiEnabled && (
-            <section aria-labelledby="receipt-title" className="space-y-2 rounded-2xl border border-line bg-card p-4">
+            <Card as="section" aria-labelledby="receipt-title" className="space-y-2 p-4">
               <h2 id="receipt-title" className="text-base font-semibold">
                 {receiptCopy.title}
               </h2>
@@ -280,7 +281,7 @@ export function BulkAddPage() {
               </Button>
               {reading && <Spinner label={receiptCopy.reading} />}
               {fromReceipt && !reading && <p className="text-sm text-muted">{receiptCopy.checkNote}</p>}
-            </section>
+            </Card>
           )}
 
           <div>
@@ -313,13 +314,13 @@ export function BulkAddPage() {
               const err = (field: string) => errors[`${row.key}.${field}`];
               const label = bulkCopy.rowLabel(i + 1);
               return (
-                <li key={row.key} className="space-y-2 rounded-2xl border border-line bg-card p-3">
+                <Card as="li" key={row.key} className="space-y-2 p-3">
                   <div className="flex items-center gap-2">
                     {row.photo && (
                       <BlobThumb
                         blob={row.photo}
                         alt={`Photo of ${row.name || label}`}
-                        className="size-11 shrink-0 rounded-lg object-cover"
+                        className="size-12 shrink-0 rounded-lg object-cover"
                       />
                     )}
                     <input
@@ -336,9 +337,9 @@ export function BulkAddPage() {
                         type="button"
                         aria-label={`${bulkCopy.removeRow}: ${label}`}
                         onClick={() => setRows((prev) => prev.filter((r) => r.key !== row.key))}
-                        className="grid size-11 shrink-0 place-items-center rounded-full text-muted hover:bg-paper"
+                        className="grid size-12 shrink-0 place-items-center rounded-full text-muted hover:bg-paper"
                       >
-                        ✕
+                        <X aria-hidden className="size-5" />
                       </button>
                     )}
                   </div>
@@ -423,7 +424,7 @@ export function BulkAddPage() {
                         </p>
                       ),
                   )}
-                </li>
+                </Card>
               );
             })}
           </ol>
