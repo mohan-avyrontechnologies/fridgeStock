@@ -136,7 +136,7 @@ describe('leftovers', () => {
 
     await user.clear(screen.getByLabelText('Lifespan (days)'));
     await user.type(screen.getByLabelText('Lifespan (days)'), '6');
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Add food' }));
     expect(
       await screen.findByText('Leftovers can have a lifespan of at most 4 days, unless they are frozen.'),
     ).toBeInTheDocument();
@@ -144,7 +144,7 @@ describe('leftovers', () => {
 
     await user.clear(screen.getByLabelText('Lifespan (days)'));
     await user.type(screen.getByLabelText('Lifespan (days)'), '2');
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Add food' }));
     await waitFor(() => expect(body).toMatchObject({ name: 'Leftover curry', leftover: true, lifespanDays: 2 }));
   });
 
@@ -262,7 +262,7 @@ describe('shopping list', () => {
     renderSignedIn('/shopping', <ShoppingPage />);
     await user.click(await screen.findByRole('button', { name: 'Add to list' }));
     expect(screen.getByText('Enter what you need to buy.')).toBeInTheDocument();
-    expect(screen.getByText('Your shopping list is empty.')).toBeInTheDocument();
+    expect(screen.getByText('Your shopping list is empty')).toBeInTheDocument();
   });
 });
 

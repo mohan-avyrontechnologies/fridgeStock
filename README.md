@@ -7,7 +7,7 @@ A mobile-first web app that helps a household use perishable food before it goes
 | | |
 |---|---|
 | **Status** | MVP complete; post-MVP Phases 1 (faster entry), 2 (realistic estimates), 3 (better reminders), 4 (using the food), 5 (insights) and 6 (dark mode, data export, account deletion, shared households) complete, barcode and receipt scanning, and 7 (Photo Check, behind a feature flag) complete, with a camera screen and product photos, ready-made Android and iOS apps (Capacitor, not yet built on a device), and reminder sounds, quiet hours and meal-time cooking reminders (the sounds are placeholders); voice entry, extra languages and grocery integrations are not built. Not yet deployed. |
-| **Version** | 2.21.0 (see the [Changelog](#changelog)) |
+| **Version** | 2.22.0 (see the [Changelog](#changelog)) |
 | **Requires** | Node.js 20.19 or later |
 | **Specifications** | PFCP BRD v2.0, FRD v1.0, SRD v1.0, TDD v1.0 (internal documents, not stored in this repo) |
 | **Repository** | `github.com/rugvailabs/cook_first` |
@@ -323,8 +323,8 @@ Run these from the repository root:
 | `npm run typecheck` | TypeScript check of `shared`, `server` and `client` |
 | `npm run seed -w server` | With the server running, create a demo account (`demo@cookfirst.local` / `cookfirst-demo`) with 10 priced sample items at every urgency level, plus 5 used or wasted ones so Insights has data. Add `-- --reset` to re-seed. |
 | `npm run vapid:keys -w server` | Generate a Web Push (VAPID) key pair for `server/.env` |
-| `npm test` | Unit and API tests: shared (45) + server (473) + client (407) |
-| `npm run test:e2e` | Playwright end-to-end tests (46), at 375 px and 1440 px |
+| `npm test` | Unit and API tests: shared (45) + server (473) + client (420) |
+| `npm run test:e2e` | Playwright end-to-end tests (56), at 375 px and 1440 px |
 | `npm run check:staging -- --api <api-url> --client <web-url>` | Check a deployment from the outside (HTTPS, health, CORS, headers, push, install files) |
 | `npm run cap:sync -w client` | Build the web app for the apps and copy it into the Android and iOS projects |
 | `npm run android -w client` / `npm run ios -w client` | Open the Android project in Android Studio / the iOS project in Xcode (see [Native apps](#native-apps-android-and-ios)) |
@@ -363,7 +363,9 @@ Run these from the repository root:
 | **Cards and actions** (`cards.test.tsx`, `haptics.test.ts`) | Vitest, Testing Library, MSW | 24 | What a card shows (and no meter, ring or bar); swiping right and left, a short or vertical drag doing nothing, Undo, the visible buttons; optimistic updates and putting back on failure; skeleton loading; pull to refresh (not from a dialog); haptics; the used animation with and without reduced motion; Capacitor Haptics in the apps and nothing in a browser |
 | **Home and tab bar** (`home.test.tsx`) | Vitest, Testing Library, MSW | 15 | The Cook first today row (order, badges, days left in words, at most six cards, See all), the current meal's suggestion (planned, or start with the two most urgent; breakfast, lunch and dinner by the hour), the calm state with Plan a meal and Add food, Cooked something, the location chips (priority order kept, empty places, the panel not filtered), the five tabs, and the More sheet (links, closes after a choice, Escape returns focus) |
 | **Design tokens** (`tokens.test.ts`) | Vitest | 20 | The colours from the design brief in both themes; WCAG AA contrast (text 4.5:1, badge text 7:1, bars and field outlines 3:1) for every pair the interface uses; card and button corners; the two fonts, bundled and not fetched from a CDN |
-| **Accessibility** (`e2e/a11y.spec.ts`) | Playwright, axe | 2 | axe (WCAG 2.0 and 2.1, A and AA) finds nothing on any main screen, signed in or out, in light and dark mode, at phone and desktop size |
+| **Wording** (`wording.test.ts`) | Vitest | 13 | Sentence case in every string of the copy file (no "See History", no capitals mid-sentence apart from names, nothing in all capitals, no capitals styling); one name for each action from its button to its toast (Mark as used → Marked as used, and so on); error messages say what happened and what to do, never "something went wrong", and tell apart no connection, signed out, a server problem and anything else, while showing the server's own reason for a mistake; every load error says what could not be loaded |
+| **Text size** (`e2e/textsize.spec.ts`) | Playwright | 3 | At 200% text size nothing scrolls sideways, is cut off or runs off the screen on any main screen, in the first-run guide, or in the tab bar |
+| **Accessibility** (`e2e/a11y.spec.ts`) | Playwright, axe | 5 | axe (WCAG 2.0 and 2.1, A and AA) finds nothing on any main screen, signed in or out, on the three steps of the first-run guide, or with Add food, Mark as used or More open, in light and dark mode, at phone and desktop size |
 | **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 164 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and preview, the required estimate line, all five remaining-days phrasings, colour always paired with a label, exactly seven units, notes, reminders marked read when the screen opens; the dashboard header, 3-item Cook First with "See all", and empty texts; Add Food defaults, the unit dropdown, the "Add note" link and the preview format; reference suggestions (including following the storage location), storage sent with the item, one-tap favourites, Undo instead of confirmations, bulk add (reference fill, one request, per-row errors); learned lifespans (★ chip, the "You usually set" hint, falling back to the reference list per location); Opened (prefilled days, missing-days message, mark as not opened) and Move (other locations only, per-location suggestion, request body); push reminders (permission asked only on tapping "Turn on reminders", on/off, blocked and dismissed messages, the iPhone Home Screen hint, unsupported browser, no server key, the in-app note, saving mode and time, turning push off at logout with the old token); Phase 4 (recipe ideas hidden when AI is off, shown with the AI note and allowance, the limit message; leftovers prefilled from a recipe, the leftovers box with per-location lifespans and the 4-day check; editing keeps where an item is kept; the shopping warning with expected expiry, add/tick/remove/clear, name required; the meal plan week, planning a meal with your food, and the AI draft saved only on "Add these to my plan"); the browser push layer (iPhone detection, subscribing with the VAPID key and registering the browser, unsubscribing on server and browser, key decoding, browser names); the Reminders error state; plus client structure checks |
 | **End-to-end** (`e2e/`) | Playwright in Chrome | 34 | 17 journeys, each run at **375 px phone size** and **desktop size (1440×900)** |
 
@@ -1028,7 +1030,7 @@ The project was built in these phases; each one is complete.
 |---|---|
 | All MVP functional requirements (FR-AUTH, FOOD, EXP, PRI, UI, NOT, USE, VAL) | ✅ Done |
 | Monorepo with `client`, `server` and `shared`; Node 20.19+ | ✅ Done |
-| Tests: 45 shared + 473 server + 407 client + 46 end-to-end = **971** | ✅ Passing |
+| Tests: 45 shared + 473 server + 420 client + 56 end-to-end = **994** | ✅ Passing |
 | ESLint, Prettier and typecheck on all packages | ✅ Clean |
 | All project rules (see [Project rules](#project-rules)) | ✅ Met, each one checked by a test |
 | Phone (375 px) and desktop layouts, 44 px tap targets | ✅ Done, checked in screenshots and by tests |
@@ -1056,6 +1058,20 @@ All notable changes to this project are listed here, newest first. Versions foll
 
 ### [Unreleased]
 - *Nothing yet.*
+
+### [2.22.0] - 2026-10-03: design and usability, stage 5 (wording and polish) · `COMMIT_HASH`
+**Changed**
+- **One name for each action, from its button to its toast:** **Mark as used** → "Marked as used", **Mark all as used** and **Mark some as used** → "Marked some as used", **Mark as wasted** → "Marked as wasted", **Mark as opened** → "Marked X as opened", **Move** → "Moved X", **Add food** → "Added X", **Save changes** → "Saved changes", **Save as favourite** → "Saved X as a favourite". The cards, the swipe actions, the sheets and Food Details all use the same words.
+- **Sentence case everywhere:** "See history", "Photo check", "Fill in the form"; no all-capitals styling; no symbols standing in for icons (the ★ and ☆ are icons now).
+- **Every error says what happened and what to do** (`lib/errors.ts`, `describeError`): no connection ("Check your internet and try again"), signed out ("Sign in again"), the server had a problem ("Try again in a moment"), a limit ("Wait a minute"), or the server's own reason when it explains a mistake in what was typed. They replace "Something went wrong" and "Couldn’t save that" everywhere (saving, adding, undoing, moving, the meal plan, the shopping list, settings, loading food).
+- **Every empty state has a short explanation and a button:** Cook First (Plan a meal, Add food), History (Go to Home), Reminders (Choose reminder settings), Shopping (Add an item, which moves to the field), the household activity (Add food); and every "couldn’t load" screen has **Try again** (`LoadError`), as does Food Details, which also offers Go to Home.
+- **Text size:** nothing is cut off or runs off the screen at 200% text size on any main screen, the first-run guide or the tab bar (long names wrap instead of being truncated, badges wrap, a card's picture stacks above its text when there isn't room, the guide's buttons wrap). The tab labels follow the text size up to 125%, because a tab bar has no room for more.
+- Photo thumbnails are a fixed size so the words get the room.
+
+**Added**
+- **A "Skip to main content" link** as the first Tab stop on every signed-in screen; the main area is the target. Each screen has one heading and one main area.
+- Tests: `wording.test.ts` (13: sentence case across every string in the copy file, no all-capitals styling, button-to-toast names, the error messages), empty states and load errors, and end-to-end: **200% text size** on every main screen, the tab bar and the guide (`textsize.spec.ts`), a **keyboard-only** journey (skip link, open a card, mark as used, the Add food dialog's focus), and **axe with a dialog open** (Add food, Mark as used, More) in light and dark.
+
 
 ### [2.21.0] - 2026-10-03: design and usability, stage 4 (adding food and first run) · `d21d5af`
 **Added**

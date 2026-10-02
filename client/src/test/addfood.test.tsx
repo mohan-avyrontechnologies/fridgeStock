@@ -146,7 +146,7 @@ describe('the quantity stepper', () => {
     await reader.type(await screen.findByLabelText('Food'), 'Rice');
     await reader.click(screen.getByRole('button', { name: 'Increase quantity' }));
     await reader.click(screen.getByRole('button', { name: '5 days' }));
-    await reader.click(screen.getByRole('button', { name: 'Save' }));
+    await reader.click(screen.getByRole('button', { name: 'Add food' }));
     await waitFor(() => expect(body.quantity).toBe(2));
   });
 });

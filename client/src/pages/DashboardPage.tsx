@@ -6,7 +6,7 @@ import { api } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { CookFirstToday } from '../components/CookFirstToday';
 import { FoodList } from '../components/FoodCard';
-import { Button, Chip, EmptyState, SectionTitle, SkeletonList } from '../components/ui';
+import { Button, Chip, EmptyState, LoadError, SectionTitle, SkeletonList } from '../components/ui';
 import { EstimateNote } from '../components/Urgency';
 import { homeCopy, screenCopy, storageLabel } from '../copy';
 import { currentMeal } from '../lib/meal';
@@ -48,12 +48,7 @@ export function DashboardPage() {
       <PageBody>
         {!inventory && !error && <SkeletonList />}
         {error && !inventory && (
-          <EmptyState title={screenCopy.dashboard.loadError}>
-            <p>{error}</p>
-            <Button variant="secondary" className="mt-4" onClick={() => refresh()}>
-              Try again
-            </Button>
-          </EmptyState>
+          <LoadError title={screenCopy.dashboard.loadError} detail={error} onRetry={() => void refresh()} />
         )}
 
         {inventory && (

@@ -1,12 +1,22 @@
 import { Star } from 'lucide-react';
+import { describeError } from '../lib/errors';
 import type { ActiveFoodItem, Favourite } from '@cook-first/shared';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
-import { api, ApiError } from '../api/client';
+import { api } from '../api/client';
 import { CameraScreen } from '../components/CameraScreen';
 import { FoodForm } from '../components/FoodForm';
 import { BottomSheet, Button, Chip } from '../components/ui';
-import { bulkCopy, cameraCopy, favouriteCopy, leftoverCopy, photoCopy, productPhotoCopy, recentCopy } from '../copy';
+import {
+  bulkCopy,
+  cameraCopy,
+  favouriteCopy,
+  homeCopy,
+  leftoverCopy,
+  photoCopy,
+  productPhotoCopy,
+  recentCopy,
+} from '../copy';
 import { fieldsFor, type ScannedFields, type ScannedItem } from '../lib/scanned';
 import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
@@ -97,7 +107,7 @@ export function AddFoodPage() {
       await addFavourite(favourite.id);
       toast(favouriteCopy.addedToast(favourite.name));
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+      toast(describeError(err, 'add that food again'));
     }
   }
 
@@ -162,7 +172,7 @@ export function AddFoodPage() {
           <FoodForm
             key={scanned?.key ?? 0}
             prefill={scanned?.fields ?? prefill}
-            submitLabel="Save"
+            submitLabel={homeCopy.addFood}
             allowAddAnother
             autoFocus
             onSubmit={async (input, addAnother) => {

@@ -1,6 +1,6 @@
 import { MESSAGES, type FoodItem } from '@cook-first/shared';
+import { describeError } from '../lib/errors';
 import { useState, type FormEvent } from 'react';
-import { ApiError } from '../api/client';
 import { actionCopy, undoCopy } from '../copy';
 import { formatQuantity } from '../lib/format';
 import { platform } from '../platform';
@@ -71,7 +71,7 @@ export function ActionSheet({
     try {
       onClose(await run(item, action, quantity));
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+      setError(describeError(err, 'record that'));
       setBusy(false);
     }
   }
@@ -135,7 +135,7 @@ export function ActionSheet({
                 {undoCopy.cancel}
               </Button>
               <Button type="submit" className="flex-1" disabled={busy}>
-                {busy ? 'Saving…' : 'Save'}
+                {busy ? 'Saving…' : actionCopy.PARTIALLY_USED.label}
               </Button>
             </div>
           </form>

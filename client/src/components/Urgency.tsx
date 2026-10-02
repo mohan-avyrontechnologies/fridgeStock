@@ -36,7 +36,7 @@ export function UrgencyBadge({ urgency }: { urgency: Urgency }) {
   const Icon = URGENCY_ICON[urgency];
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap ${URGENCY_STYLE[urgency].badge}`}
+      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-left text-xs font-semibold ${URGENCY_STYLE[urgency].badge}`}
     >
       <Icon aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
       {urgencyCopy[urgency].label}

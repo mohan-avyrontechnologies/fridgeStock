@@ -126,7 +126,7 @@ describe('the camera screen in the app', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Scan a barcode' }));
     expect(await within(dialog).findByText('Added Milk. Scan the next one, or finish below.')).toBeInTheDocument();
     expect(fake.barcode.scan).toHaveBeenCalledOnce();
-    expect(within(dialog).getByRole('button', { name: 'Fill in Add Food' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Fill in the form' })).toBeInTheDocument();
   });
 
   it('does nothing when the scanner is closed without a barcode', async () => {

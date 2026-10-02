@@ -91,7 +91,7 @@ export const screenCopy = {
     priceHint: 'Optional. What it cost in total. Used only for the money figures on Insights.',
   },
   detail: {
-    savedToast: 'Saved. Expected expiry updated.',
+    savedToast: 'Saved changes. Expected expiry updated.',
     closedNote: 'This item is closed and can’t be changed.',
   },
   reminders: {
@@ -126,9 +126,9 @@ export const reminderPreferenceCopy: Record<
 };
 
 export const actionCopy = {
-  USED: { label: 'Used all', past: 'Marked as used' },
-  PARTIALLY_USED: { label: 'Used some', past: 'Recorded partial use' },
-  WASTED: { label: 'Wasted', past: 'Marked as wasted' },
+  USED: { label: 'Mark all as used', past: 'Marked as used' },
+  PARTIALLY_USED: { label: 'Mark some as used', past: 'Marked some as used' },
+  WASTED: { label: 'Mark as wasted', past: 'Marked as wasted' },
   REMOVED: { label: 'Remove', past: 'Removed' },
 } as const;
 
@@ -159,8 +159,8 @@ export const referenceCopy = {
 export const favouriteCopy = {
   title: 'Favourites',
   hint: 'Tap one to add it again today.',
-  save: '☆ Save as favourite',
-  saved: '★ Favourite',
+  save: 'Save as favourite',
+  saved: 'Favourite',
   savedToast: (name: string) => `Saved ${name} as a favourite`,
   removedToast: (name: string) => `Removed ${name} from favourites`,
   addedToast: (name: string) => `Added ${name}`,
@@ -168,8 +168,8 @@ export const favouriteCopy = {
 
 /** Phase 2: marking an item as opened (can only shorten the expected expiry). */
 export const openCopy = {
-  button: 'Opened',
-  title: (name: string) => `Opened ${name}`,
+  button: 'Mark as opened',
+  title: (name: string) => `Mark ${name} as opened`,
   openedOn: 'Opened on',
   daysLabel: 'Days it lasts once opened',
   hint: 'The expected expiry becomes the opened date plus these days, if that is sooner.',
@@ -315,7 +315,7 @@ export const insightsCopy = {
   loadError: 'Couldn’t load your insights. Try again.',
   emptyTitle: 'Nothing to show yet',
   emptyBody: 'Mark food as used or wasted and your weekly picture appears here.',
-  seeHistory: 'See History',
+  seeHistory: 'See history',
   used: 'Used',
   wasted: 'Wasted',
   thisWeek: 'This week',
@@ -428,7 +428,7 @@ export const receiptCopy = {
 
 /** Phase 7: Photo Check. It only ever points out visible problems; there is no "looks fine" text. */
 export const photoCopy = {
-  region: 'Photo Check',
+  region: 'Photo check',
   addButton: 'Identify from a photo',
   checkButton: 'Check with photo',
   inputLabel: 'Food photo',
@@ -479,7 +479,7 @@ export const cameraCopy = {
   photoError: 'Couldn’t check that photo. Try again.',
   trayTitle: 'Scanned so far',
   remove: (name: string) => `Remove ${name}`,
-  useOne: 'Fill in Add Food',
+  useOne: 'Fill in the form',
   useMany: (count: number) => `Add ${count} items together`,
   scanMore: 'Scan more',
   foundOne: (name: string) => `Found: ${name}. Check the details, then choose how long it lasts.`,
@@ -572,7 +572,7 @@ export const homeCopy = {
 };
 
 /** Swiping a food card (the visible buttons do the same). */
-export const swipeCopy = { used: 'Used', wasted: 'Wasted' };
+export const swipeCopy = { used: 'Mark as used', wasted: 'Mark as wasted' };
 
 /** Pulling down to refresh. */
 export const pullCopy = { refreshing: 'Refreshing' };
@@ -608,7 +608,7 @@ export const firstRunCopy = {
   },
   step2: {
     title: 'Add your first food',
-    body: 'Start with a few things you have at home. You can add more any time from the Add food button.',
+    body: 'Start with a few things you have at home. You can add more any time with the “Add food” button.',
     camera: 'Use the camera',
     favourites: 'Your favourites',
     common: 'Or pick a few common foods',
@@ -625,3 +625,48 @@ export const firstRunCopy = {
     on: 'Reminders are on for this device.',
   },
 };
+
+/**
+ * Error messages say what happened and how to fix it. `what` finishes "Couldn’t …", for example "save that".
+ * (Messages from the server that explain a mistake in what was typed are shown as they are.)
+ */
+export const errorCopy = {
+  offline: (what: string) => `Couldn’t ${what} because there’s no connection. Check your internet and try again.`,
+  signedOut: (what: string) => `Couldn’t ${what} because you’ve been signed out. Sign in again.`,
+  tooMany: (what: string) => `Couldn’t ${what} because there have been too many tries. Wait a minute and try again.`,
+  serverProblem: (what: string) => `Couldn’t ${what} because Cook First had a problem. Try again in a moment.`,
+  unexpected: (what: string) => `Couldn’t ${what}. Try again, and if it keeps happening, reload the page.`,
+  retry: 'Try again',
+};
+
+/** Empty states: a short explanation and a way forward. */
+export const emptyCopy = {
+  cookFirst: {
+    title: 'Nothing needs cooking first',
+    body: 'Nothing is close to its expected expiry right now. A good moment to plan a meal or add what you bought.',
+  },
+  history: {
+    title: 'No history yet',
+    body: 'When you mark food as used, wasted or removed, it shows up here.',
+    action: 'Go to Home',
+  },
+  reminders: {
+    title: 'No reminders yet',
+    action: 'Choose reminder settings',
+  },
+  shopping: {
+    title: 'Your shopping list is empty',
+    body: 'Add what you need to buy. Cook First tells you if you already have some at home.',
+    action: 'Add an item',
+  },
+  householdActivity: {
+    title: 'Nothing has happened yet',
+    body: 'When someone in your household adds, uses or wastes food, it shows up here.',
+    action: 'Add food',
+  },
+  loadHint: 'Check your connection, then try again.',
+  goHome: 'Go to Home',
+};
+
+/** The frame around every signed-in screen. */
+export const shellCopy = { skipToContent: 'Skip to main content' };

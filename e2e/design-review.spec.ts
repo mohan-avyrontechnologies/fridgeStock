@@ -72,7 +72,7 @@ test('design review: every main screen, light and dark', async ({ browser }) => 
     await page.goto('/');
     await settle(page);
     await page
-      .getByRole('button', { name: /^Used: / })
+      .getByRole('button', { name: /^Mark as used: / })
       .first()
       .click();
     await page.waitForTimeout(400);

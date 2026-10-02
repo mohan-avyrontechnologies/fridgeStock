@@ -78,3 +78,47 @@ test('axe finds no violations on the three steps of the first-run guide, in ligh
   await check('dark', 1);
   expect(found).toEqual([]);
 });
+
+test('axe finds no violations with a dialog open: More, Add food and Mark as used, in light and dark mode', async ({
+  page,
+}) => {
+  test.setTimeout(240_000);
+  const token = await signUp(page);
+  await seed(page, token);
+  const found: string[] = [];
+  const scan = async (label: string) => {
+    await page.waitForTimeout(350);
+    const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+    for (const violation of result.violations) {
+      found.push(`${label}: ${violation.id} ${violation.nodes[0]?.target.join(' ')}`);
+    }
+  };
+
+  for (const scheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' });
+
+    await page.goto('/add');
+    await settle(page);
+    await expect(page.getByRole('dialog', { name: 'Add food' })).toBeVisible();
+    await scan(`${scheme} Add food`);
+
+    await page.goto('/');
+    await settle(page);
+    await page
+      .getByRole('button', { name: /^Mark as used: / })
+      .first()
+      .click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await scan(`${scheme} Mark as used`);
+    await page.keyboard.press('Escape');
+
+    const more = page.getByRole('button', { name: 'More' });
+    if (await more.isVisible()) {
+      await more.click();
+      await expect(page.getByRole('dialog', { name: 'More' })).toBeVisible();
+      await scan(`${scheme} More`);
+      await page.keyboard.press('Escape');
+    }
+  }
+  expect(found).toEqual([]);
+});

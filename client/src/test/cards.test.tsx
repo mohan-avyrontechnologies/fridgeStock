@@ -176,7 +176,7 @@ describe('swiping', () => {
     const user = userEvent.setup();
     const calls = api();
     renderSignedIn('/cook-first', <CookFirstPage />);
-    await user.click(await screen.findByRole('button', { name: 'Wasted: Spinach' }));
+    await user.click(await screen.findByRole('button', { name: 'Mark as wasted: Spinach' }));
     expect(await screen.findByText('Marked as wasted: Spinach')).toBeInTheDocument();
     expect(calls).toEqual(['waste s']);
   });
@@ -194,7 +194,7 @@ describe('optimistic updates', () => {
       }),
     );
     renderSignedIn('/cook-first', <CookFirstPage />);
-    await user.click(await screen.findByRole('button', { name: 'Wasted: Spinach' }));
+    await user.click(await screen.findByRole('button', { name: 'Mark as wasted: Spinach' }));
     // The server hasn't replied yet, and the card has already left.
     expect(screen.queryByRole('heading', { level: 3, name: 'Spinach' })).not.toBeInTheDocument();
     answer();
@@ -222,10 +222,10 @@ describe('optimistic updates', () => {
       }),
     );
     renderSignedIn('/cook-first', <CookFirstPage />);
-    await user.click(await screen.findByRole('button', { name: 'Used: Flour' }));
-    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /Used some/ }));
+    await user.click(await screen.findByRole('button', { name: 'Mark as used: Flour' }));
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /Mark some as used/ }));
     await user.type(screen.getByLabelText(/How much did you use/), '200');
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Mark some as used' }));
     await waitFor(() => expect(document.body.textContent).toContain('300 g'), { timeout: 300, interval: 20 });
   });
 });
@@ -309,7 +309,7 @@ describe('pull to refresh', () => {
       }),
     );
     renderSignedIn('/cook-first', <CookFirstPage />);
-    await user.click(await screen.findByRole('button', { name: 'Used: Spinach' }));
+    await user.click(await screen.findByRole('button', { name: 'Mark as used: Spinach' }));
     await new Promise((resolve) => setTimeout(resolve, 100)); // let the first loads finish
     const before = loads;
     touch('touchstart', 50);
@@ -327,7 +327,7 @@ describe('haptics', () => {
     const warning = vi.spyOn(platform.haptics, 'warning');
     api();
     renderSignedIn('/cook-first', <CookFirstPage />);
-    await user.click(await screen.findByRole('button', { name: 'Wasted: Spinach' }));
+    await user.click(await screen.findByRole('button', { name: 'Mark as wasted: Spinach' }));
     await waitFor(() => expect(warning).toHaveBeenCalledTimes(1));
     expect(success).not.toHaveBeenCalled();
   });

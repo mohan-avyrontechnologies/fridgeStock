@@ -1,7 +1,8 @@
 import type { RecipeIdeas as Ideas } from '@cook-first/shared';
+import { describeError } from '../lib/errors';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { api, ApiError } from '../api/client';
+import { api } from '../api/client';
 import { aiCopy, leftoverCopy, recipeCopy } from '../copy';
 import { useAiStore } from '../stores/aiStore';
 import { Button, Card } from './ui';
@@ -30,7 +31,7 @@ export function RecipeIdeas() {
     try {
       setIdeas(await api.suggestRecipes());
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+      setError(describeError(err, 'get recipe ideas'));
     } finally {
       setBusy(false);
       void loadStatus();

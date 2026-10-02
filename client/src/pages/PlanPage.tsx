@@ -9,14 +9,15 @@ import {
   MEAL_TYPES,
 } from '@cook-first/shared';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { api, ApiError } from '../api/client';
+import { api } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { Button, Chip, EmptyState, Field, SkeletonList, Card } from '../components/ui';
+import { Button, Chip, Field, SkeletonList, Card, LoadError } from '../components/ui';
 import { aiCopy, mealSettingsCopy, planCopy as copy } from '../copy';
 import { check } from '../lib/validation';
 import { useAiStore } from '../stores/aiStore';
 import { useFoodStore } from '../stores/foodStore';
 import { useToastStore } from '../stores/toastStore';
+import { describeError } from '../lib/errors';
 
 /** A simple plan for today and the next six days. */
 export function PlanPage() {
@@ -65,8 +66,8 @@ export function PlanPage() {
     try {
       await api.clearMeal(date, meal);
       await load();
-    } catch {
-      toast('Couldn’t save that. Try again.');
+    } catch (err) {
+      toast(describeError(err, 'clear that meal'));
     }
   }
 
@@ -76,7 +77,7 @@ export function PlanPage() {
     try {
       setDraft(await api.suggestMealPlan());
     } catch (err) {
-      setAiError(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+      setAiError(describeError(err, 'get meal ideas'));
     } finally {
       setBusy(false);
       void loadAi();
@@ -94,8 +95,8 @@ export function PlanPage() {
       setDraft(null);
       toast(copy.added);
       await load();
-    } catch {
-      toast('Couldn’t save that. Try again.');
+    } catch (err) {
+      toast(describeError(err, 'add those meals'));
     } finally {
       setBusy(false);
     }
@@ -109,7 +110,15 @@ export function PlanPage() {
       <PageHeader title={copy.title} subtitle={copy.subtitle} />
       <PageBody narrow>
         {!plan && !loadError && <SkeletonList />}
-        {loadError && !plan && <EmptyState title={copy.loadError} />}
+        {loadError && !plan && (
+          <LoadError
+            title={copy.loadError}
+            onRetry={() => {
+              setLoadError(false);
+              void load();
+            }}
+          />
+        )}
 
         <div role="group" aria-label={copy.mealChoice} className="flex gap-2">
           {MEAL_TYPES.map((type) => (
@@ -254,7 +263,7 @@ function MealForm({
       await api.setMeal(date, { meal, title: data.title, foodIds: chosen });
       await onDone();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+      setError(describeError(err, 'save that meal'));
       setBusy(false);
     }
   }

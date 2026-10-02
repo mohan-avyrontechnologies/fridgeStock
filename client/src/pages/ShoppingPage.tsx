@@ -1,11 +1,12 @@
 import { X } from 'lucide-react';
+import { describeError } from '../lib/errors';
 import { UNITS, formatDisplay, shoppingItemSchema, type ShoppingItem, type Unit } from '@cook-first/shared';
-import { useCallback, useEffect, useId, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useId, useState, type FormEvent, useRef } from 'react';
 import { Link } from 'react-router';
-import { api, ApiError } from '../api/client';
+import { api } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { Button, Checkbox, EmptyState, Field, SkeletonList, Card } from '../components/ui';
-import { shoppingCopy as copy } from '../copy';
+import { Button, Checkbox, EmptyState, Field, SkeletonList, Card, LoadError } from '../components/ui';
+import { shoppingCopy as copy, emptyCopy } from '../copy';
 import { formatQuantity } from '../lib/format';
 import { check } from '../lib/validation';
 import { useToastStore } from '../stores/toastStore';
@@ -16,6 +17,7 @@ export function ShoppingPage() {
   const unitId = useId();
   const [items, setItems] = useState<ShoppingItem[] | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const nameField = useRef<HTMLInputElement>(null);
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [unit, setUnit] = useState<Unit | ''>('');
@@ -58,7 +60,7 @@ export function ShoppingPage() {
       setUnit('');
       await load();
     } catch (err) {
-      setNameError(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+      setNameError(describeError(err, 'add that to your list'));
     } finally {
       setBusy(false);
     }
@@ -68,8 +70,8 @@ export function ShoppingPage() {
     try {
       await action();
       await load();
-    } catch {
-      toast('Couldn’t save that. Try again.');
+    } catch (err) {
+      toast(describeError(err, 'update your list'));
       await load();
     }
   }
@@ -89,6 +91,7 @@ export function ShoppingPage() {
       <PageBody narrow>
         <Card as="form" onSubmit={add} noValidate className="space-y-3 p-4">
           <Field
+            ref={nameField}
             label={copy.nameLabel}
             placeholder={copy.namePlaceholder}
             maxLength={60}
@@ -134,8 +137,23 @@ export function ShoppingPage() {
         </Card>
 
         {!items && !loadError && <SkeletonList />}
-        {loadError && !items && <EmptyState title={copy.loadError} />}
-        {items && items.length === 0 && <EmptyState title={copy.empty} />}
+        {loadError && !items && (
+          <LoadError
+            title={copy.loadError}
+            onRetry={() => {
+              setLoadError(false);
+              void load();
+            }}
+          />
+        )}
+        {items && items.length === 0 && (
+          <EmptyState
+            title={emptyCopy.shopping.title}
+            action={<Button onClick={() => nameField.current?.focus()}>{emptyCopy.shopping.action}</Button>}
+          >
+            {emptyCopy.shopping.body}
+          </EmptyState>
+        )}
 
         {toBuy.length > 0 && (
           <section aria-labelledby="to-buy">

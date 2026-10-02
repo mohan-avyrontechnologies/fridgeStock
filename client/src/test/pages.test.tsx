@@ -84,11 +84,11 @@ describe('Cook First', () => {
       }),
     );
     renderSignedIn('/cook-first', <CookFirstPage />);
-    await user.click(await screen.findByRole('button', { name: 'Used: Spinach' }));
+    await user.click(await screen.findByRole('button', { name: 'Mark as used: Spinach' }));
     const dialog = screen.getByRole('dialog', { name: 'Spinach' });
-    await user.click(within(dialog).getByRole('button', { name: /Used some/ }));
+    await user.click(within(dialog).getByRole('button', { name: /Mark some as used/ }));
     await user.type(within(dialog).getByLabelText(/How much did you use/), '0.5');
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Mark some as used' }));
     await waitFor(() => expect(body).toEqual({ quantity: 0.5 }));
   });
 });
@@ -97,7 +97,7 @@ describe('Add food', () => {
   it('validates required fields before calling the API', async () => {
     const user = userEvent.setup();
     renderSignedIn('/add', <AddFoodPage />);
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Add food' }));
     expect(screen.getByText('Food name is required.')).toBeInTheDocument();
     expect(screen.getByText('Lifespan must be a whole number of days from 0 to 365.')).toBeInTheDocument();
   });
@@ -117,7 +117,7 @@ describe('Add food', () => {
     await user.click(screen.getByRole('button', { name: '2 days' }));
     expect(screen.getByText(/2 days left/)).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Add food' }));
     await waitFor(() => expect(body).toBeDefined());
     expect(body).toMatchObject({ name: 'Spinach', quantity: 1, unit: 'bunch', lifespanDays: 2 });
     expect(body!.addedDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
@@ -136,7 +136,7 @@ describe('Add food', () => {
     renderSignedIn('/add', <AddFoodPage />);
     await user.type(screen.getByLabelText('Food'), 'x');
     await user.click(screen.getByRole('button', { name: '3 days' }));
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Add food' }));
     expect(await screen.findByText('Food name must be at most 100 characters.')).toBeInTheDocument();
   });
 });
@@ -222,7 +222,7 @@ describe('Add food units and notes', () => {
     expect(screen.queryByLabelText(/Notes/)).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Add note/ }));
     await user.type(screen.getByLabelText(/Notes/), 'Opened, top shelf');
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Add food' }));
     await waitFor(() => expect(body).toMatchObject({ name: 'Paneer', notes: 'Opened, top shelf' }));
     expect(body).not.toHaveProperty('expiryDate');
   });
@@ -307,10 +307,10 @@ describe('Add food form', () => {
 });
 
 describe('Cook First', () => {
-  it('shows "Nothing needs attention right now." when nothing is urgent', async () => {
+  it('explains that nothing needs cooking first, with a way forward, when nothing is urgent', async () => {
     server.use(http.get(`${API_URL}/foods/cook-first`, () => HttpResponse.json({ today: '2026-09-29', items: [] })));
     renderSignedIn('/cook-first', <CookFirstPage />);
-    expect(await screen.findByText('Nothing needs attention right now.')).toBeInTheDocument();
+    expect(await screen.findByText('Nothing needs cooking first')).toBeInTheDocument();
   });
 });
 

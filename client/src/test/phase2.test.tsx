@@ -49,10 +49,10 @@ describe('Opened', () => {
       }),
     );
     renderDetail();
-    await user.click(await screen.findByRole('button', { name: 'Opened' }));
-    const dialog = screen.getByRole('dialog', { name: 'Opened Milk' });
+    await user.click(await screen.findByRole('button', { name: 'Mark as opened' }));
+    const dialog = screen.getByRole('dialog', { name: 'Mark Milk as opened' });
     expect(within(dialog).getByLabelText('Days it lasts once opened')).toHaveValue(4);
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Mark as opened' }));
     await waitFor(() => expect(body).toMatchObject({ daysLeft: 4 }));
     expect(await screen.findByText(/Marked Milk as opened\. Expected expiry/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument();
@@ -62,8 +62,8 @@ describe('Opened', () => {
   it('asks for days when the food has no typical opened lifespan', async () => {
     const user = userEvent.setup();
     renderDetail(item({ id: 'm1', name: 'Mystery stew', addedDate: '2026-01-01' }));
-    await user.click(await screen.findByRole('button', { name: 'Opened' }));
-    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Save' }));
+    await user.click(await screen.findByRole('button', { name: 'Mark as opened' }));
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Mark as opened' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Enter how many days it lasts once opened.');
   });
 
@@ -80,7 +80,7 @@ describe('Opened', () => {
     await user.click(await screen.findByRole('button', { name: 'Mark as not opened' }));
     await waitFor(() => expect(undone).toBe(true));
     expect(await screen.findByText('Milk is no longer marked as opened')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Opened' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Mark as opened' })).toBeInTheDocument();
   });
 });
 
@@ -104,7 +104,7 @@ describe('Move', () => {
     expect(within(dialog).getByLabelText(/Days it lasts in the pantry/)).toHaveValue(null);
     expect(within(dialog).getByText('Not usually kept in the pantry. Enter your own lifespan.')).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'Freezer' }));
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Move' }));
     await waitFor(() => expect(body).toEqual({ storage: 'FREEZER', daysLeft: 270 }));
     expect(await screen.findByText(/Moved Chicken to the freezer\. Expected expiry/)).toBeInTheDocument();
   });

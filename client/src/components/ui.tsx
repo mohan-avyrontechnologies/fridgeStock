@@ -7,8 +7,10 @@ import {
   type ElementType,
   type InputHTMLAttributes,
   type ReactNode,
+  type Ref,
 } from 'react';
 import { useToastStore } from '../stores/toastStore';
+import { errorCopy, emptyCopy } from '../copy';
 
 /**
  * The shared building blocks: Button, Card, Chip, Field, BottomSheet, Toast and Skeleton, plus the smaller
@@ -53,7 +55,12 @@ export function Field({
   hint,
   className = '',
   ...props
-}: InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string; hint?: string }) {
+}: InputHTMLAttributes<HTMLInputElement> & {
+  label: string;
+  error?: string;
+  hint?: string;
+  ref?: Ref<HTMLInputElement>;
+}) {
   const generatedId = useId();
   const id = props.id ?? generatedId;
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
@@ -122,6 +129,31 @@ export function EmptyState({ title, children, action }: { title: string; childre
       {children && <div className="mt-2 text-sm text-muted">{children}</div>}
       {action && <div className="mt-4 flex flex-wrap justify-center gap-2">{action}</div>}
     </div>
+  );
+}
+
+/** What to show when something could not be loaded: what happened, how to fix it, and a Try again button. */
+export function LoadError({
+  title,
+  detail,
+  onRetry,
+}: {
+  title: string;
+  /** What to do about it. Defaults to checking the connection. */
+  detail?: string;
+  onRetry: () => void;
+}) {
+  return (
+    <EmptyState
+      title={title}
+      action={
+        <Button variant="secondary" onClick={onRetry}>
+          {errorCopy.retry}
+        </Button>
+      }
+    >
+      {detail ?? emptyCopy.loadHint}
+    </EmptyState>
   );
 }
 

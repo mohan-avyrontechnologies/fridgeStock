@@ -231,18 +231,18 @@ export function FirstRunPage() {
         </section>
       )}
 
-      <nav aria-label={copy.navigation} className="flex gap-3 pt-2">
+      <nav aria-label={copy.navigation} className="flex flex-wrap gap-3 pt-2">
         {step > 1 && (
-          <Button variant="secondary" className="flex-1" onClick={() => setStep(step - 1)}>
+          <Button variant="secondary" className="min-w-0 flex-1" onClick={() => setStep(step - 1)}>
             <ChevronLeft aria-hidden className="size-5" /> {copy.back}
           </Button>
         )}
         {step < STEPS ? (
-          <Button className="flex-1" onClick={() => setStep(step + 1)}>
+          <Button className="min-w-0 flex-1" onClick={() => setStep(step + 1)}>
             {copy.next} <ChevronRight aria-hidden className="size-5" />
           </Button>
         ) : (
-          <Button className="flex-1" onClick={() => void leave()}>
+          <Button className="min-w-0 flex-1" onClick={() => void leave()}>
             {copy.finish}
           </Button>
         )}

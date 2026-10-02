@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { api } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { EmptyState, SectionTitle, SkeletonList } from '../components/ui';
+import { EmptyState, SectionTitle, SkeletonList, LoadError } from '../components/ui';
 import { insightsCopy } from '../copy';
 import { formatMoney } from '../lib/format';
 import { useAuthStore } from '../stores/authStore';
@@ -48,7 +48,7 @@ function WeeksChart({ weeks }: { weeks: InsightsWeek[] }) {
       </div>
       <div aria-hidden className="mt-1 flex gap-2 px-3 text-xs text-muted">
         {weeks.map((w) => (
-          <span key={w.from} className="min-w-0 flex-1 truncate text-center">
+          <span key={w.from} className="min-w-0 flex-1 break-words text-center">
             {formatDisplay(w.from).replace(/ \d{4}$/, '')}
           </span>
         ))}
@@ -90,10 +90,11 @@ export function InsightsPage() {
   const currency = useAuthStore((s) => s.user?.currency) ?? 'USD';
   const [data, setData] = useState<Insights | null>(null);
   const [error, setError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     api.insights().then(setData, () => setError(true));
-  }, []);
+  }, [attempt]);
 
   const empty = data && !data.weeks.some(hasActivity);
   const showMoney = data && (data.thisWeek.pricedEntries > 0 || data.last30Days.pricedEntries > 0);
@@ -102,7 +103,15 @@ export function InsightsPage() {
     <>
       <PageHeader title="Insights" subtitle={insightsCopy.subtitle} />
       <PageBody narrow>
-        {error && <EmptyState title={insightsCopy.loadError} />}
+        {error && (
+          <LoadError
+            title={insightsCopy.loadError}
+            onRetry={() => {
+              setError(false);
+              setAttempt((n) => n + 1);
+            }}
+          />
+        )}
         {!data && !error && <SkeletonList />}
         {empty && (
           <EmptyState title={insightsCopy.emptyTitle}>
@@ -168,7 +177,7 @@ export function InsightsPage() {
                 <ul className="divide-y divide-line overflow-hidden rounded-card border border-line bg-card">
                   {data.topWasted.map((f) => (
                     <li key={f.name} className="flex items-center gap-3 px-4 py-3">
-                      <span className="min-w-0 flex-1 truncate font-semibold">{f.name}</span>
+                      <span className="min-w-0 flex-1 break-words font-semibold">{f.name}</span>
                       {f.lostValue > 0 && (
                         <span className="text-sm text-muted">{formatMoney(f.lostValue, currency)}</span>
                       )}

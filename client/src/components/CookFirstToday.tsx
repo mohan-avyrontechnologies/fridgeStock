@@ -24,11 +24,11 @@ function suggestion(meal: MealType, plan: MealPlan | null, items: ActiveFoodItem
 function TodayCard({ item }: { item: ActiveFoodItem }) {
   const remaining = remainingText(item.remainingDays);
   return (
-    <Card as="li" className="relative w-64 shrink-0 snap-start overflow-hidden">
+    <Card as="li" className="relative w-[min(16rem,80vw)] shrink-0 snap-start overflow-hidden">
       <span aria-hidden className={`block h-1.5 ${URGENCY_STYLE[item.urgency].bar}`} />
       <Link to={`/food/${item.id}`} className="block space-y-3 p-4">
         <FoodThumb foodId={item.id} photoAt={item.photoAt} name={item.name} className="h-24 w-full" />
-        <h3 className="truncate text-xl leading-tight font-semibold text-ink">{item.name}</h3>
+        <h3 className="break-words text-xl leading-tight font-semibold text-ink">{item.name}</h3>
         <UrgencyBadge urgency={item.urgency} />
         <p className="text-base text-ink">
           {/* When due today the badge already says "Expected expiry today". */}

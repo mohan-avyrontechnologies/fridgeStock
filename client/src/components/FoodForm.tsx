@@ -1,4 +1,5 @@
 import { Minus, Plus, Star } from 'lucide-react';
+import { describeError } from '../lib/errors';
 import {
   addDays,
   createFoodSchema,
@@ -218,7 +219,7 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
       }
     } catch (err) {
       if (err instanceof ApiError && err.field) setErrors({ [err.field]: err.message });
-      else setErrors({ form: err instanceof Error ? err.message : 'Could not save. Try again.' });
+      else setErrors({ form: describeError(err, 'save that') });
     } finally {
       setBusy(false);
     }

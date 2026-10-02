@@ -1,4 +1,5 @@
 import { ChevronRight } from 'lucide-react';
+import { describeError } from '../lib/errors';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { api } from '../api/client';
@@ -40,9 +41,9 @@ export function SettingsPage() {
       const saved = await api.updatePreferences({ [key]: next[key] });
       setPrefs(saved);
       setUser({ ...user, notificationPreferences: saved });
-    } catch {
+    } catch (err) {
       setPrefs(prefs);
-      toast('Couldn’t save that. Try again.');
+      toast(describeError(err, 'save that reminder setting'));
     }
   }
 
@@ -50,8 +51,8 @@ export function SettingsPage() {
     try {
       const { user: updated } = await api.updateMe({ savePhotos });
       setUser(updated);
-    } catch {
-      toast(productPhotoCopy.settingError);
+    } catch (err) {
+      toast(describeError(err, 'change that photo setting'));
     }
   }
 
@@ -59,8 +60,8 @@ export function SettingsPage() {
     try {
       const { user: updated } = await api.updateMe({ currency });
       setUser(updated);
-    } catch {
-      toast('Couldn’t save that. Try again.');
+    } catch (err) {
+      toast(describeError(err, 'change your currency'));
     }
   }
 

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { describeError } from '../lib/errors';
 import { api } from '../api/client';
 import type {
   ActiveFoodItem,
@@ -66,7 +67,7 @@ export const useFoodStore = create<FoodState>()((set, get) => ({
       const [inventory, cookFirst] = await Promise.all([api.listFoods(), api.cookFirst()]);
       set({ inventory, cookFirst: cookFirst.items, loading: false });
     } catch (err) {
-      set({ loading: false, error: err instanceof Error ? err.message : 'Could not load your food.' });
+      set({ loading: false, error: describeError(err, 'load your food') });
     }
   },
 

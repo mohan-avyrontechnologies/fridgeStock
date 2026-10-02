@@ -2,7 +2,7 @@ import { formatDisplay, type ActiveFoodItem } from '@cook-first/shared';
 import { Check } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Link } from 'react-router';
-import { cardExpiryLine, leftoverCopy, remainingText, urgencyCopy } from '../copy';
+import { cardExpiryLine, leftoverCopy, remainingText, swipeCopy, urgencyCopy } from '../copy';
 import { formatQuantity } from '../lib/format';
 import { prefersReducedMotion } from '../lib/motion';
 import { useToastStore } from '../stores/toastStore';
@@ -58,13 +58,17 @@ export function FoodCard({ item }: { item: ActiveFoodItem }) {
   }
 
   return (
-    <Card as="li" ref={card} className={`relative overflow-hidden ${leaving ? 'card-collapse' : ''}`}>
+    <Card as="li" ref={card} className={`@container relative overflow-hidden ${leaving ? 'card-collapse' : ''}`}>
       <SwipeActions disabled={leaving} onUsed={() => void markUsed()} onWasted={() => void markWasted()}>
         <div className="flex">
           <span aria-hidden className={`w-1.5 shrink-0 ${URGENCY_STYLE[item.urgency].bar}`} />
           <div className="min-w-0 flex-1">
-            <Link to={`/food/${item.id}`} draggable={false} className="flex gap-4 px-4 pt-4 pb-2">
-              <FoodThumb foodId={item.id} photoAt={item.photoAt} name={item.name} className="size-16" />
+            <Link
+              to={`/food/${item.id}`}
+              draggable={false}
+              className="flex flex-col gap-3 px-4 pt-4 pb-2 @min-[18rem]:flex-row @min-[18rem]:gap-4"
+            >
+              <FoodThumb foodId={item.id} photoAt={item.photoAt} name={item.name} className="size-[64px]" />
               <div className="min-w-0 flex-1">
                 <h3 className="text-xl leading-tight font-semibold text-ink">{item.name}</h3>
                 <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -86,25 +90,25 @@ export function FoodCard({ item }: { item: ActiveFoodItem }) {
                   )}
                 </p>
                 <p className="text-sm text-muted">{cardExpiryLine(formatDisplay(item.expiryDate))}</p>
-                {item.notes && <p className="mt-0.5 truncate text-sm text-muted italic">{item.notes}</p>}
+                {item.notes && <p className="mt-0.5 break-words text-sm text-muted italic">{item.notes}</p>}
               </div>
             </Link>
             <div className="flex gap-2 px-4 pb-4">
               <button
                 type="button"
                 onClick={() => setSheet('used')}
-                className="min-h-12 flex-1 rounded-button border border-field text-base font-semibold text-brand hover:bg-brand-soft"
-                aria-label={`Used: ${item.name}`}
+                className="min-h-12 min-w-0 flex-1 rounded-button border border-field px-2 py-2 text-base leading-tight font-semibold text-brand hover:bg-brand-soft"
+                aria-label={`${swipeCopy.used}: ${item.name}`}
               >
-                Used
+                {swipeCopy.used}
               </button>
               <button
                 type="button"
                 onClick={() => void markWasted()}
-                className="min-h-12 flex-1 rounded-button border border-field text-base font-semibold text-danger hover:bg-past"
-                aria-label={`Wasted: ${item.name}`}
+                className="min-h-12 min-w-0 flex-1 rounded-button border border-field px-2 py-2 text-base leading-tight font-semibold text-danger hover:bg-past"
+                aria-label={`${swipeCopy.wasted}: ${item.name}`}
               >
-                Wasted
+                {swipeCopy.wasted}
               </button>
             </div>
           </div>

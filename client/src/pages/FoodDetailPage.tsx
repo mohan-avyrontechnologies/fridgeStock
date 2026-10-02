@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { describeError } from '../lib/errors';
 import { useNavigate, useParams } from 'react-router';
 import { api, ApiError } from '../api/client';
 import type { Favourite, FoodItem } from '@cook-first/shared';
@@ -26,6 +27,8 @@ import {
   remainingText,
   screenCopy,
   urgencyCopy,
+  errorCopy,
+  emptyCopy,
 } from '../copy';
 import { formatDisplay } from '@cook-first/shared';
 import { formatInstant, formatMoney, formatQuantity } from '../lib/format';
@@ -75,7 +78,7 @@ export function FoodDetailPage() {
       setFood(await undoOpen(food.id));
       toast(openCopy.undone(food.name));
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+      toast(describeError(err, 'undo that'));
     }
   }
 
@@ -117,7 +120,7 @@ export function FoodDetailPage() {
         toast(favouriteCopy.savedToast(food.name));
       }
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+      toast(describeError(err, 'update your favourites'));
     }
   }
 
@@ -128,7 +131,7 @@ export function FoodDetailPage() {
       await run(food, action);
       navigate('/');
     } catch (err) {
-      toast(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+      toast(describeError(err, 'update that item'));
     }
   }
 
@@ -161,7 +164,17 @@ export function FoodDetailPage() {
       <>
         <PageHeader title="Food" back="/" />
         <PageBody narrow>
-          <EmptyState title={error} />
+          <EmptyState
+            title={error}
+            action={
+              <>
+                <Button variant="secondary" onClick={() => void load()}>
+                  {errorCopy.retry}
+                </Button>
+                <Button onClick={() => navigate('/')}>{emptyCopy.goHome}</Button>
+              </>
+            }
+          />
         </PageBody>
       </>
     );

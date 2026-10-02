@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { api } from '../api/client';
 import { formatDisplay, type UsageAction, type UsageRecord } from '@cook-first/shared';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { Button, EmptyState, SkeletonList, Card } from '../components/ui';
-import { historyActionLabel, screenCopy } from '../copy';
+import { Button, EmptyState, SkeletonList, Card, LoadError } from '../components/ui';
+import { historyActionLabel, screenCopy, emptyCopy } from '../copy';
 import { formatQuantity } from '../lib/format';
 
 const ACTIONS: UsageAction[] = ['USED', 'PARTIALLY_USED', 'WASTED', 'REMOVED'];
@@ -20,6 +20,8 @@ export function HistoryPage() {
   const [total, setTotal] = useState(0);
   const [counts, setCounts] = useState<Record<UsageAction, number> | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     api
@@ -30,7 +32,7 @@ export function HistoryPage() {
         setCounts(page.counts);
       })
       .catch(() => setError(screenCopy.history.loadError));
-  }, []);
+  }, [attempt]);
 
   async function more() {
     const page = await api.usage(records!.length);
@@ -41,7 +43,15 @@ export function HistoryPage() {
     <>
       <PageHeader title="History" subtitle="What you used, wasted or removed" />
       <PageBody narrow>
-        {error && <EmptyState title={error} />}
+        {error && (
+          <LoadError
+            title={error}
+            onRetry={() => {
+              setError(null);
+              setAttempt((n) => n + 1);
+            }}
+          />
+        )}
         {!records && !error && <SkeletonList />}
         {counts && (
           <ul className="grid grid-cols-4 gap-2">
@@ -54,7 +64,12 @@ export function HistoryPage() {
           </ul>
         )}
         {records && records.length === 0 && (
-          <EmptyState title="No history yet">Items you mark as used, wasted or removed show up here.</EmptyState>
+          <EmptyState
+            title={emptyCopy.history.title}
+            action={<Button onClick={() => navigate('/')}>{emptyCopy.history.action}</Button>}
+          >
+            {emptyCopy.history.body}
+          </EmptyState>
         )}
         {records && records.length > 0 && (
           <Card as="ul" className="divide-y divide-line overflow-hidden">
@@ -62,7 +77,7 @@ export function HistoryPage() {
               <li key={r.id}>
                 <Link to={`/food/${r.foodId}`} className="flex items-center gap-3 px-4 py-3 hover:bg-paper">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold">{r.foodName}</p>
+                    <p className="break-words font-semibold">{r.foodName}</p>
                     <p className="text-sm text-muted">
                       {formatQuantity(r.quantityUsed, r.unit)}
                       {r.quantityRemaining > 0 && ` · ${formatQuantity(r.quantityRemaining, r.unit)} left`} ·{' '}

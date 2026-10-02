@@ -54,7 +54,7 @@ describe('reference suggestions on Add Food', () => {
     await user.type(screen.getByLabelText('Food'), 'Peas');
     await user.selectOptions(screen.getByLabelText('Kept in'), 'FREEZER');
     await user.type(screen.getByLabelText('Lifespan (days)'), '200');
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Add food' }));
     await waitFor(() => expect(body).toMatchObject({ name: 'Peas', storage: 'FREEZER', lifespanDays: 200 }));
   });
 });
@@ -97,7 +97,7 @@ describe('Undo instead of confirmation dialogs', () => {
       }),
     );
     renderSignedIn('/cook-first', <CookFirstPage />);
-    await user.click(await screen.findByRole('button', { name: 'Wasted: Spinach' }));
+    await user.click(await screen.findByRole('button', { name: 'Mark as wasted: Spinach' }));
     await waitFor(() => expect(wasted).toBe(true));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(await screen.findByText('Marked as wasted: Spinach')).toBeInTheDocument();
@@ -116,8 +116,8 @@ describe('Undo instead of confirmation dialogs', () => {
       }),
     );
     renderSignedIn('/cook-first', <CookFirstPage />);
-    await user.click(await screen.findByRole('button', { name: 'Used: Spinach' }));
-    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /Used all/ }));
+    await user.click(await screen.findByRole('button', { name: 'Mark as used: Spinach' }));
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /Mark all as used/ }));
     await waitFor(() => expect(used).toBe(true));
     expect(await screen.findByRole('button', { name: 'Undo' })).toBeInTheDocument();
   });

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { describeError } from '../lib/errors';
 import { ApiError } from '../api/client';
 import { estimateNote, screenCopy } from '../copy';
 import { EstimateNote } from './Urgency';
@@ -9,9 +10,10 @@ export type AuthErrors = Partial<Record<'name' | 'email' | 'password' | 'form', 
 export function authErrorsFrom(err: unknown): AuthErrors {
   if (err instanceof ApiError) {
     if (err.field === 'name' || err.field === 'email' || err.field === 'password') return { [err.field]: err.message };
-    return { form: err.message };
+    // A wrong password or a taken email is the server's own explanation; a dropped connection or a server problem isn't.
+    return { form: err.status === 0 || err.status >= 500 ? describeError(err, 'continue') : err.message };
   }
-  return { form: 'Something went wrong. Try again.' };
+  return { form: describeError(err, 'continue') };
 }
 
 /** Frame for the sign-in and sign-up screens: a brand panel beside the form on desktop. */
@@ -37,7 +39,7 @@ export function AuthLayout({ title, children, footer }: { title: string; childre
       <main className="top-inset mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-8 lg:justify-center lg:py-12">
         <div className="pt-12 pb-8 lg:pt-0">
           <img src="/icon.svg" alt="" className="size-12 lg:hidden" />
-          <p className="mt-5 text-sm font-semibold tracking-wide text-brand uppercase lg:mt-0">Cook First</p>
+          <p className="mt-5 text-sm font-semibold text-brand lg:mt-0">Cook First</p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight">{title}</h1>
           <p className="mt-2 text-muted">{screenCopy.auth.intro}</p>
         </div>

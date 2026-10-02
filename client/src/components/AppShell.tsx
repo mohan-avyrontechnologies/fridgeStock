@@ -17,6 +17,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
 import { useNotificationStore } from '../stores/notificationStore';
+import { shellCopy } from '../copy';
 import { PullToRefresh } from './PullToRefresh';
 import { BottomSheet, Toast } from './ui';
 
@@ -49,6 +50,12 @@ export function AppShell() {
 
   return (
     <div className="min-h-dvh">
+      <a
+        href="#main"
+        className="sr-only z-50 rounded-button bg-brand px-4 py-3 font-semibold text-on-brand focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+      >
+        {shellCopy.skipToContent}
+      </a>
       <Sidebar />
       <div className="lg:pl-64">
         <div className="pb-nav mx-auto min-h-dvh max-w-xl lg:max-w-5xl lg:pb-12">
@@ -95,8 +102,8 @@ export function PageHeader({
           </Link>
         )}
         <div className="min-w-0 flex-1">
-          <h1 className="truncate text-2xl font-bold tracking-tight lg:text-3xl">{title}</h1>
-          {subtitle && <p className="truncate text-sm text-muted lg:mt-1 lg:text-base">{subtitle}</p>}
+          <h1 className="break-words text-2xl font-bold tracking-tight lg:text-3xl">{title}</h1>
+          {subtitle && <p className="break-words text-sm text-muted lg:mt-1 lg:text-base">{subtitle}</p>}
         </div>
         <Link
           to="/notifications"
@@ -121,7 +128,15 @@ export function PageHeader({
 
 /** Page body with the gutters used on every signed-in screen. */
 export function PageBody({ children, narrow = false }: { children: ReactNode; narrow?: boolean }) {
-  return <main className={`space-y-6 px-4 pt-4 lg:px-8 lg:pt-4 ${narrow ? 'lg:max-w-2xl' : ''}`}>{children}</main>;
+  return (
+    <main
+      id="main"
+      tabIndex={-1}
+      className={`space-y-6 px-4 pt-4 focus:outline-none lg:px-8 lg:pt-4 ${narrow ? 'lg:max-w-2xl' : ''}`}
+    >
+      {children}
+    </main>
+  );
 }
 
 function UnreadDot({ count, className = '' }: { count: number; className?: string }) {
@@ -222,8 +237,8 @@ function Sidebar() {
 
       {user && (
         <div className="mt-auto border-t border-line px-2 pt-4">
-          <p className="truncate text-sm font-semibold">{user.name}</p>
-          <p className="truncate text-xs text-muted">{user.email}</p>
+          <p className="break-words text-sm font-semibold">{user.name}</p>
+          <p className="break-words text-xs text-muted">{user.email}</p>
         </div>
       )}
     </aside>
@@ -241,7 +256,10 @@ function BottomNav() {
         <NavItem to="/" label="Home" icon={<House {...iconProps} />} end />
         <NavItem to="/cook-first" label="Cook First" icon={<CookingPot {...iconProps} />} badge={cookFirstCount} />
         <li className="flex justify-center">
-          <Link to="/add" className="flex flex-col items-center gap-0.5 pb-1.5 text-xs font-semibold text-brand">
+          <Link
+            to="/add"
+            className="flex flex-col items-center gap-0.5 pb-1.5 text-[length:min(0.75rem,15px)] leading-tight font-semibold text-brand"
+          >
             <span className="-mt-5 grid size-14 place-items-center rounded-full bg-brand text-on-brand shadow-lg shadow-brand/30 hover:bg-brand-hover">
               <Plus aria-hidden className="size-7" strokeWidth={2.5} />
             </span>
@@ -274,7 +292,7 @@ function NavItem({
         to={to}
         end={end}
         className={({ isActive }) =>
-          `relative flex min-h-16 flex-col items-center justify-center gap-0.5 text-xs font-medium ${
+          `relative flex min-h-16 flex-col items-center justify-center gap-0.5 text-[length:min(0.75rem,15px)] leading-tight font-medium ${
             isActive ? 'text-brand' : 'text-muted'
           }`
         }
@@ -311,7 +329,7 @@ function MoreTab() {
         type="button"
         aria-haspopup="dialog"
         onClick={() => setOpen(true)}
-        className={`flex min-h-16 w-full flex-col items-center justify-center gap-0.5 text-xs font-medium ${
+        className={`flex min-h-16 w-full flex-col items-center justify-center gap-0.5 text-[length:min(0.75rem,15px)] leading-tight font-medium ${
           active ? 'text-brand' : 'text-muted'
         }`}
       >

@@ -277,7 +277,7 @@ describe('without a camera, or with the permission denied', () => {
     await typeNumber(user, dialog, '4006 3813-33931');
     expect(await within(dialog).findByText('Added Milk. Scan the next one, or finish below.')).toBeInTheDocument();
     expect(calls).toEqual([MILK_CODE]);
-    await user.click(within(dialog).getByRole('button', { name: 'Fill in Add Food' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Fill in the form' }));
 
     await waitFor(() => expect(screen.getByLabelText('Food')).toHaveValue('Milk'));
     expect(screen.queryByRole('dialog', { name: 'Camera' })).not.toBeInTheDocument();
@@ -405,7 +405,7 @@ describe('one product', () => {
     renderApp();
     const dialog = await openCamera(user);
     await typeNumber(user, dialog, MILK_CODE); // "Milk" is in the catalog: 5 days in the fridge
-    await user.click(await within(dialog).findByRole('button', { name: 'Fill in Add Food' }));
+    await user.click(await within(dialog).findByRole('button', { name: 'Fill in the form' }));
     await waitFor(() => expect(screen.getByLabelText('Food')).toHaveValue('Milk'));
     expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(5);
     expect(screen.getByLabelText('Kept in')).toHaveValue('FRIDGE');
@@ -419,7 +419,7 @@ describe('one product', () => {
     renderApp();
     const dialog = await openCamera(user);
     await typeNumber(user, dialog, OTHER_CODE);
-    await user.click(await within(dialog).findByRole('button', { name: 'Fill in Add Food' }));
+    await user.click(await within(dialog).findByRole('button', { name: 'Fill in the form' }));
     await waitFor(() => expect(screen.getByLabelText('Food')).toHaveValue('Zorblax Drink'));
     expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(null);
     expect(screen.queryByLabelText(/Notes/)).not.toBeInTheDocument();
@@ -464,7 +464,7 @@ describe('scanning several products in a row', () => {
     await within(dialog).findByText('Added Zorblax Drink. Scan the next one, or finish below.');
     await user.click(within(dialog).getByRole('button', { name: 'Remove Milk' }));
     expect(within(dialog).queryByText('Milk')).not.toBeInTheDocument();
-    expect(within(dialog).getByRole('button', { name: 'Fill in Add Food' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Fill in the form' })).toBeInTheDocument();
   });
 
   it('can add more from Bulk Add with "Scan more"', async () => {
@@ -475,7 +475,7 @@ describe('scanning several products in a row', () => {
     await user.click(await screen.findByRole('button', { name: 'Scan more' }));
     const dialog = screen.getByRole('dialog', { name: 'Camera' });
     await typeNumber(user, dialog, MILK_CODE);
-    await user.click(await within(dialog).findByRole('button', { name: 'Fill in Add Food' }));
+    await user.click(await within(dialog).findByRole('button', { name: 'Fill in the form' }));
     await waitFor(() => expect(screen.getByLabelText('Item 1 name')).toHaveValue('Milk'));
     expect(screen.queryByRole('dialog', { name: 'Camera' })).not.toBeInTheDocument();
   });
@@ -601,9 +601,9 @@ describe('saving the photo with the food', () => {
     const dialog = await openCamera(user);
     await user.click(await within(dialog).findByRole('tab', { name: 'Take photo' }));
     await user.upload(within(dialog).getByLabelText('Food photo'), photoFile());
-    await user.click(await within(dialog).findByRole('button', { name: 'Fill in Add Food' }));
+    await user.click(await within(dialog).findByRole('button', { name: 'Fill in the form' }));
     await waitFor(() => expect(screen.getByLabelText('Food')).toHaveValue('Milk'));
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Add food' }));
   }
 
   it('uploads it after the food is saved, as a form field called "photo"', async () => {
@@ -660,8 +660,8 @@ describe('saving the photo with the food', () => {
     const dialog = await openCamera(user);
     await user.click(await within(dialog).findByRole('tab', { name: 'Take photo' }));
     await user.upload(within(dialog).getByLabelText('Food photo'), photoFile());
-    await user.click(await within(dialog).findByRole('button', { name: 'Fill in Add Food' }));
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(await within(dialog).findByRole('button', { name: 'Fill in the form' }));
+    await user.click(screen.getByRole('button', { name: 'Add food' }));
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument());
     expect(seen).toEqual([]);
   });
@@ -679,7 +679,7 @@ describe('saving the photo with the food', () => {
     renderApp();
     await user.type(await screen.findByLabelText('Food'), 'Peas');
     await user.type(screen.getByLabelText('Lifespan (days)'), '9');
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'Add food' }));
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument());
     expect(seen).toEqual([]);
   });

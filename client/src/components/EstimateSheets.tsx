@@ -9,7 +9,6 @@ import {
   type StorageLocation,
 } from '@cook-first/shared';
 import { useEffect, useState, type FormEvent } from 'react';
-import { ApiError } from '../api/client';
 import { moveCopy, openCopy, referenceCopy, storageLabel, undoCopy } from '../copy';
 import { suggestFor } from '../lib/suggestions';
 import { useAuthStore } from '../stores/authStore';
@@ -17,20 +16,21 @@ import { useFoodStore } from '../stores/foodStore';
 import { useSuggestionStore } from '../stores/suggestionStore';
 import { useToastStore } from '../stores/toastStore';
 import { BottomSheet, Button, Chip, Field, FormError } from './ui';
+import { describeError } from '../lib/errors';
 
 /** Phase 2 sheets: "Opened" and "Move", both of which change the expected expiry. */
 
 const toDays = (value: string) => (value.trim() === '' ? undefined : Number(value));
 const validDays = (n: number | undefined) => n !== undefined && Number.isInteger(n) && n >= 0 && n <= 365;
 
-function SheetButtons({ busy, onCancel }: { busy: boolean; onCancel: () => void }) {
+function SheetButtons({ busy, onCancel, label }: { busy: boolean; onCancel: () => void; label: string }) {
   return (
     <div className="flex gap-2">
       <Button type="button" variant="secondary" className="flex-1" onClick={onCancel}>
         {undoCopy.cancel}
       </Button>
       <Button type="submit" className="flex-1" disabled={busy}>
-        {busy ? 'Saving…' : 'Save'}
+        {busy ? 'Saving…' : label}
       </Button>
     </div>
   );
@@ -72,7 +72,7 @@ export function OpenSheet({
       });
       onDone(updated);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+      setError(describeError(err, 'mark that as opened'));
       setBusy(false);
     }
   }
@@ -106,7 +106,7 @@ export function OpenSheet({
           onChange={(e) => setDays(e.target.value)}
           hint={typical === null ? openCopy.hint : `${openCopy.referenceHint(typical)} ${openCopy.hint}`}
         />
-        <SheetButtons busy={busy} onCancel={onClose} />
+        <SheetButtons busy={busy} onCancel={onClose} label={openCopy.button} />
       </form>
     </BottomSheet>
   );
@@ -154,7 +154,7 @@ export function MoveSheet({
       toast(moveCopy.toast(item.name, storageLabel[storage], formatDisplay(updated.expiryDate)));
       onDone(updated);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+      setError(describeError(err, 'move that'));
       setBusy(false);
     }
   }
@@ -191,7 +191,7 @@ export function MoveSheet({
                 : `${referenceCopy.suggested(suggestion.days)}. ${referenceCopy.hint}`
           }
         />
-        <SheetButtons busy={busy} onCancel={onClose} />
+        <SheetButtons busy={busy} onCancel={onClose} label={moveCopy.button} />
       </form>
     </BottomSheet>
   );

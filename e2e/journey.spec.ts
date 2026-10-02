@@ -22,7 +22,7 @@ async function addFood(page: Page, name: string, lifespan: string, unit = 'pcs')
   await page.getByLabel('Food', { exact: true }).fill(name);
   await page.getByLabel('Unit').selectOption(unit);
   await page.getByLabel('Lifespan (days)').fill(lifespan);
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Add food', exact: true }).click();
   await expect(page).toHaveURL('/');
 }
 
@@ -140,12 +140,12 @@ test('spec journey: chicken (1 day) and eggs (8 days); only chicken in Cook Firs
   await expect(cookFirst.first()).toContainText('Chicken');
   await expect(page.getByRole('main')).not.toContainText('Eggs');
 
-  await page.getByRole('button', { name: 'Used: Chicken' }).click();
+  await page.getByRole('button', { name: 'Mark as used: Chicken' }).click();
   await page
     .getByRole('dialog')
-    .getByRole('button', { name: /Used all/ })
+    .getByRole('button', { name: /Mark all as used/ })
     .click();
-  await expect(page.getByText('Nothing needs attention right now.')).toBeVisible();
+  await expect(page.getByText('Nothing needs cooking first')).toBeVisible();
   await expect(page.getByRole('main')).not.toContainText('Chicken');
 
   await nav.getByRole('link', { name: 'Home' }).click();
@@ -193,12 +193,12 @@ test('register → add food → Cook First → mark used → history', async ({ 
   await shot(page, '03-cook-first');
 
   // Used → Used all: acts at once, with Undo in the toast.
-  await page.getByRole('button', { name: 'Used: Chicken' }).click();
+  await page.getByRole('button', { name: 'Mark as used: Chicken' }).click();
   await expect(page.getByRole('dialog', { name: 'Chicken' })).toBeVisible();
   await shot(page, '04-action-sheet');
   await page
     .getByRole('dialog')
-    .getByRole('button', { name: /Used all/ })
+    .getByRole('button', { name: /Mark all as used/ })
     .click();
   await expect(page.getByText('Marked as used: Chicken')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
@@ -219,18 +219,18 @@ test('partial use keeps the item; throwing it away closes the rest', async ({ pa
   await shot(page, '06-food-detail');
 
   // The quantity defaults to 1 l; use 0.25.
-  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Used some' }).click();
+  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Mark some as used' }).click();
   await page.getByLabel(/How much did you use/).fill('0.25');
-  await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Mark some as used' }).click();
   await expect(page.getByText('0.75 l')).toBeVisible();
 
   // Another partial use, then waste the rest.
-  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Used some' }).click();
+  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Mark some as used' }).click();
   await page.getByLabel(/How much did you use/).fill('0.25');
-  await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Mark some as used' }).click();
   await expect(page.getByText('0.5 l')).toBeVisible();
 
-  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Wasted' }).click();
+  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Mark as wasted' }).click();
   await expect(page).toHaveURL('/');
   await expect(page.getByText('Your fridge is empty. Add your first item.')).toBeVisible();
 
@@ -244,14 +244,14 @@ test('partial use keeps the item; throwing it away closes the rest', async ({ pa
 test('validation messages and the expected-expiry preview', async ({ page }) => {
   await register(page, 'Chen Wei');
   await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Add food', exact: true }).click();
   await expect(page.getByText('Food name is required.')).toBeVisible();
   await expect(page.getByText('Lifespan must be a whole number of days from 0 to 365.')).toBeVisible();
 
   await page.getByLabel('Food', { exact: true }).fill('Bread');
   await expect(page.getByText('Food name is required.')).toBeHidden();
   await page.getByLabel('Added on').fill('2099-01-01');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Add food', exact: true }).click();
   await expect(page.getByText("Added date must be a valid date that isn't in the future.")).toBeVisible();
   await page.getByRole('button', { name: 'Today' }).click();
   await page.getByRole('button', { name: '3 days' }).click();
@@ -332,7 +332,7 @@ test('phase 1: bulk add a shopping haul, undo a waste, and re-add a favourite wi
   await expect(rows).toHaveCount(3);
 
   // Wasted acts at once; Undo brings it back.
-  await rows.filter({ hasText: 'Spinach' }).getByRole('button', { name: 'Wasted: Spinach' }).click();
+  await rows.filter({ hasText: 'Spinach' }).getByRole('button', { name: 'Mark as wasted: Spinach' }).click();
   await expect(page.getByText('Marked as wasted: Spinach')).toBeVisible();
   await expect(rows).toHaveCount(2);
   await page.getByRole('button', { name: 'Undo' }).click();
@@ -344,7 +344,7 @@ test('phase 1: bulk add a shopping haul, undo a waste, and re-add a favourite wi
   await expect(page.getByText('Kept in')).toBeVisible();
   await page.getByRole('button', { name: /Save as favourite/ }).click();
   await expect(page.getByText('Saved Milk as a favourite')).toBeVisible();
-  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Used all' }).click();
+  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Mark all as used' }).click();
   await expect(page).toHaveURL('/');
   await expect(rows).toHaveCount(2);
 
@@ -369,11 +369,11 @@ test('phase 2: opening shortens the expected expiry, moving recalculates it, and
   // Opened: milk's 7-day lifespan drops to the typical 4 days once opened.
   await rows.filter({ hasText: 'Milk' }).getByRole('link').first().click();
   await expect(page.getByText('7 days', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Opened', exact: true }).click();
-  const openDialog = page.getByRole('dialog', { name: 'Opened Milk' });
+  await page.getByRole('button', { name: 'Mark as opened', exact: true }).click();
+  const openDialog = page.getByRole('dialog', { name: 'Mark Milk as opened' });
   await expect(openDialog.getByLabel('Days it lasts once opened')).toHaveValue('4');
   await shot(page, '12-opened');
-  await openDialog.getByRole('button', { name: 'Save' }).click();
+  await openDialog.getByRole('button', { name: 'Mark as opened' }).click();
   await expect(page.getByText(/Marked Milk as opened/)).toBeVisible();
   await expect(page.getByText('4 days', { exact: true })).toBeVisible();
   await expect(page.getByText('Opened on')).toBeVisible();
@@ -385,7 +385,7 @@ test('phase 2: opening shortens the expected expiry, moving recalculates it, and
   const moveDialog = page.getByRole('dialog', { name: 'Move Chicken' });
   await expect(moveDialog.getByLabel(/Days it lasts in the freezer/)).toHaveValue('270');
   await shot(page, '13-move');
-  await moveDialog.getByRole('button', { name: 'Save' }).click();
+  await moveDialog.getByRole('button', { name: 'Move' }).click();
   await expect(page.getByText(/Moved Chicken to the freezer/)).toBeVisible();
   await expect(page.getByText('270 days', { exact: true })).toBeVisible();
 
@@ -470,7 +470,7 @@ test('phase 4: leftovers, a shopping list that warns about food at home, and a w
   await page.getByLabel('Food', { exact: true }).fill('Leftover curry');
   await page.getByRole('checkbox', { name: /These are leftovers/ }).check();
   await expect(page.getByLabel('Lifespan (days)')).toHaveValue('3');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Add food', exact: true }).click();
   await expect(page).toHaveURL('/');
   await expect(allFood(page).filter({ hasText: 'Leftover curry' }).getByText('Leftovers')).toBeVisible();
 
@@ -528,18 +528,18 @@ test('phase 5: a price on the item, then used and wasted figures and money on In
   await page.getByLabel('Unit').selectOption('l');
   await page.getByLabel('Lifespan (days)').fill('4');
   await page.getByLabel('Price (USD, optional)').fill('4');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Add food', exact: true }).click();
   await expect(page).toHaveURL('/');
 
   // Use a quarter (worth 1.00), then waste the rest (worth 3.00).
   await page.getByRole('link', { name: /Milk/ }).first().click();
   await expect(page.getByText('$4.00')).toBeVisible();
-  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Used some' }).click();
+  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Mark some as used' }).click();
   await page.getByLabel(/How much did you use/).fill('0.25');
-  await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Mark some as used' }).click();
   await expect(page.getByText('0.75 l')).toBeVisible();
   await expect(page.getByText('$3.00')).toBeVisible();
-  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Wasted' }).click();
+  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Mark as wasted' }).click();
   await expect(page).toHaveURL('/');
 
   await openSettings(page);
@@ -642,7 +642,7 @@ test('phase 6: two people share a household, see each other’s food and activit
   await alicePage.goto('/');
   await expect(allFood(alicePage)).toHaveCount(2);
   await alicePage.getByRole('link', { name: /Bread/ }).first().click();
-  await alicePage.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Used all' }).click();
+  await alicePage.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Mark all as used' }).click();
   await expect(alicePage).toHaveURL('/');
   await expect(allFood(alicePage)).toHaveCount(1);
 
@@ -693,7 +693,7 @@ test('phase 6: scanning a barcode fills in the form, and a receipt photo becomes
   await camera.getByLabel('Or type the number under the barcode').fill('4006 3813-33931');
   await camera.getByRole('button', { name: 'Look up' }).click();
   await expect(camera.getByText('Added Whole milk. Scan the next one, or finish below.')).toBeVisible();
-  await camera.getByRole('button', { name: 'Fill in Add Food' }).click();
+  await camera.getByRole('button', { name: 'Fill in the form' }).click();
   await expect(page.getByRole('dialog', { name: 'Camera' })).toHaveCount(0);
   await expect(page.getByLabel('Food', { exact: true })).toHaveValue('Whole milk');
   await expect(page.getByLabel('Quantity', { exact: true })).toHaveValue('1000');
@@ -702,7 +702,7 @@ test('phase 6: scanning a barcode fills in the form, and a receipt photo becomes
 
   // How long it lasts is still the person's choice.
   await page.getByLabel('Lifespan (days)').fill('5');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Add food', exact: true }).click();
   await expect(page).toHaveURL('/');
   await expect(allFood(page).filter({ hasText: 'Whole milk' })).toHaveCount(1);
   await expectNoSafetyClaim(page);
@@ -743,7 +743,7 @@ test('phase 7: Photo Check names food on Add Food, and warns on Food Details wit
   await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
   let camera = await openPhotoMode();
   await expect(camera.getByText('Added Milk. Scan the next one, or finish below.')).toBeVisible();
-  await camera.getByRole('button', { name: 'Fill in Add Food' }).click();
+  await camera.getByRole('button', { name: 'Fill in the form' }).click();
   await expect(page.getByLabel('Food', { exact: true })).toHaveValue('Milk');
   await expect(page.getByLabel('Lifespan (days)')).toHaveValue('5');
   await page.getByLabel('Food', { exact: true }).fill('Oat milk'); // the name stays editable
@@ -765,7 +765,7 @@ test('phase 7: Photo Check names food on Add Food, and warns on Food Details wit
   await expect(
     camera.getByText('Visible signs noticed: green patches on the crust; dark spots near the edge.'),
   ).toBeVisible();
-  await camera.getByRole('button', { name: 'Fill in Add Food' }).click();
+  await camera.getByRole('button', { name: 'Fill in the form' }).click();
   const addWarning = page.getByRole('group', { name: 'Visible signs noticed' });
   await expect(addWarning).toContainText(
     'Visible signs noticed: green patches on the crust; dark spots near the edge.',
@@ -829,7 +829,7 @@ test('phase 6: a photo is kept with the food, shown privately, removed on reques
     const camera = page.getByRole('dialog', { name: 'Camera' });
     await camera.getByRole('tab', { name: 'Take photo' }).click();
     await camera.getByLabel('Food photo').setInputFiles(PNG);
-    await camera.getByRole('button', { name: 'Fill in Add Food' }).click();
+    await camera.getByRole('button', { name: 'Fill in the form' }).click();
   };
 
   // Take a photo of milk on the camera screen and save the food: the photo is kept with it.
@@ -837,7 +837,7 @@ test('phase 6: a photo is kept with the food, shown privately, removed on reques
   await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
   await takePhoto();
   await expect(page.getByLabel('Lifespan (days)')).toHaveValue('5');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Add food', exact: true }).click();
   await expect(page).toHaveURL('/');
 
   // A thumbnail on the card, fetched with the login token.
@@ -867,7 +867,7 @@ test('phase 6: a photo is kept with the food, shown privately, removed on reques
   await nextPhoto('mouldy');
   await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
   await takePhoto();
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('button', { name: 'Add food', exact: true }).click();
   await expect(page).toHaveURL('/');
   await expect(allFood(page).filter({ hasText: 'Bread' })).toHaveCount(1);
   await expect(allFood(page).filter({ hasText: 'Bread' }).getByRole('img')).toHaveCount(0);
@@ -1005,8 +1005,8 @@ test('stage 3: swipe a card right for used and left for wasted, with Undo; Food 
   // Swiping is never required: Food Details has the buttons.
   await card('Spinach').getByRole('link').first().click();
   const actions = page.getByRole('region', { name: 'Actions' });
-  await expect(actions.getByRole('button', { name: 'Used all' })).toBeVisible();
-  await expect(actions.getByRole('button', { name: 'Wasted' })).toBeVisible();
+  await expect(actions.getByRole('button', { name: 'Mark all as used' })).toBeVisible();
+  await expect(actions.getByRole('button', { name: 'Mark as wasted' })).toBeVisible();
   await expectNoSafetyClaim(page);
 });
 
@@ -1061,7 +1061,74 @@ test('stage 4: the first-run guide, then adding food from the sheet with the ste
   await expect(sheet.getByLabel('Quantity', { exact: true })).toHaveValue('1.5');
   await sheet.getByRole('button', { name: '7 days' }).click();
   await expectLargeTapTargets(page);
-  await sheet.getByRole('button', { name: 'Save', exact: true }).click();
+  await sheet.getByRole('button', { name: 'Add food', exact: true }).click();
   await expect(page).toHaveURL('/');
   await expect(page.getByText('Added Milk')).toBeVisible();
+});
+
+test('stage 5: everything can be done with the keyboard alone, and each screen has one heading and a main area', async ({
+  page,
+}) => {
+  await register(page, 'Kai Brown');
+  await addFood(page, 'Chicken', '1', 'g');
+
+  // Every screen has one level-1 heading and one main landmark.
+  for (const path of [
+    '/',
+    '/cook-first',
+    '/shopping',
+    '/plan',
+    '/notifications',
+    '/history',
+    '/insights',
+    '/household',
+    '/settings',
+  ]) {
+    await page.goto(path);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+    await expect(page.getByRole('main')).toHaveCount(1);
+  }
+
+  // The first Tab stop is a skip link, which moves to the main area.
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Hi, Kai Brown' })).toBeVisible();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('link', { name: 'Skip to main content' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('main')).toBeFocused();
+
+  // Tab to the Chicken card, open it, and mark it as used, all from the keyboard.
+  // The text of the focused link or button (not of a container such as the main area, which holds everything).
+  const focusedText = () =>
+    page.evaluate(() => {
+      const active = document.activeElement;
+      return active && ['A', 'BUTTON'].includes(active.tagName) ? (active.textContent ?? '') : '';
+    });
+  for (let i = 0; i < 40 && !(await focusedText()).includes('Chicken'); i++) await page.keyboard.press('Tab');
+  expect(await focusedText()).toContain('Chicken');
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/food\//);
+  for (let i = 0; i < 40; i++) {
+    if ((await focusedText()).includes('Mark all as used')) break;
+    await page.keyboard.press('Tab');
+  }
+  expect(await focusedText()).toContain('Mark all as used');
+  await page.keyboard.press('Enter');
+  await expect(page.getByText('Marked as used: Chicken')).toBeVisible();
+  await expect(page).toHaveURL('/');
+
+  // Add food is a dialog: focus goes in, Tab never leaves it, Escape closes it and focus goes back.
+  const addLink = page.getByRole('link', { name: 'Add food', exact: true }).first();
+  await addLink.focus();
+  await page.keyboard.press('Enter');
+  const sheet = page.getByRole('dialog', { name: 'Add food' });
+  await expect(sheet).toBeVisible();
+  await expect(sheet.getByLabel('Food', { exact: true })).toBeFocused();
+  for (let i = 0; i < 40; i++) {
+    await page.keyboard.press('Tab');
+    expect(await page.evaluate(() => Boolean(document.activeElement?.closest('[role="dialog"]')))).toBe(true);
+  }
+  await page.keyboard.press('Escape');
+  await expect(sheet).toHaveCount(0);
+  await expect(page).toHaveURL('/');
 });

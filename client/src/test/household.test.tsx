@@ -52,7 +52,7 @@ describe('a household of one', () => {
     expect(screen.getByRole('button', { name: 'Make an invite code' })).toBeInTheDocument();
     expect(screen.getByLabelText('Invite code')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Leave household' })).not.toBeInTheDocument();
-    expect(screen.getByText('Nothing has happened yet.')).toBeInTheDocument();
+    expect(screen.getByText('Nothing has happened yet')).toBeInTheDocument();
   });
 
   it('makes an invite code and lists it as open', async () => {

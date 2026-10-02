@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import { describeError } from '../lib/errors';
 import {
   addDays,
   bulkCreateSchema,
@@ -210,7 +211,7 @@ export function BulkAddPage() {
       navigate('/');
     } catch (err) {
       if (err instanceof ApiError && err.field) showErrors([err.field, err.message]);
-      else setErrors({ form: err instanceof Error ? err.message : 'Could not save. Try again.' });
+      else setErrors({ form: describeError(err, 'add those items') });
       setBusy(false);
     }
   }

@@ -1,10 +1,10 @@
 import type { AppNotification, ReminderType } from '@cook-first/shared';
 import { useEffect } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { EstimateNote } from '../components/Urgency';
-import { Button, EmptyState, SkeletonList } from '../components/ui';
-import { reminderTypeLabel, screenCopy } from '../copy';
+import { Button, EmptyState, SkeletonList, LoadError } from '../components/ui';
+import { reminderTypeLabel, screenCopy, emptyCopy } from '../copy';
 import { formatInstant } from '../lib/format';
 import { useNotificationStore } from '../stores/notificationStore';
 
@@ -16,6 +16,7 @@ const TYPE_DOT: Record<ReminderType, string> = {
 };
 
 export function NotificationsPage() {
+  const navigate = useNavigate();
   const { items, total, loading, error, openFeed, loadMore } = useNotificationStore();
 
   // Opening this screen is what marks reminders as read.
@@ -30,15 +31,14 @@ export function NotificationsPage() {
       <PageHeader title="Reminders" subtitle={newCount ? `${newCount} new` : undefined} back="/" />
       <PageBody narrow>
         {loading && items.length === 0 && <SkeletonList />}
-        {error && (
-          <EmptyState title={screenCopy.reminders.loadError}>
-            <Button variant="secondary" className="mt-4" onClick={() => openFeed()}>
-              Try again
-            </Button>
-          </EmptyState>
-        )}
+        {error && <LoadError title={screenCopy.reminders.loadError} onRetry={() => void openFeed()} />}
         {!loading && !error && items.length === 0 && (
-          <EmptyState title="No reminders yet">{screenCopy.reminders.emptyBody}</EmptyState>
+          <EmptyState
+            title={emptyCopy.reminders.title}
+            action={<Button onClick={() => navigate('/settings')}>{emptyCopy.reminders.action}</Button>}
+          >
+            {screenCopy.reminders.emptyBody}
+          </EmptyState>
         )}
         <ul className="space-y-2">
           {items.map((n) => (

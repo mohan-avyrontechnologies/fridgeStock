@@ -2,12 +2,13 @@ import { formatDisplay, type ActivityEvent, type Household } from '@cook-first/s
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { Button, EmptyState, Field, FormError, SectionTitle, SkeletonList, Card } from '../components/ui';
-import { householdCopy as copy } from '../copy';
+import { Button, EmptyState, Field, FormError, SectionTitle, SkeletonList, Card, LoadError } from '../components/ui';
+import { householdCopy as copy, emptyCopy } from '../copy';
 import { formatInstant } from '../lib/format';
 import { useFoodStore } from '../stores/foodStore';
 import { useNotificationStore } from '../stores/notificationStore';
 import { useToastStore } from '../stores/toastStore';
+import { useNavigate } from 'react-router';
 
 const PAGE = 20;
 
@@ -19,6 +20,7 @@ function activityText(event: ActivityEvent): string {
 
 /** Who is in the household, invites, joining or leaving, and what everyone has done. */
 export function HouseholdPage() {
+  const navigate = useNavigate();
   const toast = useToastStore((s) => s.show);
   const [household, setHousehold] = useState<Household | null>(null);
   const [loadError, setLoadError] = useState(false);
@@ -37,6 +39,7 @@ export function HouseholdPage() {
     setHasMore(log.hasMore);
   }, []);
 
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     Promise.all([api.household(), api.householdActivity(0, PAGE)]).then(
       ([h, log]) => {
@@ -46,7 +49,7 @@ export function HouseholdPage() {
       },
       () => setLoadError(true),
     );
-  }, []);
+  }, [attempt]);
 
   /** What each person sees changes when the household does, so refresh the other screens' data. */
   async function afterChange(h: Household) {
@@ -126,7 +129,15 @@ export function HouseholdPage() {
     <>
       <PageHeader title={copy.title} subtitle={copy.subtitle} back="/settings" />
       <PageBody narrow>
-        {loadError && <EmptyState title={copy.loadError} />}
+        {loadError && (
+          <LoadError
+            title={copy.loadError}
+            onRetry={() => {
+              setLoadError(false);
+              setAttempt((n) => n + 1);
+            }}
+          />
+        )}
         {!household && !loadError && <SkeletonList />}
         {household && (
           <>
@@ -137,7 +148,7 @@ export function HouseholdPage() {
               <Card as="ul" className="divide-y divide-line overflow-hidden">
                 {household.members.map((m) => (
                   <li key={m.id} className="flex items-center gap-3 px-4 py-3">
-                    <span className="min-w-0 flex-1 truncate font-semibold">{m.name}</span>
+                    <span className="min-w-0 flex-1 break-words font-semibold">{m.name}</span>
                     {m.isYou && (
                       <span className="rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-brand">
                         {copy.you}
@@ -242,7 +253,14 @@ export function HouseholdPage() {
 
             <section aria-labelledby="activity">
               <SectionTitle id="activity">{copy.activityTitle}</SectionTitle>
-              {events && events.length === 0 && <EmptyState title={copy.activityEmpty} />}
+              {events && events.length === 0 && (
+                <EmptyState
+                  title={emptyCopy.householdActivity.title}
+                  action={<Button onClick={() => navigate('/add')}>{emptyCopy.householdActivity.action}</Button>}
+                >
+                  {emptyCopy.householdActivity.body}
+                </EmptyState>
+              )}
               {events && events.length > 0 && (
                 <Card as="ul" className="divide-y divide-line overflow-hidden">
                   {events.map((event) => (

@@ -324,8 +324,8 @@ export function CameraScreen({ onDone, onClose }: Props) {
                       />
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold">{item.name}</p>
-                      <p className="truncate text-sm text-muted">
+                      <p className="break-words font-semibold">{item.name}</p>
+                      <p className="break-words text-sm text-muted">
                         {[
                           item.quantity !== undefined && item.unit ? formatQuantity(item.quantity, item.unit) : null,
                           item.brand ?? item.category,
