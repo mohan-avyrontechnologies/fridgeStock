@@ -80,6 +80,7 @@ describe('AI setup', () => {
     const s = await registerUser();
     expect((await s.auth(api().get('/api/ai/status'))).body).toEqual({
       enabled: false,
+      photoCheck: false,
       dailyLimit: AI_DAILY_LIMIT,
       usedToday: 0,
     });
@@ -264,6 +265,7 @@ describe('AI daily limit', () => {
     await s.auth(api().post('/api/ai/recipes')).expect(200);
     expect((await s.auth(api().get('/api/ai/status'))).body).toEqual({
       enabled: true,
+      photoCheck: false, // the feature flag is off unless a test turns it on
       dailyLimit: 20,
       usedToday: 1,
     });

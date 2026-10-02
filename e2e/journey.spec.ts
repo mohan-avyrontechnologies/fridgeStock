@@ -83,6 +83,22 @@ async function expectLargeTapTargets(page: Page) {
 }
 
 /** Viewport-sized, after animations settle, as the user would see it. */
+/** A 1 x 1 PNG: enough for the browser to decode; the stand-in AI doesn't look at it. */
+const PNG = {
+  name: 'photo.png',
+  mimeType: 'image/png',
+  buffer: Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64',
+  ),
+};
+
+/** Chooses what the stand-in AI says about the next photo: milk, mouldy or unsure. */
+async function nextPhoto(scenario: 'milk' | 'mouldy' | 'unsure') {
+  const res = await fetch('http://localhost:4102/__photo', { method: 'POST', body: JSON.stringify({ scenario }) });
+  expect(res.ok).toBe(true);
+}
+
 const REQUIRED_LINE = 'Expected expiry is an estimate to help you plan. Always check your food before eating it.';
 
 async function shot(page: Page, name: string) {
@@ -443,13 +459,14 @@ test('phase 4: leftovers, a shopping list that warns about food at home, and a w
   await expect(page).toHaveURL('/');
   await expect(allFood(page).filter({ hasText: 'Leftover curry' }).getByText('Leftovers')).toBeVisible();
 
-  // AI is off in the tests, so no AI buttons appear.
+  // AI is on in the tests (a local stand-in answers), so the AI buttons appear.
   await page
+    .getByRole('navigation', { name: 'Main' })
     .getByRole('link', { name: /^Cook First/ })
-    .first()
     .click();
-  await expect(page.getByRole('heading', { name: 'Cook First', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Suggest recipes' })).toHaveCount(0);
+  await expect(page).toHaveURL('/cook-first');
+  await expect(page.getByRole('heading', { name: 'Cook First', level: 1 })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Suggest recipes' })).toBeVisible();
 
   // Shopping list: a warning when it's already at home.
   await page.getByRole('link', { name: 'Shopping', exact: true }).first().click();
@@ -471,7 +488,7 @@ test('phase 4: leftovers, a shopping list that warns about food at home, and a w
     .first()
     .click();
   await expect(page.getByRole('heading', { name: 'Today' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Suggest meals for empty days' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Suggest meals for empty days' })).toBeVisible();
   await page.getByRole('button', { name: 'Plan a meal' }).nth(1).click();
   await page.getByLabel('Meal').fill('Chicken curry');
   await page.getByRole('button', { name: 'Chicken', exact: true }).click();
@@ -641,9 +658,7 @@ test('phase 6: two people share a household, see each other’s food and activit
   await expect(allFood(alicePage).filter({ hasText: 'Milk' })).toHaveCount(1);
 });
 
-test('phase 6: scanning a barcode fills in the form; receipt scanning needs AI so it is not offered', async ({
-  page,
-}) => {
+test('phase 6: scanning a barcode fills in the form, and a receipt photo becomes rows to check', async ({ page }) => {
   await register(page, 'Kiran Rao');
   await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
 
@@ -677,8 +692,102 @@ test('phase 6: scanning a barcode fills in the form; receipt scanning needs AI s
   await expect(allFood(page).filter({ hasText: 'Whole milk' })).toHaveCount(1);
   await expectNoSafetyClaim(page);
 
-  // Receipts are read by the AI, which is off in the tests.
+  // A receipt photo is read by the (stand-in) AI into rows to check; nothing is saved until Add.
   await page.goto('/add/bulk');
   await expect(page.getByLabel('Item 1 name')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Scan a receipt' })).toHaveCount(0);
+  await page.getByLabel('Receipt photo').setInputFiles(PNG);
+  await expect(page.getByLabel('Item 1 name')).toHaveValue('Milk');
+  await expect(page.getByLabel('Item 1 quantity')).toHaveValue('2');
+  await expect(page.getByLabel('Item 1 unit')).toHaveValue('l');
+  await expect(page.getByLabel('Item 1 price')).toHaveValue('2.4');
+  await expect(page.getByLabel('Item 1 lifespan in days')).toHaveValue('5');
+  await expect(page.getByLabel('Item 2 name')).toHaveValue('Potatoes');
+  await expect(page.getByLabel('Item 2 kept in')).toHaveValue('PANTRY');
+  await expect(page.getByText(/Read from a photo, so check each line/)).toBeVisible();
+  await shot(page, '22-receipt');
+  await page.getByRole('button', { name: 'Add 2 items' }).click();
+  await expect(page).toHaveURL('/');
+  await expect(allFood(page).filter({ hasText: 'Potatoes' })).toHaveCount(1);
+});
+
+test('phase 7: Photo Check names food on Add Food, and warns on Food Details without changing anything by itself', async ({
+  page,
+}) => {
+  await register(page, 'Tara Nair');
+  await addFood(page, 'Bread', '5', 'pack');
+
+  // Add Food: a confident photo pre-fills the name and the usual lifespan; the name stays editable.
+  await nextPhoto('milk');
+  await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
+  await page.getByLabel('Food photo').setInputFiles(PNG);
+  await expect(page.getByLabel('Food', { exact: true })).toHaveValue('Milk');
+  await expect(page.getByLabel('Lifespan (days)')).toHaveValue('5');
+  await page.getByLabel('Food', { exact: true }).fill('Oat milk');
+  await expect(page.getByLabel('Food', { exact: true })).toHaveValue('Oat milk');
+  // No warning signs: nothing is said about condition.
+  await expect(page.getByText(/Visible signs noticed/)).toHaveCount(0);
+
+  // Not sure enough: it asks for the name instead of guessing.
+  await nextPhoto('unsure');
+  await page.reload();
+  await page.getByLabel('Food photo').setInputFiles(PNG);
+  await expect(page.getByText('I couldn’t tell what this is from the photo. Type the name instead.')).toBeVisible();
+  await expect(page.getByLabel('Food', { exact: true })).toHaveValue('');
+
+  // Add Food with a warning: shown, but only Dismiss (there is no item to waste yet).
+  await nextPhoto('mouldy');
+  await page.reload();
+  await page.getByLabel('Food photo').setInputFiles(PNG);
+  const addWarning = page.getByRole('group', { name: 'Visible signs noticed' });
+  await expect(addWarning).toContainText(
+    'Visible signs noticed: green patches on the crust; dark spots near the edge.',
+  );
+  await expect(addWarning.getByRole('button')).toHaveText(['Dismiss']);
+  await expect(page.getByLabel('Food', { exact: true })).toHaveValue('Bread');
+
+  // Food Details: no signs, so nothing about condition; just a neutral "Photo checked".
+  await page.goto('/');
+  await page.getByRole('link', { name: /Bread/ }).first().click();
+  await expect(page.getByRole('heading', { name: 'Bread' })).toBeVisible();
+  await nextPhoto('milk');
+  await page.getByLabel('Food photo').setInputFiles(PNG);
+  await expect(page.getByText('Photo checked')).toBeVisible();
+  await expect(page.getByText(/Visible signs noticed/)).toHaveCount(0);
+
+  // With warning signs: the sentence and all three options (the item is not due yet).
+  await nextPhoto('mouldy');
+  await page.getByLabel('Food photo').setInputFiles(PNG);
+  const warning = page.getByRole('group', { name: 'Visible signs noticed' });
+  await expect(warning).toContainText(
+    'Visible signs noticed: green patches on the crust; dark spots near the edge. A photo can’t show everything, so check the item yourself before using it.',
+  );
+  await expect(warning.getByRole('button')).toHaveText(['Mark as wasted', 'Use today', 'Dismiss']);
+  await expectNoSafetyClaim(page);
+  await expectNoHorizontalScroll(page);
+  await expectLargeTapTargets(page);
+  await page.getByRole('region', { name: 'Photo Check' }).screenshot({
+    path: `e2e/screenshots/${test.info().project.name}/23-photo-check.png`,
+  });
+
+  // Nothing has changed yet, and "Use today" asks first.
+  await expect(page.getByText('Not urgent')).toBeVisible();
+  await warning.getByRole('button', { name: 'Use today' }).click();
+  await expect(warning.getByText('Make Bread due today? Its expected expiry will change to today.')).toBeVisible();
+  await warning.getByRole('button', { name: 'Cancel' }).click();
+  await expect(page.getByText('Not urgent')).toBeVisible();
+  await warning.getByRole('button', { name: 'Use today' }).click();
+  await warning.getByRole('button', { name: 'Yes, use today' }).click();
+  await expect(page.getByText('Bread is now due today')).toBeVisible();
+  await expect(page.getByText('Not urgent')).toHaveCount(0);
+  await expect(page.getByText('Expected expiry today').first()).toBeVisible();
+  // It is due today, so a new warning offers only Mark as wasted and Dismiss.
+  await page.getByLabel('Food photo').setInputFiles(PNG);
+  await expect(page.getByRole('group', { name: 'Visible signs noticed' }).getByRole('button')).toHaveText([
+    'Mark as wasted',
+    'Dismiss',
+  ]);
+
+  // The checks are in the household's activity log.
+  await page.goto('/household');
+  await expect(page.getByText('Tara Nair checked Bread with a photo').first()).toBeVisible();
 });

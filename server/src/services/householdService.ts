@@ -195,7 +195,7 @@ export async function getActivity(user: UserDoc, { limit, offset }: Pagination):
       id: `event:${event._id}`,
       type: event.type,
       actor: event.actorName,
-      foodName: null,
+      foodName: event.foodName ?? null,
       at: (event.get('createdAt') as Date).toISOString(),
     })),
   ].sort((a, b) => (a.at === b.at ? (a.id < b.id ? 1 : -1) : a.at < b.at ? 1 : -1));

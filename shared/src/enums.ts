@@ -24,6 +24,19 @@ export type UsageAction = (typeof USAGE_ACTIONS)[number];
 export const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'INR'] as const;
 export type Currency = (typeof CURRENCIES)[number];
 
+/** What a photo check can point out. There is deliberately no value for "looks fine": the AI may only report problems. */
+export const WARNING_SIGN_TYPES = [
+  'MOULD',
+  'DISCOLOURATION',
+  'WILTING',
+  'SLIME',
+  'BRUISING',
+  'DAMAGED_PACKAGING',
+  'SWOLLEN_PACKAGING',
+  'OTHER',
+] as const;
+export type WarningSignType = (typeof WARNING_SIGN_TYPES)[number];
+
 /** Things that show in a household's activity log. */
 export const ACTIVITY_TYPES = [
   'FOOD_ADDED',
@@ -33,6 +46,7 @@ export const ACTIVITY_TYPES = [
   'REMOVED',
   'MEMBER_JOINED',
   'MEMBER_LEFT',
+  'PHOTO_CHECKED',
 ] as const;
 export type ActivityType = (typeof ACTIVITY_TYPES)[number];
 

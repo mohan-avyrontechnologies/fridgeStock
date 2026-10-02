@@ -1,6 +1,7 @@
 import type { DateString } from './dates.js';
 import type {
   ActivityType,
+  WarningSignType,
   Currency,
   FoodStatus,
   NotificationStatus,
@@ -200,6 +201,8 @@ export interface PushPayload {
 /** GET /ai/status. AI features are shown only when `enabled`. */
 export interface AiStatus {
   enabled: boolean;
+  /** Photo Check is on: the feature flag is set and AI is enabled. */
+  photoCheck: boolean;
   dailyLimit: number;
   usedToday: number;
 }
@@ -386,4 +389,20 @@ export interface ReceiptDraft {
   /** The shopping date printed on the receipt, if it is clear and not in the future. */
   purchaseDate: DateString | null;
   items: ReceiptItem[];
+}
+
+/** A problem a photo shows. The app never reports anything good about a photo. */
+export interface WarningSign {
+  type: WarningSignType;
+  description: string;
+}
+
+/** What the AI made of a photo of food. There is no field for good or normal condition. */
+export interface PhotoCheck {
+  name: string;
+  category: string;
+  /** How sure the identification is, from 0 to 1. */
+  confidence: number;
+  /** Visible problems only; empty when none were seen (which is never shown as a result). */
+  warningSigns: WarningSign[];
 }

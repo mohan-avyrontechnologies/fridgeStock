@@ -19,8 +19,8 @@ import { PageBody, PageHeader } from '../components/AppShell';
 import { EstimateNote } from '../components/Urgency';
 import { Button, Chip, Field, FormError, Spinner } from '../components/ui';
 import { bulkCopy, receiptCopy, referenceCopy, storageLabel } from '../copy';
-import { photoForReceipt } from '../lib/image';
-import { suggestFor } from '../lib/suggestions';
+import { photoForUpload } from '../lib/image';
+import { firstSuggestion, suggestFor } from '../lib/suggestions';
 import { check } from '../lib/validation';
 import { useAiStore } from '../stores/aiStore';
 import { useSuggestionStore } from '../stores/suggestionStore';
@@ -50,9 +50,6 @@ const emptyRow = (): Row => ({
   price: '',
 });
 
-/** Where a food is most often kept, in the order to try when a receipt doesn't say. */
-const STORAGE_ORDER: StorageLocation[] = ['FRIDGE', 'PANTRY', 'FREEZER'];
-
 /** A row from a receipt line, with a lifespan suggested from your own usual first, then the reference list. */
 function rowFromReceipt(item: ReceiptItem, learned: LearnedLifespan[]): Row {
   const base: Row = {
@@ -62,11 +59,8 @@ function rowFromReceipt(item: ReceiptItem, learned: LearnedLifespan[]): Row {
     unit: item.unit,
     price: item.price === null ? '' : String(item.price),
   };
-  for (const storage of STORAGE_ORDER) {
-    const suggestion = suggestFor(item.name, storage, learned);
-    if (suggestion && suggestion.days !== null) return { ...base, storage, lifespan: String(suggestion.days) };
-  }
-  return base;
+  const suggestion = firstSuggestion(item.name, learned);
+  return suggestion ? { ...base, storage: suggestion.storage, lifespan: String(suggestion.days) } : base;
 }
 const toNumber = (value: string) => (value.trim() === '' ? undefined : Number(value));
 const isBlank = (row: Row) => !row.name.trim() && !row.lifespan.trim();
@@ -107,7 +101,7 @@ export function BulkAddPage() {
     setReading(true);
     setErrors({});
     try {
-      const draft = await api.readReceipt(await photoForReceipt(file));
+      const draft = await api.readReceipt(await photoForUpload(file));
       if (draft.items.length === 0) {
         toast(receiptCopy.none);
         return;

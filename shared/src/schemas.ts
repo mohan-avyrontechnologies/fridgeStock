@@ -53,6 +53,9 @@ export const MESSAGES = {
   barcode: 'Enter the 8 to 14 digits printed under the barcode.',
   receiptImage: 'Choose a photo of your receipt (JPEG, PNG or WebP).',
   receiptTooBig: 'That photo is too large. Try a smaller one.',
+  photoCheckOff: 'Photo Check isn’t turned on for this app.',
+  photoFood: 'Choose one of your own food items.',
+  alreadyDue: 'This item is already due today or overdue.',
   openedDate: "Opened date must be a valid date that isn't in the future or before the added date.",
   bulkEmpty: 'Add at least one item.',
   bulkTooMany: 'Add at most 50 items at once.',
@@ -304,6 +307,7 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type JoinHouseholdInput = z.infer<typeof joinHouseholdSchema>;
 export type ReceiptInput = z.infer<typeof receiptSchema>;
+export type PhotoCheckInput = z.infer<typeof photoCheckSchema>;
 export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
 export type UpdateAccountInput = z.infer<typeof updateAccountSchema>;
 export type FoodInput = z.infer<typeof createFoodSchema>;
@@ -321,3 +325,17 @@ export type BulkCreateInput = z.infer<typeof bulkCreateSchema>;
 export type FavouriteInput = z.infer<typeof favouriteSchema>;
 export type OpenFoodInput = z.infer<typeof openFoodSchema>;
 export type MoveFoodInput = z.infer<typeof moveFoodSchema>;
+
+/** Below this confidence a photo's identification is not used to pre-fill a name (on a scale of 0 to 1). */
+export const PHOTO_CONFIDENCE_MIN = 0.6;
+
+/**
+ * POST /parse/photo: a photo of food, as base64 text without the "data:" prefix.
+ * `foodId` is set when the photo is of an item already in the household (Food Details).
+ */
+export const photoCheckSchema = receiptSchema.extend({
+  foodId: z
+    .string()
+    .regex(/^[0-9a-f]{24}$/i, MESSAGES.photoFood)
+    .optional(),
+});

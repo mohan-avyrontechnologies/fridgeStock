@@ -14,7 +14,7 @@ export function createApp() {
   app.use(cors({ origin: env.clientOrigins }));
   // A receipt photo is far larger than any other request. Only this route may be big; the parser
   // runs first, and the 20 KB one below then leaves a body that is already parsed alone.
-  app.use('/api/parse/receipt', express.json({ limit: RECEIPT_BODY_LIMIT }));
+  app.use(['/api/parse/receipt', '/api/parse/photo'], express.json({ limit: RECEIPT_BODY_LIMIT }));
   app.use(express.json({ limit: '20kb' }));
 
   if (!env.isTest) {

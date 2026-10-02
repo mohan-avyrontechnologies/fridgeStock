@@ -177,6 +177,24 @@ export async function createFood(user: UserDoc, input: FoodInput): Promise<FoodI
   return toFoodView(food, today);
 }
 
+/**
+ * Makes an item due today. It can only bring the expected expiry forward: an item that is already due
+ * today or overdue is a 409, so this can never extend one. (Photo Check offers it when a photo shows
+ * warning signs; the person confirms first.) The lifespan an item was entered with is left alone, so
+ * your usual lifespans aren't learned from it.
+ */
+export async function useToday(user: UserDoc, id: string): Promise<FoodItem> {
+  const today = clock.today(user.timeZone);
+  const food = await findOwned(user, id);
+  assertActive(food);
+  if (food.expiryDate <= today) throw conflict(MESSAGES.alreadyDue);
+  food.lifespanDays = diffDays(food.addedDate, today);
+  food.expiryDate = today;
+  await food.save();
+  await scheduleForHousehold(food);
+  return toFoodView(food, today);
+}
+
 /** Edits an active item. Changing the added date or lifespan recalculates the expiry and reschedules reminders. */
 export async function updateFood(user: UserDoc, id: string, input: FoodUpdateInput): Promise<FoodItem> {
   const today = clock.today(user.timeZone);

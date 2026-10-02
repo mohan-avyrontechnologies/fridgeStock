@@ -35,6 +35,8 @@ import type {
   Household,
   HouseholdInvite,
   JoinHouseholdInput,
+  PhotoCheck,
+  PhotoCheckInput,
   ProductLookup,
   ReceiptDraft,
   ReceiptInput,
@@ -182,6 +184,12 @@ export const api = {
 
   // POST /parse/receipt
   readReceipt: (body: ReceiptInput) => request<ReceiptDraft>('POST', '/parse/receipt', body),
+
+  // POST /parse/photo
+  checkPhoto: (body: PhotoCheckInput) => request<PhotoCheck>('POST', '/parse/photo', body),
+
+  // POST /foods/:id/use-today
+  useToday: (id: string) => request<FoodItem>('POST', `/foods/${id}/use-today`),
 
   // GET /insights
   insights: () => request<Insights>('GET', '/insights'),

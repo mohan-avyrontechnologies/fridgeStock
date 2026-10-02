@@ -50,5 +50,7 @@ export const handlers = [
   http.get(`${API_URL}/suggestions/lifespans`, () => HttpResponse.json({ items: [] })),
   http.get(`${API_URL}/notifications/delivery`, () => HttpResponse.json({ mode: 'DIGEST', hour: 8 })),
   http.get(`${API_URL}/push/config`, () => HttpResponse.json({ publicKey: null })),
-  http.get(`${API_URL}/ai/status`, () => HttpResponse.json({ enabled: false, dailyLimit: 20, usedToday: 0 })),
+  http.get(`${API_URL}/ai/status`, () =>
+    HttpResponse.json({ enabled: false, photoCheck: false, dailyLimit: 20, usedToday: 0 }),
+  ),
 ];

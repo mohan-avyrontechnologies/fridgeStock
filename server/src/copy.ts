@@ -87,6 +87,31 @@ export const aiPrompts = {
       'Also give purchaseDate as YYYY-MM-DD if the shopping date is clearly printed, otherwise null.',
     ].join('\n'),
 
+  /** Photo Check. It may only report visible problems, never anything good. */
+  photoSystem: [
+    'You look at a photo of food for a home cook and report only what you can see.',
+    'Rules for everything you write:',
+    '- Name the product, and say how sure you are of the name.',
+    '- List visible warning signs only, each with one allowed type and a short, plain description of what is visible, like "white fuzzy patches on the surface".',
+    '- If you see no warning signs, return an empty list. Never write anything about the food looking good, fresh, normal or fine.',
+    '- Never say whether any food is fit, okay or fine to eat, keep or throw away.',
+    '- Plain, short British English.',
+    'Reply only with JSON that matches the schema.',
+  ].join('\n'),
+
+  photo: (knownNames: string[]) =>
+    [
+      'This is a photo of one food item or its packaging.',
+      'Give:',
+      '- name: a short generic name without brand or size, like "Milk" or "Chicken". Use one of these exact names when it fits: ' +
+        knownNames.join(', ') +
+        '.',
+      '- category: one or two words, like "dairy" or "vegetables".',
+      '- confidence: a number from 0 to 1 for how sure you are of the name.',
+      '- warningSigns: a list of visible problems only. Each has a type (MOULD, DISCOLOURATION, WILTING, SLIME, BRUISING, DAMAGED_PACKAGING, SWOLLEN_PACKAGING or OTHER) and a short description of what you can see.',
+      'A photo cannot show everything. Report only what is visible, and leave the list empty if you see nothing.',
+    ].join('\n'),
+
   recipes: (cookFirst: string[], others: string[]) =>
     [
       'My Cook First list, most urgent first:',

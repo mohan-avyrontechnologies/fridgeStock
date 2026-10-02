@@ -12,6 +12,7 @@ const vapid = webpush.generateVAPIDKeys();
 const API_PORT = 4100;
 const WEB_PORT = 5174;
 const PRODUCTS_PORT = 4101;
+const AI_PORT = 4102;
 
 export default defineConfig({
   testDir: 'e2e',
@@ -43,6 +44,15 @@ export default defineConfig({
   ],
   webServer: [
     {
+      // A stand-in for the Anthropic API: the real SDK talks to it, so the AI features run end to end
+      // with no key and no internet. Tests choose the next Photo Check answer with POST /__photo.
+      command: 'node e2e/stub-anthropic.mjs',
+      url: `http://localhost:${AI_PORT}/health`,
+      timeout: 30_000,
+      reuseExistingServer: false,
+      env: { STUB_ANTHROPIC_PORT: String(AI_PORT) },
+    },
+    {
       // A stand-in for the product database, so barcode look-ups never reach the internet.
       command: 'node e2e/stub-products.mjs',
       url: `http://localhost:${PRODUCTS_PORT}/health`,
@@ -62,9 +72,11 @@ export default defineConfig({
         PRODUCT_LOOKUP_URL: `http://localhost:${PRODUCTS_PORT}`,
         // The journeys sign up more than 20 accounts from one IP; the limit itself is unit-tested (rules.test.ts).
         AUTH_RATE_LIMIT: 'off',
-        // Never the real Claude API: an empty key keeps AI off even if server/.env has one
-        // (dotenv doesn't override variables that are already set).
-        ANTHROPIC_API_KEY: '',
+        // Never the real Claude API: the key is a dummy and the SDK is pointed at the local stand-in
+        // (dotenv doesn't override variables that are already set, so server/.env can't change this).
+        ANTHROPIC_API_KEY: 'e2e-stand-in-key',
+        ANTHROPIC_BASE_URL: `http://localhost:${AI_PORT}`,
+        PHOTO_CHECK: 'on',
         MONGO_URI: '',
         CLIENT_ORIGIN: `http://localhost:${WEB_PORT}`,
         VAPID_PUBLIC_KEY: vapid.publicKey,

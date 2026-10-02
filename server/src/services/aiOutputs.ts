@@ -1,4 +1,4 @@
-import { UNITS } from '@cook-first/shared';
+import { UNITS, WARNING_SIGN_TYPES } from '@cook-first/shared';
 import { z } from 'zod';
 
 /**
@@ -107,3 +107,50 @@ export const receiptOutput = z.object({
     .max(60),
 });
 export type ReceiptOutput = z.infer<typeof receiptOutput>;
+
+/**
+ * Photo Check. The answer has a name, a category, how sure it is, and a list of
+ * visible problems. There is no field for good or normal condition, and `strict()`
+ * rejects anything outside this shape, so the AI has nowhere to put one.
+ */
+export const photoCheckJsonSchema = {
+  type: 'object',
+  properties: {
+    name: { type: 'string' },
+    category: { type: 'string' },
+    confidence: { type: 'number' },
+    warningSigns: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          type: { type: 'string', enum: [...WARNING_SIGN_TYPES] },
+          description: { type: 'string' },
+        },
+        required: ['type', 'description'],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ['name', 'category', 'confidence', 'warningSigns'],
+  additionalProperties: false,
+};
+
+export const photoCheckOutput = z
+  .object({
+    name: z.string().trim().min(1).max(60),
+    category: z.string().trim().min(1).max(40),
+    confidence: z.number().min(0).max(1),
+    warningSigns: z
+      .array(
+        z
+          .object({
+            type: z.enum(WARNING_SIGN_TYPES),
+            description: z.string().trim().min(1).max(120),
+          })
+          .strict(),
+      )
+      .max(8),
+  })
+  .strict();
+export type PhotoCheckOutput = z.infer<typeof photoCheckOutput>;

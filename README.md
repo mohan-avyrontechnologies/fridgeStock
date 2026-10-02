@@ -6,8 +6,8 @@ A mobile-first web app that helps a household use perishable food before it goes
 
 | | |
 |---|---|
-| **Status** | MVP complete; post-MVP Phases 1 (faster entry), 2 (realistic estimates), 3 (better reminders), 4 (using the food), 5 (insights) and 6 (dark mode, data export, account deletion, shared households) complete, and barcode and receipt scanning complete; voice entry, extra languages and grocery integrations are not built. Not yet deployed. |
-| **Version** | 2.12.0 (see the [Changelog](#changelog)) |
+| **Status** | MVP complete; post-MVP Phases 1 (faster entry), 2 (realistic estimates), 3 (better reminders), 4 (using the food), 5 (insights) and 6 (dark mode, data export, account deletion, shared households) complete, barcode and receipt scanning, and 7 (Photo Check, behind a feature flag) complete; voice entry, extra languages and grocery integrations are not built. Not yet deployed. |
+| **Version** | 2.13.0 (see the [Changelog](#changelog)) |
 | **Requires** | Node.js 20.19 or later |
 | **Specifications** | PFCP BRD v2.0, FRD v1.0, SRD v1.0, TDD v1.0 (internal documents, not stored in this repo) |
 | **Repository** | `github.com/rugvailabs/cook_first` |
@@ -48,9 +48,9 @@ These screenshots are captured automatically by the Playwright test suite.
 
 **Phone (Pixel 7)**
 
-| Dashboard | Cook First | Recording what happened | Add food | Bulk add | Opened | Move | Push reminders | Shopping | Meal plan | Insights | Household | Barcode |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| ![Dashboard on a phone](docs/screenshots/mobile-02-dashboard.png) | ![Cook First on a phone](docs/screenshots/mobile-03-cook-first.png) | ![Action sheet on a phone](docs/screenshots/mobile-04-action-sheet.png) | ![Add food on a phone](docs/screenshots/mobile-07-add-food.png) | ![Bulk add on a phone](docs/screenshots/mobile-11-bulk-add.png) | ![Marking milk as opened on a phone](docs/screenshots/mobile-12-opened.png) | ![Moving chicken to the freezer on a phone](docs/screenshots/mobile-13-move.png) | ![Push reminder settings on a phone](docs/screenshots/mobile-14-push-settings.png) | ![Shopping list on a phone](docs/screenshots/mobile-15-shopping.png) | ![Meal plan on a phone](docs/screenshots/mobile-16-plan.png) | ![Insights on a phone](docs/screenshots/mobile-17-insights.png) | ![Household on a phone](docs/screenshots/mobile-20-household.png) | ![Barcode scanning on a phone](docs/screenshots/mobile-21-barcode.png) |
+| Dashboard | Cook First | Recording what happened | Add food | Bulk add | Opened | Move | Push reminders | Shopping | Meal plan | Insights | Household | Barcode | Photo Check |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| ![Dashboard on a phone](docs/screenshots/mobile-02-dashboard.png) | ![Cook First on a phone](docs/screenshots/mobile-03-cook-first.png) | ![Action sheet on a phone](docs/screenshots/mobile-04-action-sheet.png) | ![Add food on a phone](docs/screenshots/mobile-07-add-food.png) | ![Bulk add on a phone](docs/screenshots/mobile-11-bulk-add.png) | ![Marking milk as opened on a phone](docs/screenshots/mobile-12-opened.png) | ![Moving chicken to the freezer on a phone](docs/screenshots/mobile-13-move.png) | ![Push reminder settings on a phone](docs/screenshots/mobile-14-push-settings.png) | ![Shopping list on a phone](docs/screenshots/mobile-15-shopping.png) | ![Meal plan on a phone](docs/screenshots/mobile-16-plan.png) | ![Insights on a phone](docs/screenshots/mobile-17-insights.png) | ![Household on a phone](docs/screenshots/mobile-20-household.png) | ![Barcode scanning on a phone](docs/screenshots/mobile-21-barcode.png) | ![Photo Check on a phone](docs/screenshots/mobile-23-photo-check.png) |
 
 **Desktop (1440 × 900)**
 
@@ -76,6 +76,7 @@ These screenshots are captured automatically by the Playwright test suite.
 | **Reminders** | In-app under the bell, always. Sent 3 days before expiry, on the expiry day, and the day after. Each type can be turned off in Settings. They're delivered whenever you open the dashboard or the Reminders screen, and by an hourly job. They count as read once you open the Reminders screen. |
 | **Barcode scanning** | **Scan a barcode** on Add Food opens a panel. With the **camera** (where the browser has `BarcodeDetector`: Chrome on Android and desktop) or by **typing the number** under the barcode (always available, so Safari and Firefox work too). The number's check digit is verified first; then the **server** looks it up in **Open Food Facts** (free, no key) and returns the name, first brand and pack size. Add Food is filled in with the name, quantity and unit (with the brand in notes) and **how long it lasts is still your choice**. An unknown barcode, a failed look-up or a name that would break the wording rules just asks you to type the name. |
 | **Receipt scanning** | With AI on, **Scan a receipt** on Bulk add takes a photo, scales it to 1600 px in the browser and sends it to Claude, which returns the **food lines only** (name, quantity, unit, price, and the shopping date if clear). They become rows to check: lifespans are suggested from your usual ones, then the reference list, and **nothing is saved until you press Add**. The photo is used for that one request and never stored or logged; each scan counts toward the 20 daily AI requests. |
+| **Photo Check** | Behind a feature flag (`PHOTO_CHECK=on`) and only when AI is on; otherwise **no photo controls are shown**. **Identify from a photo** on Add Food and **Check with photo** on Food Details. The photo is scaled to 1600 px in the browser and sent to Claude, which returns a **name, category, confidence and visible warning signs** (`MOULD`, `DISCOLOURATION`, `WILTING`, `SLIME`, `BRUISING`, `DAMAGED_PACKAGING`, `SWOLLEN_PACKAGING`, `OTHER`); the answer has **no field for good or normal condition**, and anything outside that shape is refused. **Add Food:** a confident name (0.6 or more, one constant in `shared`) pre-fills the name and, for a known food, its usual lifespan and place; below 0.6 you are asked to type the name; the name is always editable. **Warning signs:** "Visible signs noticed: …. A photo can’t show everything, so check the item yourself before using it." On Food Details with three options: **Mark as wasted**, **Use today** (asks first; shown only when the expected expiry is later than today, so it can only ever move earlier) and **Dismiss**; on Add Food only Dismiss, because there is no item yet. **No signs: nothing about condition is shown**, only a neutral "Photo checked". Nothing changes without your confirmation, and the Cook First order only changes through the resulting expected expiry. Each check counts toward the 20 daily AI requests, all AI text (including each warning) is checked for banned wording, the photo is never stored or logged, and each check is recorded in the household activity log as who checked which food (never the photo or the result). |
 | **Faster entry** | A **reference list of 43 common foods** with suggested lifespans for fridge, freezer and pantry. It suggests as you type, fills in the unit and lifespan, and the user can always change the number. **Favourites** save a food and re-add it with one tap. **Bulk add** handles a whole shopping haul (up to 50 items) in one go. |
 | **Where it's kept** | Every item is kept in the **Fridge**, **Freezer** or **Pantry**, and can record an **opened date**. |
 | **Realistic estimates** | **Opened** (on the details screen) records the opened date and a days-once-opened value, prefilled from the reference list. The expected expiry becomes the opened date plus those days, but only if that's sooner; opening never makes it later. "Mark as not opened" (or Undo) puts it back. **Move** sends an item to another location and recalculates the expected expiry from today, using that location's suggested lifespan. **Your usual lifespans:** once you've entered the same food in the same location at least twice, Add Food and Bulk add suggest the median of your last 10 (marked ★), ahead of the reference list. |
@@ -88,7 +89,7 @@ These screenshots are captured automatically by the Playwright test suite.
 | **Dark mode** | **Appearance** in Settings: System (follows the device, the default), Light or Dark. The choice is kept on this device and applied before the first paint, so there is no flash. Dark colours are the same tokens with dark values (`client/src/index.css`), so urgency is still a colour plus a text label. |
 | **Your data** | **Download my data** saves everything the app holds about you (account, food, history, reminders, favourites, shopping list and meal plan) as one JSON file. It never includes the password hash or push keys. **Delete my account** asks for your password again, then permanently deletes the account and every record it owns. |
 | **Settings** | Your name and email (read-only), a currency for prices, an Appearance choice, Download my data and Delete my account, switches for the three reminder types, push reminders for this device (on/off, daily summary or one per item, and the time), links to Insights and History, and Log out. Logging out turns push off for that account on this device. |
-| **Households** | Everyone is in a household, alone until they invite someone. **Invite someone** makes a single-use code (shown as XXXX-XXXX, valid for a week, nothing is emailed) that you send by hand; **Join a household** takes that code. Up to 6 people share the **food, usage history and insights, shopping list and meal plan**, and each member gets reminders for the shared food. **Favourites, reminder settings, currency, AI allowance and push devices stay personal.** Joining brings your own food, history, list and plan into the household (on a day both have a meal planned, the household's stays). **Leave household** takes what you added (and the history of that food) with you and starts a new household; everything else stays. An **activity log** shows who added, used, wasted or removed what, and who joined or left. |
+| **Households** | Everyone is in a household, alone until they invite someone. **Invite someone** makes a single-use code (shown as XXXX-XXXX, valid for a week, nothing is emailed) that you send by hand; **Join a household** takes that code. Up to 6 people share the **food, usage history and insights, shopping list and meal plan**, and each member gets reminders for the shared food. **Favourites, reminder settings, currency, AI allowance and push devices stay personal.** Joining brings your own food, history, list and plan into the household (on a day both have a meal planned, the household's stays). **Leave household** takes what you added (and the history of that food) with you and starts a new household; everything else stays. An **activity log** shows who added, used, wasted or removed what, who checked food with a photo, and who joined or left. |
 | **Privacy** | You only ever see your own household's food, history, lists and reminders, and your own favourites. Another household's data is indistinguishable from missing (404). |
 | **Responsive** | Mobile-first and tested at **375 px** wide, with every button, link and field at least 44 px tall. From 1024 px wide: a sidebar and a two-column layout. Every screen has loading, empty and error states, and any 401 signs you out and returns you to the login page. |
 
@@ -259,6 +260,8 @@ Open http://localhost:5173 and create an account.
 | `VAPID_SUBJECT` | *(empty)* | For push | Contact for push services, a `mailto:` or `https:` URL |
 
 | `ANTHROPIC_API_KEY` | *(empty)* | For AI | Claude API key. AI features are on only when it is set. **Put it in `server/.env` only**, which is git-ignored. |
+| `PHOTO_CHECK` | *(empty = off)* | No | Set to `on` to turn on Photo Check. It also needs `ANTHROPIC_API_KEY`; with either missing no photo controls are shown. |
+| `ANTHROPIC_BASE_URL` | *(empty = Anthropic)* | No | Read by the Anthropic SDK. Only the end-to-end tests set it, to a local stand-in. |
 | `PRODUCT_LOOKUP_URL` | *(empty = Open Food Facts)* | No | Where barcodes are looked up. Only the end-to-end tests change it, to a local stand-in. |
 | `AI_MODEL` | *(empty = `claude-sonnet-5-5`)* | No | Claude model ID. The default was checked against Anthropic's models overview on 2026-09-30. |
 
@@ -289,8 +292,8 @@ Run these from the repository root:
 | `npm run typecheck` | TypeScript check of `shared`, `server` and `client` |
 | `npm run seed -w server` | With the server running, create a demo account (`demo@cookfirst.local` / `cookfirst-demo`) with 10 priced sample items at every urgency level, plus 5 used or wasted ones so Insights has data. Add `-- --reset` to re-seed. |
 | `npm run vapid:keys -w server` | Generate a Web Push (VAPID) key pair for `server/.env` |
-| `npm test` | Unit and API tests: shared (30) + server (318) + client (124) |
-| `npm run test:e2e` | Playwright end-to-end tests (30), at 375 px and 1440 px |
+| `npm test` | Unit and API tests: shared (30) + server (341) + client (144) |
+| `npm run test:e2e` | Playwright end-to-end tests (32), at 375 px and 1440 px |
 | `npm run build` | Build `shared/dist`, `server/dist` and `client/dist` |
 
 ---
@@ -304,6 +307,7 @@ Run these from the repository root:
 | **Phase 1** (`phase1.test.ts`) | Vitest, Supertest | 18 | Household, storage and opened-date fields (defaults, validation, editing, backfill of existing data); bulk add (shared date, per-row storage, reminders, the failing row's field path, all-or-nothing, 1–50 limit); favourites (create, duplicate 409, one-tap add, delete, privacy); undo for every action (quantity, status, reminders and usage record restored; stepping back; nothing to undo; 10-minute limit; other users get 404) |
 | **Phase 2** (`phase2.test.ts`) | Vitest, Supertest | 16 | Opened: milk shortens to its typical 4 days and reminders move; opening never lengthens the expiry; custom days and past opened dates; 400 when there's no typical value; 409 when already opened or closed; invalid dates; mark as not opened restores the lifespan. Move: chicken to the freezer and back, custom days, the 365-day cap, 400 for no freezer value, the same location or bad days, 404 for another user. Learned lifespans: median of your entries per food and location, at least 2 needed, closed items count, only the last 10, never another user's, backfill |
 | **Phase 3** (`phase3.test.ts`) | Vitest, Supertest, a fake `PushProvider` | 30 | Only the VAPID public key is exposed (null when push isn't set up); subscriptions store user, endpoint, keys, browser and last use, re-subscribing updates, https endpoints only, users can only remove their own; delivery settings (daily summary at 08:00 by default, one per item, hour 0–23); the digest waits for the user's hour in their own time zone, goes out once a day, lists the Cook First items in Cook First order ("and N more" after 4), is skipped when nothing needs attention, and never changes the order; one push per item with Used and Snooze and a Food Details link, sent to every browser; 404/410 deletes the subscription, other errors keep it and in-app reminders still arrive; Used closes the item with a usage record; Snooze drops it from today's summary and brings it back tomorrow (and re-pushes it in per-item mode); bad or login tokens rejected, action tokens can't sign in or touch another user's item; the web-push provider's payload, VAPID keys and 404/410 handling |
+| **Photo Check** (`photo.test.ts`) | Vitest, Supertest, a fake `AiClient` | 23 | Needs sign-in; off when the flag is off or AI is off (and `photoCheck` in the status says so); bad photos and ids rejected before the AI; the photo reaches the AI with a problems-only prompt; the schema has only name, category, confidence and warning signs; an answer with an extra field, a type that is not a problem, a bad confidence or an empty name is refused, retried and refunded; banned wording in a name or any warning is retried and never returned; counts toward the daily limit; a large photo accepted and never stored anywhere; nothing is added or changed by a check; a photo of an item at home must be one of the household's; the activity log records who checked which food and never the result; no event for a failed check. **Use today:** brings a later expected expiry forward, is a 409 for an item already due or overdue, closed, or in another household, can never move an expiry later (checked over many items), reschedules reminders and leaves the entered lifespan alone |
 | **Scanning** (`scanning.test.ts`) | Vitest, Supertest, a fake `ProductClient` and `AiClient` | 25 | Barcode: sign-in needed, bad numbers rejected before any look-up, name/brand/pack size returned, spaces and dashes dropped, cl and dl converted to ml, unknown units left blank, "not found" is a normal answer, banned-wording names hidden, long names cut to 60, a failed look-up is a 503 that leaks nothing; the Open Food Facts client (URL, fields, user agent, time-out, 404 and status 0, bad fields). Receipts: sign-in and AI needed, bad photos rejected before the AI, the photo reaches the AI with the receipt prompt, rounded draft returned and nothing saved, future or invalid dates blanked, counts toward the daily limit, retried then refunded when unusable, banned wording retried, a 3.9 MB photo accepted on this route only and never stored in any collection, over-size refused; bulk add keeps per-row prices |
 | **Households** (`household.test.ts`) | Vitest, Supertest | 28 | Everyone starts alone; invite codes (format, one week, limits, cancelling only your own); joining (lower case and dashes, unknown, empty, out-of-date, own, already-shared and full cases; a code works once); your food, list and plan come with you and the household's meal wins on a shared day; members see and act on the same food, history and insights; each member gets reminders, including for food that came with a new member; favourites and currency stay personal; another household sees none of it (404s); the activity log (who did what, newest first, paging); leaving splits food, list, plan and history correctly and drops reminders for food left behind; deleting an account in a shared household removes only that person's food; existing data is given its owner's household at start-up |
 | **Phase 6** (`phase6.test.ts`) | Vitest, Supertest | 7 | Export needs sign-in; it returns food, history, favourites, shopping and meal plan as a download, never the password hash, internal ids or another user's data; deleting needs the password (a wrong one is a 400, deletes nothing and keeps you signed in), removes the account and every record it owns while leaving other accounts alone, and lets the same email register again |
@@ -314,9 +318,9 @@ Run these from the repository root:
 | **Project rules** (`rules.test.ts`) | Vitest, Supertest | 11 | Every database query carries the user's ID, or the household's ID for shared data; the query-string `userId` is ignored; pure priority engine; bcrypt cost 12; passwords never returned or logged; `.env` ignored; helmet; CORS; rate limit of 20 per 15 minutes |
 | **Server structure** (`structure.test.ts`) | Vitest | 12 | The `server/src` folders; thin controllers; only models talk to MongoDB; no `new Date()` in date logic; dates only from `shared`; hourly node-cron job; env variable names and defaults; the threshold of 3 exists only in `config/urgency.ts` (checked across client, server and shared); expiry calculated in the food service with no Mongoose hook |
 | **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 124 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and preview, the required estimate line, all five remaining-days phrasings, colour always paired with a label, exactly seven units, notes, reminders marked read when the screen opens; the dashboard header, 3-item Cook First with "See all", and empty texts; Add Food defaults, the unit dropdown, the "Add note" link and the preview format; reference suggestions (including following the storage location), storage sent with the item, one-tap favourites, Undo instead of confirmations, bulk add (reference fill, one request, per-row errors); learned lifespans (★ chip, the "You usually set" hint, falling back to the reference list per location); Opened (prefilled days, missing-days message, mark as not opened) and Move (other locations only, per-location suggestion, request body); push reminders (permission asked only on tapping "Turn on reminders", on/off, blocked and dismissed messages, the iPhone Home Screen hint, unsupported browser, no server key, the in-app note, saving mode and time, turning push off at logout with the old token); Phase 4 (recipe ideas hidden when AI is off, shown with the AI note and allowance, the limit message; leftovers prefilled from a recipe, the leftovers box with per-location lifespans and the 4-day check; editing keeps where an item is kept; the shopping warning with expected expiry, add/tick/remove/clear, name required; the meal plan week, planning a meal with your food, and the AI draft saved only on "Add these to my plan"); the browser push layer (iPhone detection, subscribing with the VAPID key and registering the browser, unsubscribing on server and browser, key decoding, browser names); the Reminders error state; plus client structure checks |
-| **End-to-end** (`e2e/`) | Playwright in Chrome | 30 | 15 journeys, each run at **375 px phone size** and **desktop size (1440×900)** |
+| **End-to-end** (`e2e/`) | Playwright in Chrome | 32 | 16 journeys, each run at **375 px phone size** and **desktop size (1440×900)** |
 
-The fifteen end-to-end journeys:
+The sixteen end-to-end journeys:
 
 1. **The spec journey:** sign up → add chicken (1-day lifespan) and eggs (8-day) → Cook First shows only the chicken → mark it used → it has disappeared from both the dashboard and Cook First
 2. Register → add food → Cook First → mark used → History
@@ -353,7 +357,7 @@ Every page visited is also checked for banned wording, sideways scrolling, and *
 | Dashboard, Add Food and Cook First rendered against MSW | `client/src/test/pages.test.tsx` (handlers in `client/src/mocks/`) |
 | End-to-end: sign up → chicken + eggs → only chicken in Cook First → used → gone | `e2e/journey.spec.ts` → "spec journey" |
 
-Test databases live in git-ignored `.test-db-*` folders inside the project, not the system temp folder, and are deleted afterwards. The end-to-end run uses its own ports (API 4100, web 5174), so it never touches your data.
+Test databases live in git-ignored `.test-db-*` folders inside the project, not the system temp folder, and are deleted afterwards. The end-to-end run also starts two local stand-ins, one for Open Food Facts (port 4101) and one for the Anthropic API (port 4102, answering the real SDK with canned JSON), so the AI features, barcode look-ups and Photo Check run end to end with no key and no internet. It uses its own ports (API 4100, web 5174), so it never touches your data.
 
 > **Low disk space on the system drive?** Chrome creates a temporary profile for every Playwright test. If that drive is nearly full, point the temp folder elsewhere for the run. For example, in Git Bash: `TMP="$PWD/.tmp" TEMP="$PWD/.tmp" npm run test:e2e` (`.tmp/` is git-ignored).
 
@@ -503,7 +507,7 @@ MongoDB collections:
 | **shoppingitems** | `userId` (who added it), `householdId` (the list is shared), `name` (1–60), `quantity` and `unit` (optional), `checked`, `createdAt` |
 | **mealplanentries** | `userId` (who first planned it), `householdId`, `date` (`YYYY-MM-DD`, unique per household), `title` (1–80), `foodIds` (the household's items, up to 10) |
 | **invites** | `householdId`, `code` (8 letters and digits without I, L, O, 0, 1; unique; used once), `createdBy`, `expiresAt` (7 days) |
-| **householdevents** | `householdId`, `userId`, `actorName` (kept so the log still reads after someone leaves), `type` (`MEMBER_JOINED`/`MEMBER_LEFT`), `createdAt` |
+| **householdevents** | `householdId`, `userId`, `actorName` (kept so the log still reads after someone leaves), `type` (`MEMBER_JOINED`/`MEMBER_LEFT`/`PHOTO_CHECKED`), `foodName` (for a photo check), `createdAt` |
 | **aiusages** | `userId`, `date` (the user's day), `count` (unique per user and day; the daily AI limit) |
 
 **The expiry date is calculated in `services/foodService.ts`** when an item is created and whenever its added date or lifespan changes. There's deliberately no Mongoose hook, because hooks don't run on update queries. Any expiry date sent by the client is ignored.
@@ -549,6 +553,7 @@ Base URL: `http://localhost:4000/api` (`VITE_API_URL`). Requests and responses a
 | POST | `/foods` | `{name, quantity, unit, addedDate, lifespanDays, notes?, storage?, openedDate?, leftover?}` | `201 FoodItem`, with reminders scheduled | 400 |
 | POST | `/foods/bulk` | `{addedDate, storage?, items: [{name, quantity, unit, lifespanDays, storage?, notes?}]}` (1–50) | `201 {items}`. All or nothing; errors name the row, e.g. `items.2.name` | 400 |
 | POST | `/foods/:id/undo` | | `FoodItem`: the item's most recent action is reversed and its usage record deleted (within 10 minutes) | 404, 409 |
+| POST | `/foods/:id/use-today` | | `FoodItem` due today (lifespan shortened; reminders rescheduled) | 404, 409 closed, or already due or overdue (it can never move later) |
 | POST | `/foods/:id/open` | `{openedDate?, daysLeft?}` (date defaults to today; days default to the reference list) | `FoodItem` with `openedDate` set; expected expiry shortened if sooner; reminders rescheduled | 400 (`daysLeft` needed, bad date), 404, 409 already opened or closed |
 | DELETE | `/foods/:id/open` | | `FoodItem` with the lifespan and expiry from before it was opened | 404, 409 not opened |
 | POST | `/foods/:id/move` | `{storage, daysLeft?}` (days default to the reference lifespan there) | `FoodItem` with the new `storage`; expected expiry = today + days | 400 (same place, `daysLeft` needed), 404, 409 |
@@ -580,7 +585,8 @@ Base URL: `http://localhost:4000/api` (`VITE_API_URL`). Requests and responses a
 | POST | `/push/subscriptions` | `{endpoint (https), keys: {p256dh, auth}, browser?}` (the browser's `PushSubscription.toJSON()`) | `201 {id, browser, createdAt, lastUsedAt}`. Subscribing again updates it. | 400 |
 | DELETE | `/push/subscriptions` | `{endpoint}` | `204` (only your own) | 400 |
 | POST | `/push/actions` | `{token, action: "USED" \| "SNOOZE"}`. **No login token:** called by the service worker with the notification's action token. | `204`. USED = "Used all"; SNOOZE = out of push reminders until tomorrow. | 400, 401 bad or expired token, 404, 409 already closed |
-| GET | `/ai/status` | | `{enabled, dailyLimit, usedToday}` | 401 |
+| GET | `/ai/status` | | `{enabled, photoCheck, dailyLimit, usedToday}` (`photoCheck` is true only when the flag and AI are both on) | 401 |
+| POST | `/parse/photo` | `{mediaType, image, foodId?}` (a photo as for receipts; `foodId` when it is of an item at home) | `{name, category, confidence, warningSigns: [{type, description}]}`. Changes nothing. | 400, 404 not your item, 429, 503 off or no usable answer |
 | POST | `/ai/recipes` | | `{basedOn, recipes: [{title, minutes, uses: [{id, name}], steps}]}`. Empty without asking the AI when Cook First is empty. | 429 daily limit, 503 AI off or no valid answer after 3 attempts |
 | GET | `/products/barcode` | `?code=` (8, 12, 13 or 14 digits with a correct check digit; spaces and dashes are dropped) | `{found, barcode, name, brand, quantity, unit}`; `found: false` when it isn't in the database | 400, 429, 503 look-up unavailable |
 | POST | `/parse/receipt` | `{mediaType: image/jpeg\|png\|webp, image: base64}` (up to about 3 MB; this is the only route that accepts a large body) | `{purchaseDate, items: [{name, quantity, unit, price}]}`: a draft, nothing saved | 400, 429, 503 AI off or no usable answer |
@@ -661,6 +667,7 @@ These rules must never be broken. Each one is enforced in code and checked by an
 - **Access control:** the identity comes only from the verified JWT. Every query on shared data (food items, usage records, the shopping list and the meal plan) includes the household's ID, and every query on personal data (reminders, favourites, push subscriptions and AI usage) includes the user's ID. Invite codes are 8 characters from a 31-character alphabet, single-use, expire after a week, and joining is rate-limited like login. Notification buttons use a separate single-item action token that can't sign in. Any `userId` in the body, query string or URL is ignored. Another user's item returns 404.
 - **Input:** everything is checked on the server with the shared zod schemas.
 - **HTTP:** Helmet headers, CORS limited to `CLIENT_ORIGIN`, a 20 KB request size limit (about 4.5 MB on the receipt route only), `/auth/*` limited to 20 requests per 15 minutes per IP address, and `/push/actions` to 60. AI requests are limited to 20 per user per day.
+- **Photo Check:** needs the feature flag and AI. The photo is sent only to the AI for that one request and is never stored or logged. The answer is validated against a strict schema with no way to say a food is fine, every text is checked for banned wording, and the only thing a result can do to an item is make it due today, which the person confirms and the server refuses unless it moves the expected expiry earlier.
 - **Scanning:** barcode look-ups go through the server (the browser never contacts the product database), are limited to 60 per 15 minutes per IP address and are timed out after 5 seconds; a receipt photo is sent only to the AI for that one request and is never stored or logged, and every food name read from it is checked for banned wording.
 - **AI:** the Claude API key is read only from `ANTHROPIC_API_KEY` in `server/.env` (git-ignored). Prompts contain only food names, quantities and expected expiry, never names, emails or other account details. All AI output is validated with zod and checked for banned wording before anyone sees it.
 - **Secrets:** read only from environment variables and never committed. The VAPID private key never leaves the server; the end-to-end tests generate a fresh key pair on every run.
@@ -733,7 +740,7 @@ The project was built in these phases; each one is complete.
 |---|---|
 | All MVP functional requirements (FR-AUTH, FOOD, EXP, PRI, UI, NOT, USE, VAL) | ✅ Done |
 | Monorepo with `client`, `server` and `shared`; Node 20.19+ | ✅ Done |
-| Tests: 30 shared + 318 server + 124 client + 30 end-to-end = **502** | ✅ Passing |
+| Tests: 30 shared + 341 server + 144 client + 32 end-to-end = **547** | ✅ Passing |
 | ESLint, Prettier and typecheck on all packages | ✅ Clean |
 | All project rules (see [Project rules](#project-rules)) | ✅ Met, each one checked by a test |
 | Phone (375 px) and desktop layouts, 44 px tap targets | ✅ Done, checked in screenshots and by tests |
@@ -748,7 +755,8 @@ The project was built in these phases; each one is complete.
 | Post-MVP Phase 5 (insights) | ✅ Done |
 | Post-MVP Phase 6 (dark mode, data export, account deletion, shared households) | ✅ Done |
 | Post-MVP Phase 6 barcode and receipt scanning | ✅ Done. Receipts need `ANTHROPIC_API_KEY`; barcodes need nothing. |
-| Post-MVP Phase 6 voice entry, languages, grocery integrations, and Phase 7 | ⏳ Planned (see [Roadmap](#roadmap)) |
+| Post-MVP Phase 7 (Photo Check) | ✅ Done, behind `PHOTO_CHECK=on` and needing `ANTHROPIC_API_KEY`. Not yet tried against the real API. |
+| Post-MVP Phase 6 voice entry, languages and grocery integrations | ⏳ Planned (see [Roadmap](#roadmap)) |
 
 ---
 
@@ -758,6 +766,27 @@ All notable changes to this project are listed here, newest first. Versions foll
 
 ### [Unreleased]
 - *Nothing yet.*
+
+### [2.13.0] - 2026-10-02: Phase 7 (Photo Check) · `COMMIT_HASH`
+**Added**
+- **Photo Check** (`POST /parse/photo`), behind the `PHOTO_CHECK=on` flag and only when AI is on (`photoCheck` in `GET /ai/status`). **Identify from a photo** on Add Food pre-fills the name (and, for a known food, its usual lifespan and place) when the AI is at least 0.6 sure; **Check with photo** on Food Details shows visible warning signs with **Mark as wasted**, **Use today** and **Dismiss**. No warning signs means nothing about condition is shown. See the [specification](#phase-7-photo-check-specification).
+- **Strict AI answer:** name, category, confidence and warning signs only; anything else (an extra field, a type that isn't a problem) is refused, retried and refunded. Every text, including each warning, goes through the banned-wording retry.
+- **Use today** (`POST /foods/:id/use-today`): brings a later expected expiry forward to today after the person confirms. It refuses an item already due or overdue, so it can never move an expiry later; the entered lifespan is left alone so your usual lifespans aren't learned from it.
+- **Activity log:** a `PHOTO_CHECKED` event (who checked which food; never the photo or the result).
+- `PHOTO_CONFIDENCE_MIN` (0.6) and `WARNING_SIGN_TYPES` in `shared`; `config/features.ts` for the flag.
+- **Stand-in Anthropic API for the end-to-end tests** (`e2e/stub-anthropic.mjs`): the real SDK talks to it, so every AI feature (recipes, meal plans, receipts and Photo Check) now runs end to end without a key. The receipt journey is now tested for real.
+- **Tests:** 23 server, 20 client and a Photo Check end-to-end journey (phone and desktop).
+
+**Changed**
+- `GET /ai/status` includes `photoCheck`.
+- `AiTask` can carry its own system prompt and images (already used by receipts).
+- The end-to-end API now runs with AI on, pointed at the stand-in, instead of AI off. The Phase 4 journey now checks that the AI buttons appear.
+
+**Fixed**
+- The Phase 4 end-to-end journey's "Cook First" link was the logo (Home) on desktop, so its "no AI buttons" check passed without testing anything. It now uses the main navigation.
+
+**Not in this release**
+- Voice entry, other languages and grocery integrations. Photo Check and receipt scanning have not been tried against the real Anthropic API.
 
 ### [2.12.0] - 2026-10-02: Phase 6, part 3 (barcode and receipt scanning) · `09c1276`
 **Added**
@@ -1109,11 +1138,11 @@ Post-MVP phases are built one at a time, each with its tests passing before the 
 | **4. Using the food** | Leftovers as new short-lifespan items · a shopping list that warns about food already at home · AI recipe suggestions from Cook First · a weekly meal plan | ✅ Done (v2.8.0), Claude API | `ANTHROPIC_API_KEY` in `server/.env` to turn AI on |
 | **5. Insights** | Used-versus-wasted dashboard · optional prices showing money saved or lost · a weekly summary with tips | ✅ Done (v2.9.0), no AI | – |
 | **6. Sharing and scanning** | ~~Shared households with invites and an activity log~~ · ~~dark mode~~ · ~~data export~~ · ~~account deletion~~ (struck-through items are done in v2.10.0 and v2.11.0) · ~~barcode scanning~~ · ~~receipt scanning~~ (done in v2.12.0) · voice entry · multiple languages · grocery integrations | In progress: voice entry, languages and grocery integrations remain | Decided on 2026-10-02: barcodes from Open Food Facts (free, no key) and receipts read with Claude vision (needs `ANTHROPIC_API_KEY`); English only for now. Still open: which grocery partners (they need commercial API access) and which languages later |
-| **7. Photo Check** | Take or upload a photo from Add Food, or "Check with photo" on Food Details, to identify a product and point out visible warning signs. Behind a feature flag; only when AI is enabled. See the [specification](#phase-7-photo-check-specification). | Planned (after Phase 6) | – (uses the Phase 4 Claude setup, which accepts images) |
+| **7. Photo Check** | Take or upload a photo from Add Food, or "Check with photo" on Food Details, to identify a product and point out visible warning signs. Behind a feature flag; only when AI is enabled. See the [specification](#phase-7-photo-check-specification). | ✅ Done (v2.13.0), behind `PHOTO_CHECK=on` | `PHOTO_CHECK=on` and `ANTHROPIC_API_KEY` in `server/.env` |
 
 ### Phase 7: Photo Check specification
 
-Recorded on 2026-09-30. To be built after the scanning features in Phase 6, using the AI setup from Phase 4 (provider, "AI enabled" setting, daily limit, banned-phrase retry) and the activity log from Phase 6.
+Recorded on 2026-09-30 and built in v2.13.0, after the scanning features in Phase 6, using the AI setup from Phase 4 (provider, "AI enabled" setting, daily limit, banned-phrase retry) and the activity log from Phase 6.
 
 **Availability**
 - Behind a feature flag, and available only when AI is enabled. With either off, no photo controls are shown.

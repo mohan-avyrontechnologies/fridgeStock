@@ -50,3 +50,20 @@ export function searchSuggestions(
     .map(([, name]) => suggestFor(name, storage, learned)!)
     .sort((a, b) => Number(a.source !== 'learned') - Number(b.source !== 'learned'));
 }
+
+const STORAGE_ORDER: StorageLocation[] = ['FRIDGE', 'PANTRY', 'FREEZER'];
+
+/**
+ * Where a food is most often kept and for how long: your own usual lifespan first, then the reference
+ * list, trying the fridge, then the pantry, then the freezer. Null when nothing is known.
+ */
+export function firstSuggestion(
+  name: string,
+  learned: LearnedLifespan[],
+): { storage: StorageLocation; days: number; unit: Unit } | null {
+  for (const storage of STORAGE_ORDER) {
+    const suggestion = suggestFor(name, storage, learned);
+    if (suggestion && suggestion.days !== null) return { storage, days: suggestion.days, unit: suggestion.unit };
+  }
+  return null;
+}

@@ -7,10 +7,17 @@ import type { UserDoc } from '../models/User.js';
 import { aiClient, type AiImage } from './aiClient.js';
 import { clock } from './clock.js';
 import { aiLimitReached, aiUnavailable } from './errors.js';
+import { photoCheckEnabled } from '../config/features.js';
 
 export async function status(user: UserDoc): Promise<AiStatus> {
   const usage = await AiUsageModel.findOne({ userId: user._id, date: clock.today(user.timeZone) });
-  return { enabled: aiClient() !== null, dailyLimit: AI_DAILY_LIMIT, usedToday: usage?.count ?? 0 };
+  const enabled = aiClient() !== null;
+  return {
+    enabled,
+    photoCheck: enabled && photoCheckEnabled(),
+    dailyLimit: AI_DAILY_LIMIT,
+    usedToday: usage?.count ?? 0,
+  };
 }
 
 /** Counts one request against today's limit, atomically; throws when the limit is reached. */

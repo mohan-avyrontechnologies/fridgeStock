@@ -57,6 +57,8 @@ export const env = {
   vapid: vapid(),
   /** null when AI features are off. */
   ai: ai(),
+  /** Photo Check feature flag (PHOTO_CHECK=on). Off by default; it also needs AI. */
+  photoCheck: process.env.PHOTO_CHECK === 'on',
   /** Open Food Facts by default; the end-to-end tests point it at a local stand-in. */
   productLookupUrl: process.env.PRODUCT_LOOKUP_URL || 'https://world.openfoodfacts.org',
 };

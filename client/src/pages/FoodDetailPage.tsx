@@ -6,6 +6,7 @@ import { ActionSheet, useFoodActions, type SheetStep } from '../components/Actio
 import { PageBody, PageHeader } from '../components/AppShell';
 import { MoveSheet, OpenSheet } from '../components/EstimateSheets';
 import { FoodForm } from '../components/FoodForm';
+import { PhotoCheck } from '../components/PhotoCheck';
 import { EstimateNote, UrgencyBadge } from '../components/Urgency';
 import { Button, EmptyState, Spinner } from '../components/ui';
 import {
@@ -248,6 +249,7 @@ export function FoodDetailPage() {
                     {moveCopy.button}
                   </Button>
                 </div>
+                <PhotoCheck mode="item" food={food} onWaste={() => close('WASTED')} onFoodChanged={setFood} />
                 <div className="grid grid-cols-2 gap-2">
                   <Button variant="ghost" onClick={() => setEditing(true)}>
                     Edit

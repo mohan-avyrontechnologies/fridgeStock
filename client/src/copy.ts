@@ -406,6 +406,7 @@ export const householdCopy = {
     REMOVED: (who: string, food: string) => `${who} removed ${food}`,
     MEMBER_JOINED: (who: string) => `${who} joined the household`,
     MEMBER_LEFT: (who: string) => `${who} left the household`,
+    PHOTO_CHECKED: (who: string, food: string) => `${who} checked ${food} with a photo`,
   },
 } as const;
 
@@ -438,4 +439,27 @@ export const receiptCopy = {
   checkNote:
     'Read from a photo, so check each line. The app is only guessing how long each item lasts: fill in any that are blank.',
   dateSet: 'The added date was set from the receipt.',
+} as const;
+
+/** Phase 7: Photo Check. It only ever points out visible problems; there is no "looks fine" text. */
+export const photoCopy = {
+  region: 'Photo Check',
+  addButton: 'Identify from a photo',
+  checkButton: 'Check with photo',
+  inputLabel: 'Food photo',
+  reading: 'Looking at your photo…',
+  error: 'Couldn’t check that photo. Try again.',
+  checked: 'Photo checked',
+  unsure: 'I couldn’t tell what this is from the photo. Type the name instead.',
+  looksLike: (name: string) => `Looks like ${name}. Check the details, then choose how long it lasts.`,
+  signsRegion: 'Visible signs noticed',
+  signs: (descriptions: string[]) =>
+    `Visible signs noticed: ${descriptions.join('; ')}. A photo can’t show everything, so check the item yourself before using it.`,
+  waste: 'Mark as wasted',
+  useToday: 'Use today',
+  confirmUseToday: (name: string) => `Make ${name} due today? Its expected expiry will change to today.`,
+  confirm: 'Yes, use today',
+  cancel: 'Cancel',
+  dismiss: 'Dismiss',
+  dueToday: (name: string) => `${name} is now due today`,
 } as const;

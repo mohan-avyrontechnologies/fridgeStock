@@ -14,7 +14,7 @@ import { renderSignedIn } from './render';
 // The browser's canvas and image decoding aren't in the test environment; the real function is tested below.
 vi.mock('../lib/image', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/image')>()),
-  photoForReceipt: vi.fn(async () => ({ mediaType: 'image/jpeg' as const, image: 'QUJD' })),
+  photoForUpload: vi.fn(async () => ({ mediaType: 'image/jpeg' as const, image: 'QUJD' })),
 }));
 
 /** Phase 6: barcode and receipt scanning. The API is faked with MSW. */
@@ -194,7 +194,8 @@ describe('scanning a barcode on Add Food', () => {
 });
 
 describe('scanning a receipt on Bulk add', () => {
-  const aiOn = (enabled: boolean) => useAiStore.setState({ status: { enabled, dailyLimit: 20, usedToday: 0 } });
+  const aiOn = (enabled: boolean) =>
+    useAiStore.setState({ status: { enabled, photoCheck: false, dailyLimit: 20, usedToday: 0 } });
 
   beforeEach(() => aiOn(true));
   afterEach(() => aiOn(false));

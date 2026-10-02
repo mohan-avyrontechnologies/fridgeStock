@@ -33,7 +33,15 @@ type Errors = Partial<Record<keyof FoodInput | 'form', string>>;
 interface Props {
   initial?: FoodInput;
   /** Starting values for a new item, e.g. leftovers saved from a recipe idea. */
-  prefill?: { name?: string; leftover?: boolean; quantity?: number; unit?: Unit; notes?: string };
+  prefill?: {
+    name?: string;
+    leftover?: boolean;
+    quantity?: number;
+    unit?: Unit;
+    notes?: string;
+    lifespanDays?: number;
+    storage?: StorageLocation;
+  };
   submitLabel: string;
   /** Resolves when saved. `addAnother` is set when the secondary button was used. */
   onSubmit: (input: FoodInput, addAnother: boolean) => Promise<void>;
@@ -68,9 +76,15 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
   const [addedDate, setAddedDate] = useState(initial?.addedDate ?? today);
   const [leftover, setLeftover] = useState(initial?.leftover ?? prefill?.leftover ?? false);
   const [lifespan, setLifespan] = useState(
-    initial ? String(initial.lifespanDays) : prefill?.leftover ? String(leftoverDays('FRIDGE') ?? '') : '',
+    initial
+      ? String(initial.lifespanDays)
+      : prefill?.leftover
+        ? String(leftoverDays('FRIDGE') ?? '')
+        : prefill?.lifespanDays !== undefined
+          ? String(prefill.lifespanDays)
+          : '',
   );
-  const [storage, setStorage] = useState<StorageLocation>(initial?.storage ?? 'FRIDGE');
+  const [storage, setStorage] = useState<StorageLocation>(initial?.storage ?? prefill?.storage ?? 'FRIDGE');
   const [price, setPrice] = useState(initial?.price == null ? '' : String(initial.price));
   const currency = useAuthStore((s) => s.user?.currency) ?? 'USD';
   // The food name the lifespan was suggested for, if the user picked a suggestion.

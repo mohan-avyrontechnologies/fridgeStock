@@ -6,6 +6,10 @@ const id = (req: Request) => String(req.params.id);
 
 /** Thin: parse the request, call the service, send the response. */
 export const foodController = {
+  async useToday(req: Request, res: Response) {
+    res.json(await foodService.useToday(currentUser(req), String(req.params.id)));
+  },
+
   async list(req: Request, res: Response) {
     res.json(await foodService.listFoods(currentUser(req)));
   },

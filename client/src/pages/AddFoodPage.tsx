@@ -1,13 +1,16 @@
-import type { Favourite, ProductLookup } from '@cook-first/shared';
+import type { Favourite, PhotoCheck as PhotoCheckResult, ProductLookup } from '@cook-first/shared';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { BarcodeScanner } from '../components/BarcodeScanner';
+import { PhotoCheck } from '../components/PhotoCheck';
 import { FoodForm } from '../components/FoodForm';
 import { Button, Chip } from '../components/ui';
 import { bulkCopy, favouriteCopy, scanCopy } from '../copy';
+import { firstSuggestion } from '../lib/suggestions';
 import { useFoodStore } from '../stores/foodStore';
+import { useSuggestionStore } from '../stores/suggestionStore';
 import { useToastStore } from '../stores/toastStore';
 
 export function AddFoodPage() {
@@ -32,6 +35,24 @@ export function AddFoodPage() {
       current = false;
     };
   }, []);
+
+  const learned = useSuggestionStore((s) => s.learned);
+  const loadLearned = useSuggestionStore((s) => s.load);
+  useEffect(() => {
+    void loadLearned();
+  }, [loadLearned]);
+
+  /** A confident photo identification pre-fills the name and, if it is a known food, its usual lifespan and place. */
+  function applyPhoto(check: PhotoCheckResult) {
+    const suggestion = firstSuggestion(check.name, learned);
+    setScanned((previous) => ({
+      key: (previous?.key ?? 0) + 1,
+      prefill: {
+        name: check.name,
+        ...(suggestion && { lifespanDays: suggestion.days, storage: suggestion.storage, unit: suggestion.unit }),
+      },
+    }));
+  }
 
   function applyProduct(product: ProductLookup) {
     setScanned((previous) => ({
@@ -83,6 +104,8 @@ export function AddFoodPage() {
             {scanCopy.open}
           </Button>
         )}
+
+        <PhotoCheck mode="add" onIdentified={applyPhoto} />
 
         <FoodForm
           key={scanned?.key ?? 0}

@@ -15,7 +15,7 @@ export const useAiStore = create<AiState>()((set) => ({
     try {
       set({ status: await api.aiStatus() });
     } catch {
-      set({ status: { enabled: false, dailyLimit: 0, usedToday: 0 } });
+      set({ status: { enabled: false, photoCheck: false, dailyLimit: 0, usedToday: 0 } });
     }
   },
 }));

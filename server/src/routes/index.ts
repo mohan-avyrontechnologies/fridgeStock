@@ -19,6 +19,7 @@ import {
   barcodeSchema,
   deleteAccountSchema,
   joinHouseholdSchema,
+  photoCheckSchema,
   receiptSchema,
   updateAccountSchema,
   updateFoodSchema,
@@ -120,6 +121,7 @@ router.delete('/foods/:id', foodController.remove);
 router.post('/foods/:id/use', validate(useFoodSchema), foodController.use);
 router.post('/foods/:id/waste', validate(wasteFoodSchema), foodController.waste);
 router.post('/foods/:id/undo', foodController.undo);
+router.post('/foods/:id/use-today', foodController.useToday);
 router.post('/foods/:id/open', validate(openFoodSchema), foodController.open);
 router.delete('/foods/:id/open', foodController.undoOpen);
 router.post('/foods/:id/move', validate(moveFoodSchema), foodController.move);
@@ -153,6 +155,7 @@ router.post('/ai/meal-plan', aiController.mealPlan);
 
 router.get('/products/barcode', scanLimiter, validate(barcodeSchema, 'query'), productController.barcode);
 router.post('/parse/receipt', scanLimiter, validate(receiptSchema), productController.receipt);
+router.post('/parse/photo', scanLimiter, validate(photoCheckSchema), productController.photo);
 
 router.get('/shopping', shoppingController.list);
 router.post('/shopping', validate(shoppingItemSchema), shoppingController.add);
