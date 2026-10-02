@@ -1059,7 +1059,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.22.0] - 2026-10-03: design and usability, stage 5 (wording and polish) · `COMMIT_HASH`
+### [2.22.0] - 2026-10-03: design and usability, stage 5 (wording and polish) · `c4afcfb`
 **Changed**
 - **One name for each action, from its button to its toast:** **Mark as used** → "Marked as used", **Mark all as used** and **Mark some as used** → "Marked some as used", **Mark as wasted** → "Marked as wasted", **Mark as opened** → "Marked X as opened", **Move** → "Moved X", **Add food** → "Added X", **Save changes** → "Saved changes", **Save as favourite** → "Saved X as a favourite". The cards, the swipe actions, the sheets and Food Details all use the same words.
 - **Sentence case everywhere:** "See history", "Photo check", "Fill in the form"; no all-capitals styling; no symbols standing in for icons (the ★ and ☆ are icons now).
