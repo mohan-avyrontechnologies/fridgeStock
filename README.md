@@ -280,6 +280,7 @@ Run these from the repository root:
 | `npm run lint` | ESLint across all three packages |
 | `npm run format` / `npm run format:check` | Format with Prettier / check formatting (CI runs the check) |
 | `npm run typecheck` | TypeScript check of `shared`, `server` and `client` |
+| `npm run seed -w server` | With the server running, create a demo account (`demo@cookfirst.local` / `cookfirst-demo`) with 10 sample items at every urgency level. Add `-- --reset` to re-seed. |
 | `npm run vapid:keys -w server` | Generate a Web Push (VAPID) key pair for `server/.env` |
 | `npm test` | Unit and API tests: shared (26) + server (238) + client (79) |
 | `npm run test:e2e` | Playwright end-to-end tests (16), at 375 px and 1440 px |
@@ -722,7 +723,8 @@ The project was built in these phases; each one is complete.
 All notable changes to this project are listed here, newest first. Versions follow [Semantic Versioning](https://semver.org/).
 
 ### [Unreleased]
-- *Nothing yet.*
+**Added**
+- **Demo seed script** (`npm run seed -w server`): creates `demo@cookfirst.local` with 10 sample food items covering overdue, due, approaching and not-urgent, through the running API. Rerunning adds nothing; `--reset` re-seeds.
 
 ### [2.8.0] - 2026-09-30: Phase 4 (using the food) · `2bd172b`
 **Added**

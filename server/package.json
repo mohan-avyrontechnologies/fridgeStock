@@ -9,6 +9,7 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
+    "seed": "tsx --conditions=source scripts/seed.ts",
     "vapid:keys": "web-push generate-vapid-keys"
   },
   "dependencies": {
