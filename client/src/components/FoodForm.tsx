@@ -1,4 +1,4 @@
-import { Star } from 'lucide-react';
+import { Minus, Plus, Star } from 'lucide-react';
 import {
   addDays,
   createFoodSchema,
@@ -65,11 +65,19 @@ function leftoverDays(storage: StorageLocation): number | null {
   return days === null ? null : storage === 'FREEZER' ? days : Math.min(days, LEFTOVER_MAX_DAYS);
 }
 
+/** How much the quantity stepper moves for a unit. */
+export function quantityStep(unit: Unit): number {
+  if (unit === 'g' || unit === 'ml') return 50;
+  if (unit === 'kg' || unit === 'l') return 0.5;
+  return 1;
+}
+
 export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnother, autoFocus }: Props) {
   const timeZone = useAuthStore((s) => s.user?.timeZone) ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
   const today = todayInTz(timeZone);
   const notesId = useId();
   const unitId = useId();
+  const quantityId = useId();
   const storageId = useId();
   const [name, setName] = useState(initial?.name ?? prefill?.name ?? '');
   const [quantity, setQuantity] = useState(String(initial?.quantity ?? prefill?.quantity ?? 1));
@@ -102,6 +110,17 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
   const [showNotes, setShowNotes] = useState(Boolean(initial?.notes ?? prefill?.notes));
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
+
+  /** How much the + and - change the quantity: 50 for grams and millilitres, a half for kilos and litres, else 1. */
+  const step = quantityStep(unit);
+  function stepQuantity(direction: 1 | -1) {
+    const current = Number(quantity);
+    const base = Number.isFinite(current) && quantity.trim() !== '' ? current : 0;
+    const next = Math.round((base + direction * step) * 1000) / 1000;
+    if (next <= 0) return;
+    setQuantity(String(next));
+    clearError('quantity');
+  }
 
   const clearError = (field: keyof Errors) =>
     setErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
@@ -249,20 +268,51 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
       </label>
 
       <div>
-        <Field
-          className="w-28"
-          label="Quantity"
-          type="number"
-          inputMode="decimal"
-          step="any"
-          min="0"
-          value={quantity}
-          onChange={(e) => {
-            setQuantity(e.target.value);
-            clearError('quantity');
-          }}
-          error={errors.quantity}
-        />
+        <label htmlFor={quantityId} className="mb-1.5 block text-sm font-medium text-ink">
+          Quantity
+        </label>
+        {/* A + and - stepper around the number, which can still be typed (with a number keyboard on a phone). */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            aria-label="Decrease quantity"
+            disabled={!(Number(quantity) - step > 0)}
+            onClick={() => stepQuantity(-1)}
+            className="grid size-12 shrink-0 place-items-center rounded-full border border-field bg-card text-ink hover:bg-brand-soft disabled:opacity-40"
+          >
+            <Minus aria-hidden className="size-5" strokeWidth={2.5} />
+          </button>
+          <input
+            id={quantityId}
+            type="number"
+            inputMode="decimal"
+            step="any"
+            min="0"
+            value={quantity}
+            aria-invalid={errors.quantity ? true : undefined}
+            aria-describedby={errors.quantity ? `${quantityId}-error` : undefined}
+            onChange={(e) => {
+              setQuantity(e.target.value);
+              clearError('quantity');
+            }}
+            className={`block min-h-12 w-24 rounded-button border bg-card px-3 text-center text-base text-ink focus:border-brand focus:outline-none ${
+              errors.quantity ? 'border-danger' : 'border-field'
+            }`}
+          />
+          <button
+            type="button"
+            aria-label="Increase quantity"
+            onClick={() => stepQuantity(1)}
+            className="grid size-12 shrink-0 place-items-center rounded-full border border-field bg-card text-ink hover:bg-brand-soft"
+          >
+            <Plus aria-hidden className="size-5" strokeWidth={2.5} />
+          </button>
+        </div>
+        {errors.quantity && (
+          <p id={`${quantityId}-error`} className="mt-1.5 text-sm text-danger">
+            {errors.quantity}
+          </p>
+        )}
       </div>
 
       <Field
@@ -295,7 +345,7 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
           }}
           aria-invalid={errors.unit ? true : undefined}
           className={`block min-h-12 w-40 rounded-button border bg-card px-3.5 text-base text-ink focus:border-brand focus:outline-none ${
-            errors.unit ? 'border-danger' : 'border-line'
+            errors.unit ? 'border-danger' : 'border-field'
           }`}
         >
           {UNITS.map((u) => (
@@ -315,7 +365,7 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
           id={storageId}
           value={storage}
           onChange={(e) => changeStorage(e.target.value as StorageLocation)}
-          className="block min-h-12 w-40 rounded-button border border-line bg-card px-3.5 text-base text-ink focus:border-brand focus:outline-none"
+          className="block min-h-12 w-40 rounded-button border border-field bg-card px-3.5 text-base text-ink focus:border-brand focus:outline-none"
         >
           {STORAGE_LOCATIONS.map((loc) => (
             <option key={loc} value={loc}>
@@ -428,7 +478,7 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
             }}
             aria-invalid={errors.notes ? true : undefined}
             className={`block w-full rounded-button border bg-card px-3.5 py-3 text-base text-ink placeholder:text-muted/70 focus:border-brand focus:outline-none ${
-              errors.notes ? 'border-danger' : 'border-line'
+              errors.notes ? 'border-danger' : 'border-field'
             }`}
           />
           <p className={`mt-1.5 text-sm ${errors.notes ? 'text-danger' : 'text-muted'}`}>

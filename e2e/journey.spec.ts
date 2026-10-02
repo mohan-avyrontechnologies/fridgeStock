@@ -11,6 +11,8 @@ async function register(page: Page, name = 'Asha Rao') {
   await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password').fill(PASSWORD);
   await page.getByRole('button', { name: 'Create account' }).click();
+  // A new account is shown the first-run guide: skip it here (it has its own journey).
+  await page.getByRole('button', { name: 'Skip for now' }).click();
   await expect(page.getByRole('heading', { name: `Hi, ${name}` })).toBeVisible();
   return email;
 }
@@ -349,7 +351,9 @@ test('phase 1: bulk add a shopping haul, undo a waste, and re-add a favourite wi
   await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
   await page.getByRole('button', { name: 'Add Milk again' }).click();
   await expect(page.getByText('Added Milk')).toBeVisible();
-  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Home' }).click();
+  // Add food is a sheet: close it to go back to Home.
+  await page.keyboard.press('Escape');
+  await expect(page).toHaveURL('/');
   await expect(rows).toHaveCount(3);
   await expectNoSafetyClaim(page);
 });
@@ -692,7 +696,7 @@ test('phase 6: scanning a barcode fills in the form, and a receipt photo becomes
   await camera.getByRole('button', { name: 'Fill in Add Food' }).click();
   await expect(page.getByRole('dialog', { name: 'Camera' })).toHaveCount(0);
   await expect(page.getByLabel('Food', { exact: true })).toHaveValue('Whole milk');
-  await expect(page.getByLabel('Quantity')).toHaveValue('1000');
+  await expect(page.getByLabel('Quantity', { exact: true })).toHaveValue('1000');
   await expect(page.getByLabel('Unit')).toHaveValue('ml');
   await expect(page.getByLabel(/Notes/)).toHaveValue('Acme Dairy');
 
@@ -970,6 +974,7 @@ test('stage 3: swipe a card right for used and left for wasted, with Undo; Food 
 
   const card = (name: string) => allFood(page).filter({ has: page.getByRole('heading', { level: 3, name }) });
   const drag = async (name: string, dx: number) => {
+    await card(name).scrollIntoViewIfNeeded();
     const box = (await card(name).getByRole('heading', { level: 3 }).boundingBox())!;
     const y = box.y + box.height / 2;
     const x = box.x + 40;
@@ -1003,4 +1008,60 @@ test('stage 3: swipe a card right for used and left for wasted, with Undo; Food 
   await expect(actions.getByRole('button', { name: 'Used all' })).toBeVisible();
   await expect(actions.getByRole('button', { name: 'Wasted' })).toBeVisible();
   await expectNoSafetyClaim(page);
+});
+
+test('stage 4: the first-run guide, then adding food from the sheet with the stepper and recents', async ({ page }) => {
+  // Register without skipping the guide.
+  await page.goto('/register');
+  await page.getByLabel('Name').fill('Priya Nair');
+  await page.getByLabel('Email').fill(uniqueEmail());
+  await page.getByLabel('Password').fill(PASSWORD);
+  await page.getByRole('button', { name: 'Create account' }).click();
+
+  // Step 1: what expected expiry means, with the disclaimer.
+  await expect(page.getByRole('heading', { level: 1, name: 'Welcome to Cook First' })).toBeVisible();
+  await expect(page.getByText('Step 1 of 3')).toBeVisible();
+  await expect(page.getByRole('note', { name: 'Please remember' })).toContainText(REQUIRED_LINE);
+  await expectNoHorizontalScroll(page);
+  await expectLargeTapTargets(page);
+  await expectNoSafetyClaim(page);
+  await page.getByRole('button', { name: /Next/ }).click();
+
+  // Step 2: add the first food in a tap.
+  await expect(page.getByRole('heading', { level: 1, name: 'Add your first food' })).toBeFocused();
+  await page.getByRole('button', { name: 'Milk' }).click();
+  await page.getByRole('button', { name: 'Eggs' }).click();
+  await page.getByRole('button', { name: 'Add 2 foods' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Added: Milk, Eggs' })).toBeVisible();
+  await expectLargeTapTargets(page);
+  await page.getByRole('button', { name: /Next/ }).click();
+
+  // Step 3: meal times. Nothing has asked for notification permission yet.
+  await expect(page.getByText('Step 3 of 3')).toBeVisible();
+  await page.locator('label', { hasText: /^Dinner$/ }).click();
+  await expect(page.getByLabel('Dinner reminder time')).toHaveValue('19:30');
+  await expect(page.getByText('Your phone asks for permission only when you tap the button below.')).toBeVisible();
+  expect(await page.evaluate(() => Notification.permission)).toBe('default');
+  await expectLargeTapTargets(page);
+  await page.getByRole('button', { name: 'Start using Cook First' }).click();
+
+  // Home has the food just added, and the guide does not come back.
+  await expect(page.getByRole('heading', { name: 'Hi, Priya Nair' })).toBeVisible();
+  await expect(allFood(page).filter({ has: page.getByRole('heading', { level: 3, name: 'Milk' }) })).toHaveCount(1);
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Hi, Priya Nair' })).toBeVisible();
+
+  // Add food is a sheet: the camera first, then recents; the stepper and lifespan chips fill the form.
+  await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
+  const sheet = page.getByRole('dialog', { name: 'Add food' });
+  await expect(sheet.getByRole('button', { name: 'Use the camera' })).toBeVisible();
+  await sheet.getByRole('button', { name: 'Fill in Milk' }).click();
+  await expect(sheet.getByLabel('Food', { exact: true })).toHaveValue('Milk');
+  await sheet.getByRole('button', { name: 'Increase quantity' }).click();
+  await expect(sheet.getByLabel('Quantity', { exact: true })).toHaveValue('1.5');
+  await sheet.getByRole('button', { name: '7 days' }).click();
+  await expectLargeTapTargets(page);
+  await sheet.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page).toHaveURL('/');
+  await expect(page.getByText('Added Milk')).toBeVisible();
 });

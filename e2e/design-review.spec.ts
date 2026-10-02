@@ -11,7 +11,7 @@ const STAGE = process.env.DESIGN_STAGE ?? '0';
 const OUT = `docs/design-review/stage-${STAGE}`;
 
 test('design review: every main screen, light and dark', async ({ browser }) => {
-  test.setTimeout(240_000);
+  test.setTimeout(420_000);
   const context = await browser.newContext({
     viewport: { width: 375, height: 812 },
     deviceScaleFactor: 2,
@@ -30,6 +30,29 @@ test('design review: every main screen, light and dark', async ({ browser }) => 
     }
   }
 
+  // The first-run guide, step by step, with a throwaway account.
+  await page.goto('/register');
+  await page.getByLabel('Name').fill('Guide Tester');
+  await page.getByLabel('Email').fill(`guide-${Date.now()}@example.com`);
+  await page.getByLabel('Password').fill('e2e-password-123');
+  await page.getByRole('button', { name: 'Create account' }).click();
+  await page.getByText('Step 1 of 3').waitFor();
+  for (const scheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' });
+    for (const step of [1, 2, 3]) {
+      while (!(await page.getByText(`Step ${step} of 3`).isVisible())) {
+        await page.getByRole('button', { name: /Next/ }).click();
+      }
+      await settle(page);
+      await page.screenshot({ path: `${OUT}/${scheme}/00-welcome-step-${step}.png`, fullPage: true });
+    }
+    await page.getByRole('button', { name: /Back/ }).click();
+    await page.getByRole('button', { name: /Back/ }).click();
+  }
+  await page.getByRole('button', { name: 'Skip for now' }).click();
+  await page.getByRole('heading', { name: 'Hi, Guide Tester' }).waitFor();
+  await page.evaluate(() => localStorage.clear());
+  await page.goto('/login');
   const token = await signUp(page);
   const { foodId } = await seed(page, token);
   const screens = SCREENS(foodId);

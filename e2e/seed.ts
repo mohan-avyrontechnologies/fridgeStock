@@ -12,6 +12,7 @@ export async function signUp(page: Page, name = 'Asha Rao'): Promise<string> {
   await page.getByLabel('Email').fill(`design-${Date.now()}-${++counter}@example.com`);
   await page.getByLabel('Password').fill('e2e-password-123');
   await page.getByRole('button', { name: 'Create account' }).click();
+  await page.getByRole('button', { name: 'Skip for now' }).click();
   await expect(page.getByRole('heading', { name: `Hi, ${name}` })).toBeVisible();
   return page.evaluate(() => JSON.parse(localStorage.getItem('cook-first-auth')!).state.token as string);
 }

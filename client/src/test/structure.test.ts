@@ -27,6 +27,7 @@ describe('client/src layout', () => {
       'BulkAddPage.tsx',
       'CookFirstPage.tsx',
       'DashboardPage.tsx',
+      'FirstRunPage.tsx',
       'FoodDetailPage.tsx',
       'HistoryPage.tsx',
       'HouseholdPage.tsx',

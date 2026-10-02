@@ -122,6 +122,8 @@ export const updateAccountSchema = z
     currency: z.enum(CURRENCIES, { error: MESSAGES.currency }),
     /** Keep a photo with each food item you add by camera. */
     savePhotos: z.boolean(),
+    /** The first-run guide was finished or skipped. */
+    firstRunDone: z.boolean(),
   })
   .partial();
 

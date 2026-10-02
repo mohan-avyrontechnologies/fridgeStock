@@ -1,13 +1,11 @@
-import { REMINDER_MODES, type PushConfig, type ReminderDelivery, type ReminderMode } from '@cook-first/shared';
+import { REMINDER_MODES, type ReminderDelivery, type ReminderMode } from '@cook-first/shared';
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
 import { pushSettingsCopy as copy } from '../copy';
-import { platform } from '../platform';
+import { usePushReminders } from '../lib/usePushReminders';
 import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
 import { Button, Chip, Card } from './ui';
-
-type State = 'loading' | 'ios' | 'unsupported' | 'not-configured' | 'blocked' | 'off' | 'on';
 
 const DEFAULT_DELIVERY: ReminderDelivery = { mode: 'DIGEST', hour: 8 };
 const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
@@ -19,27 +17,11 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 export function PushReminders() {
   const { user, setUser } = useAuthStore();
   const toast = useToastStore((s) => s.show);
-  const [state, setState] = useState<State>('loading');
-  const [config, setConfig] = useState<PushConfig | null>(null);
-  const [note, setNote] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
   const [delivery, setDelivery] = useState<ReminderDelivery>(user?.reminderDelivery ?? DEFAULT_DELIVERY);
+  const { state, note, busy, enable, disable, message } = usePushReminders();
 
   useEffect(() => {
     let current = true;
-    const settle = (next: State) => current && setState(next);
-    async function check() {
-      const support = await platform.push.support();
-      if (support === 'ios-needs-home-screen') return settle('ios');
-      if (support === 'unsupported') return settle('unsupported');
-      const serverConfig = await api.pushConfig();
-      if (!current) return;
-      setConfig(serverConfig);
-      if (!platform.push.isAvailable(serverConfig)) return settle('not-configured');
-      if (await platform.push.isBlocked()) return settle('blocked');
-      settle((await platform.push.isOn()) ? 'on' : 'off');
-    }
-    check().catch(() => settle('not-configured'));
     api.delivery().then(
       (saved) => current && setDelivery(saved),
       () => {},
@@ -48,37 +30,6 @@ export function PushReminders() {
       current = false;
     };
   }, []);
-
-  async function enable() {
-    if (!config) return;
-    setBusy(true);
-    setNote(null);
-    try {
-      const result = await platform.push.turnOn(config);
-      if (result === 'on') {
-        setState('on');
-        toast(copy.onToast);
-      } else if (result === 'blocked') setState('blocked');
-      else setNote(copy.dismissed);
-    } catch {
-      setNote(copy.failed);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function disable() {
-    setBusy(true);
-    try {
-      await platform.push.turnOff();
-      setState('off');
-      toast(copy.offToast);
-    } catch {
-      toast(copy.saveFailed);
-    } finally {
-      setBusy(false);
-    }
-  }
 
   async function save(update: Partial<ReminderDelivery>) {
     const previous = delivery;
@@ -92,17 +43,6 @@ export function PushReminders() {
       toast(copy.saveFailed);
     }
   }
-
-  const message =
-    state === 'ios'
-      ? copy.iosHomeScreen
-      : state === 'unsupported'
-        ? copy.unsupported
-        : state === 'not-configured'
-          ? copy.notConfigured
-          : state === 'blocked'
-            ? copy.blocked
-            : null;
 
   return (
     <section aria-labelledby="push-title">

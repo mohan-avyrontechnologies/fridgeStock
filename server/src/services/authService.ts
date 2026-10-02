@@ -33,6 +33,8 @@ export async function register({ name, email, password, timeZone }: RegisterInpu
       email,
       passwordHash: await passwordHashService.hash(password),
       timeZone: zoneOrDefault(timeZone, 'UTC'),
+      // A new account is shown the first-run guide once.
+      firstRunDone: false,
     });
     return { token: signToken(user.id), user: toUserView(user) };
   } catch (error) {
@@ -58,7 +60,7 @@ export async function login({ email, password, timeZone }: LoginInput): Promise<
 
 export async function updateAccount(
   user: UserDoc,
-  { name, timeZone, currency, savePhotos }: UpdateAccountInput,
+  { name, timeZone, currency, savePhotos, firstRunDone }: UpdateAccountInput,
 ): Promise<User> {
   if (timeZone !== undefined && !isValidTimeZone(timeZone)) {
     throw new AppError(400, 'VALIDATION_ERROR', 'Time zone is not recognised.', 'timeZone');
@@ -67,6 +69,7 @@ export async function updateAccount(
   if (timeZone !== undefined) user.timeZone = timeZone;
   if (currency !== undefined) user.currency = currency;
   if (savePhotos !== undefined) user.savePhotos = savePhotos;
+  if (firstRunDone !== undefined) user.firstRunDone = firstRunDone;
   await user.save();
   return toUserView(user);
 }

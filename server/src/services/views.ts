@@ -26,6 +26,7 @@ export function toUserView(user: UserDoc): User {
     timeZone: user.timeZone,
     currency: user.currency ?? 'USD',
     savePhotos: user.savePhotos ?? true,
+    firstRunDone: user.firstRunDone ?? true,
     notificationPreferences: { approachingExpiry: prefs.approachingExpiry, due: prefs.due, overdue: prefs.overdue },
     reminderDelivery: { mode: user.reminderDelivery.mode, hour: user.reminderDelivery.hour },
     alerts: alertsOf(user),

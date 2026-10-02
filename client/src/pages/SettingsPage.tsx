@@ -191,6 +191,14 @@ export function SettingsPage() {
         </section>
 
         <Link
+          to="/welcome"
+          className="flex min-h-14 items-center justify-between rounded-card border border-line bg-card px-4 font-medium hover:bg-paper"
+        >
+          How Cook First works
+          <ChevronRight aria-hidden className="size-5 text-muted" />
+        </Link>
+
+        <Link
           to="/household"
           className="flex min-h-14 items-center justify-between rounded-card border border-line bg-card px-4 font-medium hover:bg-paper"
         >

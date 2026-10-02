@@ -576,3 +576,52 @@ export const swipeCopy = { used: 'Used', wasted: 'Wasted' };
 
 /** Pulling down to refresh. */
 export const pullCopy = { refreshing: 'Refreshing' };
+
+/** Recently added foods on Add food. */
+export const recentCopy = {
+  title: 'Recent',
+  hint: 'Tap one to fill in the form, then check it and save.',
+  fill: (name: string) => `Fill in ${name}`,
+};
+
+/** The first-run guide: three steps, shown once to a new account. */
+export const firstRunCopy = {
+  welcome: 'Welcome to Cook First',
+  progress: (step: number, total: number) => `Step ${step} of ${total}`,
+  skip: 'Skip for now',
+  back: 'Back',
+  next: 'Next',
+  finish: 'Start using Cook First',
+  navigation: 'Guide steps',
+  saveFailed: 'Couldn’t save that you’ve seen the guide. It may show again next time.',
+  addFailed: 'Couldn’t add that. Check your connection and try again.',
+  addedToast: (count: number) => (count === 1 ? 'Added 1 food' : `Added ${count} foods`),
+  step1: {
+    title: 'What “expected expiry” means',
+    body: 'Cook First works out an expected expiry date for each food from the day you added it and how long that kind of food usually lasts. The soonest dates come first, so you can see what to cook first.',
+    points: [
+      'It is an estimate, so you can change any lifespan.',
+      '“Use soon” means a food is getting close to its expected expiry.',
+      'Past its expected expiry means check it before you decide what to do.',
+    ],
+    disclaimerLabel: 'Please remember',
+  },
+  step2: {
+    title: 'Add your first food',
+    body: 'Start with a few things you have at home. You can add more any time from the Add food button.',
+    camera: 'Use the camera',
+    favourites: 'Your favourites',
+    common: 'Or pick a few common foods',
+    commonHint: 'Each is added to the fridge as one item, with its usual lifespan.',
+    addPicked: (count: number) => (count === 1 ? 'Add 1 food' : `Add ${count} foods`),
+    added: (names: string[]) => `Added: ${names.join(', ')}`,
+  },
+  step3: {
+    title: 'Meal times and reminders',
+    body: 'Choose when you would like a cooking reminder. They only go out when there is something to cook first, or a meal planned.',
+    reminders: 'Reminders on this device',
+    permission: 'Your phone asks for permission only when you tap the button below.',
+    turnOn: 'Turn on reminders',
+    on: 'Reminders are on for this device.',
+  },
+};

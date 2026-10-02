@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Navigate, Outlet, Route, Routes, useNavigate } from 'react-router';
+import { Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router';
 import { AppShell } from './components/AppShell';
 import { AddFoodPage } from './pages/AddFoodPage';
 import { BulkAddPage } from './pages/BulkAddPage';
@@ -7,6 +7,7 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { CookFirstPage } from './pages/CookFirstPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { FirstRunPage } from './pages/FirstRunPage';
 import { FoodDetailPage } from './pages/FoodDetailPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { HouseholdPage } from './pages/HouseholdPage';
@@ -27,7 +28,12 @@ import { useToastStore } from './stores/toastStore';
 
 function RequireAuth() {
   const token = useAuthStore((s) => s.token);
-  return token ? <Outlet /> : <Navigate to="/login" replace />;
+  const firstRunDone = useAuthStore((s) => s.user?.firstRunDone);
+  const { pathname } = useLocation();
+  if (!token) return <Navigate to="/login" replace />;
+  // A new account sees the first-run guide before anything else (until it is finished or skipped).
+  if (firstRunDone === false && pathname !== '/welcome') return <Navigate to="/welcome" replace />;
+  return <Outlet />;
 }
 
 function GuestOnly() {
@@ -85,6 +91,7 @@ export function App() {
         <Route path="/register" element={<RegisterPage />} />
       </Route>
       <Route element={<RequireAuth />}>
+        <Route path="/welcome" element={<FirstRunPage />} />
         <Route element={<AppShell />}>
           <Route index element={<DashboardPage />} />
           <Route path="/cook-first" element={<CookFirstPage />} />

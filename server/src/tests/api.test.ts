@@ -80,6 +80,7 @@ describe('responses', () => {
       'alerts',
       'currency',
       'email',
+      'firstRunDone',
       'id',
       'mealReminders',
       'name',

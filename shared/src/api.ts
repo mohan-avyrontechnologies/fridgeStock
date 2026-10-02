@@ -69,6 +69,11 @@ export interface User {
   currency: Currency;
   /** Whether a photo taken with the camera is kept with the food item (on by default). */
   savePhotos: boolean;
+  /**
+   * Whether the first-run guide has been seen (or skipped). New accounts start with `false`; accounts made
+   * before the guide existed count as done. Left out by servers older than v2.21.
+   */
+  firstRunDone?: boolean;
 }
 
 export interface AuthResponse {

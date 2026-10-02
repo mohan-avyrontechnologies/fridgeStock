@@ -30,6 +30,8 @@ export interface User {
   currency: Currency;
   /** Keep a photo with each food item added by camera. */
   savePhotos: boolean;
+  /** The first-run guide has been seen or skipped. Accounts that predate it have no value, which reads as done. */
+  firstRunDone: boolean;
   notificationPreferences: NotificationPreferences;
   /** Every user starts in their own household; shared households (a later phase) will reuse it. */
   householdId: Types.ObjectId;
@@ -51,6 +53,7 @@ const userSchema = new Schema<User>(
     timeZone: { type: String, required: true, default: 'UTC' },
     currency: { type: String, enum: CURRENCIES, default: 'USD' },
     savePhotos: { type: Boolean, default: true },
+    firstRunDone: { type: Boolean, default: true },
     notificationPreferences: {
       approachingExpiry: { type: Boolean, default: true },
       due: { type: Boolean, default: true },

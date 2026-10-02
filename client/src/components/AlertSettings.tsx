@@ -1,21 +1,11 @@
-import {
-  DEFAULT_ALERTS,
-  DEFAULT_MEAL_REMINDERS,
-  MEAL_TYPES,
-  type AlertSettings as Alerts,
-  type AlertSettingsInput,
-  type MealReminders,
-  type MealRemindersInput,
-  type MealType,
-} from '@cook-first/shared';
+import { DEFAULT_ALERTS, type AlertSettings as Alerts, type AlertSettingsInput } from '@cook-first/shared';
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
 import { alertCopy, mealSettingsCopy } from '../copy';
 import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
-import { Switch, Card } from './ui';
-
-const timeClass = 'min-h-12 rounded-button border border-line bg-card px-3 text-base';
+import { MealTimes, timeFieldClass } from './MealTimes';
+import { Card, Switch } from './ui';
 
 /**
  * Settings: reminder sounds, vibration and quiet hours, and the breakfast, lunch and dinner cooking reminders.
@@ -25,16 +15,11 @@ export function AlertSettings() {
   const { user, setUser } = useAuthStore();
   const toast = useToastStore((s) => s.show);
   const [alerts, setAlerts] = useState<Alerts>(user?.alerts ?? DEFAULT_ALERTS);
-  const [meals, setMeals] = useState<MealReminders>(user?.mealReminders ?? DEFAULT_MEAL_REMINDERS);
 
   useEffect(() => {
     let current = true;
     api.alerts().then(
       (saved) => current && setAlerts(saved),
-      () => {},
-    );
-    api.mealReminders().then(
-      (saved) => current && setMeals(saved),
       () => {},
     );
     return () => {
@@ -51,21 +36,6 @@ export function AlertSettings() {
       if (user) setUser({ ...user, alerts: saved });
     } catch {
       setAlerts(previous);
-      toast(alertCopy.saveFailed);
-    }
-  }
-
-  async function saveMeals(update: MealRemindersInput) {
-    const previous = meals;
-    setMeals(
-      Object.fromEntries(MEAL_TYPES.map((meal) => [meal, { ...meals[meal], ...update[meal] }])) as MealReminders,
-    );
-    try {
-      const saved = await api.updateMealReminders(update);
-      setMeals(saved);
-      if (user) setUser({ ...user, mealReminders: saved });
-    } catch {
-      setMeals(previous);
       toast(alertCopy.saveFailed);
     }
   }
@@ -104,7 +74,7 @@ export function AlertSettings() {
                 <span className="mb-1.5 block text-sm font-medium text-ink">{alertCopy.from}</span>
                 <input
                   type="time"
-                  className={timeClass}
+                  className={timeFieldClass}
                   value={quiet.start}
                   onChange={(e) => e.target.value && saveAlerts({ quietHours: { start: e.target.value } })}
                 />
@@ -113,7 +83,7 @@ export function AlertSettings() {
                 <span className="mb-1.5 block text-sm font-medium text-ink">{alertCopy.to}</span>
                 <input
                   type="time"
-                  className={timeClass}
+                  className={timeFieldClass}
                   value={quiet.end}
                   onChange={(e) => e.target.value && saveAlerts({ quietHours: { end: e.target.value } })}
                 />
@@ -129,29 +99,7 @@ export function AlertSettings() {
           {mealSettingsCopy.title}
         </h2>
         <p className="mb-3 text-sm text-muted">{mealSettingsCopy.intro}</p>
-        <Card as="ul" className="space-y-3 p-4">
-          {MEAL_TYPES.map((meal: MealType) => (
-            <li key={meal} className="space-y-2">
-              <Switch
-                label={mealSettingsCopy.meals[meal]}
-                checked={meals[meal].enabled}
-                onChange={(enabled) => saveMeals({ [meal]: { enabled } })}
-              />
-              {meals[meal].enabled && (
-                <label className="flex items-center gap-3">
-                  <span className="text-sm text-muted">{mealSettingsCopy.time(mealSettingsCopy.meals[meal])}</span>
-                  <input
-                    type="time"
-                    aria-label={mealSettingsCopy.time(mealSettingsCopy.meals[meal])}
-                    className={timeClass}
-                    value={meals[meal].time}
-                    onChange={(e) => e.target.value && saveMeals({ [meal]: { time: e.target.value } })}
-                  />
-                </label>
-              )}
-            </li>
-          ))}
-        </Card>
+        <MealTimes />
         <p className="mt-2 text-sm text-muted">{mealSettingsCopy.note}</p>
       </section>
     </>

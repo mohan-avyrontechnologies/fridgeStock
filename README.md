@@ -7,7 +7,7 @@ A mobile-first web app that helps a household use perishable food before it goes
 | | |
 |---|---|
 | **Status** | MVP complete; post-MVP Phases 1 (faster entry), 2 (realistic estimates), 3 (better reminders), 4 (using the food), 5 (insights) and 6 (dark mode, data export, account deletion, shared households) complete, barcode and receipt scanning, and 7 (Photo Check, behind a feature flag) complete, with a camera screen and product photos, ready-made Android and iOS apps (Capacitor, not yet built on a device), and reminder sounds, quiet hours and meal-time cooking reminders (the sounds are placeholders); voice entry, extra languages and grocery integrations are not built. Not yet deployed. |
-| **Version** | 2.20.0 (see the [Changelog](#changelog)) |
+| **Version** | 2.21.0 (see the [Changelog](#changelog)) |
 | **Requires** | Node.js 20.19 or later |
 | **Specifications** | PFCP BRD v2.0, FRD v1.0, SRD v1.0, TDD v1.0 (internal documents, not stored in this repo) |
 | **Repository** | `github.com/rugvailabs/cook_first` |
@@ -323,8 +323,8 @@ Run these from the repository root:
 | `npm run typecheck` | TypeScript check of `shared`, `server` and `client` |
 | `npm run seed -w server` | With the server running, create a demo account (`demo@cookfirst.local` / `cookfirst-demo`) with 10 priced sample items at every urgency level, plus 5 used or wasted ones so Insights has data. Add `-- --reset` to re-seed. |
 | `npm run vapid:keys -w server` | Generate a Web Push (VAPID) key pair for `server/.env` |
-| `npm test` | Unit and API tests: shared (45) + server (468) + client (370) |
-| `npm run test:e2e` | Playwright end-to-end tests (42), at 375 px and 1440 px |
+| `npm test` | Unit and API tests: shared (45) + server (473) + client (407) |
+| `npm run test:e2e` | Playwright end-to-end tests (46), at 375 px and 1440 px |
 | `npm run check:staging -- --api <api-url> --client <web-url>` | Check a deployment from the outside (HTTPS, health, CORS, headers, push, install files) |
 | `npm run cap:sync -w client` | Build the web app for the apps and copy it into the Android and iOS projects |
 | `npm run android -w client` / `npm run ios -w client` | Open the Android project in Android Studio / the iOS project in Xcode (see [Native apps](#native-apps-android-and-ios)) |
@@ -359,6 +359,7 @@ Run these from the repository root:
 | **Server structure** (`structure.test.ts`) | Vitest | 12 | The `server/src` folders; thin controllers; only models talk to MongoDB; no `new Date()` in date logic; dates only from `shared`; hourly node-cron job; env variable names and defaults; the threshold of 3 exists only in `config/urgency.ts` (checked across client, server and shared); expiry calculated in the food service with no Mongoose hook |
 | **Sounds, quiet hours and meals** (`sounds.test.tsx`, `native-sounds.test.ts`, in the native tests) | Vitest, Testing Library, MSW, file checks | 69 | **The chime** (three different files, not before a touch, the matching sound per kind, never in quiet hours in the person's own time zone, sound switch, a refusing browser, a push from the service worker or the app, stopped on close); **Settings** (defaults, each switch saved, quiet hours off and the times, failure puts it back; meal switches and times); **the meal screen** (recipe, plan, items, Cooked it, none today, a bad meal); Add Food from "Cooked it"; the plan one meal at a time; **native**: the Android channels are created at start (not on iPhone), the push kind is passed on, and the three meal buttons; **the project files**: the six channels agree between JavaScript and Java and cover everything the server can choose, the sound files are where the apps look, under 30 seconds and registered in Xcode, `sounds:sync` (placeholders, licensed files win, once in the project, too long refused), nothing asks for an alarm, a ringing notification or a critical alert, and the service worker's vibration, `requireInteraction`, tag and silent handling |
 | **Native platform** (`platform*.test.ts`, `native*.test.ts*`) | Vitest, Testing Library, MSW, fake Capacitor plugins | 78 | **Platform choice** (web in a browser and in tests, iOS or Android in the apps); the web platform is localStorage, the file input and the live camera, unchanged; the **login token in secure storage** (not localStorage, not synced, the app waits for it to be read); the **native camera** (system photo, scaled and upright, cancel is not an error), the **ML Kit scanner** (grocery formats, camera permission, the Android Google module install and its failure), **native push** (permission, registration, token and platform sent to the server, blocked and dismissed, turning off, the listeners started once, **Used and Snooze buttons call the API and fall back to opening the page**); the camera screen, Photo Check, product photos, receipts and Settings push in the app; the app opens a tapped notification's page and refreshes on a push; **native project files**: permissions and the text explaining them, one app ID everywhere, Firebase and notification set-up that matches the server, and `native:set-app-id` |
+| **Add food and the first-run guide** (`addfood.test.tsx`, `firstrun.test.tsx`, `bottomsheet.test.tsx`) | Vitest, Testing Library, MSW | 37 | Add food as a dialog with the camera first; the quantity stepper (steps by unit, never to zero, what is saved is what is shown); number keyboards and lifespan chips; Recent (newest first, one of each name, not favourites, at most six, fills the form); who sees the guide (new accounts first, not finished or older accounts, again from Settings); step 1's disclaimer; Next and Back with the step announced and focus on its heading; common foods and favourites added in a request; meal times saved; permission only on "Turn on reminders"; Skip and Start using Cook First save and leave, never trapping if saving fails; the bottom sheet's focus trap, Escape and focus return |
 | **Cards and actions** (`cards.test.tsx`, `haptics.test.ts`) | Vitest, Testing Library, MSW | 24 | What a card shows (and no meter, ring or bar); swiping right and left, a short or vertical drag doing nothing, Undo, the visible buttons; optimistic updates and putting back on failure; skeleton loading; pull to refresh (not from a dialog); haptics; the used animation with and without reduced motion; Capacitor Haptics in the apps and nothing in a browser |
 | **Home and tab bar** (`home.test.tsx`) | Vitest, Testing Library, MSW | 15 | The Cook first today row (order, badges, days left in words, at most six cards, See all), the current meal's suggestion (planned, or start with the two most urgent; breakfast, lunch and dinner by the hour), the calm state with Plan a meal and Add food, Cooked something, the location chips (priority order kept, empty places, the panel not filtered), the five tabs, and the More sheet (links, closes after a choice, Escape returns focus) |
 | **Design tokens** (`tokens.test.ts`) | Vitest | 20 | The colours from the design brief in both themes; WCAG AA contrast (text 4.5:1, badge text 7:1, bars and field outlines 3:1) for every pair the interface uses; card and button corners; the two fonts, bundled and not fetched from a CDN |
@@ -726,7 +727,7 @@ Base URL: `http://localhost:4000/api` (`VITE_API_URL`). Requests and responses a
 
 **Also available** (used by the app):
 - `GET /health`
-- `PUT /auth/me` (name, time zone, currency, savePhotos)
+- `PUT /auth/me` (name, time zone, currency, savePhotos, firstRunDone: the first-run guide was seen; new accounts start `false`, older accounts count as done)
 - `GET /notifications/unread-count` (the bell badge)
 - `GET /notifications/preferences`
 
@@ -1027,7 +1028,7 @@ The project was built in these phases; each one is complete.
 |---|---|
 | All MVP functional requirements (FR-AUTH, FOOD, EXP, PRI, UI, NOT, USE, VAL) | ✅ Done |
 | Monorepo with `client`, `server` and `shared`; Node 20.19+ | ✅ Done |
-| Tests: 45 shared + 468 server + 370 client + 42 end-to-end = **925** | ✅ Passing |
+| Tests: 45 shared + 473 server + 407 client + 46 end-to-end = **971** | ✅ Passing |
 | ESLint, Prettier and typecheck on all packages | ✅ Clean |
 | All project rules (see [Project rules](#project-rules)) | ✅ Met, each one checked by a test |
 | Phone (375 px) and desktop layouts, 44 px tap targets | ✅ Done, checked in screenshots and by tests |
@@ -1055,6 +1056,20 @@ All notable changes to this project are listed here, newest first. Versions foll
 
 ### [Unreleased]
 - *Nothing yet.*
+
+### [2.21.0] - 2026-10-03: design and usability, stage 4 (adding food and first run) · `COMMIT_HASH`
+**Added**
+- **Add food is a bottom sheet** (on a phone it slides up; on a larger screen it is a centred dialog). It is a real dialog: focus starts on the food name, Tab stays inside, Escape or the backdrop closes it and focus goes back. The **camera is first**, then favourites, then **Recent** (the foods you added most recently, one of each, without your favourites): tapping one fills the form from that food (amount, unit, lifespan, place) for you to check and save.
+- **A + / - stepper for quantity** (a half for kilos and litres, 50 for grams and millilitres, 1 for the rest), with the number still typeable. Quantity and price open a **decimal keyboard** and lifespan a **numeric** one; the lifespan **quick-pick chips** (1, 2, 3, 5, 7 and 14 days) stay.
+- **A three-step first-run guide** (`/welcome`), shown once to a new account and available again from **Settings → How Cook First works**: (1) what "expected expiry" means, with the disclaimer in a note; (2) add the first food with the **camera**, your **favourites**, or a tap on **common foods** (added to the fridge with their usual unit and lifespan); (3) choose **meal times** and turn on **reminders**. The phone's permission for notifications is asked **only** when "Turn on reminders" is tapped here or in Settings (a test checks no step asks earlier). Skip is on every step, finishing or skipping saves that it has been seen, and a failure to save never traps anyone in it.
+- `firstRunDone` on the account (`PUT /auth/me`): new accounts start with `false`; accounts made before the guide count as done.
+- Shared pieces: `MealTimes` (the meal-time switches, now in Settings and the guide) and `usePushReminders` (the push on/off logic, now in Settings and the guide).
+- Tests: 5 server, 13 for Add food, 19 for the guide, 5 for the bottom sheet, and two end-to-end journeys (the guide and the sheet), and axe on every step of the guide in both themes.
+
+**Changed**
+- The outline of every field, select and control uses the stronger `field` colour (3:1), not the faint hairline.
+- New accounts see the guide before Home; the end-to-end sign-up helpers skip it.
+
 
 ### [2.20.0] - 2026-10-03: design and usability, stage 3 (cards and actions) · `1e98865`
 **Added**

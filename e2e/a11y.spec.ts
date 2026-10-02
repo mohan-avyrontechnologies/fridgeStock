@@ -46,3 +46,35 @@ test('axe finds no violations on the sign-in and sign-up screens, in light or da
   }
   expect(found).toEqual([]);
 });
+
+test('axe finds no violations on the three steps of the first-run guide, in light or dark mode', async ({ page }) => {
+  await page.goto('/register');
+  await page.getByLabel('Name').fill('Guide Tester');
+  await page.getByLabel('Email').fill(`guide-${Date.now()}@example.com`);
+  await page.getByLabel('Password').fill('e2e-password-123');
+  await page.getByRole('button', { name: 'Create account' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Welcome to Cook First' })).toBeVisible();
+
+  const found: string[] = [];
+  const check = async (scheme: string, step: number) => {
+    await settle(page);
+    const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+    for (const violation of result.violations) {
+      found.push(`${scheme} step ${step}: ${violation.id} ${violation.nodes[0]?.target.join(' ')}`);
+    }
+  };
+  // Light: forwards through the steps. Dark: back again.
+  await page.emulateMedia({ colorScheme: 'light', reducedMotion: 'reduce' });
+  await check('light', 1);
+  await page.getByRole('button', { name: /Next/ }).click();
+  await check('light', 2);
+  await page.getByRole('button', { name: /Next/ }).click();
+  await check('light', 3);
+  await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
+  await check('dark', 3);
+  await page.getByRole('button', { name: /Back/ }).click();
+  await check('dark', 2);
+  await page.getByRole('button', { name: /Back/ }).click();
+  await check('dark', 1);
+  expect(found).toEqual([]);
+});
