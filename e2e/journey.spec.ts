@@ -482,3 +482,48 @@ test('phase 4: leftovers, a shopping list that warns about food at home, and a w
   await shot(page, '16-plan');
   await expectNoSafetyClaim(page);
 });
+
+test('phase 5: a price on the item, then used and wasted figures and money on Insights', async ({ page }) => {
+  await register(page, 'Priya Nair');
+
+  // Nothing to show before anything is used or wasted.
+  await openSettings(page);
+  await page.getByRole('link', { name: 'Insights' }).first().click();
+  await expect(page).toHaveURL('/insights');
+  await expect(page.getByText('Nothing to show yet')).toBeVisible();
+
+  // Milk with a price of 4.00 for 1 l.
+  await page.getByRole('link', { name: 'Home', exact: true }).first().click();
+  await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
+  await page.getByLabel('Food', { exact: true }).fill('Milk');
+  await page.getByLabel('Unit').selectOption('l');
+  await page.getByLabel('Lifespan (days)').fill('4');
+  await page.getByLabel('Price (USD, optional)').fill('4');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page).toHaveURL('/');
+
+  // Use a quarter (worth 1.00), then waste the rest (worth 3.00).
+  await page.getByRole('link', { name: /Milk/ }).first().click();
+  await expect(page.getByText('$4.00')).toBeVisible();
+  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Used some' }).click();
+  await page.getByLabel(/How much did you use/).fill('0.25');
+  await page.getByRole('dialog').getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByText('0.75 l')).toBeVisible();
+  await expect(page.getByText('$3.00')).toBeVisible();
+  await page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Wasted' }).click();
+  await expect(page).toHaveURL('/');
+
+  await openSettings(page);
+  await page.getByRole('link', { name: 'Insights' }).first().click();
+  await expect(page).toHaveURL('/insights');
+  const week = page.locator('section[aria-labelledby="this-week"]');
+  await expect(week).toContainText('Used');
+  await expect(week).toContainText('50% of the food you finished this week was wasted.');
+  const money = page.locator('section[aria-labelledby="money"]');
+  await expect(money.getByText('$1.00').first()).toBeVisible();
+  await expect(money.getByText('$3.00').first()).toBeVisible();
+  await expect(page.getByRole('img', { name: /used and wasted in each of the last 8 weeks/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Wasted most/ })).toBeVisible();
+  await expectNoSafetyClaim(page);
+  await shot(page, '17-insights');
+});

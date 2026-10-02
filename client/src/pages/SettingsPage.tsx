@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { api } from '../api/client';
-import type { NotificationPreferences } from '@cook-first/shared';
+import { CURRENCIES, type Currency, type NotificationPreferences } from '@cook-first/shared';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { PushReminders } from '../components/PushReminders';
 import { EstimateNote } from '../components/Urgency';
 import { Button } from '../components/ui';
-import { reminderPreferenceCopy, screenCopy } from '../copy';
+import { insightsCopy, reminderPreferenceCopy, screenCopy } from '../copy';
 import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
 
@@ -35,6 +35,15 @@ export function SettingsPage() {
       setUser({ ...user, notificationPreferences: saved });
     } catch {
       setPrefs(prefs);
+      toast('Couldn’t save that. Try again.');
+    }
+  }
+
+  async function changeCurrency(currency: Currency) {
+    try {
+      const { user: updated } = await api.updateMe({ currency });
+      setUser(updated);
+    } catch {
       toast('Couldn’t save that. Try again.');
     }
   }
@@ -104,12 +113,39 @@ export function SettingsPage() {
           </ul>
         </section>
 
+        <section>
+          <h2 className="mb-1 text-lg font-semibold">{insightsCopy.currencyTitle}</h2>
+          <p className="mb-3 text-sm text-muted">{insightsCopy.currencyHint}</p>
+          <select
+            aria-label={insightsCopy.currencyTitle}
+            value={user?.currency ?? 'USD'}
+            onChange={(e) => changeCurrency(e.target.value as Currency)}
+            className="block min-h-12 w-40 rounded-xl border border-line bg-card px-3.5 text-base text-ink focus:border-brand focus:outline-none"
+          >
+            {CURRENCIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </section>
+
         <PushReminders />
 
         <section>
           <h2 className="mb-2 text-lg font-semibold">{screenCopy.settings.aboutTitle}</h2>
           <EstimateNote />
         </section>
+
+        <Link
+          to="/insights"
+          className="flex min-h-14 items-center justify-between rounded-2xl border border-line bg-card px-4 font-medium hover:bg-paper"
+        >
+          Insights
+          <span aria-hidden className="text-muted">
+            ›
+          </span>
+        </Link>
 
         <Link
           to="/history"

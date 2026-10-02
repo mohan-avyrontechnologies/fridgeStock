@@ -23,9 +23,17 @@ export function toUserView(user: UserDoc): User {
     name: user.name,
     email: user.email,
     timeZone: user.timeZone,
+    currency: user.currency ?? 'USD',
     notificationPreferences: { approachingExpiry: prefs.approachingExpiry, due: prefs.due, overdue: prefs.overdue },
     reminderDelivery: { mode: user.reminderDelivery.mode, hour: user.reminderDelivery.hour },
   };
+}
+
+/** The price of what is left: a partly used item's price shrinks with its quantity. */
+function currentPrice(doc: FoodItemDoc): number | null {
+  if (doc.price == null) return null;
+  if (!doc.priceQuantity) return doc.price;
+  return Math.round(((doc.price * doc.quantity) / doc.priceQuantity) * 100) / 100;
 }
 
 export function toFoodView(doc: FoodItemDoc, today: DateString): FoodItem {
@@ -42,6 +50,7 @@ export function toFoodView(doc: FoodItemDoc, today: DateString): FoodItem {
     storage: doc.storage ?? 'FRIDGE',
     openedDate: doc.openedDate ?? null,
     leftover: doc.leftover ?? false,
+    price: currentPrice(doc),
     status: doc.status,
     remainingDays,
     urgency: remainingDays === null ? null : classifyUrgency(remainingDays),
@@ -62,6 +71,7 @@ export function toUsageView(record: UsageRecordDoc): UsageRecord {
     recordedAt: record.createdAt.toISOString(),
     quantityUsed: record.quantityUsed,
     quantityRemaining: record.quantityRemaining,
+    value: record.value ?? null,
   };
 }
 

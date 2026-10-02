@@ -6,6 +6,14 @@ import type { UserDoc } from '../models/User.js';
 import { clock } from './clock.js';
 import { toUsageView } from './views.js';
 
+const round2 = (n: number) => Math.round(n * 100) / 100;
+
+/** The price of the quantity an action covers, or null when the item has no price (or the action is a removal). */
+function valueOf(food: FoodItemDoc, action: UsageAction, quantityUsed: number): number | null {
+  if (action === 'REMOVED' || food.price == null || !food.priceQuantity) return null;
+  return round2((food.price * Math.min(quantityUsed, food.priceQuantity)) / food.priceQuantity);
+}
+
 /** Writes one usage record for an action on a food item. */
 export function createRecord(
   user: UserDoc,
@@ -23,6 +31,7 @@ export function createRecord(
     foodName: food.name,
     unit: food.unit,
     quantityRemaining,
+    value: valueOf(food, action, quantityUsed),
   });
 }
 

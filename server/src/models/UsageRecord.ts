@@ -15,6 +15,8 @@ export interface UsageRecord {
   foodName: string;
   unit: string;
   quantityRemaining: number;
+  /** The price of quantityUsed when the item had a price, else null. */
+  value?: number | null;
   /** Exact time of the action (set by timestamps). */
   createdAt: Date;
 }
@@ -33,6 +35,7 @@ const usageRecordSchema = new Schema<UsageRecord>(
     foodName: { type: String, required: true },
     unit: { type: String, required: true },
     quantityRemaining: { type: Number, required: true, min: 0 },
+    value: { type: Number, default: null, min: 0 },
   },
   // Timestamps come from the app clock, so "Undo" windows are measured on the same clock as everything else.
   { timestamps: { currentTime: () => clock.now() }, shardKey: { userId: 1 } },

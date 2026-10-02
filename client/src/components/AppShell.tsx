@@ -183,6 +183,11 @@ function Sidebar() {
             </NavLink>
           </li>
           <li>
+            <NavLink to="/insights" className={item}>
+              <ChartIcon /> Insights
+            </NavLink>
+          </li>
+          <li>
             <NavLink to="/history" className={item}>
               <ListIcon /> History
             </NavLink>
@@ -311,6 +316,13 @@ function PanIcon() {
     <svg aria-hidden viewBox="0 0 24 24" className={iconClass}>
       <path d="M3 11h14v1.5A5.5 5.5 0 0 1 11.5 18h-3A5.5 5.5 0 0 1 3 12.5zM17 12h4" strokeLinecap="round" />
       <path d="M8 4c-1 1.5 1 2.5 0 4M12 4c-1 1.5 1 2.5 0 4" strokeLinecap="round" />
+    </svg>
+  );
+}
+function ChartIcon() {
+  return (
+    <svg aria-hidden viewBox="0 0 24 24" className={iconClass}>
+      <path d="M5 20V11M12 20V4M19 20v-6" strokeLinecap="round" />
     </svg>
   );
 }

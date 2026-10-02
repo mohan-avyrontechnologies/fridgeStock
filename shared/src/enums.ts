@@ -20,6 +20,10 @@ export type FoodStatus = (typeof FOOD_STATUSES)[number];
 export const USAGE_ACTIONS = ['USED', 'PARTIALLY_USED', 'WASTED', 'REMOVED'] as const;
 export type UsageAction = (typeof USAGE_ACTIONS)[number];
 
+/** Currencies a user can show prices in (display only; no conversion). */
+export const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'INR'] as const;
+export type Currency = (typeof CURRENCIES)[number];
+
 export const REMINDER_TYPES = ['APPROACHING_EXPIRY', 'DUE', 'OVERDUE'] as const;
 export type ReminderType = (typeof REMINDER_TYPES)[number];
 

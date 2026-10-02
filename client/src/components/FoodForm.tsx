@@ -71,6 +71,8 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
     initial ? String(initial.lifespanDays) : prefill?.leftover ? String(leftoverDays('FRIDGE') ?? '') : '',
   );
   const [storage, setStorage] = useState<StorageLocation>(initial?.storage ?? 'FRIDGE');
+  const [price, setPrice] = useState(initial?.price == null ? '' : String(initial.price));
+  const currency = useAuthStore((s) => s.user?.currency) ?? 'USD';
   // The food name the lifespan was suggested for, if the user picked a suggestion.
   const [suggestedFrom, setSuggestedFrom] = useState<string | null>(null);
   const learned = useSuggestionStore((s) => s.learned);
@@ -147,6 +149,8 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
       notes,
       storage,
       leftover,
+      // Blank means no price; when editing, blank clears a price that was set.
+      price: price.trim() === '' ? (initial ? null : undefined) : Number(price),
     });
     const next: Errors = { ...found };
     if (!next.lifespanDays && leftover && storage !== 'FREEZER' && Number(lifespan) > LEFTOVER_MAX_DAYS) {
@@ -171,6 +175,7 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
         setQuantity('1');
         setLifespan('');
         setNotes('');
+        setPrice('');
         setShowNotes(false);
         setSuggestedFrom(null);
         setLeftover(false);
@@ -244,6 +249,23 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
           error={errors.quantity}
         />
       </div>
+
+      <Field
+        className="w-40"
+        label={`Price (${currency}, optional)`}
+        type="number"
+        inputMode="decimal"
+        step="0.01"
+        min="0"
+        placeholder="What it cost"
+        value={price}
+        onChange={(e) => {
+          setPrice(e.target.value);
+          clearError('price');
+        }}
+        error={errors.price}
+        hint={screenCopy.form.priceHint}
+      />
 
       <div>
         <label htmlFor={unitId} className="mb-1.5 block text-sm font-medium text-ink">

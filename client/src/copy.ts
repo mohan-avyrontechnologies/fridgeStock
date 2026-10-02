@@ -69,6 +69,7 @@ export const screenCopy = {
     sortedHint: 'Sorted by expected expiry, soonest first.',
     emptyInventory: 'Your fridge is empty. Add your first item.',
     nothingUrgent: 'Nothing urgent right now.',
+    insightsLink: 'See what you used and wasted',
     seeAll: 'See all',
     loadError: 'Couldn’t load your food.',
   },
@@ -86,6 +87,7 @@ export const screenCopy = {
     previewEmpty: 'Expected expiry: enter a lifespan to see it',
     lifespanHint: 'Your own estimate, counted from the added date. 0 means it expires the same day.',
     addNote: 'Add note',
+    priceHint: 'Optional. What it cost in total. Used only for the money figures on Insights.',
   },
   detail: {
     savedToast: 'Saved. Expected expiry updated.',
@@ -304,3 +306,31 @@ export const planCopy = {
   full: 'Every day this week already has a meal.',
   loadError: 'Couldn’t load your meal plan.',
 };
+
+/** Phase 5: insights. Talks about habits and money, never about whether food can be eaten. */
+export const insightsCopy = {
+  subtitle: 'What you used and wasted',
+  loadError: 'Couldn’t load your insights. Try again.',
+  emptyTitle: 'Nothing to show yet',
+  emptyBody: 'Mark food as used or wasted and your weekly picture appears here.',
+  seeHistory: 'See History',
+  used: 'Used',
+  wasted: 'Wasted',
+  thisWeek: 'This week',
+  rate: (percent: number) => `${percent}% of the food you finished this week was wasted.`,
+  nothingFinishedThisWeek: 'Nothing was used or wasted this week yet.',
+  lastWeek: (used: number, wasted: number) => `Last week: ${used} used, ${wasted} wasted.`,
+  moneyTitle: 'Money',
+  savedThisWeek: 'Used this week',
+  lostThisWeek: 'Wasted this week',
+  savedMonth: 'Used, last 30 days',
+  lostMonth: 'Wasted, last 30 days',
+  moneyNote: 'Only food you added a price for is counted, and a partly used item counts for the part you used.',
+  weeksTitle: 'Last 8 weeks',
+  chartLabel: 'Items used and wasted in each of the last 8 weeks',
+  topWastedTitle: 'Wasted most, last 30 days',
+  times: (n: number) => (n === 1 ? '1 time' : `${n} times`),
+  tipsTitle: 'Tips',
+  currencyTitle: 'Currency',
+  currencyHint: 'Used to show prices. Nothing is converted.',
+} as const;

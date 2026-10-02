@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { isValidDate } from './dates.js';
-import { PUSH_ACTIONS, REMINDER_MODES, STORAGE_LOCATIONS, UNITS } from './enums.js';
+import { CURRENCIES, PUSH_ACTIONS, REMINDER_MODES, STORAGE_LOCATIONS, UNITS } from './enums.js';
 
 /**
  * Request schemas. The server's check is the only one that counts; the client
@@ -39,6 +39,8 @@ export const MESSAGES = {
   invalidCredentials: 'Email or password is incorrect.',
   itemClosed: 'This item is no longer active.',
   storage: 'Choose where it is kept: fridge, freezer or pantry.',
+  price: 'Price must be a number from 0 to 100,000.',
+  currency: 'Choose one of the listed currencies.',
   openedDate: "Opened date must be a valid date that isn't in the future or before the added date.",
   bulkEmpty: 'Add at least one item.',
   bulkTooMany: 'Add at most 50 items at once.',
@@ -74,7 +76,9 @@ export const loginSchema = z.object({
   timeZone: z.string().optional(),
 });
 
-export const updateAccountSchema = z.object({ name, timeZone: z.string() }).partial();
+export const updateAccountSchema = z
+  .object({ name, timeZone: z.string(), currency: z.enum(CURRENCIES, { error: MESSAGES.currency }) })
+  .partial();
 
 const quantity = z.number({ error: MESSAGES.quantity }).positive(MESSAGES.quantity).max(1_000_000, MESSAGES.quantity);
 
@@ -96,6 +100,8 @@ const foodFields = {
   /** When the item was opened, if it has been. Checked against today and the added date by the server. */
   openedDate: z.string({ error: MESSAGES.openedDate }).refine(isValidDate, MESSAGES.openedDate).nullable().optional(),
   leftover: z.boolean().optional(),
+  /** What the whole quantity cost. Optional; used only for the money saved and lost on Insights. */
+  price: z.number({ error: MESSAGES.price }).min(0, MESSAGES.price).max(100_000, MESSAGES.price).nullable().optional(),
 };
 
 /**

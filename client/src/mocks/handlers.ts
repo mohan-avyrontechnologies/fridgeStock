@@ -16,6 +16,7 @@ export function item(overrides: Partial<ActiveFoodItem>): ActiveFoodItem {
     storage: 'FRIDGE',
     openedDate: null,
     leftover: false,
+    price: null,
     status: 'ACTIVE',
     remainingDays: 4,
     urgency: 'NOT_URGENT',

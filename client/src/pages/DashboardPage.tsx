@@ -94,6 +94,15 @@ export function DashboardPage() {
                 )}
               </section>
             </div>
+            <Link
+              to="/insights"
+              className="flex min-h-14 items-center justify-between rounded-2xl border border-line bg-card px-4 font-medium hover:bg-paper"
+            >
+              {screenCopy.dashboard.insightsLink}
+              <span aria-hidden className="text-muted">
+                ›
+              </span>
+            </Link>
             <EstimateNote />
           </>
         )}

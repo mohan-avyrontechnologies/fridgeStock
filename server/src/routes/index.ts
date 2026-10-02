@@ -32,6 +32,7 @@ import { suggestionController } from '../controllers/suggestionController.js';
 import { notificationController } from '../controllers/notificationController.js';
 import { pushController } from '../controllers/pushController.js';
 import { shoppingController } from '../controllers/shoppingController.js';
+import { insightsController } from '../controllers/insightsController.js';
 import { usageController } from '../controllers/usageController.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -103,6 +104,7 @@ router.delete('/favourites/:id', favouriteController.remove);
 router.post('/favourites/:id/add', favouriteController.add);
 
 router.get('/usage', validate(paginationSchema, 'query'), usageController.list);
+router.get('/insights', insightsController.get);
 
 router.get('/notifications', validate(notificationPageSchema, 'query'), notificationController.list);
 router.get('/notifications/unread-count', notificationController.unreadCount);

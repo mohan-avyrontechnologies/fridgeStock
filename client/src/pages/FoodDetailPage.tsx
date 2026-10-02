@@ -23,8 +23,9 @@ import {
   urgencyCopy,
 } from '../copy';
 import { formatDisplay } from '@cook-first/shared';
-import { formatInstant, formatQuantity } from '../lib/format';
+import { formatInstant, formatMoney, formatQuantity } from '../lib/format';
 import { useFoodStore } from '../stores/foodStore';
+import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
 
 export function FoodDetailPage() {
@@ -32,6 +33,7 @@ export function FoodDetailPage() {
   const navigate = useNavigate();
   const update = useFoodStore((s) => s.update);
   const toast = useToastStore((s) => s.show);
+  const currency = useAuthStore((s) => s.user?.currency) ?? 'USD';
   const [food, setFood] = useState<FoodItem | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -159,6 +161,7 @@ export function FoodDetailPage() {
                 lifespanDays: food.lifespanDays,
                 notes: food.notes ?? undefined,
                 storage: food.storage,
+                price: food.price,
                 leftover: food.leftover,
               }}
               onSubmit={async (input) => {
@@ -198,6 +201,7 @@ export function FoodDetailPage() {
                 />
                 <Detail label="Unit" value={food.unit} />
                 <Detail label="Kept in" value={storageLabel[food.storage]} />
+                {food.price !== null && <Detail label="Price" value={formatMoney(food.price, currency)} />}
                 {food.leftover && <Detail label="Type" value={leftoverCopy.tag} />}
                 {food.openedDate && <Detail label="Opened on" value={formatDisplay(food.openedDate)} />}
                 <Detail label={expectedExpiryLabel} value={formatDisplay(food.expiryDate)} />

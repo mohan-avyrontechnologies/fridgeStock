@@ -74,9 +74,10 @@ describe('errors', () => {
 });
 
 describe('responses', () => {
-  it('users have id, name, email, time zone, preferences and reminder delivery only', async () => {
+  it('users have id, name, email, time zone, currency, preferences and reminder delivery only', async () => {
     const me = await s.auth(api().get('/api/auth/me')).expect(200);
     expect(Object.keys(me.body.user).sort()).toEqual([
+      'currency',
       'email',
       'id',
       'name',

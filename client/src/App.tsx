@@ -8,6 +8,7 @@ import { CookFirstPage } from './pages/CookFirstPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { FoodDetailPage } from './pages/FoodDetailPage';
 import { HistoryPage } from './pages/HistoryPage';
+import { InsightsPage } from './pages/InsightsPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { PlanPage } from './pages/PlanPage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -40,6 +41,7 @@ export function App() {
           <Route path="/food/:id" element={<FoodDetailPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/history" element={<HistoryPage />} />
+          <Route path="/insights" element={<InsightsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/shopping" element={<ShoppingPage />} />
           <Route path="/plan" element={<PlanPage />} />

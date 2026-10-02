@@ -1,5 +1,6 @@
 import type { DateString } from './dates.js';
 import type {
+  Currency,
   FoodStatus,
   NotificationStatus,
   PreferenceKey,
@@ -30,6 +31,8 @@ export interface User {
   timeZone: string;
   notificationPreferences: NotificationPreferences;
   reminderDelivery: ReminderDelivery;
+  /** Currency prices are shown in. */
+  currency: Currency;
 }
 
 export interface AuthResponse {
@@ -51,6 +54,8 @@ export interface FoodItem {
   openedDate: DateString | null;
   /** Leftovers from a cooked meal: a new item with a short lifespan. */
   leftover: boolean;
+  /** What the whole quantity cost, if the user entered it. */
+  price: number | null;
   status: FoodStatus;
   /** Only while the item is active. */
   remainingDays: number | null;
@@ -113,6 +118,8 @@ export interface UsageRecord {
   recordedAt: string;
   quantityUsed: number;
   quantityRemaining: number;
+  /** The price of the quantity used or wasted, when the item had a price. */
+  value: number | null;
 }
 
 export interface UsageResult {
@@ -252,4 +259,51 @@ export interface MealPlan {
 /** POST /ai/meal-plan: a draft for the empty days. Nothing is saved until the user adds it. */
 export interface MealPlanDraft {
   days: { date: DateString; title: string; foods: FoodRef[] }[];
+}
+
+/** Used and wasted food over a window of days (from the usage history; REMOVED entries are left out). */
+export interface InsightsPeriod {
+  /** Items used (fully or partly). */
+  used: number;
+  wasted: number;
+  /** Wasted as a share of used + wasted (0 to 1), or null when nothing was recorded. */
+  wasteRate: number | null;
+  /** Total price of what was used, from items that had a price. */
+  savedValue: number;
+  /** Total price of what was wasted, from items that had a price. */
+  lostValue: number;
+  /** How many of the used and wasted entries had a price. */
+  pricedEntries: number;
+}
+
+export interface InsightsWeek extends InsightsPeriod {
+  /** First day of this 7-day week. */
+  from: DateString;
+  to: DateString;
+}
+
+export interface InsightsWastedFood {
+  name: string;
+  count: number;
+  lostValue: number;
+}
+
+export interface InsightsTip {
+  id: string;
+  text: string;
+}
+
+export interface Insights {
+  today: DateString;
+  /** The last seven days, today included. */
+  thisWeek: InsightsPeriod;
+  /** The seven days before that. */
+  lastWeek: InsightsPeriod;
+  last30Days: InsightsPeriod;
+  /** Eight 7-day weeks, oldest first; the last one ends today. */
+  weeks: InsightsWeek[];
+  /** Most wasted foods in the last 30 days, most first (at most 5). */
+  topWasted: InsightsWastedFood[];
+  /** Short tips from the numbers above; empty when there is nothing to say. */
+  tips: InsightsTip[];
 }

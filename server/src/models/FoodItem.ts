@@ -35,6 +35,10 @@ export interface FoodItem {
   openedDate?: DateString | null;
   /** Leftovers from a cooked meal (short lifespan). */
   leftover: boolean;
+  /** What priceQuantity of this item cost; used only for money saved and lost on Insights. */
+  price?: number | null;
+  /** The quantity the price was for (the quantity when the price was entered). */
+  priceQuantity?: number | null;
   /** The lifespan before "Opened" shortened it, so opening can be undone. */
   lifespanBeforeOpened?: number | null;
   /** Snoozed from a push notification: left out of push reminders until this day. */
@@ -85,6 +89,8 @@ const foodItemSchema = new Schema<FoodItem>(
     lifespanBeforeOpened: { type: Number, default: null },
     snoozedUntil: { type: String, default: null },
     leftover: { type: Boolean, default: false },
+    price: { type: Number, default: null, min: 0, max: 100_000 },
+    priceQuantity: { type: Number, default: null, min: 0 },
     enteredLifespanDays: { type: Number, required: true, min: 0, max: 365 },
     enteredStorage: { type: String, enum: STORAGE_LOCATIONS, required: true },
     status: { type: String, enum: FOOD_STATUSES, default: 'ACTIVE', required: true },

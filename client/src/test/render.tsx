@@ -13,6 +13,7 @@ export function renderSignedIn(path: string, element: ReactElement, routePath = 
       name: 'Asha Rao',
       email: 'asha@example.com',
       timeZone: 'UTC',
+      currency: 'USD',
       notificationPreferences: { approachingExpiry: true, due: true, overdue: true },
       reminderDelivery: { mode: 'DIGEST', hour: 8 },
     },

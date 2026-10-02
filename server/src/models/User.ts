@@ -1,4 +1,4 @@
-import { REMINDER_MODES, type DateString, type ReminderMode } from '@cook-first/shared';
+import { CURRENCIES, REMINDER_MODES, type Currency, type DateString, type ReminderMode } from '@cook-first/shared';
 import { Schema, Types, model, type HydratedDocument } from 'mongoose';
 
 export interface NotificationPreferences {
@@ -17,6 +17,7 @@ export interface User {
   email: string;
   passwordHash: string;
   timeZone: string;
+  currency: Currency;
   notificationPreferences: NotificationPreferences;
   /** Every user starts in their own household; shared households (a later phase) will reuse it. */
   householdId: Types.ObjectId;
@@ -32,6 +33,7 @@ const userSchema = new Schema<User>(
     passwordHash: { type: String, required: true },
     // IANA zone used to decide which calendar day is "today" for this user.
     timeZone: { type: String, required: true, default: 'UTC' },
+    currency: { type: String, enum: CURRENCIES, default: 'USD' },
     notificationPreferences: {
       approachingExpiry: { type: Boolean, default: true },
       due: { type: Boolean, default: true },

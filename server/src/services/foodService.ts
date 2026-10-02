@@ -134,7 +134,7 @@ export async function getFood(user: UserDoc, id: string): Promise<FoodItem> {
 
 /** The fields of a new item: owner, household, calculated expiry and a FRIDGE default. */
 function newItem(user: UserDoc, input: FoodInput) {
-  const { name, quantity, unit, addedDate, lifespanDays, notes, storage, openedDate, leftover } = input;
+  const { name, quantity, unit, addedDate, lifespanDays, notes, storage, openedDate, leftover, price } = input;
   return {
     userId: user._id,
     householdId: user.householdId,
@@ -150,6 +150,8 @@ function newItem(user: UserDoc, input: FoodInput) {
     enteredLifespanDays: lifespanDays,
     enteredStorage: storage ?? 'FRIDGE',
     leftover: leftover ?? false,
+    price: price ?? null,
+    priceQuantity: price == null ? null : quantity,
   };
 }
 
@@ -181,7 +183,7 @@ export async function updateFood(user: UserDoc, id: string, input: FoodUpdateInp
   const food = await findOwned(user, id);
   assertActive(food);
   if (input.addedDate !== undefined) assertNotFuture(input.addedDate, today);
-  const { name, quantity, unit, addedDate, lifespanDays, notes, storage, openedDate, leftover } = input;
+  const { name, quantity, unit, addedDate, lifespanDays, notes, storage, openedDate, leftover, price } = input;
   assertOpenedDate(openedDate, addedDate ?? food.addedDate, today);
   assertLeftoverLifespan(leftover ?? food.leftover, storage ?? food.storage, lifespanDays ?? food.lifespanDays);
   if (name !== undefined) food.name = name;
@@ -193,6 +195,11 @@ export async function updateFood(user: UserDoc, id: string, input: FoodUpdateInp
   if (storage !== undefined) food.storage = food.enteredStorage = storage;
   if (openedDate !== undefined) food.openedDate = openedDate;
   if (leftover !== undefined) food.leftover = leftover;
+  // A new price covers the quantity the item has now; clearing it removes both.
+  if (price !== undefined) {
+    food.price = price;
+    food.priceQuantity = price === null ? null : food.quantity;
+  }
 
   // No Mongoose hook for this: hooks don't run on update queries.
   const datesChanged = addedDate !== undefined || lifespanDays !== undefined;

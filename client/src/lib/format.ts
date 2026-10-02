@@ -15,3 +15,8 @@ export function formatInstant(iso: string): string {
     minute: '2-digit',
   }).format(new Date(iso));
 }
+
+/** "$4.50" in the user's chosen currency (display only; nothing is converted). */
+export function formatMoney(value: number, currency: string): string {
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency }).format(value);
+}
