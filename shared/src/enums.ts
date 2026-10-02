@@ -64,5 +64,9 @@ export const REMINDER_MODES = ['DIGEST', 'EACH_ITEM'] as const;
 export type ReminderMode = (typeof REMINDER_MODES)[number];
 
 /** Buttons inside a push notification. */
+/** Where a push subscription lives: a browser (Web Push), or the Android or iOS app (Firebase Cloud Messaging). */
+export const PUSH_PLATFORMS = ['web', 'android', 'ios'] as const;
+export type PushPlatform = (typeof PUSH_PLATFORMS)[number];
+
 export const PUSH_ACTIONS = ['USED', 'SNOOZE'] as const;
 export type PushAction = (typeof PUSH_ACTIONS)[number];

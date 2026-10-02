@@ -262,14 +262,40 @@ const pushKey = z
   .max(200, MESSAGES.pushSubscription);
 
 /** POST /push/subscriptions: the browser's PushSubscription.toJSON(), plus a short browser name. */
-export const pushSubscriptionSchema = z.object({
-  endpoint: pushEndpoint,
-  keys: z.object({ p256dh: pushKey, auth: pushKey }, { error: MESSAGES.pushSubscription }),
-  browser: z.string().trim().max(40).optional(),
-});
+/** A device token from Firebase Cloud Messaging (native apps). Opaque text, a couple of hundred characters. */
+const nativeToken = z
+  .string({ error: MESSAGES.pushSubscription })
+  .min(20, MESSAGES.pushSubscription)
+  .max(4096, MESSAGES.pushSubscription)
+  .regex(/^\S+$/, MESSAGES.pushSubscription);
+
+const browserName = z.string().trim().max(40).optional();
+
+/**
+ * POST /push/subscriptions. A browser sends its Web Push subscription (the platform may be left out); the
+ * Android or iOS app sends its Firebase device token and says which it is.
+ */
+export const pushSubscriptionSchema = z.union(
+  [
+    z.object({
+      platform: z.literal('web').optional(),
+      endpoint: pushEndpoint,
+      keys: z.object({ p256dh: pushKey, auth: pushKey }, { error: MESSAGES.pushSubscription }),
+      browser: browserName,
+    }),
+    z.object({
+      platform: z.enum(['android', 'ios'], { error: MESSAGES.pushSubscription }),
+      token: nativeToken,
+      browser: browserName,
+    }),
+  ],
+  { error: MESSAGES.pushSubscription },
+);
 
 /** DELETE /push/subscriptions */
-export const pushUnsubscribeSchema = z.object({ endpoint: pushEndpoint });
+export const pushUnsubscribeSchema = z.union([z.object({ endpoint: pushEndpoint }), z.object({ token: nativeToken })], {
+  error: MESSAGES.pushSubscription,
+});
 
 /** POST /push/actions: sent by the service worker when a notification button is tapped. */
 export const pushActionSchema = z.object({

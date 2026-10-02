@@ -8,3 +8,6 @@ e2e/.results
 e2e/screenshots
 docs
 *.md
+# The native apps: generated and hand-written Java, Swift and XML, and the web files copied into them
+client/android
+client/ios

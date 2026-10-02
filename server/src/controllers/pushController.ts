@@ -14,7 +14,10 @@ export const pushController = {
   },
 
   async unsubscribe(req: Request, res: Response) {
-    await pushService.unsubscribe(currentUser(req), req.body.endpoint);
+    await pushService.unsubscribe(
+      currentUser(req),
+      'token' in req.body ? { token: req.body.token } : { endpoint: req.body.endpoint },
+    );
     res.status(204).end();
   },
 

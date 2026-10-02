@@ -23,6 +23,7 @@ import { bulkCopy, cameraCopy, productPhotoCopy, receiptCopy, referenceCopy, sto
 import { BlobThumb } from '../lib/foodPhoto';
 import { fieldsFor, type ScannedItem } from '../lib/scanned';
 import { photoForUpload } from '../lib/image';
+import { pickPhoto } from '../platform/pickPhoto';
 import { firstSuggestion, suggestFor } from '../lib/suggestions';
 import { check } from '../lib/validation';
 import { useAiStore } from '../stores/aiStore';
@@ -269,7 +270,12 @@ export function BulkAddPage() {
                   if (file) void readReceipt(file);
                 }}
               />
-              <Button type="button" variant="secondary" disabled={reading} onClick={() => photoInput.current?.click()}>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={reading}
+                onClick={() => void pickPhoto(photoInput.current, readReceipt)}
+              >
                 {reading ? receiptCopy.reading : receiptCopy.button}
               </Button>
               {reading && <Spinner label={receiptCopy.reading} />}

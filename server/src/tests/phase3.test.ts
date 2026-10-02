@@ -64,7 +64,7 @@ describe('push configuration', () => {
   it('reports no public key when push isn’t set up, and reminders stay in-app', async () => {
     const s = await registerUser();
     const res = await s.auth(api().get('/api/push/config')).expect(200);
-    expect(res.body).toEqual({ publicKey: null });
+    expect(res.body).toEqual({ publicKey: null, native: false });
   });
 
   it('exposes only the VAPID public key, never the private key', async () => {
@@ -73,7 +73,7 @@ describe('push configuration', () => {
     );
     const s = await registerUser();
     const res = await s.auth(api().get('/api/push/config')).expect(200);
-    expect(res.body).toEqual({ publicKey: 'PUBLIC-KEY' });
+    expect(res.body).toEqual({ publicKey: 'PUBLIC-KEY', native: false });
     expect(JSON.stringify(res.body)).not.toContain('PRIVATE');
   });
 
@@ -89,12 +89,18 @@ describe('push subscriptions', () => {
     const res = await s.auth(api().post('/api/push/subscriptions').send(device())).expect(201);
     expect(res.body).toEqual({
       id: expect.any(String),
+      platform: 'web',
       browser: 'Chrome on Android',
       createdAt: expect.any(String),
       lastUsedAt: null,
     });
     const saved = await PushSubscriptionModel.findOne({ userId: s.user.id });
-    expect(saved).toMatchObject({ endpoint: device().endpoint, keys: device().keys, browser: 'Chrome on Android' });
+    expect(saved).toMatchObject({
+      platform: 'web',
+      endpoint: device().endpoint,
+      keys: device().keys,
+      browser: 'Chrome on Android',
+    });
   });
 
   it('subscribing the same browser again updates it instead of adding another', async () => {
@@ -104,7 +110,7 @@ describe('push subscriptions', () => {
     await s.auth(api().post('/api/push/subscriptions').send(renewed)).expect(201);
     const all = await PushSubscriptionModel.find({ userId: s.user.id });
     expect(all).toHaveLength(1);
-    expect(all[0]!.keys.p256dh).toBe('new-key');
+    expect(all[0]!.keys!.p256dh).toBe('new-key');
   });
 
   it('rejects anything that isn’t an https push endpoint with both keys', async () => {
@@ -472,14 +478,14 @@ describe('notification buttons', () => {
 
 describe('Web Push provider', () => {
   const vapid = { publicKey: 'PUB', privateKey: 'PRIV', subject: 'mailto:a@example.com' };
-  const target = { endpoint: 'https://push.example.com/x', keys: { p256dh: 'k', auth: 'a' } };
+  const target = { platform: 'web' as const, endpoint: 'https://push.example.com/x', keys: { p256dh: 'k', auth: 'a' } };
   const payload: PushPayload = { title: 't', body: 'b', tag: 'x', url: '/', actions: [] };
 
   it('sends the JSON payload with the VAPID keys', async () => {
     const send = vi.spyOn(webpush, 'sendNotification').mockResolvedValue({ statusCode: 201, body: '', headers: {} });
     expect(await createWebPushProvider(vapid).send(target, payload)).toBe('SENT');
     expect(send).toHaveBeenCalledWith(
-      target,
+      { endpoint: target.endpoint, keys: target.keys },
       JSON.stringify(payload),
       expect.objectContaining({ vapidDetails: vapid, TTL: 86400 }),
     );

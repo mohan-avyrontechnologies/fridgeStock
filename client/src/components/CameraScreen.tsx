@@ -4,6 +4,8 @@ import { createPortal } from 'react-dom';
 import { api, ApiError } from '../api/client';
 import { cameraCopy, photoCopy } from '../copy';
 import { cameraSupported, startCameraScan } from '../lib/barcodeCamera';
+import { platform } from '../platform';
+import { pickPhoto } from '../platform/pickPhoto';
 import { BlobThumb } from '../lib/foodPhoto';
 import { photoForUpload } from '../lib/image';
 import { formatQuantity } from '../lib/format';
@@ -80,8 +82,10 @@ export function CameraScreen({ onDone, onClose }: Props) {
   const loadAi = useAiStore((s) => s.load);
   const [mode, setMode] = useState<Mode>('barcode');
   const [items, setItems] = useState<ScannedItem[]>([]);
+  // In the apps the scanner is the system's (ML Kit), opened with a button; in a browser it is the live camera view.
+  const nativeScan = platform.barcode.native;
   const [camera, setCamera] = useState<'starting' | 'on' | 'unavailable'>(
-    cameraSupported() ? 'starting' : 'unavailable',
+    !nativeScan && cameraSupported() ? 'starting' : 'unavailable',
   );
   const [digits, setDigits] = useState('');
   const [error, setError] = useState<string | undefined>();
@@ -139,6 +143,18 @@ export function CameraScreen({ onDone, onClose }: Props) {
       setBusy(false);
     }
   }, []);
+
+  /** Opens the native scanner. Closing it is fine; a refused camera falls back to typing the number. */
+  async function scanNatively() {
+    setMessage(null);
+    setError(undefined);
+    try {
+      const code = await platform.barcode.scan();
+      if (code) await lookUp(code, true);
+    } catch {
+      setMessage(cameraCopy.unavailable);
+    }
+  }
 
   function submitNumber(e: FormEvent) {
     e.preventDefault();
@@ -214,6 +230,14 @@ export function CameraScreen({ onDone, onClose }: Props) {
 
         {mode === 'barcode' && (
           <section aria-label={cameraCopy.barcodeTab} className="space-y-3">
+            {nativeScan && (
+              <>
+                <Button disabled={busy} onClick={() => void scanNatively()}>
+                  {cameraCopy.scanButton}
+                </Button>
+                <p className="text-sm text-muted">{cameraCopy.scanHint}</p>
+              </>
+            )}
             {camera !== 'unavailable' && (
               <>
                 <CameraView
@@ -226,7 +250,7 @@ export function CameraScreen({ onDone, onClose }: Props) {
                 </p>
               </>
             )}
-            {camera === 'unavailable' && (
+            {!nativeScan && camera === 'unavailable' && (
               <p role="status" className="rounded-xl bg-calm px-3.5 py-3 text-sm text-calm-ink">
                 {cameraCopy.unavailable}
               </p>
@@ -269,7 +293,7 @@ export function CameraScreen({ onDone, onClose }: Props) {
                 if (file) void readPhoto(file);
               }}
             />
-            <Button disabled={busy} onClick={() => photoInput.current?.click()}>
+            <Button disabled={busy} onClick={() => void pickPhoto(photoInput.current, readPhoto)}>
               {busy ? cameraCopy.reading : cameraCopy.takePhoto}
             </Button>
           </section>

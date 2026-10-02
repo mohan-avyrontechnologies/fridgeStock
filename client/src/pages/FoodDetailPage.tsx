@@ -9,6 +9,7 @@ import { FoodForm } from '../components/FoodForm';
 import { PhotoCheck } from '../components/PhotoCheck';
 import { FoodPhoto } from '../lib/foodPhoto';
 import { photoForUpload } from '../lib/image';
+import { pickPhoto } from '../platform/pickPhoto';
 import { EstimateNote, UrgencyBadge } from '../components/Urgency';
 import { Button, EmptyState, Spinner } from '../components/ui';
 import {
@@ -304,7 +305,7 @@ export function FoodDetailPage() {
                 {(savePhotos || food.photoAt) && (
                   <div className="grid grid-cols-2 gap-2">
                     {savePhotos && (
-                      <Button variant="secondary" onClick={() => photoInput.current?.click()}>
+                      <Button variant="secondary" onClick={() => void pickPhoto(photoInput.current, changePhoto)}>
                         {food.photoAt ? productPhotoCopy.change : productPhotoCopy.add}
                       </Button>
                     )}

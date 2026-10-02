@@ -4,7 +4,18 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['**/dist/**', '**/node_modules/**', 'e2e/.results/**', '**/.data/**', '**/.test-db-*/**', '.tmp/**'] },
+  {
+    ignores: [
+      '**/dist/**',
+      '**/node_modules/**',
+      'e2e/.results/**',
+      '**/.data/**',
+      '**/.test-db-*/**',
+      '.tmp/**',
+      'client/android/**',
+      'client/ios/**',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

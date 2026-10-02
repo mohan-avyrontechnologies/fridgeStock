@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api, ApiError } from '../api/client';
 import { photoCopy } from '../copy';
 import { photoForUpload } from '../lib/image';
+import { pickPhoto } from '../platform/pickPhoto';
 import { useAiStore } from '../stores/aiStore';
 import { useToastStore } from '../stores/toastStore';
 import { Button, Spinner } from './ui';
@@ -94,7 +95,7 @@ export function PhotoCheck({ food, onWaste, onFoodChanged }: Props) {
         variant="secondary"
         className="w-full"
         disabled={reading}
-        onClick={() => input.current?.click()}
+        onClick={() => void pickPhoto(input.current, read)}
       >
         {reading ? photoCopy.reading : photoCopy.checkButton}
       </Button>

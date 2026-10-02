@@ -7,6 +7,7 @@ import type {
   NotificationStatus,
   PreferenceKey,
   PushAction,
+  PushPlatform,
   ReminderMode,
   ReminderType,
   StorageLocation,
@@ -177,11 +178,14 @@ export interface ApiErrorBody {
 /** GET /push/config: the VAPID public key, or null when push isn't set up on this server. */
 export interface PushConfig {
   publicKey: string | null;
+  /** Push to the Android and iOS apps is set up (Firebase). */
+  native: boolean;
 }
 
-/** A browser registered for push reminders. */
+/** A browser or app registered for push reminders. */
 export interface PushDevice {
   id: string;
+  platform: PushPlatform;
   browser: string | null;
   createdAt: string;
   lastUsedAt: string | null;

@@ -6,8 +6,8 @@ A mobile-first web app that helps a household use perishable food before it goes
 
 | | |
 |---|---|
-| **Status** | MVP complete; post-MVP Phases 1 (faster entry), 2 (realistic estimates), 3 (better reminders), 4 (using the food), 5 (insights) and 6 (dark mode, data export, account deletion, shared households) complete, barcode and receipt scanning, and 7 (Photo Check, behind a feature flag) complete, with a camera screen and product photos; voice entry, extra languages and grocery integrations are not built. Not yet deployed. |
-| **Version** | 2.14.0 (see the [Changelog](#changelog)) |
+| **Status** | MVP complete; post-MVP Phases 1 (faster entry), 2 (realistic estimates), 3 (better reminders), 4 (using the food), 5 (insights) and 6 (dark mode, data export, account deletion, shared households) complete, barcode and receipt scanning, and 7 (Photo Check, behind a feature flag) complete, with a camera screen and product photos, and ready-made Android and iOS apps (Capacitor, not yet built on a device); voice entry, extra languages and grocery integrations are not built. Not yet deployed. |
+| **Version** | 2.16.0 (see the [Changelog](#changelog)) |
 | **Requires** | Node.js 20.19 or later |
 | **Specifications** | PFCP BRD v2.0, FRD v1.0, SRD v1.0, TDD v1.0 (internal documents, not stored in this repo) |
 | **Repository** | `github.com/rugvailabs/cook_first` |
@@ -33,12 +33,13 @@ A mobile-first web app that helps a household use perishable food before it goes
 15. [Project rules](#project-rules)
 16. [Security](#security)
 17. [Deployment: HTTPS staging on real phones](#deployment-https-staging-on-real-phones)
-18. [Differences from the design documents](#differences-from-the-design-documents)
-19. [Build phases](#build-phases)
-20. [Project status](#project-status)
-21. [Changelog](#changelog)
-22. [Roadmap](#roadmap)
-23. [Keeping this README up to date](#keeping-this-readme-up-to-date)
+18. [Native apps (Android and iOS)](#native-apps-android-and-ios)
+19. [Differences from the design documents](#differences-from-the-design-documents)
+20. [Build phases](#build-phases)
+21. [Project status](#project-status)
+22. [Changelog](#changelog)
+23. [Roadmap](#roadmap)
+24. [Keeping this README up to date](#keeping-this-readme-up-to-date)
 
 ---
 
@@ -88,6 +89,7 @@ These screenshots are captured automatically by the Playwright test suite.
 | **AI (optional)** | With `ANTHROPIC_API_KEY` set, **Recipe ideas** on Cook First (up to 3, each using at least one Cook First item, ordered by the most urgent item they use) and **Suggest meals for empty days** on the plan (a draft; nothing is saved until you add it). 20 AI requests per user per day. AI reads the Cook First order and never changes it. Every answer is checked with zod and for banned wording (asked for again up to 3 times). |
 | **Push reminders** | The app is **installable** (web app manifest, icons, service worker). In Settings, **Turn on reminders** asks for notification permission only when tapped, then registers this browser with the server. Reminders arrive as **one daily summary** of the Cook First list (the default) or **one per item**, at an hour you choose (default 08:00 in your time zone). Per-item notifications have **Used** and **Snooze** buttons; if a button can't be completed, the notification opens Food Details instead. Snooze leaves the item out of push reminders until tomorrow. On an iPhone, Settings explains that the app must be added to the Home Screen first. If push fails or isn't available, reminders still appear in the app. |
 | **Insights** | **Used versus wasted** this week with the waste rate and last week for comparison, an eight-week bar chart (with a table for screen readers), the foods you waste most in the last 30 days, and plain tips. An **optional price** on each item gives **money saved and lost** (a partly used item counts for the part used; a removal counts for nothing). Tips talk about habits and amounts bought, never about whether food can be eaten, and the AI is not involved. |
+| **Android and iOS apps** | The same app as real **Android and iOS apps**, built with **Capacitor** (`client/android`, `client/ios`, app name **Cook First**). `Capacitor.isNativePlatform()` chooses native versions of four things in `client/src/platform`, so the web app and its tests are unchanged: the **camera** (`@capacitor/camera`: the system camera or photo library), **barcode scanning** (`@capacitor-mlkit/barcode-scanning`: ML Kit's scanner), **push** (`@capacitor/push-notifications` with **Firebase Cloud Messaging**; iPhone goes through Firebase too, with an **APNs key**) and the **login token** (the **iOS Keychain** or **Android Keystore** through `@aparajita/capacitor-secure-storage`, never `localStorage`). Reminders have **Used** and **Snooze** buttons as real notification actions on both. Web Push stays for browsers. See [Native apps](#native-apps-android-and-ios); it has **not been built or run on a device** yet. |
 | **Dark mode** | **Appearance** in Settings: System (follows the device, the default), Light or Dark. The choice is kept on this device and applied before the first paint, so there is no flash. Dark colours are the same tokens with dark values (`client/src/index.css`), so urgency is still a colour plus a text label. |
 | **Your data** | **Download my data** saves everything the app holds about you (account, food, history, reminders, favourites, shopping list and meal plan) as one JSON file. It never includes the password hash or push keys. **Delete my account** asks for your password again, then permanently deletes the account and every record it owns. |
 | **Settings** | Your name and email (read-only), a currency for prices, **Save product photos**, an Appearance choice, Download my data and Delete my account, switches for the three reminder types, push reminders for this device (on/off, daily summary or one per item, and the time), links to Insights and History, and Log out. Logging out turns push off for that account on this device. |
@@ -109,6 +111,7 @@ The project is a **TypeScript monorepo** using npm workspaces, with three packag
 | | React Router | 7.18 |
 | | Tailwind CSS | 4.3 |
 | | @zxing/browser (reads barcodes from the camera where the browser has no `BarcodeDetector`; loaded only when needed) | 0.2 |
+| | Capacitor (Android and iOS apps) with `@capacitor/camera`, `@capacitor/push-notifications`, `@capacitor-mlkit/barcode-scanning` and `@aparajita/capacitor-secure-storage` | 8 |
 | | Zustand (app state; the login token is saved in `localStorage` through its `persist` middleware) | 5.0 |
 | **Backend** (`server`) | Express | 5.2 |
 | | Mongoose (MongoDB) | 9.10 |
@@ -117,6 +120,7 @@ The project is a **TypeScript monorepo** using npm workspaces, with three packag
 | | zod (validation) | 4.6 |
 | | node-cron (scheduled jobs) | 4.6 |
 | | multer (photo uploads, held in memory, 5 MB limit) / sharp (checks and re-encodes photos) | 2.4 / 0.35 |
+| | firebase-admin (Firebase Cloud Messaging: push to the Android and iOS apps) | 14 |
 | | web-push (self-hosted Web Push with VAPID keys) | 3.6 |
 | | @anthropic-ai/sdk (Claude API, structured JSON outputs); model `claude-sonnet-5-5` | 0.129 |
 | | helmet, cors, express-rate-limit | 8.3 / 2.8 / 8.7 |
@@ -191,9 +195,14 @@ cook-first/
 │       ├── components/         FoodCard, UrgencyBadge, FoodForm, ActionSheet, AppShell, AuthLayout, UI parts
 │       ├── mocks/              MSW handlers for frontend tests
 │       ├── lib/                small helpers: quantity/time formatting, shared-schema form checks
+│       ├── platform/           the web and native versions of camera, barcode scanning, push and token storage
 │       ├── test/               frontend tests
 │       └── copy.ts             every piece of expiry wording in the interface
+├── client/android/             the Android app (Capacitor), with the reminder notification code
+├── client/ios/                 the iOS app (Capacitor, CocoaPods), with the Firebase and notification set-up
+├── client/capacitor.config.ts  app name, app ID (a placeholder), web folder
 ├── e2e/                        Playwright end-to-end tests
+├── scripts/check-staging.mjs   checks a deployment from the outside
 ├── docs/screenshots/           screenshots used in this README
 ├── .github/workflows/ci.yml    CI pipeline
 ├── docker-compose.yml          local MongoDB
@@ -274,6 +283,10 @@ Open http://localhost:5173 and create an account. For a ready-made login with sa
 | `ANTHROPIC_API_KEY` | *(empty)* | For AI | Claude API key. AI features are on only when it is set. **Put it in `server/.env` only**, which is git-ignored. |
 | `PHOTO_CHECK` | *(empty = off)* | No | Set to `on` to turn on Photo Check. It also needs `ANTHROPIC_API_KEY`; with either missing no photo controls are shown. |
 | `ANTHROPIC_BASE_URL` | *(empty = Anthropic)* | No | Read by the Anthropic SDK. Only the end-to-end tests set it, to a local stand-in. |
+| `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` | *(empty)* | For the apps | A Firebase **service account**. Push to the Android and iOS apps is on only when all three are set. The private key is one line with `\n` in place of line breaks. |
+| `APNS_BUNDLE_ID` | *(empty)* | No | The iOS app's bundle id (your app ID), sent as the APNs topic. |
+| `APNS_KEY_ID`, `APNS_TEAM_ID` | *(empty)* | No | Not read by the server: they record the Apple key you uploaded to the Firebase console (see [Native apps](#native-apps-android-and-ios)). |
+| `PUBLIC_API_URL` | *(empty)* | For Android buttons | Where the API is reached from outside (`https://<api>/api`). The **Used** and **Snooze** buttons on Android notifications call it. |
 | `PRODUCT_LOOKUP_URL` | *(empty = Open Food Facts)* | No | Where barcodes are looked up. Only the end-to-end tests change it, to a local stand-in. |
 | `AI_MODEL` | *(empty = `claude-sonnet-5-5`)* | No | Claude model ID. The default was checked against Anthropic's models overview on 2026-09-30. |
 
@@ -304,8 +317,12 @@ Run these from the repository root:
 | `npm run typecheck` | TypeScript check of `shared`, `server` and `client` |
 | `npm run seed -w server` | With the server running, create a demo account (`demo@cookfirst.local` / `cookfirst-demo`) with 10 priced sample items at every urgency level, plus 5 used or wasted ones so Insights has data. Add `-- --reset` to re-seed. |
 | `npm run vapid:keys -w server` | Generate a Web Push (VAPID) key pair for `server/.env` |
-| `npm test` | Unit and API tests: shared (30) + server (375) + client (164) |
+| `npm test` | Unit and API tests: shared (30) + server (398) + client (242) |
 | `npm run test:e2e` | Playwright end-to-end tests (34), at 375 px and 1440 px |
+| `npm run check:staging -- --api <api-url> --client <web-url>` | Check a deployment from the outside (HTTPS, health, CORS, headers, push, install files) |
+| `npm run cap:sync -w client` | Build the web app for the apps and copy it into the Android and iOS projects |
+| `npm run android -w client` / `npm run ios -w client` | Open the Android project in Android Studio / the iOS project in Xcode (see [Native apps](#native-apps-android-and-ios)) |
+| `npm run native:set-app-id -w client -- <id>` | Set the app ID everywhere (`--check` shows where it is set) |
 | `npm run build` | Build `shared/dist`, `server/dist` and `client/dist` |
 
 ---
@@ -319,6 +336,7 @@ Run these from the repository root:
 | **Phase 1** (`phase1.test.ts`) | Vitest, Supertest | 18 | Household, storage and opened-date fields (defaults, validation, editing, backfill of existing data); bulk add (shared date, per-row storage, reminders, the failing row's field path, all-or-nothing, 1–50 limit); favourites (create, duplicate 409, one-tap add, delete, privacy); undo for every action (quantity, status, reminders and usage record restored; stepping back; nothing to undo; 10-minute limit; other users get 404) |
 | **Phase 2** (`phase2.test.ts`) | Vitest, Supertest | 16 | Opened: milk shortens to its typical 4 days and reminders move; opening never lengthens the expiry; custom days and past opened dates; 400 when there's no typical value; 409 when already opened or closed; invalid dates; mark as not opened restores the lifespan. Move: chicken to the freezer and back, custom days, the 365-day cap, 400 for no freezer value, the same location or bad days, 404 for another user. Learned lifespans: median of your entries per food and location, at least 2 needed, closed items count, only the last 10, never another user's, backfill |
 | **Phase 3** (`phase3.test.ts`) | Vitest, Supertest, a fake `PushProvider` | 30 | Only the VAPID public key is exposed (null when push isn't set up); subscriptions store user, endpoint, keys, browser and last use, re-subscribing updates, https endpoints only, users can only remove their own; delivery settings (daily summary at 08:00 by default, one per item, hour 0–23); the digest waits for the user's hour in their own time zone, goes out once a day, lists the Cook First items in Cook First order ("and N more" after 4), is skipped when nothing needs attention, and never changes the order; one push per item with Used and Snooze and a Food Details link, sent to every browser; 404/410 deletes the subscription, other errors keep it and in-app reminders still arrive; Used closes the item with a usage record; Snooze drops it from today's summary and brings it back tomorrow (and re-pushes it in per-item mode); bad or login tokens rejected, action tokens can't sign in or touch another user's item; the web-push provider's payload, VAPID keys and 404/410 handling |
+| **Native push** (`native.test.ts`) | Vitest, Supertest, a fake `FcmMessaging` | 23 | Android and iPhone apps stored by Firebase token with their platform (no secrets returned), browsers still stored as web devices, resubscribing updates, **a phone goes to whoever is signed in on it**, bad platforms and tokens rejected with the shared message, turning off by token only for the signed-in user; `GET /push/config` says whether the apps are set up; sending routes a browser through Web Push and the apps through Firebase, skips a kind with no provider, forgets a gone token and keeps one that failed, and delivers the daily summary with only the app provider set up; the **Firebase provider** sends Android a **data-only** message (so its own service can add buttons) and iPhone a notification with the **category** (and no buttons on the summary), treats unregistered tokens as gone and throws other failures, and never sends to a browser; **CORS** allows the apps' origins and the web app and nobody else; `.env.example` lists the Firebase and APNs settings empty; the service account is read from the environment (`\n` in the private key) |
 | **Product photos** (`photos.test.ts`) | Vitest, Supertest, `sharp` fixtures | 34 | Needs sign-in; JPEG, PNG and WebP kept as WebP in two sizes, `photoAt` on the food list, a big photo scaled to 1280 px with a 320 px thumbnail and a small one never enlarged; **rejected:** a text file, PDF, GIF, SVG with a script, HTML or a bare RIFF whatever type they claim, a corrupt JPEG, a missing, empty or wrongly named file, **a file over 5 MB (413)**, a decompression bomb, food that is closed, and photos turned off; the 61st upload in 15 minutes is a 429; **GPS stripped:** a fixture with a real GPS location, camera make and a note ends with no EXIF block, no EXIF chunk and none of those words, orientation applied; served privately with `private` and `nosniff`, the full size by default; **another household gets 404** for every action and nothing changes; no folder serving or disk writes anywhere in the source; **replacement** leaves exactly two files and no orphan chunks; removal; metadata (household, food, uploader); shared households; **automatic deletion** after 30 days (kept at 29 and 30, deleted at 31, for wasted, used and removed food), never for active food, kept after Undo, orphans removed; **account deletion** removes a household's photos at once, and in a shared household the photos of what they added or uploaded but not anyone else's; photos follow food when someone joins or leaves; receipts are never stored |
 | **Photo Check** (`photo.test.ts`) | Vitest, Supertest, a fake `AiClient` | 23 | Needs sign-in; off when the flag is off or AI is off (and `photoCheck` in the status says so); bad photos and ids rejected before the AI; the photo reaches the AI with a problems-only prompt; the schema has only name, category, confidence and warning signs; an answer with an extra field, a type that is not a problem, a bad confidence or an empty name is refused, retried and refunded; banned wording in a name or any warning is retried and never returned; counts toward the daily limit; a large photo accepted and never stored anywhere; nothing is added or changed by a check; a photo of an item at home must be one of the household's; the activity log records who checked which food and never the result; no event for a failed check. **Use today:** brings a later expected expiry forward, is a 409 for an item already due or overdue, closed, or in another household, can never move an expiry later (checked over many items), reschedules reminders and leaves the entered lifespan alone |
 | **Scanning** (`scanning.test.ts`) | Vitest, Supertest, a fake `ProductClient` and `AiClient` | 25 | Barcode: sign-in needed, bad numbers rejected before any look-up, name/brand/pack size returned, spaces and dashes dropped, cl and dl converted to ml, unknown units left blank, "not found" is a normal answer, banned-wording names hidden, long names cut to 60, a failed look-up is a 503 that leaks nothing; the Open Food Facts client (URL, fields, user agent, time-out, 404 and status 0, bad fields). Receipts: sign-in and AI needed, bad photos rejected before the AI, the photo reaches the AI with the receipt prompt, rounded draft returned and nothing saved, future or invalid dates blanked, counts toward the daily limit, retried then refunded when unusable, banned wording retried, a 3.9 MB photo accepted on this route only and never stored in any collection, over-size refused; bulk add keeps per-row prices |
@@ -330,6 +348,7 @@ Run these from the repository root:
 | **Wording guard** (`foodSafetyCopy.test.ts`) | Vitest | 6 | Scans every `.ts`/`.tsx` file in `client/src`, `server/src` and `shared/src`, comments included, for the banned phrases, plus the service worker, app manifest and `index.html`. Fails on the word "safe" in either copy file, or on expiry wording outside the copy files. Checks the required estimate line. |
 | **Project rules** (`rules.test.ts`) | Vitest, Supertest | 11 | Every database query carries the user's ID, or the household's ID for shared data; the query-string `userId` is ignored; pure priority engine; bcrypt cost 12; passwords never returned or logged; `.env` ignored; helmet; CORS; rate limit of 20 per 15 minutes |
 | **Server structure** (`structure.test.ts`) | Vitest | 12 | The `server/src` folders; thin controllers; only models talk to MongoDB; no `new Date()` in date logic; dates only from `shared`; hourly node-cron job; env variable names and defaults; the threshold of 3 exists only in `config/urgency.ts` (checked across client, server and shared); expiry calculated in the food service with no Mongoose hook |
+| **Native platform** (`platform*.test.ts`, `native*.test.ts*`) | Vitest, Testing Library, MSW, fake Capacitor plugins | 78 | **Platform choice** (web in a browser and in tests, iOS or Android in the apps); the web platform is localStorage, the file input and the live camera, unchanged; the **login token in secure storage** (not localStorage, not synced, the app waits for it to be read); the **native camera** (system photo, scaled and upright, cancel is not an error), the **ML Kit scanner** (grocery formats, camera permission, the Android Google module install and its failure), **native push** (permission, registration, token and platform sent to the server, blocked and dismissed, turning off, the listeners started once, **Used and Snooze buttons call the API and fall back to opening the page**); the camera screen, Photo Check, product photos, receipts and Settings push in the app; the app opens a tapped notification's page and refreshes on a push; **native project files**: permissions and the text explaining them, one app ID everywhere, Firebase and notification set-up that matches the server, and `native:set-app-id` |
 | **Frontend** (`client/src/test`) | Vitest, React Testing Library, MSW | 164 | Dashboard order and labels, empty state, signing out when the login expires, Cook First filter, partial use, form validation and preview, the required estimate line, all five remaining-days phrasings, colour always paired with a label, exactly seven units, notes, reminders marked read when the screen opens; the dashboard header, 3-item Cook First with "See all", and empty texts; Add Food defaults, the unit dropdown, the "Add note" link and the preview format; reference suggestions (including following the storage location), storage sent with the item, one-tap favourites, Undo instead of confirmations, bulk add (reference fill, one request, per-row errors); learned lifespans (★ chip, the "You usually set" hint, falling back to the reference list per location); Opened (prefilled days, missing-days message, mark as not opened) and Move (other locations only, per-location suggestion, request body); push reminders (permission asked only on tapping "Turn on reminders", on/off, blocked and dismissed messages, the iPhone Home Screen hint, unsupported browser, no server key, the in-app note, saving mode and time, turning push off at logout with the old token); Phase 4 (recipe ideas hidden when AI is off, shown with the AI note and allowance, the limit message; leftovers prefilled from a recipe, the leftovers box with per-location lifespans and the 4-day check; editing keeps where an item is kept; the shopping warning with expected expiry, add/tick/remove/clear, name required; the meal plan week, planning a meal with your food, and the AI draft saved only on "Add these to my plan"); the browser push layer (iPhone detection, subscribing with the VAPID key and registering the browser, unsubscribing on server and browser, key decoding, browser names); the Reminders error state; plus client structure checks |
 | **End-to-end** (`e2e/`) | Playwright in Chrome | 34 | 17 journeys, each run at **375 px phone size** and **desktop size (1440×900)** |
 
@@ -598,9 +617,9 @@ Base URL: `http://localhost:4000/api` (`VITE_API_URL`). Requests and responses a
 | POST | `/favourites/:id/add` | | `201 FoodItem` added today | 404 |
 | GET | `/notifications/delivery` | | `{mode, hour}` | 401 |
 | PUT | `/notifications/delivery` | `{mode?: "DIGEST" \| "EACH_ITEM", hour?: 0–23}` | `{mode, hour}` | 400 |
-| GET | `/push/config` | | `{publicKey}`: the VAPID public key, or `null` when push isn't set up | 401 |
-| POST | `/push/subscriptions` | `{endpoint (https), keys: {p256dh, auth}, browser?}` (the browser's `PushSubscription.toJSON()`) | `201 {id, browser, createdAt, lastUsedAt}`. Subscribing again updates it. | 400 |
-| DELETE | `/push/subscriptions` | `{endpoint}` | `204` (only your own) | 400 |
+| GET | `/push/config` | | `{publicKey, native}`: the VAPID public key (or `null`), and whether push to the apps is set up | 401 |
+| POST | `/push/subscriptions` | A browser: `{endpoint (https), keys: {p256dh, auth}, browser?, platform?: 'web'}`. An app: `{platform: 'android' \| 'ios', token (the Firebase device token), browser?}` | `201 {id, platform, browser, createdAt, lastUsedAt}`. An app's token moves to whoever is signed in on that phone. | 400 |
+| DELETE | `/push/subscriptions` | `{endpoint}` for a browser, `{token}` for an app | `204` (only your own) | 400 |
 | POST | `/push/actions` | `{token, action: "USED" \| "SNOOZE"}`. **No login token:** called by the service worker with the notification's action token. | `204`. USED = "Used all"; SNOOZE = out of push reminders until tomorrow. | 400, 401 bad or expired token, 404, 409 already closed |
 | GET | `/ai/status` | | `{enabled, photoCheck, dailyLimit, usedToday}` (`photoCheck` is true only when the flag and AI are both on) | 401 |
 | POST | `/parse/photo` | `{mediaType, image, foodId?}` (a photo as for receipts; `foodId` when it is of an item at home) | `{name, category, confidence, warningSigns: [{type, description}]}`. Changes nothing. | 400, 404 not your item, 429, 503 off or no usable answer |
@@ -684,6 +703,7 @@ These rules must never be broken. Each one is enforced in code and checked by an
 - **Access control:** the identity comes only from the verified JWT. Every query on shared data (food items, usage records, the shopping list and the meal plan) includes the household's ID, and every query on personal data (reminders, favourites, push subscriptions and AI usage) includes the user's ID. Invite codes are 8 characters from a 31-character alphabet, single-use, expire after a week, and joining is rate-limited like login. Notification buttons use a separate single-item action token that can't sign in. Any `userId` in the body, query string or URL is ignored. Another user's item returns 404.
 - **Input:** everything is checked on the server with the shared zod schemas.
 - **HTTP:** Helmet headers, CORS limited to `CLIENT_ORIGIN`, a 20 KB request size limit (about 4.5 MB on the receipt route only), `/auth/*` limited to 20 requests per 15 minutes per IP address, and `/push/actions` to 60. AI requests are limited to 20 per user per day.
+- **Native apps:** the login token is kept in the iOS Keychain or Android Keystore (not synced to other devices), never in `localStorage`. The API allows the apps' own origins, `capacitor://localhost` and `https://localhost`, next to your web address. A push token belongs to whoever is signed in on the phone: registering it removes it from any other account. Notification buttons use the same short-lived single-item token as the web app's, so they work without the login token; the Android receiver sends it over HTTPS to `PUBLIC_API_URL`.
 - **Product photos:** the file type is read from its first bytes (never the name or the type the browser claims) and only JPEG, PNG and WebP are accepted; the picture is decoded and re-encoded (a decompression bomb is refused), which drops EXIF and GPS data and anything hidden in the file. Photos are held in memory while processing, stored only in GridFS, and served only through a signed-in, household-scoped, `private`, `nosniff` route: there is no public folder or address. Uploads are limited to 60 per 15 minutes per IP address. They are deleted 30 days after the item closes and at once with the account.
 - **Photo Check:** needs the feature flag and AI. The photo is sent only to the AI for that one request and is never stored or logged. The answer is validated against a strict schema with no way to say a food is fine, every text is checked for banned wording, and the only thing a result can do to an item is make it due today, which the person confirms and the server refuses unless it moves the expected expiry earlier.
 - **Scanning:** barcode look-ups go through the server (the browser never contacts the product database), are limited to 60 per 15 minutes per IP address and are timed out after 5 seconds; a receipt photo is sent only to the AI for that one request and is never stored or logged, and every food name read from it is checked for banned wording.
@@ -765,6 +785,97 @@ Then, on the phone:
 
 ---
 
+## Native apps (Android and iOS)
+
+The web app also runs as real **Android and iOS apps**, built with [Capacitor](https://capacitorjs.com): the same code in a native shell, with the system's camera, barcode scanner, push notifications and secure storage. `Capacitor.isNativePlatform()` picks the native versions in `client/src/platform`, so the web app and its tests are unchanged.
+
+| | Web app | Android and iOS apps |
+|---|---|---|
+| Photos | `<input type="file" capture>` | `@capacitor/camera`: the system camera or photo library |
+| Barcodes | Live camera view (`BarcodeDetector`, or `@zxing/browser`) | `@capacitor-mlkit/barcode-scanning`: ML Kit's scanner |
+| Push | Web Push and a service worker | `@capacitor/push-notifications` through **Firebase Cloud Messaging** (iPhone too, with an **APNs key**) |
+| Reminder buttons | Browser notification buttons (not on iPhone) | **Used** and **Snooze** as native notification actions |
+| Login token | `localStorage` | **iOS Keychain** / **Android Keystore** (`@aparajita/capacitor-secure-storage`) |
+
+> **Status: written and configured, but not built or run.** The TypeScript, the server and the project files are tested. The Java, Swift and Gradle were **not compiled** and nothing was run on a device, because no Android Studio, Xcode or phone was available. Expect a build error or two on the first build.
+
+### 1. Choose the app ID
+`com.example.cookfirst` is a **placeholder**. Choose your own (for example `com.yourcompany.cookfirst`) **before publishing**: once an app is in the Play Store or App Store its ID can't change.
+```bash
+npm run native:set-app-id -w client -- com.yourcompany.cookfirst
+npm run native:set-app-id -w client -- --check     # shows every place it is set, and whether they agree
+```
+It changes `capacitor.config.ts`, the Android `applicationId` and the iOS bundle identifier. (The Android Java package stays as it is, so no files move.)
+
+### 2. Firebase (push)
+1. In the [Firebase console](https://console.firebase.google.com) create a project.
+2. **Add an Android app** with your app ID. Download **`google-services.json`** into `client/android/app/`.
+3. **Add an iOS app** with the same ID. Download **`GoogleService-Info.plist`** into `client/ios/App/App/`, and in Xcode drag it into the **App** group with *Copy items if needed* and the **App** target ticked.
+4. **The APNs key (iPhone):** at [developer.apple.com](https://developer.apple.com/account) → *Certificates, Identifiers & Profiles* → **Keys** → **+**, tick **Apple Push Notifications service (APNs)**, register it, and **download the `.p8` file** (you can only download it once). Note its **Key ID** and your **Team ID**. In Firebase → *Project settings* → *Cloud Messaging* → *Apple app configuration*, **upload the `.p8`** with those two values. Make sure your app's identifier has the **Push Notifications** capability.
+5. **The server:** Firebase → *Project settings* → *Service accounts* → **Generate new private key**. From the downloaded file set `FIREBASE_PROJECT_ID` (`project_id`), `FIREBASE_CLIENT_EMAIL` (`client_email`) and `FIREBASE_PRIVATE_KEY` (`private_key`, written on one line with `\n` for the line breaks) on the API host, plus `APNS_BUNDLE_ID` (your app ID) and `PUBLIC_API_URL` (`https://<api>/api`, used by the Android buttons). `APNS_KEY_ID` and `APNS_TEAM_ID` are only a record of what you uploaded; the server doesn't read them. Redeploy, then `npm run check:staging` should say *native push (Firebase) is set up*.
+
+`google-services.json`, `GoogleService-Info.plist` and `client/.env.native` are git-ignored: they belong to your project.
+
+### 3. Point the apps at your API
+```bash
+cp client/.env.native.example client/.env.native      # then set VITE_API_URL=https://<your-api>/api
+```
+The apps are built with that address inside them. The API always allows `capacitor://localhost` (iOS) and `https://localhost` (Android) next to your web address.
+
+### 4. Build and run on Android (Android Studio)
+You need **Android Studio** (it includes the JDK) and the **Android SDK Platform 36**.
+```bash
+npm install
+npm run cap:sync -w client      # builds the web app for the apps and copies it into both projects
+npm run android -w client       # opens client/android in Android Studio
+```
+1. Wait for **Gradle sync** to finish.
+2. Pick a phone (USB debugging on) or an emulator with **Google Play** (push and the barcode scanner need Google Play services), and press **Run ▶**.
+3. **Release:** *Build → Generate Signed Bundle / APK → Android App Bundle*. Keep the keystore and its passwords safe, and raise `versionCode` in `client/android/app/build.gradle` for each upload.
+
+The first barcode scan on Android downloads Google's scanner module. Android 13 and later ask for notification permission when you turn reminders on.
+
+### 5. Build and run on iOS (Xcode, on a Mac)
+You need a **Mac** with **Xcode**, **CocoaPods** (`brew install cocoapods`), and an **Apple Developer** account to run on a phone or to publish.
+```bash
+npm install
+npm run cap:sync -w client      # also runs "pod install" on a Mac
+npm run ios -w client           # opens client/ios/App/App.xcworkspace
+```
+Always open the **`.xcworkspace`**, never the `.xcodeproj`. Then in Xcode:
+1. Select the **App** target → **Signing & Capabilities** → choose your **Team**.
+2. Check **Push Notifications** is listed (the `App.entitlements` file is already set up) and **Background Modes → Remote notifications** is ticked.
+3. Check `GoogleService-Info.plist` is in the App target (step 2 above).
+4. Run on a **real iPhone**: push needs a real device, and so does the barcode scanner. For the App Store: *Product → Archive*; Xcode swaps the development push environment for production.
+
+On iPhone the **Used** and **Snooze** buttons open the app, which then makes the call (the app has to be running to do it). The login token stays in the Keychain, which iOS keeps after an app is deleted, so reinstalling can leave you signed in until you log out.
+
+### 6. After changing the web app
+`npm run cap:sync -w client` builds and copies it again. There is no live reload.
+
+### What to check on a real phone
+1. **Sign in:** close the app completely and open it again: you are still signed in (the token is in secure storage).
+2. **Camera screen:** Add food → **Use the camera** → **Scan a barcode** opens the system scanner; **Take photo** opens the camera or photo library. Refuse the camera permission once: you get a short message and can type the number.
+3. **Product photos:** save a food from a photo; a thumbnail appears on its card.
+4. **Reminders:** Settings → **Turn on reminders**, allow notifications, and check the device appears. Wait for a reminder (or run the hourly sweep). On **Android** the notification has **Used** and **Snooze**; tap one with the app closed. On **iPhone** the buttons appear when you pull the notification down.
+5. **Tap a notification** with the app closed: it opens at that food.
+
+### Files
+| File | What it is |
+|---|---|
+| `client/capacitor.config.ts` | App name, app ID (placeholder), web folder, the Android scheme |
+| `client/src/platform/` | `web/` and `native/` camera, barcode, push and storage, chosen in `index.ts` |
+| `client/android/app/src/main/java/…/ActionMessagingService.java` | Shows reminders with **Used** and **Snooze** (replaces the push plugin's own service) |
+| `…/NotificationActionReceiver.java` | Sends a button's action to the API, or opens the item if that fails |
+| `…/MainActivity.java` | Opens the page a tapped notification asks for |
+| `client/ios/App/App/AppDelegate.swift` | Starts Firebase, hands the Firebase token to the push plugin, registers the notification buttons |
+| `client/ios/App/App/Info.plist`, `client/android/app/src/main/AndroidManifest.xml` | The permission text and permissions |
+| `client/scripts/set-app-id.mjs` | `npm run native:set-app-id` |
+
+**What the permission boxes say.** iPhone: *"Cook First uses the camera to scan barcodes and to take photos so it can identify your food. Photos are saved privately to your household and are never shared."* and, for the photo library, *"…lets you choose a photo of your food from your library so it can be identified. The photo is saved privately to your household and is never shared."* Android shows its own permission box; the same explanation is in `strings.xml` (`camera_permission_message`) and in the manifest.
+
+---
+
 ## Differences from the design documents
 
 These decisions intentionally differ from the original BRD, FRD, SRD and TDD:
@@ -816,7 +927,7 @@ The project was built in these phases; each one is complete.
 |---|---|
 | All MVP functional requirements (FR-AUTH, FOOD, EXP, PRI, UI, NOT, USE, VAL) | ✅ Done |
 | Monorepo with `client`, `server` and `shared`; Node 20.19+ | ✅ Done |
-| Tests: 30 shared + 375 server + 164 client + 34 end-to-end = **603** | ✅ Passing |
+| Tests: 30 shared + 398 server + 242 client + 34 end-to-end = **704** | ✅ Passing |
 | ESLint, Prettier and typecheck on all packages | ✅ Clean |
 | All project rules (see [Project rules](#project-rules)) | ✅ Met, each one checked by a test |
 | Phone (375 px) and desktop layouts, 44 px tap targets | ✅ Done, checked in screenshots and by tests |
@@ -832,6 +943,7 @@ The project was built in these phases; each one is complete.
 | Post-MVP Phase 6 (dark mode, data export, account deletion, shared households) | ✅ Done |
 | Post-MVP Phase 6 barcode and receipt scanning | ✅ Done. Receipts need `ANTHROPIC_API_KEY`; barcodes need nothing. |
 | Post-MVP Phase 7 (Photo Check) | ✅ Done, behind `PHOTO_CHECK=on` and needing `ANTHROPIC_API_KEY`. Not yet tried against the real API. |
+| Android and iOS apps (Capacitor) | ⚠️ Written and configured; **not built or run** (no Android Studio, Xcode or phone was available). The TypeScript, the server and the project files are tested; the Java and Swift are not compiled. See [Native apps](#native-apps-android-and-ios). |
 | Post-MVP Phase 6 voice entry, languages and grocery integrations | ⏳ Planned (see [Roadmap](#roadmap)) |
 
 ---
@@ -841,6 +953,29 @@ The project was built in these phases; each one is complete.
 All notable changes to this project are listed here, newest first. Versions follow [Semantic Versioning](https://semver.org/).
 
 ### [Unreleased]
+- *Nothing yet.*
+
+### [2.16.0] - 2026-10-02: Android and iOS apps (Capacitor) · `COMMIT_HASH`
+**Added**
+- **Capacitor** in the client workspace, with an Android and an iOS project (`client/android`, `client/ios`; iOS uses CocoaPods because the ML Kit scanner and Firebase need it). App name **Cook First**; the app ID is the placeholder `com.example.cookfirst` in one place each, and `npm run native:set-app-id -w client -- <id>` changes every place (it keeps the Android Java package, so no files move).
+- **`client/src/platform`:** web and native implementations of the **camera**, **barcode scanning**, **push** and **token storage**, chosen once with `Capacitor.isNativePlatform()`. Native: `@capacitor/camera` for photos, `@capacitor-mlkit/barcode-scanning`, `@capacitor/push-notifications`, and `@aparajita/capacitor-secure-storage` (iOS Keychain, Android Keystore) for the login token instead of `localStorage`. The plugins load on demand, so a browser never downloads them. The web implementations wrap exactly what the app did before.
+- **Server:** push to the apps through **firebase-admin** behind the existing `PushProvider` interface (`fcmProvider.ts`), next to Web Push. **Each subscription stores its platform** (`web`, `android`, `ios`); an app is registered by its Firebase token and a phone belongs to whoever is signed in on it. Android gets data-only messages (so its own service can add buttons) and iOS notification messages with a category, through **FCM with an APNs key**. `GET /push/config` says whether the apps are set up.
+- **Notification buttons:** **Used** and **Snooze** as native actions: Android (`ActionMessagingService.java` and `NotificationActionReceiver.java` call `POST /push/actions` without opening the app, or open the item if that fails) and iOS (a notification category registered in `AppDelegate.swift`; the tap comes back to the web app, which calls the API).
+- **CORS** always allows `capacitor://localhost` and `https://localhost`, next to `CLIENT_ORIGIN`.
+- **Permissions:** the iOS `Info.plist` explains the camera and photo library ("…so it can identify your food. Photos are saved privately to your household…"), and the Android manifest asks for the camera (not required) and notifications, with the same wording in `strings.xml`.
+- `.env.example`: `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_BUNDLE_ID` and `PUBLIC_API_URL`, all empty. `client/.env.native.example` for the API address the apps are built with. Firebase files and `.env.native` are git-ignored.
+- **Docs:** a Native apps guide: Firebase and APNs set-up, **Android Studio** and **Xcode** build steps, what to check on a phone.
+- **Tests:** 23 server, 78 client (platform choice, secure storage, the native camera, scanner and push, the screens in the app, and the native project files and the app-ID script).
+
+**Changed**
+- The auth store uses `createJSONStorage(() => platform.storage)` and the app waits for the saved login to be read (instant in a browser). `PushReminders`, `CameraScreen`, Photo Check, Food Details and Bulk Add go through the platform.
+- `PushDevice` has a `platform`; `PushTarget` is a web or an app target; `pushProvider()` is the Web Push provider and `nativePushProvider()` the Firebase one. A reminder is pushed when either is set up.
+- `unsubscribePush` takes an endpoint or a token; `POST /push/actions` has an API-client function.
+- ESLint and Prettier skip `client/android` and `client/ios`.
+
+**Not in this release**
+- **Not built or run:** the Java, Swift and Gradle were not compiled and nothing was run on an Android or iOS device (no Android Studio, Xcode or phone was available). Expect to fix a build error or two on the first build.
+- Real app icons and splash screens (Capacitor's defaults are used), live reload, and background notification actions on iOS (the buttons open the app).
 **Added**
 - **HTTPS staging guide** for testing the camera, barcode scanning, push and installing on real phones: MongoDB Atlas, Render and Vercel, with the variables to set, and how to install to the **Home Screen on Android (Chrome, Samsung Internet) and iPhone (Safari, opened from the icon, iOS 16.4 or later)**, plus a troubleshooting table. Nothing has been deployed: that needs your own accounts.
 - `npm run check:staging -- --api <url> --client <url>` (`scripts/check-staging.mjs`): checks a deployment from the outside without a login: HTTPS, health, CORS (your web app allowed, other sites refused), security headers, push set-up, and that the manifest, service worker, icons and deep links are served.

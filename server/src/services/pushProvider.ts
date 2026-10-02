@@ -1,24 +1,27 @@
-import type { PushPayload } from '@cook-first/shared';
+import type { PushPayload, PushPlatform } from '@cook-first/shared';
 import webpush from 'web-push';
 import { env } from '../config/env.js';
+import { createFcmPushProvider, createFirebaseMessaging } from './fcmProvider.js';
 
-/** Where a push message goes. For Web Push this is the browser's subscription. */
-export interface PushTarget {
-  endpoint: string;
-  keys: { p256dh: string; auth: string };
-}
+/**
+ * Where a push message goes. A browser is reached through its Web Push subscription; the Android and iOS
+ * apps through their Firebase device token. `endpoint` is a stable id for the subscription either way.
+ */
+export type PushTarget =
+  | { platform: 'web'; endpoint: string; keys: { p256dh: string; auth: string } }
+  | { platform: 'android' | 'ios'; endpoint: string; token: string };
 
 /**
  * 'SENT': the push service accepted it.
- * 'GONE': the subscription no longer exists (HTTP 404 or 410) and should be deleted.
+ * 'GONE': the subscription no longer exists (HTTP 404 or 410, or an unregistered token) and should be deleted.
  * Any other failure is thrown.
  */
 export type PushSendResult = 'SENT' | 'GONE';
 
 /**
- * A way of delivering push messages. The notification service only ever talks
- * to this interface, so another provider (for example Firebase Cloud Messaging
- * for native apps) can be added without changing it.
+ * A way of delivering push messages. The notification service only ever talks to this interface, so each
+ * provider can change without it: Web Push for browsers (below), Firebase Cloud Messaging for the apps
+ * (`fcmProvider.ts`).
  */
 export interface PushProvider {
   readonly name: string;
@@ -36,8 +39,9 @@ export function createWebPushProvider(vapid: { publicKey: string; privateKey: st
     name: 'web-push',
     publicKey: vapid.publicKey,
     async send(target, payload) {
+      if (target.platform !== 'web') throw new Error('Web Push can only send to a browser.');
       try {
-        await webpush.sendNotification(target, JSON.stringify(payload), {
+        await webpush.sendNotification({ endpoint: target.endpoint, keys: target.keys }, JSON.stringify(payload), {
           vapidDetails: vapid,
           TTL: TTL_SECONDS,
           timeout: 10_000,
@@ -52,14 +56,40 @@ export function createWebPushProvider(vapid: { publicKey: string; privateKey: st
   };
 }
 
-let provider: PushProvider | null = env.vapid ? createWebPushProvider(env.vapid) : null;
+let web: PushProvider | null = env.vapid ? createWebPushProvider(env.vapid) : null;
+let native: PushProvider | null = env.fcm
+  ? createFcmPushProvider(createFirebaseMessaging(env.fcm), {
+      apnsBundleId: env.apnsBundleId,
+      actionUrl: env.publicApiUrl ? `${env.publicApiUrl}/push/actions` : null,
+    })
+  : null;
 
-/** The active provider, or null when push isn't configured (reminders stay in-app only). */
+/** The Web Push provider (browsers), or null when it isn't configured. */
 export function pushProvider(): PushProvider | null {
-  return provider;
+  return web;
 }
 
-/** Swaps the provider (tests use a fake one). */
+/** The provider for the Android and iOS apps (Firebase), or null when it isn't configured. */
+export function nativePushProvider(): PushProvider | null {
+  return native;
+}
+
+/** Whether any push is set up (reminders stay in-app only when nothing is). */
+export function anyPushProvider(): PushProvider | null {
+  return web ?? native;
+}
+
+/** Who delivers to this kind of subscription. */
+export function providerFor(platform: PushPlatform): PushProvider | null {
+  return platform === 'web' ? web : native;
+}
+
+/** Swaps the Web Push provider (tests use a fake one). */
 export function setPushProvider(next: PushProvider | null): void {
-  provider = next;
+  web = next;
+}
+
+/** Swaps the native provider (tests use a fake one). */
+export function setNativePushProvider(next: PushProvider | null): void {
+  native = next;
 }

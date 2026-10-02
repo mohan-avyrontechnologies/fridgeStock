@@ -36,6 +36,17 @@ function ai() {
   return apiKey ? { apiKey, model } : null;
 }
 
+/**
+ * Firebase Cloud Messaging, for push to the Android and iOS apps. On only when all three of the service
+ * account's values are set. The private key is usually pasted with "\n" in place of its line breaks.
+ */
+function fcm() {
+  const projectId = process.env.FIREBASE_PROJECT_ID ?? '';
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL ?? '';
+  const privateKey = (process.env.FIREBASE_PRIVATE_KEY ?? '').replace(/\\n/g, '\n');
+  return projectId && clientEmail && privateKey ? { projectId, clientEmail, privateKey } : null;
+}
+
 /** Claude Sonnet 5.5; ID checked against Anthropic's models overview on 2026-09-30. */
 export const DEFAULT_AI_MODEL = 'claude-sonnet-5-5';
 
@@ -57,6 +68,12 @@ export const env = {
   vapid: vapid(),
   /** null when AI features are off. */
   ai: ai(),
+  /** null when push to the apps isn't configured. */
+  fcm: fcm(),
+  /** The iOS app's bundle id, sent as the APNs topic (optional). */
+  apnsBundleId: process.env.APNS_BUNDLE_ID || null,
+  /** Where this API is reached from outside, like https://api.example.com/api, so notification buttons in the apps can call it. */
+  publicApiUrl: (process.env.PUBLIC_API_URL ?? '').replace(/\/+$/, ''),
   /** Photo Check feature flag (PHOTO_CHECK=on). Off by default; it also needs AI. */
   photoCheck: process.env.PHOTO_CHECK === 'on',
   /** Open Food Facts by default; the end-to-end tests point it at a local stand-in. */

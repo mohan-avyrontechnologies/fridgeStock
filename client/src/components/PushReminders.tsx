@@ -1,8 +1,8 @@
-import { REMINDER_MODES, type ReminderDelivery, type ReminderMode } from '@cook-first/shared';
+import { REMINDER_MODES, type PushConfig, type ReminderDelivery, type ReminderMode } from '@cook-first/shared';
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
 import { pushSettingsCopy as copy } from '../copy';
-import { currentSubscription, pushSupport, turnOff, turnOn } from '../lib/push';
+import { platform } from '../platform';
 import { useAuthStore } from '../stores/authStore';
 import { useToastStore } from '../stores/toastStore';
 import { Button, Chip } from './ui';
@@ -20,7 +20,7 @@ export function PushReminders() {
   const { user, setUser } = useAuthStore();
   const toast = useToastStore((s) => s.show);
   const [state, setState] = useState<State>('loading');
-  const [publicKey, setPublicKey] = useState<string | null>(null);
+  const [config, setConfig] = useState<PushConfig | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [delivery, setDelivery] = useState<ReminderDelivery>(user?.reminderDelivery ?? DEFAULT_DELIVERY);
@@ -29,15 +29,15 @@ export function PushReminders() {
     let current = true;
     const settle = (next: State) => current && setState(next);
     async function check() {
-      const support = pushSupport();
+      const support = await platform.push.support();
       if (support === 'ios-needs-home-screen') return settle('ios');
       if (support === 'unsupported') return settle('unsupported');
-      const { publicKey: key } = await api.pushConfig();
+      const serverConfig = await api.pushConfig();
       if (!current) return;
-      setPublicKey(key);
-      if (!key) return settle('not-configured');
-      if (Notification.permission === 'denied') return settle('blocked');
-      settle((await currentSubscription()) ? 'on' : 'off');
+      setConfig(serverConfig);
+      if (!platform.push.isAvailable(serverConfig)) return settle('not-configured');
+      if (await platform.push.isBlocked()) return settle('blocked');
+      settle((await platform.push.isOn()) ? 'on' : 'off');
     }
     check().catch(() => settle('not-configured'));
     api.delivery().then(
@@ -50,11 +50,11 @@ export function PushReminders() {
   }, []);
 
   async function enable() {
-    if (!publicKey) return;
+    if (!config) return;
     setBusy(true);
     setNote(null);
     try {
-      const result = await turnOn(publicKey);
+      const result = await platform.push.turnOn(config);
       if (result === 'on') {
         setState('on');
         toast(copy.onToast);
@@ -70,7 +70,7 @@ export function PushReminders() {
   async function disable() {
     setBusy(true);
     try {
-      await turnOff();
+      await platform.push.turnOff();
       setState('off');
       toast(copy.offToast);
     } catch {

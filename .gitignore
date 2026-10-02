@@ -10,3 +10,8 @@ e2e/screenshots/
 playwright-report/
 .test-db-*/
 .tmp/
+
+# Native apps: your own Firebase files and API address (they belong to your project, not the repository)
+client/android/app/google-services.json
+client/ios/App/App/GoogleService-Info.plist
+client/.env.native

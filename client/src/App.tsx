@@ -1,4 +1,5 @@
-import { Navigate, Outlet, Route, Routes } from 'react-router';
+import { useEffect } from 'react';
+import { Navigate, Outlet, Route, Routes, useNavigate } from 'react-router';
 import { AppShell } from './components/AppShell';
 import { AddFoodPage } from './pages/AddFoodPage';
 import { BulkAddPage } from './pages/BulkAddPage';
@@ -14,7 +15,12 @@ import { NotificationsPage } from './pages/NotificationsPage';
 import { PlanPage } from './pages/PlanPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ShoppingPage } from './pages/ShoppingPage';
-import { useAuthStore } from './stores/authStore';
+import { Spinner } from './components/ui';
+import { OPEN_PAGE_EVENT, PUSH_ACTION_DONE_EVENT, PUSH_RECEIVED_EVENT } from './platform/events';
+import { useAuthHydrated, useAuthStore } from './stores/authStore';
+import { useFoodStore } from './stores/foodStore';
+import { useNotificationStore } from './stores/notificationStore';
+import { useToastStore } from './stores/toastStore';
 
 function RequireAuth() {
   const token = useAuthStore((s) => s.token);
@@ -26,7 +32,45 @@ function GuestOnly() {
   return token ? <Navigate to="/" replace /> : <Outlet />;
 }
 
+/** Where the Android shell leaves an address for a notification that started the app (MainActivity.java). */
+type PendingWindow = Window & { __cookFirstPendingUrl?: string };
+
+/** What the apps' notifications ask the screens to do (see platform/events.ts). Nothing happens in a browser. */
+function useNativeEvents() {
+  const navigate = useNavigate();
+  const toast = useToastStore((s) => s.show);
+  useEffect(() => {
+    const open = (event: Event) => {
+      delete (window as PendingWindow).__cookFirstPendingUrl;
+      navigate(String((event as CustomEvent).detail ?? '/'));
+    };
+    const received = () => void useNotificationStore.getState().fetchUnread();
+    const handled = (event: Event) => {
+      toast((event as CustomEvent).detail === 'USED' ? 'Marked as used' : 'Snoozed until tomorrow');
+      void useFoodStore.getState().refresh();
+    };
+    // A page handed over before this was listening (the app was started by tapping a notification).
+    const pending = (window as PendingWindow).__cookFirstPendingUrl;
+    if (pending) {
+      delete (window as PendingWindow).__cookFirstPendingUrl;
+      navigate(pending);
+    }
+    window.addEventListener(OPEN_PAGE_EVENT, open);
+    window.addEventListener(PUSH_RECEIVED_EVENT, received);
+    window.addEventListener(PUSH_ACTION_DONE_EVENT, handled);
+    return () => {
+      window.removeEventListener(OPEN_PAGE_EVENT, open);
+      window.removeEventListener(PUSH_RECEIVED_EVENT, received);
+      window.removeEventListener(PUSH_ACTION_DONE_EVENT, handled);
+    };
+  }, [navigate, toast]);
+}
+
 export function App() {
+  useNativeEvents();
+  const hydrated = useAuthHydrated();
+  // In the apps the saved login is read from secure storage first.
+  if (!hydrated) return <Spinner />;
   return (
     <Routes>
       <Route element={<GuestOnly />}>

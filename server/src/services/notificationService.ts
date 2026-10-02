@@ -24,7 +24,7 @@ import { PushSubscriptionModel } from '../models/PushSubscription.js';
 import { UserModel, type UserDoc } from '../models/User.js';
 import { clock } from './clock.js';
 import { prioritise } from './priorityEngine.js';
-import { pushProvider } from './pushProvider.js';
+import { anyPushProvider } from './pushProvider.js';
 import * as pushService from './pushService.js';
 import { signActionToken } from './token.js';
 import { toNotificationView, toUserView } from './views.js';
@@ -226,7 +226,7 @@ function digestPush(user: UserDoc, foods: FoodItemDoc[], today: string): PushPay
  *   appears in the summary again (DIGEST).
  */
 export async function pushDue(user: UserDoc): Promise<void> {
-  if (!pushProvider()) return;
+  if (!anyPushProvider()) return;
   const now = clock.now();
   if (hourInTz(user.timeZone, now) < user.reminderDelivery.hour) return;
   if (!(await pushService.hasDevices(user))) return;
@@ -299,7 +299,7 @@ export async function sweep(): Promise<void> {
       attempts: { $lt: MAX_DELIVERY_ATTEMPTS },
       scheduledDate: { $lte: horizon },
     }) as Promise<Types.ObjectId[]>,
-    pushProvider() ? (PushSubscriptionModel.distinct('userId') as Promise<Types.ObjectId[]>) : [],
+    anyPushProvider() ? (PushSubscriptionModel.distinct('userId') as Promise<Types.ObjectId[]>) : [],
   ]);
   const userIds = [...new Set([...withReminders, ...withDevices].map(String))];
   for (const id of userIds) {

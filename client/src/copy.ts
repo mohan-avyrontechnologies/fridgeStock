@@ -410,24 +410,7 @@ export const householdCopy = {
   },
 } as const;
 
-/** Phase 6: barcode and receipt scanning. */
-export const scanCopy = {
-  open: 'Scan a barcode',
-  title: 'Scan a barcode',
-  close: 'Close',
-  useCamera: 'Use the camera',
-  cameraLabel: 'Camera view for scanning a barcode',
-  pointCamera: 'Hold the barcode steady inside the picture.',
-  cameraFailed: 'The camera isn’t available. Type the number under the barcode instead.',
-  numberLabel: 'Or type the number under the barcode',
-  numberHint: 'Eight to fourteen digits. Spaces and dashes are fine.',
-  lookUp: 'Look up',
-  looking: 'Looking…',
-  notFound: 'That barcode isn’t in the product list. Type the name instead.',
-  lookupError: 'The product look-up isn’t available right now. Type the name instead.',
-  found: (name: string) => `Found: ${name}. Check the details, then choose how long it lasts.`,
-} as const;
-
+/** Phase 6: receipt scanning. */
 export const receiptCopy = {
   title: 'Scan a receipt',
   hint: 'Take a photo of your receipt and the food on it is filled in below. You check every line before anything is saved.',
@@ -476,6 +459,8 @@ export const cameraCopy = {
   starting: 'Starting the camera…',
   unavailable: 'The camera isn’t available. Type the barcode number or the name instead.',
   pointCamera: 'Hold the barcode steady inside the picture.',
+  scanButton: 'Scan a barcode',
+  scanHint: 'Opens the camera. Point it at the barcode and it is read at once.',
   cameraLabel: 'Camera view for scanning a barcode',
   numberLabel: 'Or type the number under the barcode',
   numberHint: 'Eight to fourteen digits. Spaces and dashes are fine.',

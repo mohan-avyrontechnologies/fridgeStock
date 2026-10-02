@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { useSyncExternalStore } from 'react';
+import { createJSONStorage, persist } from 'zustand/middleware';
 import { api, configureApi } from '../api/client';
-import { turnOff } from '../lib/push';
+import { platform } from '../platform';
 import type { User } from '@cook-first/shared';
 
 interface AuthState {
@@ -30,16 +31,28 @@ export const useAuthStore = create<AuthState>()(
         // Stop push reminders for this account on this device. Uses the token
         // before it is cleared; a failure never blocks signing out.
         const { token } = get();
-        if (token) void turnOff(token).catch(() => {});
+        if (token) void platform.push.turnOff(token).catch(() => {});
         set({ token: null, user: null });
       },
       setUser(user) {
         set({ user });
       },
     }),
-    { name: 'cook-first-auth' },
+    // localStorage in a browser; the Keychain or Keystore in the apps (see platform/native/storage.ts).
+    { name: 'cook-first-auth', storage: createJSONStorage(() => platform.storage) },
   ),
 );
+
+/**
+ * Whether the saved login has been read. In a browser it is read at once; in the apps secure storage is
+ * asynchronous, so the app waits for it rather than showing the login screen for a moment.
+ */
+export function useAuthHydrated(): boolean {
+  return useSyncExternalStore(
+    (onChange) => useAuthStore.persist.onFinishHydration(onChange),
+    () => useAuthStore.persist.hasHydrated(),
+  );
+}
 
 configureApi({
   getToken: () => useAuthStore.getState().token,

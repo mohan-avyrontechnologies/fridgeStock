@@ -35,6 +35,7 @@ import type {
   Household,
   HouseholdInvite,
   JoinHouseholdInput,
+  PushActionInput,
   PhotoCheck,
   PhotoCheckInput,
   ProductLookup,
@@ -253,8 +254,10 @@ export const api = {
   // POST /push/subscriptions
   subscribePush: (body: PushSubscriptionInput) => request<PushDevice>('POST', '/push/subscriptions', body),
   // DELETE /push/subscriptions
-  unsubscribePush: (endpoint: string, token?: string) =>
-    request<void>('DELETE', '/push/subscriptions', { endpoint }, token),
+  unsubscribePush: (which: string | { token: string }, authToken?: string) =>
+    request<void>('DELETE', '/push/subscriptions', typeof which === 'string' ? { endpoint: which } : which, authToken),
+  // POST /push/actions
+  pushAction: (body: PushActionInput) => request<void>('POST', '/push/actions', body),
 
   // GET /ai/status
   aiStatus: () => request<AiStatus>('GET', '/ai/status'),
