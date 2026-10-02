@@ -4,7 +4,7 @@ import { useId } from 'react';
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-brand text-white hover:bg-brand-hover disabled:opacity-60',
+  primary: 'bg-brand text-on-brand hover:bg-brand-hover disabled:opacity-60',
   secondary: 'bg-card text-ink border border-line hover:bg-paper disabled:opacity-60',
   ghost: 'text-brand hover:bg-brand-soft disabled:opacity-60',
   danger: 'bg-card text-danger border border-line hover:bg-past/40 disabled:opacity-60',
@@ -70,7 +70,7 @@ export function Chip({
       type="button"
       aria-pressed={selected}
       className={`min-h-11 shrink-0 rounded-full border px-3.5 text-sm font-medium transition-colors ${
-        selected ? 'border-brand bg-brand text-white' : 'border-line bg-card text-ink hover:border-brand/50'
+        selected ? 'border-brand bg-brand text-on-brand' : 'border-line bg-card text-ink hover:border-brand/50'
       }`}
       {...props}
     >
@@ -127,7 +127,7 @@ export function Checkbox({ className = '', ...props }: Omit<InputHTMLAttributes<
       <input type="checkbox" className="peer absolute inset-0 size-full cursor-pointer opacity-0" {...props} />
       <span
         aria-hidden
-        className="pointer-events-none grid size-6 place-items-center rounded-md border-2 border-line bg-card text-transparent transition-colors peer-checked:border-brand peer-checked:bg-brand peer-checked:text-white peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand"
+        className="pointer-events-none grid size-6 place-items-center rounded-md border-2 border-line bg-card text-transparent transition-colors peer-checked:border-brand peer-checked:bg-brand peer-checked:text-on-brand peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand"
       >
         <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-current stroke-[3]">
           <path d="M5 12.5l4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" />

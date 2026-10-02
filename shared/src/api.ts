@@ -307,3 +307,17 @@ export interface Insights {
   /** Short tips from the numbers above; empty when there is nothing to say. */
   tips: InsightsTip[];
 }
+
+/** One JSON file with everything the app holds about the user (never the password hash or push keys). */
+export interface AccountExport {
+  exportedAt: string;
+  account: User;
+  /** How many devices have push reminders on (their keys are not exported). */
+  pushDevices: number;
+  foods: Record<string, unknown>[];
+  history: Record<string, unknown>[];
+  reminders: Record<string, unknown>[];
+  favourites: Record<string, unknown>[];
+  shopping: Record<string, unknown>[];
+  mealPlan: Record<string, unknown>[];
+}

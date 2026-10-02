@@ -148,7 +148,7 @@ export function PushReminders() {
               <Chip key={mode} selected={delivery.mode === mode} onClick={() => save({ mode })}>
                 <span className="block py-1 text-left">
                   <span className="block">{copy.modes[mode].title}</span>
-                  <span className={`block text-xs ${delivery.mode === mode ? 'text-white/80' : 'text-muted'}`}>
+                  <span className={`block text-xs ${delivery.mode === mode ? 'text-on-brand/80' : 'text-muted'}`}>
                     {copy.modes[mode].detail}
                   </span>
                 </span>

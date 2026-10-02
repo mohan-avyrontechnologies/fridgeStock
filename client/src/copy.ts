@@ -334,3 +334,28 @@ export const insightsCopy = {
   currencyTitle: 'Currency',
   currencyHint: 'Used to show prices. Nothing is converted.',
 } as const;
+
+/** Phase 6: appearance (kept on this device). */
+export const appearanceCopy = {
+  title: 'Appearance',
+  hint: 'Kept on this device. System follows your phone or computer.',
+  options: { system: 'System', light: 'Light', dark: 'Dark' },
+} as const;
+
+/** Phase 6: your data (Settings). */
+export const dataCopy = {
+  title: 'Your data',
+  exportHint: 'Download everything the app holds about you as one file.',
+  exportButton: 'Download my data',
+  exporting: 'Preparing…',
+  exportDone: 'Your data was downloaded',
+  exportError: 'Couldn’t prepare your data. Try again.',
+  deleteHint: 'Permanently deletes your account, your food, your history and your lists. This can’t be undone.',
+  deleteOpen: 'Delete my account',
+  passwordLabel: 'Enter your password to confirm',
+  deleteConfirm: 'Delete everything',
+  deleting: 'Deleting…',
+  cancel: 'Cancel',
+  deleted: 'Your account was deleted',
+  deleteError: 'Couldn’t delete your account. Try again.',
+} as const;

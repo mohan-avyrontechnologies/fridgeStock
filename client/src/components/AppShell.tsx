@@ -137,7 +137,7 @@ function Sidebar() {
 
       <Link
         to="/add"
-        className="mt-8 flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand px-4 font-semibold text-white hover:bg-brand-hover"
+        className="mt-8 flex min-h-11 items-center justify-center gap-2 rounded-xl bg-brand px-4 font-semibold text-on-brand hover:bg-brand-hover"
       >
         <svg aria-hidden viewBox="0 0 24 24" className="size-5 fill-none stroke-current stroke-[2.5]">
           <path d="M12 5v14M5 12h14" strokeLinecap="round" />
@@ -222,7 +222,7 @@ function BottomNav() {
         <NavItem to="/cook-first" label="Cook First" icon={<PanIcon />} badge={cookFirstCount} />
         <li className="flex justify-center">
           <Link to="/add" className="flex flex-col items-center gap-0.5 pb-1.5 text-[11px] font-semibold text-brand">
-            <span className="-mt-5 grid size-14 place-items-center rounded-full bg-brand text-white shadow-lg shadow-brand/30 hover:bg-brand-hover">
+            <span className="-mt-5 grid size-14 place-items-center rounded-full bg-brand text-on-brand shadow-lg shadow-brand/30 hover:bg-brand-hover">
               <svg aria-hidden viewBox="0 0 24 24" className="size-7 fill-none stroke-current stroke-[2.5]">
                 <path d="M12 5v14M5 12h14" strokeLinecap="round" />
               </svg>
@@ -282,7 +282,7 @@ function Toast() {
       className="pointer-events-none fixed inset-x-0 bottom-24 z-50 flex justify-center px-4 lg:bottom-8 lg:left-64"
     >
       {message && (
-        <div className="sheet-in pointer-events-auto flex items-center gap-2 rounded-full bg-ink py-1.5 pr-1.5 pl-4 text-sm font-medium text-white shadow-lg">
+        <div className="sheet-in pointer-events-auto flex items-center gap-2 rounded-full bg-ink py-1.5 pr-1.5 pl-4 text-sm font-medium text-paper shadow-lg">
           <span className="py-1">{message}</span>
           {action && (
             <button
@@ -291,7 +291,7 @@ function Toast() {
                 clear();
                 action.onClick();
               }}
-              className="min-h-11 rounded-full px-4 font-semibold text-soon hover:bg-white/10"
+              className="min-h-11 rounded-full px-4 font-semibold text-paper underline hover:bg-paper/10"
             >
               {action.label}
             </button>

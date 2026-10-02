@@ -4,17 +4,22 @@ import { api } from '../api/client';
 import { CURRENCIES, type Currency, type NotificationPreferences } from '@cook-first/shared';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { PushReminders } from '../components/PushReminders';
+import { YourData } from '../components/YourData';
 import { EstimateNote } from '../components/Urgency';
-import { Button } from '../components/ui';
-import { insightsCopy, reminderPreferenceCopy, screenCopy } from '../copy';
+import { Button, Chip } from '../components/ui';
+import { appearanceCopy, insightsCopy, reminderPreferenceCopy, screenCopy } from '../copy';
 import { useAuthStore } from '../stores/authStore';
+import { useThemeStore, type Theme } from '../stores/themeStore';
 import { useToastStore } from '../stores/toastStore';
 
 const PREFS = (['approachingExpiry', 'due', 'overdue'] as const satisfies (keyof NotificationPreferences)[]).map(
   (key) => ({ key, ...reminderPreferenceCopy[key] }),
 );
 
+const THEMES: Theme[] = ['system', 'light', 'dark'];
+
 export function SettingsPage() {
+  const { theme, setTheme } = useThemeStore();
   const { user, setUser, logout } = useAuthStore();
   const toast = useToastStore((s) => s.show);
   const [prefs, setPrefs] = useState<NotificationPreferences | null>(user?.notificationPreferences ?? null);
@@ -130,6 +135,18 @@ export function SettingsPage() {
           </select>
         </section>
 
+        <section>
+          <h2 className="mb-1 text-lg font-semibold">{appearanceCopy.title}</h2>
+          <p className="mb-3 text-sm text-muted">{appearanceCopy.hint}</p>
+          <div role="group" aria-label={appearanceCopy.title} className="flex gap-2">
+            {THEMES.map((t) => (
+              <Chip key={t} selected={theme === t} onClick={() => setTheme(t)}>
+                {appearanceCopy.options[t]}
+              </Chip>
+            ))}
+          </div>
+        </section>
+
         <PushReminders />
 
         <section>
@@ -156,6 +173,8 @@ export function SettingsPage() {
             ›
           </span>
         </Link>
+
+        <YourData />
 
         <Button variant="danger" className="w-full" onClick={logout}>
           Log out

@@ -68,7 +68,7 @@ function ReminderRow({ n }: { n: AppNotification }) {
         <div className="min-w-0">
           <p className="text-xs font-semibold text-muted">
             {reminderTypeLabel[n.type]}
-            {isNew && <span className="ml-1.5 rounded-full bg-brand px-1.5 py-px text-[10px] text-white">New</span>}
+            {isNew && <span className="ml-1.5 rounded-full bg-brand px-1.5 py-px text-[10px] text-on-brand">New</span>}
           </p>
           <p className="text-[15px] text-ink">{n.message}</p>
           {n.sentAt && <p className="mt-0.5 text-xs text-muted">{formatInstant(n.sentAt)}</p>}

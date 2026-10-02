@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router';
 import { App } from './App';
 import { registerServiceWorker } from './lib/push';
 import './index.css';
+import './stores/themeStore';
 
 // Installable app + push reminders. Registering never asks for permission.
 void registerServiceWorker();

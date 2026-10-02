@@ -30,6 +30,8 @@ import type {
   ShoppingItemInput,
   ShoppingUpdateInput,
   UpdateAccountInput,
+  AccountExport,
+  DeleteAccountInput,
   Insights,
   UsageHistory,
   UsageResult,
@@ -142,6 +144,12 @@ export const api = {
   removeFavourite: (id: string) => request<void>('DELETE', `/favourites/${id}`),
   // POST /favourites/:id/add
   addFavourite: (id: string) => request<FoodItem>('POST', `/favourites/${id}/add`),
+
+  // GET /account/export
+  exportData: () => request<AccountExport>('GET', '/account/export'),
+
+  // DELETE /account
+  deleteAccount: (body: DeleteAccountInput) => request<void>('DELETE', '/account', body),
 
   // GET /insights
   insights: () => request<Insights>('GET', '/insights'),

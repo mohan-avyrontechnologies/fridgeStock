@@ -81,7 +81,7 @@ export function DashboardPage() {
                   <EmptyState title={screenCopy.dashboard.emptyInventory}>
                     <Link
                       to="/add"
-                      className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-brand px-4 font-semibold text-white"
+                      className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-brand px-4 font-semibold text-on-brand"
                     >
                       Add food
                     </Link>

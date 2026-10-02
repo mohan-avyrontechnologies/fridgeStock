@@ -527,3 +527,49 @@ test('phase 5: a price on the item, then used and wasted figures and money on In
   await expectNoSafetyClaim(page);
   await shot(page, '17-insights');
 });
+
+test('phase 6: dark mode, downloading your data, and deleting the account', async ({ page }) => {
+  const email = await register(page, 'Mira Das');
+  await addFood(page, 'Milk', '4', 'l');
+  await openSettings(page);
+
+  // Dark mode: set on the page, remembered after a reload, and applied before the first paint.
+  const background = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const light = await background();
+  await page.getByRole('group', { name: 'Appearance' }).getByRole('button', { name: 'Dark', exact: true }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  expect(await background()).not.toBe(light);
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expectNoSafetyClaim(page);
+  await shot(page, '18-dark-settings');
+  await page.getByRole('link', { name: 'Home', exact: true }).first().click();
+  await expect(allFood(page)).toHaveCount(1);
+  await shot(page, '19-dark-dashboard');
+  await openSettings(page);
+  await page.getByRole('group', { name: 'Appearance' }).getByRole('button', { name: 'System', exact: true }).click();
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme', /.+/);
+
+  // Download my data: one JSON file with the food in it.
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download my data' }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toMatch(/^cook-first-data-\d{4}-\d{2}-\d{2}\.json$/);
+  const saved = JSON.parse(await (await import('node:fs/promises')).readFile((await file.path())!, 'utf8'));
+  expect(saved.account.email).toBe(email);
+  expect(saved.foods.map((f: { name: string }) => f.name)).toEqual(['Milk']);
+  expect(JSON.stringify(saved)).not.toMatch(/passwordHash/);
+
+  // Delete: a wrong password is refused; the right one signs out and the account is gone.
+  await page.getByRole('button', { name: 'Delete my account' }).click();
+  await page.getByLabel('Enter your password to confirm').fill('not my password');
+  await page.getByRole('button', { name: 'Delete everything' }).click();
+  await expect(page.getByText('Password is incorrect.')).toBeVisible();
+  await page.getByLabel('Enter your password to confirm').fill(PASSWORD);
+  await page.getByRole('button', { name: 'Delete everything' }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Password').fill(PASSWORD);
+  await page.getByRole('button', { name: /Log in|Sign in/ }).click();
+  await expect(page.getByText('Email or password is incorrect.')).toBeVisible();
+});

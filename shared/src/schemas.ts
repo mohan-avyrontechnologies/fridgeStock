@@ -41,6 +41,7 @@ export const MESSAGES = {
   storage: 'Choose where it is kept: fridge, freezer or pantry.',
   price: 'Price must be a number from 0 to 100,000.',
   currency: 'Choose one of the listed currencies.',
+  passwordIncorrect: 'Password is incorrect.',
   openedDate: "Opened date must be a valid date that isn't in the future or before the added date.",
   bulkEmpty: 'Add at least one item.',
   bulkTooMany: 'Add at most 50 items at once.',
@@ -74,6 +75,11 @@ export const loginSchema = z.object({
   email,
   password: z.string({ error: MESSAGES.loginPassword }).min(1, MESSAGES.loginPassword),
   timeZone: z.string().optional(),
+});
+
+/** Deleting the account needs the password again. */
+export const deleteAccountSchema = z.object({
+  password: z.string({ error: MESSAGES.loginPassword }).min(1, MESSAGES.loginPassword),
 });
 
 export const updateAccountSchema = z
@@ -252,6 +258,7 @@ export const notificationPageSchema = z.object({
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
 export type UpdateAccountInput = z.infer<typeof updateAccountSchema>;
 export type FoodInput = z.infer<typeof createFoodSchema>;
 export type FoodUpdateInput = z.infer<typeof updateFoodSchema>;

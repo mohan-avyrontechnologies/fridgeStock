@@ -11,6 +11,8 @@
   --color-brand: #1f3b33;
   --color-brand-hover: #2a4d43;
   --color-brand-soft: #e6eee9;
+  /* Text and icons on a brand-coloured background. */
+  --color-on-brand: #ffffff;
 
   /* Urgency colours. Every use is paired with a text label (never colour alone). */
   --color-ok: #e2f2e6;
@@ -31,6 +33,64 @@
   --color-past-bar: #cf3b3b;
 
   --color-danger: #b42318;
+}
+
+/*
+ * Dark theme: the same tokens with dark values. It follows the device unless the
+ * person picked Light or Dark in Settings (data-theme on <html>, set by themeStore).
+ */
+:root {
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-paper: #121a17;
+  --color-card: #1a2420;
+  --color-ink: #e8eeea;
+  --color-muted: #9aa8a1;
+  --color-line: #2c3a34;
+  --color-brand: #86c5a8;
+  --color-brand-hover: #9dd3ba;
+  --color-brand-soft: #22322b;
+  --color-on-brand: #0e1a15;
+  --color-ok: #1c3324;
+  --color-ok-ink: #8fd4a3;
+  --color-calm: #232d29;
+  --color-calm-ink: #b9c4be;
+  --color-calm-bar: #5f6d66;
+  --color-soon: #3a2f14;
+  --color-soon-ink: #f0c36a;
+  --color-today: #3d2314;
+  --color-today-ink: #f5a878;
+  --color-past: #3f1d1d;
+  --color-past-ink: #f2a0a0;
+  --color-danger: #f07a70;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --color-paper: #121a17;
+    --color-card: #1a2420;
+    --color-ink: #e8eeea;
+    --color-muted: #9aa8a1;
+    --color-line: #2c3a34;
+    --color-brand: #86c5a8;
+    --color-brand-hover: #9dd3ba;
+    --color-brand-soft: #22322b;
+    --color-on-brand: #0e1a15;
+    --color-ok: #1c3324;
+    --color-ok-ink: #8fd4a3;
+    --color-calm: #232d29;
+    --color-calm-ink: #b9c4be;
+    --color-calm-bar: #5f6d66;
+    --color-soon: #3a2f14;
+    --color-soon-ink: #f0c36a;
+    --color-today: #3d2314;
+    --color-today-ink: #f5a878;
+    --color-past: #3f1d1d;
+    --color-past-ink: #f2a0a0;
+    --color-danger: #f07a70;
+  }
 }
 
 html {

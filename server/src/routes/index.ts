@@ -16,6 +16,7 @@ import {
   registerSchema,
   shoppingItemSchema,
   shoppingUpdateSchema,
+  deleteAccountSchema,
   updateAccountSchema,
   updateFoodSchema,
   useFoodSchema,
@@ -32,6 +33,7 @@ import { suggestionController } from '../controllers/suggestionController.js';
 import { notificationController } from '../controllers/notificationController.js';
 import { pushController } from '../controllers/pushController.js';
 import { shoppingController } from '../controllers/shoppingController.js';
+import { accountController } from '../controllers/accountController.js';
 import { insightsController } from '../controllers/insightsController.js';
 import { usageController } from '../controllers/usageController.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -80,6 +82,9 @@ router.use(requireAuth);
 
 router.get('/auth/me', authController.me);
 router.put('/auth/me', validate(updateAccountSchema), authController.updateMe);
+
+router.get('/account/export', accountController.export);
+router.delete('/account', authLimiter, validate(deleteAccountSchema), accountController.remove);
 
 router.get('/foods', foodController.list);
 router.post('/foods', validate(createFoodSchema), foodController.create);
