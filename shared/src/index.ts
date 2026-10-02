@@ -1,3 +1,4 @@
+export * from './alerts.js';
 export * from './api.js';
 export * from './barcode.js';
 export * from './dates.js';

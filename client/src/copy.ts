@@ -9,6 +9,7 @@
  */
 import {
   REFERENCE_SOURCE,
+  type MealType,
   type ReminderMode,
   type ReminderType,
   type StorageLocation,
@@ -283,6 +284,7 @@ export const shoppingCopy = {
 
 export const planCopy = {
   title: 'Meal plan',
+  mealChoice: 'Breakfast, lunch or dinner',
   subtitle: 'This week, using what needs cooking first',
   today: 'Today',
   tomorrow: 'Tomorrow',
@@ -501,3 +503,50 @@ export const productPhotoCopy = {
   error: 'Couldn’t save that photo. Try again.',
   inputLabel: 'Product photo',
 } as const;
+
+/** Reminder sounds, vibration and quiet hours (Settings). */
+export const alertCopy = {
+  title: 'Sounds and quiet hours',
+  intro: 'Choose how reminders sound. During quiet hours they still arrive, just silently.',
+  sound: 'Reminder sounds',
+  soundHint: 'A gentle chime for what’s coming up, a stronger one for what’s due or overdue.',
+  vibration: 'Vibration',
+  vibrationHint: 'For due and overdue reminders. iPhones decide this themselves.',
+  quiet: 'Quiet hours',
+  quietHint: 'No sound or vibration, but reminders still arrive.',
+  from: 'From',
+  to: 'To',
+  zone: (zone: string) => `In your time zone (${zone}).`,
+  saveFailed: 'Couldn’t save that. Try again.',
+};
+
+/** Breakfast, lunch and dinner cooking reminders (Settings). */
+export const mealSettingsCopy = {
+  title: 'Meal reminders',
+  intro: 'A reminder at meal time with what to cook first: your planned meal, a recipe idea, or the food to use up.',
+  meals: { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner' } satisfies Record<MealType, string>,
+  time: (meal: string) => `${meal} reminder time`,
+  note: 'These arrive as push reminders, so turn those on above. Nothing is sent when there is nothing in Cook First and no meal planned.',
+};
+
+/** The screen a meal reminder's "Show recipe" button opens. */
+export const mealPageCopy = {
+  mealNames: { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner' } satisfies Record<MealType, string>,
+  title: (meal: string) => `${meal} reminder`,
+  none: 'There’s no reminder for this meal today.',
+  openCookFirst: 'See your Cook First list',
+  planned: 'Planned for this meal',
+  noRecipe: 'No recipe this time',
+  itemsTitle: 'Use these up first',
+  aiNote: 'This is an AI suggestion built from your Cook First list. Always check your food before cooking with it.',
+  cooked: 'Cooked it',
+  daysLeft: (remainingDays: number) =>
+    remainingDays > 0
+      ? `expected expiry in ${remainingDays === 1 ? '1 day' : `${remainingDays} days`}`
+      : remainingDays === 0
+        ? 'expected expiry today'
+        : 'past its expected expiry',
+};
+
+/** Said when a meal reminder is snoozed from a notification button. */
+export const mealSnoozeToast = 'We’ll remind you again in 30 minutes';

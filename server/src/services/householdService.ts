@@ -114,9 +114,14 @@ export async function joinHousehold(user: UserDoc, { code }: JoinHouseholdInput)
   }
 
   await movePhotos({ householdId: from }, target); // their food's photos come along
-  // The meal plan has one meal a day: where both have one, the household's stays.
-  const taken = await MealPlanEntryModel.distinct('date', { householdId: target });
-  await MealPlanEntryModel.deleteMany({ householdId: from, date: { $in: taken } });
+  // The meal plan has one entry per meal per day: where both have one, the household's stays.
+  const taken = await MealPlanEntryModel.find({ householdId: target }, { date: 1, meal: 1 });
+  if (taken.length > 0) {
+    await MealPlanEntryModel.deleteMany({
+      householdId: from,
+      $or: taken.map((entry) => ({ date: entry.date, meal: entry.meal })),
+    });
+  }
   await Promise.all([
     FoodItemModel.updateMany({ householdId: from }, { $set: { householdId: target } }),
     UsageRecordModel.updateMany({ householdId: from }, { $set: { householdId: target } }),

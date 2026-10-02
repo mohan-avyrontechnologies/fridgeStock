@@ -1,8 +1,8 @@
 import cron, { type ScheduledTask } from 'node-cron';
 import { sweep } from '../services/notificationService.js';
 
-/** Hourly, on the hour: deliver any reminders whose day has arrived. */
-export const REMINDER_SCHEDULE = '0 * * * *';
+/** Every 5 minutes: deliver reminders whose day has arrived, and meal reminders when their time comes. */
+export const REMINDER_SCHEDULE = '*/5 * * * *';
 
 export async function runReminderSweep(): Promise<void> {
   try {

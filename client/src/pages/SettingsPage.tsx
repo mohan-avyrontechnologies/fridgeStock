@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { api } from '../api/client';
 import { CURRENCIES, type Currency, type NotificationPreferences } from '@cook-first/shared';
 import { PageBody, PageHeader } from '../components/AppShell';
+import { AlertSettings } from '../components/AlertSettings';
 import { PushReminders } from '../components/PushReminders';
 import { YourData } from '../components/YourData';
 import { EstimateNote } from '../components/Urgency';
@@ -180,6 +181,8 @@ export function SettingsPage() {
         </section>
 
         <PushReminders />
+
+        <AlertSettings />
 
         <section>
           <h2 className="mb-2 text-lg font-semibold">{screenCopy.settings.aboutTitle}</h2>

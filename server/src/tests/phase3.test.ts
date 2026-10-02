@@ -10,7 +10,7 @@ import { clock } from '../services/clock.js';
 import { sweep } from '../services/notificationService.js';
 import { createWebPushProvider, setPushProvider, type PushProvider } from '../services/pushProvider.js';
 import { signActionToken, signToken } from '../services/token.js';
-import { api, food, registerUser } from './helpers.js';
+import { api, food, gentleAlert, registerUser } from './helpers.js';
 
 /** Phase 3: better reminders (Web Push, daily digest, Used and Snooze buttons). */
 
@@ -194,6 +194,12 @@ describe('daily digest', () => {
       tag: 'digest',
       url: '/cook-first',
       actions: [],
+      kind: 'DIGEST',
+      channel: 'food-soon',
+      sound: 'gentle',
+      vibrate: [120],
+      requireInteraction: false,
+      silent: false,
     });
   });
 
@@ -479,7 +485,7 @@ describe('notification buttons', () => {
 describe('Web Push provider', () => {
   const vapid = { publicKey: 'PUB', privateKey: 'PRIV', subject: 'mailto:a@example.com' };
   const target = { platform: 'web' as const, endpoint: 'https://push.example.com/x', keys: { p256dh: 'k', auth: 'a' } };
-  const payload: PushPayload = { title: 't', body: 'b', tag: 'x', url: '/', actions: [] };
+  const payload: PushPayload = { title: 't', body: 'b', tag: 'x', url: '/', actions: [], ...gentleAlert };
 
   it('sends the JSON payload with the VAPID keys', async () => {
     const send = vi.spyOn(webpush, 'sendNotification').mockResolvedValue({ statusCode: 201, body: '', headers: {} });

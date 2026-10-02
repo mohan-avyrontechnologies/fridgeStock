@@ -77,9 +77,11 @@ describe('responses', () => {
   it('users have id, name, email, time zone, currency, preferences and reminder delivery only', async () => {
     const me = await s.auth(api().get('/api/auth/me')).expect(200);
     expect(Object.keys(me.body.user).sort()).toEqual([
+      'alerts',
       'currency',
       'email',
       'id',
+      'mealReminders',
       'name',
       'notificationPreferences',
       'reminderDelivery',

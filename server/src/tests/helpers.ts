@@ -39,3 +39,13 @@ export const food = (overrides: Record<string, unknown> = {}) => ({
   lifespanDays: 4,
   ...overrides,
 });
+
+/** The sound, channel and vibration fields a push carries, for tests that build a payload by hand. */
+export const gentleAlert = {
+  kind: 'DIGEST',
+  channel: 'food-soon',
+  sound: 'gentle',
+  vibrate: [120] as number[],
+  requireInteraction: false,
+  silent: false,
+} as const;

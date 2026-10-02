@@ -19,10 +19,31 @@ public class MainActivity extends BridgeActivity {
     /** The page may be handed over before the web app has finished loading, so it is offered again a little later. */
     private static final long[] RETRY_DELAYS_MS = { 300, 1500, 4000 };
 
+    /** True while the app is on screen: a reminder is then delivered silently, because the app plays its own chime. */
+    private static volatile boolean visible = false;
+
+    static boolean isVisible() {
+        return visible;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // The two channels with no sound can not be made by the push plugin (see ReminderChannels).
+        ReminderChannels.ensureSoundless(this);
         openPageFrom(getIntent());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        visible = true;
+    }
+
+    @Override
+    public void onPause() {
+        visible = false;
+        super.onPause();
     }
 
     @Override

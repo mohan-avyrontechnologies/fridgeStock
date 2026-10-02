@@ -70,3 +70,40 @@ export type PushPlatform = (typeof PUSH_PLATFORMS)[number];
 
 export const PUSH_ACTIONS = ['USED', 'SNOOZE'] as const;
 export type PushAction = (typeof PUSH_ACTIONS)[number];
+
+/** Breakfast, lunch and dinner: the meals a cooking reminder and a planned meal can be for. */
+export const MEAL_TYPES = ['breakfast', 'lunch', 'dinner'] as const;
+export type MealType = (typeof MEAL_TYPES)[number];
+
+/**
+ * The buttons on a meal reminder. COOKED and RECIPE open a page; SNOOZE_MEAL calls the API (with the
+ * notification's own token) to be reminded again in 30 minutes.
+ */
+export const MEAL_PUSH_ACTIONS = ['COOKED', 'RECIPE', 'SNOOZE_MEAL'] as const;
+export type MealPushAction = (typeof MEAL_PUSH_ACTIONS)[number];
+
+/** Every button a push notification can carry. */
+export type PushActionName = PushAction | MealPushAction;
+
+/** What a push is about. It decides which sound, channel and vibration it gets. */
+export const PUSH_KINDS = ['APPROACHING_EXPIRY', 'DIGEST', 'DUE', 'OVERDUE', 'MEAL'] as const;
+export type PushKind = (typeof PUSH_KINDS)[number];
+
+/** The three reminder sounds: gentle (approaching expiry and the daily summary), strong (due and overdue), meal. */
+export const SOUND_NAMES = ['gentle', 'strong', 'meal'] as const;
+export type SoundName = (typeof SOUND_NAMES)[number];
+
+/**
+ * Android notification channels. food-soon, food-urgent and meal-reminders are the three that carry the
+ * sounds; the other three let a person's sound and vibration switches (and quiet hours) take effect, because
+ * Android fixes sound and vibration per channel.
+ */
+export const NOTIFICATION_CHANNELS = [
+  'food-soon',
+  'food-urgent',
+  'meal-reminders',
+  'food-urgent-sound',
+  'reminders-vibrate',
+  'reminders-silent',
+] as const;
+export type NotificationChannelId = (typeof NOTIFICATION_CHANNELS)[number];

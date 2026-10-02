@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { isValidBarcode } from './barcode.js';
 import { isValidDate } from './dates.js';
-import { CURRENCIES, PUSH_ACTIONS, REMINDER_MODES, STORAGE_LOCATIONS, UNITS } from './enums.js';
+import { CURRENCIES, MEAL_TYPES, PUSH_ACTIONS, REMINDER_MODES, STORAGE_LOCATIONS, UNITS } from './enums.js';
 
 /**
  * Request schemas. The server's check is the only one that counts; the client
@@ -24,6 +24,9 @@ export const MESSAGES = {
   reminderHour: 'Choose an hour from 0 to 23.',
   pushSubscription: 'That push subscription isn’t valid.',
   pushAction: 'Unknown notification action.',
+  clockTime: 'Enter a time like 07:30.',
+  quietHoursSame: 'Quiet hours need a start and an end that are different times.',
+  mealType: 'Choose breakfast, lunch or dinner.',
   foodName: 'Food name is required.',
   foodNameTooLong: 'Food name must be at most 60 characters.',
   quantity: 'Quantity must be a positive number.',
@@ -300,8 +303,39 @@ export const pushUnsubscribeSchema = z.union([z.object({ endpoint: pushEndpoint 
 /** POST /push/actions: sent by the service worker when a notification button is tapped. */
 export const pushActionSchema = z.object({
   token: z.string().min(1).max(2000),
-  action: z.enum(PUSH_ACTIONS, { error: MESSAGES.pushAction }),
+  action: z.enum([...PUSH_ACTIONS, 'SNOOZE_MEAL'], { error: MESSAGES.pushAction }),
 });
+
+/** A time of day, "HH:mm" (24-hour). */
+const clockTime = z.string({ error: MESSAGES.clockTime }).regex(/^([01]\d|2[0-3]):[0-5]\d$/, MESSAGES.clockTime);
+
+/** PUT /notifications/alerts: sounds, vibration and quiet hours. Any part may be sent. */
+export const alertSettingsSchema = z
+  .object({
+    sound: z.boolean(),
+    vibration: z.boolean(),
+    quietHours: z.object({ enabled: z.boolean(), start: clockTime, end: clockTime }).partial().strict(),
+  })
+  .partial()
+  .strict();
+
+/** PUT /notifications/meals: each meal's switch and time. Any part may be sent. */
+const mealSettingSchema = z.object({ enabled: z.boolean(), time: clockTime }).partial().strict();
+export const mealRemindersSchema = z
+  .object(
+    Object.fromEntries(MEAL_TYPES.map((meal) => [meal, mealSettingSchema])) as Record<
+      (typeof MEAL_TYPES)[number],
+      typeof mealSettingSchema
+    >,
+  )
+  .partial()
+  .strict();
+
+/** POST /ai/recipes: which meal the ideas are for (so breakfast ideas suit breakfast). */
+export const recipesRequestSchema = z.object({ mealType: z.enum(MEAL_TYPES, { error: MESSAGES.mealType }).optional() });
+
+/** GET /meal-reminders/:meal */
+export const mealParamSchema = z.object({ meal: z.enum(MEAL_TYPES, { error: MESSAGES.mealType }) });
 
 /** POST /shopping */
 export const shoppingItemSchema = z.object({
@@ -326,6 +360,8 @@ const objectId = z.string().regex(/^[0-9a-f]{24}$/i, MESSAGES.mealFoods);
 
 /** PUT /meal-plan/:date */
 export const mealPlanEntrySchema = z.object({
+  /** Which meal; leaving it out means dinner, as before meals were added. */
+  meal: z.enum(MEAL_TYPES, { error: MESSAGES.mealType }).default('dinner'),
   title: z.string({ error: MESSAGES.mealTitle }).trim().min(1, MESSAGES.mealTitle).max(80, MESSAGES.mealTitle),
   foodIds: z.array(objectId, { error: MESSAGES.mealFoods }).max(10, MESSAGES.mealFoods).default([]),
 });
@@ -355,6 +391,9 @@ export type FoodUpdateInput = z.infer<typeof updateFoodSchema>;
 export type UseFoodInput = z.infer<typeof useFoodSchema>;
 export type PreferencesInput = z.infer<typeof preferencesSchema>;
 export type DeliveryInput = z.infer<typeof deliverySchema>;
+export type AlertSettingsInput = z.infer<typeof alertSettingsSchema>;
+export type MealRemindersInput = z.infer<typeof mealRemindersSchema>;
+export type RecipesRequest = z.infer<typeof recipesRequestSchema>;
 export type ShoppingItemInput = z.infer<typeof shoppingItemSchema>;
 export type ShoppingUpdateInput = z.infer<typeof shoppingUpdateSchema>;
 export type MealPlanEntryInput = z.infer<typeof mealPlanEntrySchema>;

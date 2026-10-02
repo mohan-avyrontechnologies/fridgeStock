@@ -1,7 +1,10 @@
 import {
   bulkCreateSchema,
   createFoodSchema,
+  alertSettingsSchema,
   deliverySchema,
+  mealRemindersSchema,
+  recipesRequestSchema,
   favouriteSchema,
   loginSchema,
   mealPlanEntrySchema,
@@ -36,6 +39,7 @@ import { authController } from '../controllers/authController.js';
 import { favouriteController } from '../controllers/favouriteController.js';
 import { foodController } from '../controllers/foodController.js';
 import { mealPlanController } from '../controllers/mealPlanController.js';
+import { mealReminderController } from '../controllers/mealReminderController.js';
 import { suggestionController } from '../controllers/suggestionController.js';
 import { notificationController } from '../controllers/notificationController.js';
 import { pushController } from '../controllers/pushController.js';
@@ -165,6 +169,10 @@ router.get('/notifications/unread-count', notificationController.unreadCount);
 router.get('/notifications/preferences', notificationController.getPreferences);
 router.put('/notifications/preferences', validate(preferencesSchema), notificationController.updatePreferences);
 router.post('/notifications/read-all', notificationController.markAllRead);
+router.get('/notifications/alerts', notificationController.getAlerts);
+router.put('/notifications/alerts', validate(alertSettingsSchema), notificationController.updateAlerts);
+router.get('/notifications/meals', notificationController.getMealReminders);
+router.put('/notifications/meals', validate(mealRemindersSchema), notificationController.updateMealReminders);
 router.get('/notifications/delivery', notificationController.getDelivery);
 router.put('/notifications/delivery', validate(deliverySchema), notificationController.updateDelivery);
 
@@ -174,7 +182,7 @@ router.delete('/push/subscriptions', validate(pushUnsubscribeSchema), pushContro
 
 // Phase 4: using the food. AI routes read the Cook First order and never change it.
 router.get('/ai/status', aiController.status);
-router.post('/ai/recipes', aiController.recipes);
+router.post('/ai/recipes', validate(recipesRequestSchema), aiController.recipes);
 router.post('/ai/meal-plan', aiController.mealPlan);
 
 router.get('/products/barcode', scanLimiter, validate(barcodeSchema, 'query'), productController.barcode);
@@ -188,5 +196,6 @@ router.put('/shopping/:id', validate(shoppingUpdateSchema), shoppingController.u
 router.delete('/shopping/:id', shoppingController.remove);
 
 router.get('/meal-plan', mealPlanController.get);
+router.get('/meal-reminders/:meal', mealReminderController.get);
 router.put('/meal-plan/:date', validate(mealPlanEntrySchema), mealPlanController.set);
 router.delete('/meal-plan/:date', mealPlanController.clear);

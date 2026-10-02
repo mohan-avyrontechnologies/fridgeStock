@@ -13,6 +13,7 @@ import type { NotificationDoc } from '../models/Notification.js';
 import type { UsageRecordDoc } from '../models/UsageRecord.js';
 import type { UserDoc } from '../models/User.js';
 import { classifyUrgency } from './priorityEngine.js';
+import { alertsOf, mealRemindersOf } from './userSettings.js';
 
 /** Map documents to the API response shapes in @cook-first/shared. Never exposes passwordHash. */
 
@@ -27,6 +28,8 @@ export function toUserView(user: UserDoc): User {
     savePhotos: user.savePhotos ?? true,
     notificationPreferences: { approachingExpiry: prefs.approachingExpiry, due: prefs.due, overdue: prefs.overdue },
     reminderDelivery: { mode: user.reminderDelivery.mode, hour: user.reminderDelivery.hour },
+    alerts: alertsOf(user),
+    mealReminders: mealRemindersOf(user),
   };
 }
 

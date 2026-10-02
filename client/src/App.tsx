@@ -12,10 +12,13 @@ import { HistoryPage } from './pages/HistoryPage';
 import { HouseholdPage } from './pages/HouseholdPage';
 import { InsightsPage } from './pages/InsightsPage';
 import { NotificationsPage } from './pages/NotificationsPage';
+import { MealReminderPage } from './pages/MealReminderPage';
 import { PlanPage } from './pages/PlanPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ShoppingPage } from './pages/ShoppingPage';
 import { Spinner } from './components/ui';
+import { mealSnoozeToast } from './copy';
+import { useReminderChime } from './lib/useReminderChime';
 import { OPEN_PAGE_EVENT, PUSH_ACTION_DONE_EVENT, PUSH_RECEIVED_EVENT } from './platform/events';
 import { useAuthHydrated, useAuthStore } from './stores/authStore';
 import { useFoodStore } from './stores/foodStore';
@@ -46,7 +49,10 @@ function useNativeEvents() {
     };
     const received = () => void useNotificationStore.getState().fetchUnread();
     const handled = (event: Event) => {
-      toast((event as CustomEvent).detail === 'USED' ? 'Marked as used' : 'Snoozed until tomorrow');
+      const action = (event as CustomEvent).detail;
+      toast(
+        action === 'USED' ? 'Marked as used' : action === 'SNOOZE_MEAL' ? mealSnoozeToast : 'Snoozed until tomorrow',
+      );
       void useFoodStore.getState().refresh();
     };
     // A page handed over before this was listening (the app was started by tapping a notification).
@@ -68,6 +74,7 @@ function useNativeEvents() {
 
 export function App() {
   useNativeEvents();
+  useReminderChime();
   const hydrated = useAuthHydrated();
   // In the apps the saved login is read from secure storage first.
   if (!hydrated) return <Spinner />;
@@ -91,6 +98,7 @@ export function App() {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/shopping" element={<ShoppingPage />} />
           <Route path="/plan" element={<PlanPage />} />
+          <Route path="/meal/:meal" element={<MealReminderPage />} />
         </Route>
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,12 +1,12 @@
 import type { Favourite } from '@cook-first/shared';
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { CameraScreen } from '../components/CameraScreen';
 import { FoodForm } from '../components/FoodForm';
 import { Button, Chip } from '../components/ui';
-import { bulkCopy, cameraCopy, favouriteCopy, photoCopy, productPhotoCopy } from '../copy';
+import { bulkCopy, cameraCopy, favouriteCopy, leftoverCopy, photoCopy, productPhotoCopy } from '../copy';
 import { fieldsFor, type ScannedFields, type ScannedItem } from '../lib/scanned';
 import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
@@ -19,8 +19,14 @@ export function AddFoodPage() {
   const toast = useToastStore((s) => s.show);
   const savePhotos = useAuthStore((s) => s.user?.savePhotos ?? true);
   const navigate = useNavigate();
-  // Leftovers saved from a recipe idea arrive with a name and the leftovers box ticked.
-  const prefill = (useLocation().state ?? undefined) as { name?: string; leftover?: boolean } | undefined;
+  // Leftovers saved from a recipe idea arrive with a name and the leftovers box ticked. So do the ones a meal
+  // reminder's "Cooked it" opens, through its address (/add?leftover=1&from=Chicken%20curry).
+  const [params] = useSearchParams();
+  const fromReminder = params.get('leftover') === '1';
+  const prefill = (useLocation().state ??
+    (fromReminder
+      ? { leftover: true, ...(params.get('from') && { name: leftoverCopy.name(params.get('from')!) }) }
+      : undefined)) as { name?: string; leftover?: boolean } | undefined;
   const [favourites, setFavourites] = useState<Favourite[]>([]);
   const [camera, setCamera] = useState(false);
   // One scanned product pre-fills the form; a new key starts the form again from it.

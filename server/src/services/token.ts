@@ -50,3 +50,35 @@ export function verifyActionToken(token: string): { userId: string; foodId: stri
     return null;
   }
 }
+
+const MEAL_ACTION_AUDIENCE = 'meal-action';
+
+/**
+ * Like an action token, but for a meal reminder's "Snooze 30 min": it names one user, one meal and one day
+ * (not a food item), and can't be used to sign in or to act on food.
+ */
+export function signMealActionToken(userId: string, meal: string, date: string): string {
+  return jwt.sign({ meal, date }, env.jwtSecret, {
+    algorithm: 'HS256',
+    subject: userId,
+    audience: MEAL_ACTION_AUDIENCE,
+    expiresIn: '1d',
+  });
+}
+
+export function verifyMealActionToken(token: string): { userId: string; meal: string; date: string } | null {
+  try {
+    const payload = jwt.verify(token, env.jwtSecret, { algorithms: ['HS256'], audience: MEAL_ACTION_AUDIENCE });
+    if (
+      typeof payload !== 'object' ||
+      typeof payload.sub !== 'string' ||
+      typeof payload.meal !== 'string' ||
+      typeof payload.date !== 'string'
+    ) {
+      return null;
+    }
+    return { userId: payload.sub, meal: payload.meal, date: payload.date };
+  } catch {
+    return null;
+  }
+}

@@ -5,6 +5,8 @@ import { UserModel } from './User.js';
 import { FavouriteModel } from './Favourite.js';
 import { Types } from 'mongoose';
 import { MealPlanEntryModel } from './MealPlanEntry.js';
+import { MealReminderLogModel } from './MealReminderLog.js';
+import { RecipeIdeaCacheModel } from './RecipeIdeaCache.js';
 import { ShoppingItemModel } from './ShoppingItem.js';
 
 /**
@@ -70,6 +72,8 @@ async function backfillSharedHouseholds() {
 export async function runMigrations(): Promise<void> {
   await backfillHouseholdAndStorage();
   await backfillSharedHouseholds();
+  // v2.17 added a meal to each plan entry: the ones made before it were all dinners.
+  await MealPlanEntryModel.collection.updateMany({ meal: { $exists: false } }, { $set: { meal: 'dinner' } });
   await datesToStrings(FoodItemModel.collection, ['addedDate', 'expiryDate']);
   await datesToStrings(NotificationModel.collection, ['expiryDate', 'scheduledDate']);
   await datesToStrings(UsageRecordModel.collection, ['date']);
@@ -82,5 +86,7 @@ export async function runMigrations(): Promise<void> {
     MealPlanEntryModel.syncIndexes(),
     UserModel.syncIndexes(),
     FavouriteModel.syncIndexes(),
+    MealReminderLogModel.syncIndexes(),
+    RecipeIdeaCacheModel.syncIndexes(),
   ]);
 }

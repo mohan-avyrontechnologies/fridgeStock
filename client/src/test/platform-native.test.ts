@@ -72,6 +72,7 @@ const pushPlugin = vi.hoisted(() => ({
   register: vi.fn(),
   unregister: vi.fn(),
   addListener: vi.fn(),
+  createChannel: vi.fn(),
 }));
 vi.mock('@capacitor/push-notifications', () => ({ PushNotifications: pushPlugin }));
 
@@ -131,6 +132,7 @@ beforeEach(() => {
     });
   });
   pushPlugin.unregister.mockResolvedValue(undefined);
+  pushPlugin.createChannel.mockResolvedValue(undefined);
   pushPlugin.addListener.mockImplementation(async (event: string, callback: (e: unknown) => void) => {
     state.listeners.set(event, callback);
     return { remove: vi.fn(async () => void state.listeners.delete(event)) };
@@ -389,6 +391,131 @@ describe('native push', () => {
       fresh.start();
       await new Promise((resolve) => setTimeout(resolve, 20));
       expect(pushPlugin.addListener.mock.calls.length).toBe(before);
+    });
+  });
+});
+
+describe('native push: sounds and the buttons of a meal reminder', () => {
+  const events: { type: string; detail?: unknown }[] = [];
+  const removers: (() => void)[] = [];
+  let actions: Record<string, unknown>[];
+  const listen = (type: string) => {
+    const handler = (e: Event) => events.push({ type, detail: (e as CustomEvent).detail });
+    window.addEventListener(type, handler);
+    removers.push(() => window.removeEventListener(type, handler));
+  };
+  const start = async (os: 'ios' | 'android') => {
+    state.os = os;
+    vi.resetModules();
+    (await import('../platform/native/push')).nativePush.start();
+    await vi.waitFor(() => expect(state.listeners.has('pushNotificationActionPerformed')).toBe(true));
+  };
+  const tapped = (actionId: string, data: Record<string, unknown>) =>
+    state.listeners.get('pushNotificationActionPerformed')!({ actionId, notification: { data } });
+
+  beforeEach(() => {
+    events.length = 0;
+    actions = [];
+    for (const type of [OPEN_PAGE_EVENT, PUSH_RECEIVED_EVENT, PUSH_ACTION_DONE_EVENT]) listen(type);
+    server.use(
+      http.post(`${API_URL}/push/actions`, async ({ request }) => {
+        actions.push((await request.json()) as Record<string, unknown>);
+        return new HttpResponse(null, { status: 204 });
+      }),
+    );
+  });
+  afterEach(() => removers.splice(0).forEach((remove) => remove()));
+
+  describe('the Android notification channels', () => {
+    it('creates the four channels that have a sound when the app starts, with their sound files', async () => {
+      await start('android');
+      await vi.waitFor(() => expect(pushPlugin.createChannel).toHaveBeenCalledTimes(4));
+      const made = pushPlugin.createChannel.mock.calls.map(([channel]) => channel);
+      expect(made.map((channel) => channel.id)).toEqual([
+        'food-soon',
+        'food-urgent',
+        'meal-reminders',
+        'food-urgent-sound',
+      ]);
+      const byId = Object.fromEntries(made.map((channel) => [channel.id, channel]));
+      expect(byId['food-soon']).toMatchObject({ importance: 3, sound: 'reminder_gentle', vibration: false });
+      expect(byId['food-urgent']).toMatchObject({ importance: 4, sound: 'reminder_strong', vibration: true });
+      expect(byId['meal-reminders']).toMatchObject({ importance: 3, sound: 'reminder_meal', vibration: false });
+      expect(byId['food-urgent-sound']).toMatchObject({ importance: 4, sound: 'reminder_strong', vibration: false });
+    });
+
+    it('makes none on iPhone', async () => {
+      await start('ios');
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(pushPlugin.createChannel).not.toHaveBeenCalled();
+    });
+
+    it('still listens for notifications if a channel cannot be made', async () => {
+      pushPlugin.createChannel.mockRejectedValue(new Error('no channels'));
+      await start('android');
+      expect(state.listeners.has('pushNotificationReceived')).toBe(true);
+    });
+  });
+
+  describe('a push arriving while the app is open', () => {
+    it('says which kind it is, so the matching chime plays', async () => {
+      await start('ios');
+      for (const kind of ['DUE', 'MEAL', 'APPROACHING_EXPIRY']) {
+        state.listeners.get('pushNotificationReceived')!({ data: { kind } });
+      }
+      expect(events.filter((e) => e.type === PUSH_RECEIVED_EVENT).map((e) => e.detail)).toEqual([
+        { kind: 'DUE' },
+        { kind: 'MEAL' },
+        { kind: 'APPROACHING_EXPIRY' },
+      ]);
+    });
+
+    it('says no kind for one it does not know, or none', async () => {
+      await start('ios');
+      state.listeners.get('pushNotificationReceived')!({ data: { kind: 'SHOUT' } });
+      state.listeners.get('pushNotificationReceived')!({});
+      expect(events.map((e) => e.detail)).toEqual([{ kind: null }, { kind: null }]);
+    });
+  });
+
+  describe('the buttons on a meal reminder', () => {
+    const data = {
+      actionToken: 'meal-token',
+      url: '/meal/dinner',
+      actionUrls: JSON.stringify({ COOKED: '/add?leftover=1&from=Stew', RECIPE: '/meal/dinner' }),
+    };
+
+    it('"Cooked it" and "Show recipe" open their pages, without calling the server', async () => {
+      await start('ios');
+      tapped('COOKED', data);
+      tapped('RECIPE', data);
+      await vi.waitFor(() => expect(events.filter((e) => e.type === OPEN_PAGE_EVENT)).toHaveLength(2));
+      expect(events.map((e) => e.detail)).toEqual(['/add?leftover=1&from=Stew', '/meal/dinner']);
+      expect(actions).toEqual([]);
+    });
+
+    it('"Snooze 30 min" calls the server with the meal token and tells the screens', async () => {
+      await start('ios');
+      tapped('SNOOZE_MEAL', data);
+      await vi.waitFor(() => expect(events.map((e) => e.type)).toContain(PUSH_ACTION_DONE_EVENT));
+      expect(actions).toEqual([{ token: 'meal-token', action: 'SNOOZE_MEAL' }]);
+      expect(events.find((e) => e.type === PUSH_ACTION_DONE_EVENT)!.detail).toBe('SNOOZE_MEAL');
+      expect(events.some((e) => e.type === OPEN_PAGE_EVENT)).toBe(false);
+    });
+
+    it('"Snooze 30 min" opens the reminder instead when it cannot be sent', async () => {
+      server.use(http.post(`${API_URL}/push/actions`, () => HttpResponse.json({}, { status: 503 })));
+      await start('ios');
+      tapped('SNOOZE_MEAL', data);
+      await vi.waitFor(() => expect(events).toContainEqual({ type: OPEN_PAGE_EVENT, detail: '/meal/dinner' }));
+    });
+
+    it('copes with a missing or broken list of pages', async () => {
+      await start('ios');
+      tapped('COOKED', { ...data, actionUrls: 'not json' });
+      tapped('RECIPE', { url: '/meal/lunch' });
+      await vi.waitFor(() => expect(events.filter((e) => e.type === OPEN_PAGE_EVENT)).toHaveLength(2));
+      expect(events.map((e) => e.detail)).toEqual(['/meal/dinner', '/meal/lunch']);
     });
   });
 });

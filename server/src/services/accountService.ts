@@ -7,6 +7,8 @@ import { deletePhotosForFoods, deletePhotosForHousehold, deletePhotosUploadedBy 
 import { HouseholdEventModel } from '../models/HouseholdEvent.js';
 import { InviteModel } from '../models/Invite.js';
 import { MealPlanEntryModel } from '../models/MealPlanEntry.js';
+import { MealReminderLogModel } from '../models/MealReminderLog.js';
+import { RecipeIdeaCacheModel } from '../models/RecipeIdeaCache.js';
 import { NotificationModel } from '../models/Notification.js';
 import { PushSubscriptionModel } from '../models/PushSubscription.js';
 import { ShoppingItemModel } from '../models/ShoppingItem.js';
@@ -82,6 +84,8 @@ export async function deleteAccount(user: UserDoc, { password }: DeleteAccountIn
     FavouriteModel.deleteMany(owner),
     ShoppingItemModel.deleteMany(owner),
     MealPlanEntryModel.deleteMany(owner),
+    MealReminderLogModel.deleteMany(owner),
+    RecipeIdeaCacheModel.deleteMany(owner),
     AiUsageModel.deleteMany(owner),
   ]);
   await UserModel.deleteOne({ _id: user._id });

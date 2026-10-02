@@ -317,6 +317,7 @@ describe('weekly meal plan', () => {
       )
       .expect(200);
     expect(saved.body).toEqual({
+      meal: 'dinner',
       title: 'Chicken curry',
       foods: [
         { id: chicken.id, name: 'Chicken', status: 'ACTIVE' },

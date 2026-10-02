@@ -887,3 +887,71 @@ test('phase 6: a photo is kept with the food, shown privately, removed on reques
   await expect(allFood(page).filter({ hasText: 'Cola' })).toHaveCount(1);
   await expectNoSafetyClaim(page);
 });
+
+test('phase 8: sounds and quiet hours, meal reminders, a breakfast plan, and the meal reminder screen', async ({
+  page,
+}) => {
+  await register(page, 'Ravi Menon');
+  await openSettings(page);
+
+  // Sounds and quiet hours: on, 22:00 to 07:00 by default, and each change is saved at once.
+  await expect(page.getByRole('heading', { name: 'Sounds and quiet hours' })).toBeVisible();
+  await expect(page.getByRole('switch', { name: /Reminder sounds/ })).toBeChecked();
+  await expect(page.getByRole('switch', { name: /Vibration/ })).toBeChecked();
+  await expect(page.getByLabel('From', { exact: true })).toHaveValue('22:00');
+  await expect(page.getByLabel('To', { exact: true })).toHaveValue('07:00');
+  await page.locator('label', { hasText: 'Reminder sounds' }).click();
+  await expect(page.getByRole('switch', { name: /Reminder sounds/ })).not.toBeChecked();
+  await page.getByLabel('From', { exact: true }).fill('23:15');
+  await page.getByLabel('To', { exact: true }).fill('06:30');
+
+  // Meal reminders: off, then turned on with their default times, and one time changed.
+  await expect(page.getByRole('heading', { name: 'Meal reminders' })).toBeVisible();
+  await expect(page.getByRole('switch', { name: 'Dinner' })).not.toBeChecked();
+  await page.locator('label', { hasText: /^Dinner$/ }).click();
+  await expect(page.getByLabel('Dinner reminder time')).toHaveValue('19:30');
+  await page.getByLabel('Dinner reminder time').fill('18:45');
+  await page.locator('label', { hasText: /^Breakfast$/ }).click();
+  await expect(page.getByLabel('Breakfast reminder time')).toHaveValue('07:30');
+  await expectLargeTapTargets(page);
+  await expectNoHorizontalScroll(page);
+  await shot(page, '25-sounds-and-meals');
+
+  // They are still there after a reload (saved on the server, not just on this screen).
+  await page.reload();
+  await expect(page.getByRole('switch', { name: /Reminder sounds/ })).not.toBeChecked();
+  await expect(page.getByLabel('From', { exact: true })).toHaveValue('23:15');
+  await expect(page.getByLabel('To', { exact: true })).toHaveValue('06:30');
+  await expect(page.getByLabel('Dinner reminder time')).toHaveValue('18:45');
+  await expect(page.getByLabel('Breakfast reminder time')).toHaveValue('07:30');
+  await expect(page.getByRole('switch', { name: 'Lunch' })).not.toBeChecked();
+
+  // The meal plan has a breakfast, separate from dinner.
+  await page
+    .getByRole('link', { name: /^(Plan|Meal plan)$/ })
+    .first()
+    .click();
+  await expect(page.getByRole('heading', { name: 'Today' })).toBeVisible();
+  const meals = page.getByRole('group', { name: 'Breakfast, lunch or dinner' });
+  await meals.getByRole('button', { name: 'Breakfast' }).click();
+  await expect(page.getByRole('button', { name: 'Suggest meals for empty days' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Plan a meal' }).first().click();
+  await page.getByLabel('Meal', { exact: true }).fill('Porridge');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByText('Porridge')).toBeVisible();
+  await page.reload();
+  await page
+    .getByRole('group', { name: 'Breakfast, lunch or dinner' })
+    .getByRole('button', { name: 'Breakfast' })
+    .click();
+  await expect(page.getByText('Porridge')).toBeVisible();
+  await page.getByRole('group', { name: 'Breakfast, lunch or dinner' }).getByRole('button', { name: 'Dinner' }).click();
+  await expect(page.getByText('Porridge')).toHaveCount(0);
+  await expectNoHorizontalScroll(page);
+
+  // The screen a meal reminder's "Show recipe" opens: nothing has been sent yet, so it says so.
+  await page.goto('/meal/breakfast');
+  await expect(page.getByRole('heading', { name: 'Breakfast reminder' })).toBeVisible();
+  await expect(page.getByText('There’s no reminder for this meal today.')).toBeVisible();
+  await expectNoSafetyClaim(page);
+});

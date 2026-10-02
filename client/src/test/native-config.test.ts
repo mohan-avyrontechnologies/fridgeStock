@@ -78,7 +78,6 @@ describe('Android', () => {
       expect(server, field).toMatch(new RegExp(`\\b${field}\\b`));
     }
     expect(service).toContain('extends MessagingService');
-    expect(service).toContain('CHANNEL_ID = "reminders"');
   });
 
   it('sends the button’s action to the API as {token, action}, the same call as the web app', () => {

@@ -10,7 +10,10 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "build:native": "vite build --mode native",
-    "cap:sync": "npm run build:native && cap sync",
+    "sounds:generate": "node scripts/sounds.mjs generate",
+    "sounds:sync": "node scripts/sounds.mjs sync",
+    "sounds:check": "node scripts/sounds.mjs check",
+    "cap:sync": "npm run sounds:sync && npm run build:native && cap sync",
     "android": "cap open android",
     "ios": "cap open ios",
     "native:set-app-id": "node scripts/set-app-id.mjs"

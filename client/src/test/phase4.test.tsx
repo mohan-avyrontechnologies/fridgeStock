@@ -271,7 +271,10 @@ const plan = (): MealPlan => ({
   days: ['2026-09-29', '2026-09-30', '2026-10-01', '2026-10-02', '2026-10-03', '2026-10-04', '2026-10-05'].map(
     (date) => ({
       date,
-      entry: date === '2026-09-29' ? { title: 'Omelette', foods: [{ id: 'd', name: 'Eggs', status: 'ACTIVE' }] } : null,
+      entry:
+        date === '2026-09-29'
+          ? { meal: 'dinner', title: 'Omelette', foods: [{ id: 'd', name: 'Eggs', status: 'ACTIVE' }] }
+          : null,
     }),
   ),
 });
@@ -299,7 +302,9 @@ describe('meal plan', () => {
     await user.type(screen.getByLabelText('Meal'), 'Spinach pasta');
     await user.click(await screen.findByRole('button', { name: 'Spinach' }));
     await user.click(screen.getByRole('button', { name: 'Save' }));
-    await waitFor(() => expect(put).toEqual({ date: '2026-09-30', body: { title: 'Spinach pasta', foodIds: ['c'] } }));
+    await waitFor(() =>
+      expect(put).toEqual({ date: '2026-09-30', body: { meal: 'dinner', title: 'Spinach pasta', foodIds: ['c'] } }),
+    );
   });
 
   it('AI suggestions are a draft: nothing is saved until "Add these to my plan"', async () => {

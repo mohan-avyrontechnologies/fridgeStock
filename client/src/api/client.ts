@@ -1,5 +1,7 @@
 import type {
   AiStatus,
+  AlertSettings,
+  AlertSettingsInput,
   AuthResponse,
   BulkCreateInput,
   BulkCreateResult,
@@ -16,6 +18,10 @@ import type {
   MealPlanDraft,
   MealPlanEntry,
   MealPlanEntryInput,
+  MealReminders,
+  MealRemindersInput,
+  MealReminderView,
+  MealType,
   MoveFoodInput,
   OpenFoodInput,
   NotificationFeed,
@@ -249,6 +255,17 @@ export const api = {
   // PUT /notifications/delivery
   updateDelivery: (body: DeliveryInput) => request<ReminderDelivery>('PUT', '/notifications/delivery', body),
 
+  // GET /notifications/alerts
+  alerts: () => request<AlertSettings>('GET', '/notifications/alerts'),
+  // PUT /notifications/alerts
+  updateAlerts: (body: AlertSettingsInput) => request<AlertSettings>('PUT', '/notifications/alerts', body),
+  // GET /notifications/meals
+  mealReminders: () => request<MealReminders>('GET', '/notifications/meals'),
+  // PUT /notifications/meals
+  updateMealReminders: (body: MealRemindersInput) => request<MealReminders>('PUT', '/notifications/meals', body),
+  // GET /meal-reminders/:meal
+  mealReminder: (meal: MealType) => request<MealReminderView>('GET', `/meal-reminders/${meal}`),
+
   // GET /push/config
   pushConfig: () => request<PushConfig>('GET', '/push/config'),
   // POST /push/subscriptions
@@ -262,7 +279,8 @@ export const api = {
   // GET /ai/status
   aiStatus: () => request<AiStatus>('GET', '/ai/status'),
   // POST /ai/recipes
-  suggestRecipes: () => request<RecipeIdeas>('POST', '/ai/recipes'),
+  suggestRecipes: (mealType?: MealType) =>
+    request<RecipeIdeas>('POST', '/ai/recipes', mealType ? { mealType } : undefined),
   // POST /ai/meal-plan
   suggestMealPlan: () => request<MealPlanDraft>('POST', '/ai/meal-plan'),
 
@@ -270,8 +288,8 @@ export const api = {
   mealPlan: () => request<MealPlan>('GET', '/meal-plan'),
   // PUT /meal-plan/:date
   setMeal: (date: string, body: MealPlanEntryInput) => request<MealPlanEntry>('PUT', `/meal-plan/${date}`, body),
-  // DELETE /meal-plan/:date
-  clearMeal: (date: string) => request<void>('DELETE', `/meal-plan/${date}`),
+  // DELETE /meal-plan/:date?meal=
+  clearMeal: (date: string, meal: MealType = 'dinner') => request<void>('DELETE', `/meal-plan/${date}?meal=${meal}`),
 
   // GET /shopping
   shopping: () => request<{ items: ShoppingItem[] }>('GET', '/shopping'),

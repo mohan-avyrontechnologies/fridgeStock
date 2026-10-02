@@ -1,11 +1,15 @@
 import {
-  PUSH_ACTIONS,
+  MEAL_TYPES,
+  MESSAGES,
   REMINDER_TYPES,
   addDays,
   diffDays,
   hourInTz,
   type DeliveryInput,
-  type PushPayload,
+  type AlertSettings,
+  type AlertSettingsInput,
+  type MealReminders,
+  type MealRemindersInput,
   type ReminderDelivery,
   type DateString,
   type NotificationFeed,
@@ -23,10 +27,13 @@ import { MAX_DELIVERY_ATTEMPTS, NotificationModel, type NotificationDoc } from '
 import { PushSubscriptionModel } from '../models/PushSubscription.js';
 import { UserModel, type UserDoc } from '../models/User.js';
 import { clock } from './clock.js';
-import { prioritise } from './priorityEngine.js';
+import { validationError } from './errors.js';
+import { markDigestSent } from './digest.js';
+import * as mealReminderService from './mealReminderService.js';
 import { anyPushProvider } from './pushProvider.js';
+import { digestPush, itemPush } from './pushPayloads.js';
 import * as pushService from './pushService.js';
-import { signActionToken } from './token.js';
+import { alertsOf, mealRemindersOf } from './userSettings.js';
 import { toNotificationView, toUserView } from './views.js';
 
 const PREFERENCE_FOR: Record<ReminderType, PreferenceKey> = {
@@ -176,45 +183,8 @@ export async function dispatchDue(user: UserDoc): Promise<void> {
 
 // ---- Push notifications (Phase 3) ----
 
-/** A push about one item, with "Used" and "Snooze" buttons. Tapping it opens Food Details. */
-function itemPush(user: UserDoc, food: FoodItemDoc, title: string, body: string): PushPayload {
-  const id = food._id.toString();
-  return {
-    title,
-    body,
-    tag: `food-${id}`,
-    url: `/food/${id}`,
-    actions: PUSH_ACTIONS.map((action) => ({ action, title: pushCopy.actions[action] })),
-    actionToken: signActionToken(user._id.toString(), id),
-  };
-}
-
 /** How many items the daily summary names before "and N more". */
-export const DIGEST_LINES = 4;
-
-/**
- * The daily summary: the Cook First list, in Cook First order (read, never
- * changed). With one item it has that item's buttons; with more it opens the
- * Cook First screen.
- */
-function digestPush(user: UserDoc, foods: FoodItemDoc[], today: string): PushPayload | null {
-  const { cookFirst } = prioritise(
-    foods.map((doc) => ({
-      doc,
-      id: doc._id.toString(),
-      status: doc.status,
-      addedDate: doc.addedDate,
-      expiryDate: doc.expiryDate,
-    })),
-    today,
-  );
-  if (cookFirst.length === 0) return null;
-  const lines = cookFirst.slice(0, DIGEST_LINES).map((item) => pushCopy.digestLine(item.doc.name, item.remainingDays));
-  if (cookFirst.length > DIGEST_LINES) lines.push(pushCopy.digestMore(cookFirst.length - DIGEST_LINES));
-  const title = pushCopy.digestTitle(cookFirst.length);
-  if (cookFirst.length === 1) return itemPush(user, cookFirst[0]!.doc, title, lines.join('\n'));
-  return { title, body: lines.join('\n'), tag: 'digest', url: '/cook-first', actions: [] };
-}
+export { DIGEST_LINES } from './pushPayloads.js';
 
 /**
  * Sends this user's push notifications once their chosen hour has arrived in
@@ -236,7 +206,9 @@ export async function pushDue(user: UserDoc): Promise<void> {
   const eachItem = user.reminderDelivery.mode === 'EACH_ITEM';
   const pushedFoods = new Set<string>();
 
-  if (!eachItem && user.lastDigestDate !== today) {
+  // A meal reminder within 30 minutes of the summary carries it, so the summary waits for that reminder.
+  const summaryWaits = !eachItem && (await mealReminderService.carriesDigest(user));
+  if (!eachItem && !summaryWaits && user.lastDigestDate !== today) {
     const foods = await FoodItemModel.find({ householdId: user.householdId, status: 'ACTIVE' });
     const payload = digestPush(
       user,
@@ -244,12 +216,7 @@ export async function pushDue(user: UserDoc): Promise<void> {
       today,
     );
     if (payload) await pushService.sendToUser(user, payload);
-    user.lastDigestDate = today;
-    await user.save();
-    await NotificationModel.updateMany(
-      { userId: user._id, status: 'SENT', scheduledDate: today, pushedAt: null },
-      { $set: { pushedAt: now } },
-    );
+    await markDigestSent(user, today, now);
   }
 
   if (eachItem) {
@@ -262,7 +229,10 @@ export async function pushDue(user: UserDoc): Promise<void> {
     for (const notification of delivered) {
       const food = await FoodItemModel.findOne({ _id: notification.foodId, householdId: user.householdId });
       if (food?.status === 'ACTIVE' && !snoozed(food) && notification.message) {
-        await pushService.sendToUser(user, itemPush(user, food, pushCopy.title, notification.message));
+        await pushService.sendToUser(
+          user,
+          itemPush(user, food, pushCopy.title, notification.message, notification.type),
+        );
         pushedFoods.add(food._id.toString());
       }
       notification.pushedAt = now;
@@ -278,7 +248,8 @@ export async function pushDue(user: UserDoc): Promise<void> {
   for (const food of wokeUp) {
     if (eachItem && !pushedFoods.has(food._id.toString())) {
       const message = messageFor(stageFor(food, today), food, today);
-      await pushService.sendToUser(user, itemPush(user, food, pushCopy.title, message));
+      const stage = stageFor(food, today);
+      await pushService.sendToUser(user, itemPush(user, food, pushCopy.title, message, stage));
     }
     food.snoozedUntil = null;
     await food.save();
@@ -307,6 +278,7 @@ export async function sweep(): Promise<void> {
     if (!user) continue;
     await dispatchDue(user);
     try {
+      await mealReminderService.mealDue(user);
       await pushDue(user);
     } catch (error) {
       // Push is an extra: a failure here never stops in-app reminders or other users.
@@ -369,4 +341,44 @@ export async function updateDelivery(user: UserDoc, updates: DeliveryInput): Pro
   if (updates.hour !== undefined) user.reminderDelivery.hour = updates.hour;
   await user.save();
   return getDelivery(user);
+}
+
+/** Sound, vibration and quiet hours. */
+export function getAlerts(user: UserDoc): AlertSettings {
+  return alertsOf(user);
+}
+
+/** Changes any of the sound switch, vibration switch and quiet hours; what isn't sent stays as it was. */
+export async function updateAlerts(user: UserDoc, updates: AlertSettingsInput): Promise<AlertSettings> {
+  const current = alertsOf(user);
+  const quiet = { ...current.quietHours, ...updates.quietHours };
+  if (quiet.enabled && quiet.start === quiet.end) throw validationError(MESSAGES.quietHoursSame, 'quietHours');
+  user.alerts = {
+    sound: updates.sound ?? current.sound,
+    vibration: updates.vibration ?? current.vibration,
+    quietHours: {
+      enabled: quiet.enabled ?? current.quietHours.enabled,
+      start: quiet.start ?? current.quietHours.start,
+      end: quiet.end ?? current.quietHours.end,
+    },
+  };
+  await user.save();
+  return alertsOf(user);
+}
+
+/** Breakfast, lunch and dinner cooking reminders. */
+export function getMealReminders(user: UserDoc): MealReminders {
+  return mealRemindersOf(user);
+}
+
+/** Changes any meal's switch or time; what isn't sent stays as it was. */
+export async function updateMealReminders(user: UserDoc, updates: MealRemindersInput): Promise<MealReminders> {
+  const next = mealRemindersOf(user);
+  for (const meal of MEAL_TYPES) {
+    const change = updates[meal];
+    if (change) next[meal] = { enabled: change.enabled ?? next[meal].enabled, time: change.time ?? next[meal].time };
+  }
+  user.mealReminders = next;
+  await user.save();
+  return mealRemindersOf(user);
 }

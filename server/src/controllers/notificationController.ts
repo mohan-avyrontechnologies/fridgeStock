@@ -35,4 +35,20 @@ export const notificationController = {
   async updateDelivery(req: Request, res: Response) {
     res.json(await notificationService.updateDelivery(currentUser(req), req.body));
   },
+
+  getAlerts(req: Request, res: Response) {
+    res.json(notificationService.getAlerts(currentUser(req)));
+  },
+
+  async updateAlerts(req: Request, res: Response) {
+    res.json(await notificationService.updateAlerts(currentUser(req), req.body));
+  },
+
+  getMealReminders(req: Request, res: Response) {
+    res.json(notificationService.getMealReminders(currentUser(req)));
+  },
+
+  async updateMealReminders(req: Request, res: Response) {
+    res.json(await notificationService.updateMealReminders(currentUser(req), req.body));
+  },
 };

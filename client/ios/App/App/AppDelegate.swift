@@ -14,6 +14,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     /// and with the action names in shared/src/enums.ts (PUSH_ACTIONS).
     private static let reminderCategory = "FOOD_ITEM"
 
+    /// The category on a meal-time cooking reminder: Cooked it, Show recipe and Snooze 30 min. Keep in step with
+    /// IOS_MEAL_CATEGORY in server/src/services/fcmProvider.ts and with mealCopy.actions in server/src/copy.ts.
+    private static let mealCategory = "MEAL_REMINDER"
+
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Needs GoogleService-Info.plist from your Firebase project (see the README).
         if Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
@@ -23,8 +27,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 
-    /// Registers the Used and Snooze buttons. The tap comes back to the web app as a "pushNotificationActionPerformed"
-    /// event with the action's id ("USED" or "SNOOZE"), which sends it to the API (platform/native/push.ts).
+    /// Registers the buttons of both kinds of reminder. The tap comes back to the web app as a "pushNotificationActionPerformed"
+    /// event with the action's id ("USED", "SNOOZE", "COOKED", "RECIPE" or "SNOOZE_MEAL"): the web app either calls
+    /// the API or opens the page the push names (platform/native/push.ts).
     /// They open the app (.foreground), so the web app is running to make that call.
     private func registerReminderActions() {
         let used = UNNotificationAction(identifier: "USED", title: "Used", options: [.foreground])
@@ -35,7 +40,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             intentIdentifiers: [],
             options: []
         )
-        UNUserNotificationCenter.current().setNotificationCategories([category])
+        let cooked = UNNotificationAction(identifier: "COOKED", title: "Cooked it", options: [.foreground])
+        let recipe = UNNotificationAction(identifier: "RECIPE", title: "Show recipe", options: [.foreground])
+        let snoozeMeal = UNNotificationAction(identifier: "SNOOZE_MEAL", title: "Snooze 30 min", options: [.foreground])
+        let meal = UNNotificationCategory(
+            identifier: AppDelegate.mealCategory,
+            actions: [cooked, recipe, snoozeMeal],
+            intentIdentifiers: [],
+            options: []
+        )
+        UNUserNotificationCenter.current().setNotificationCategories([category, meal])
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

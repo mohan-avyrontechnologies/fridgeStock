@@ -4,9 +4,13 @@ import type {
   WarningSignType,
   Currency,
   FoodStatus,
+  MealType,
+  NotificationChannelId,
+  PushActionName,
+  PushKind,
+  SoundName,
   NotificationStatus,
   PreferenceKey,
-  PushAction,
   PushPlatform,
   ReminderMode,
   ReminderType,
@@ -27,6 +31,29 @@ export interface ReminderDelivery {
   hour: number;
 }
 
+/** Sound, vibration and quiet hours for reminders. */
+export interface AlertSettings {
+  /** Play reminder sounds. Off: reminders arrive without a sound. */
+  sound: boolean;
+  /** Vibrate for urgent reminders (Android and browsers; iPhones can't vibrate per notification). */
+  vibration: boolean;
+  quietHours: {
+    enabled: boolean;
+    /** "HH:mm" in the user's time zone. The period may cross midnight (22:00 to 07:00). */
+    start: string;
+    end: string;
+  };
+}
+
+/** One meal's cooking reminder. */
+export interface MealReminderSetting {
+  enabled: boolean;
+  /** "HH:mm" in the user's time zone. */
+  time: string;
+}
+
+export type MealReminders = Record<MealType, MealReminderSetting>;
+
 export interface User {
   id: string;
   name: string;
@@ -34,6 +61,10 @@ export interface User {
   timeZone: string;
   notificationPreferences: NotificationPreferences;
   reminderDelivery: ReminderDelivery;
+  /** Sound, vibration and quiet hours. Left out by servers older than v2.17. */
+  alerts?: AlertSettings;
+  /** Breakfast, lunch and dinner cooking reminders. Left out by servers older than v2.17. */
+  mealReminders?: MealReminders;
   /** Currency prices are shown in. */
   currency: Currency;
   /** Whether a photo taken with the camera is kept with the food item (on by default). */
@@ -199,9 +230,44 @@ export interface PushPayload {
   tag: string;
   /** Page opened when the notification is tapped, or when an action can't be completed. */
   url: string;
-  actions: { action: PushAction; title: string }[];
-  /** Lets the service worker call POST /push/actions without the login token. Only on single-item pushes. */
+  actions: { action: PushActionName; title: string; /** A page to open, for buttons that open one. */ url?: string }[];
+  /** Lets the service worker call POST /push/actions without the login token. Only on single-item and meal pushes. */
   actionToken?: string;
+  /** What the push is about. */
+  kind: PushKind;
+  /** The Android channel it goes to (sound and vibration are set by the channel). */
+  channel: NotificationChannelId;
+  /** The sound to play, or null for none (the person turned sounds off, or it is quiet hours). */
+  sound: SoundName | null;
+  /** A vibration pattern in milliseconds (on, off, on…), or empty for none. */
+  vibrate: number[];
+  /** Stay on screen until the person acts on it. Only for due and overdue reminders. */
+  requireInteraction: boolean;
+  /** Quiet hours or sound switched off: no sound and no vibration. */
+  silent: boolean;
+}
+
+// ---- Meal reminders ----
+
+/** A recipe idea, with the meal it suits. */
+export interface MealRecipe {
+  title: string;
+  minutes: number;
+  steps: string[];
+  uses: FoodRef[];
+}
+
+/** What a meal reminder says, and where it came from. */
+export type MealContent =
+  | { source: 'plan'; title: string; foods: FoodRef[] }
+  | { source: 'recipe'; recipe: MealRecipe }
+  | { source: 'items'; items: { id: string; name: string; remainingDays: number }[] };
+
+/** GET /meal-reminders/:meal: what today's reminder for this meal showed (for "Show recipe"). */
+export interface MealReminderView {
+  meal: MealType;
+  date: DateString;
+  content: MealContent;
 }
 
 // ---- Phase 4: using the food ----
@@ -259,6 +325,8 @@ export interface ShoppingItem {
 }
 
 export interface MealPlanEntry {
+  /** Which meal it is. Plans made before meals were added are dinners. */
+  meal: MealType;
   title: string;
   foods: (FoodRef & { status: FoodStatus })[];
 }
@@ -266,7 +334,8 @@ export interface MealPlanEntry {
 /** GET /meal-plan: today and the next six days. */
 export interface MealPlan {
   today: DateString;
-  days: { date: DateString; entry: MealPlanEntry | null }[];
+  /** `entry` is the dinner; `meals` has whichever of breakfast, lunch and dinner are planned. */
+  days: { date: DateString; entry: MealPlanEntry | null; meals?: Partial<Record<MealType, MealPlanEntry>> }[];
 }
 
 /** POST /ai/meal-plan: a draft for the empty days. Nothing is saved until the user adds it. */

@@ -13,7 +13,7 @@ import {
   type PushProvider,
   type PushTarget,
 } from '../services/pushProvider.js';
-import { api, food, registerUser } from './helpers.js';
+import { api, food, gentleAlert, registerUser } from './helpers.js';
 
 /** Push and CORS for the Capacitor apps (Android and iOS, through Firebase). No test reaches Firebase. */
 
@@ -169,6 +169,7 @@ describe('sending to every kind of device', () => {
       { action: 'SNOOZE', title: 'Snooze' },
     ],
     actionToken: 'action-token',
+    ...gentleAlert,
   };
 
   async function threeDevices() {
@@ -261,6 +262,7 @@ describe('the Firebase provider', () => {
       { action: 'SNOOZE', title: 'Snooze' },
     ],
     actionToken: 'action-token',
+    ...gentleAlert,
   };
   const digest: PushPayload = {
     title: 'Cook First: 2 items',
@@ -268,6 +270,7 @@ describe('the Firebase provider', () => {
     tag: 'digest',
     url: '/cook-first',
     actions: [],
+    ...gentleAlert,
   };
   const target = (platform: 'android' | 'ios'): PushTarget => ({
     platform,
@@ -303,9 +306,13 @@ describe('the Firebase provider', () => {
     expect(message.data).toEqual({
       url: '/food/1',
       tag: 'item-1',
+      kind: 'DIGEST',
+      silent: 'false',
+      actionUrls: '{}',
       actionToken: 'action-token',
       title: 'Cook First: Milk',
       body: 'Milk: expected expiry today',
+      channelId: 'food-soon',
       actions: JSON.stringify(payload.actions),
       actionUrl: 'https://api.example.com/api/push/actions',
     });
@@ -337,9 +344,17 @@ describe('the Firebase provider', () => {
       apns: { headers: Record<string, string>; payload: { aps: Record<string, unknown> } };
     };
     expect(message.notification).toEqual({ title: 'Cook First: Milk', body: 'Milk: expected expiry today' });
-    expect(message.data).toEqual({ url: '/food/1', tag: 'item-1', actionToken: 'action-token' });
+    expect(message.data).toEqual({
+      url: '/food/1',
+      tag: 'item-1',
+      kind: 'DIGEST',
+      silent: 'false',
+      actionUrls: '{}',
+      actionToken: 'action-token',
+    });
     expect(message.apns.payload.aps).toEqual({
-      sound: 'default',
+      sound: 'gentle.caf',
+      'interruption-level': 'active',
       'thread-id': 'item-1',
       category: IOS_ACTION_CATEGORY,
     });

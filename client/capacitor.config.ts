@@ -18,8 +18,9 @@ const config: CapacitorConfig = {
   },
   plugins: {
     PushNotifications: {
-      // Show a reminder even while the app is open.
-      presentationOptions: ['badge', 'sound', 'alert'],
+      // Show a reminder even while the app is open, without the system's sound: the app plays its own chime
+      // (src/lib/chime.ts) once the person has touched the screen.
+      presentationOptions: ['badge', 'alert'],
     },
   },
 };

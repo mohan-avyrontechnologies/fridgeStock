@@ -10,7 +10,7 @@ export const aiController = {
   },
 
   async recipes(req: Request, res: Response) {
-    res.json(await planningService.suggestRecipes(currentUser(req)));
+    res.json(await planningService.suggestRecipes(currentUser(req), req.body?.mealType));
   },
 
   async mealPlan(req: Request, res: Response) {

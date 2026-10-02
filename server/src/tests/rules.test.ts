@@ -5,7 +5,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { UserModel } from '../models/User.js';
 import { AUTH_RATE_LIMIT } from '../routes/index.js';
 import { setAiClient } from '../services/aiClient.js';
-import { signActionToken } from '../services/token.js';
+import { mealDue } from '../services/mealReminderService.js';
+import { setPushProvider } from '../services/pushProvider.js';
+import { signActionToken, signMealActionToken } from '../services/token.js';
 import { api, food, registerUser, setToday } from './helpers.js';
 
 /** Project rules that must never be broken, each checked directly. */
@@ -21,10 +23,12 @@ describe('every data query is scoped to the signed-in user or their household', 
     'shoppingitems',
     'mealplanentries',
     'aiusages',
+    'mealreminderlogs',
+    'recipeideacaches',
   ]);
   // Shared within a household (food, its history, the shopping list and the meal plan): scoped by the
   // household's id. Everything else is personal: scoped by the user's own id.
-  const SHARED = new Set(['fooditems', 'usagerecords', 'shoppingitems', 'mealplanentries']);
+  const SHARED = new Set(['fooditems', 'usagerecords', 'shoppingitems', 'mealplanentries', 'recipeideacaches']);
   const IGNORED = new Set(['createIndex', 'createIndexes', 'listIndexes', 'dropIndex']);
 
   afterEach(() => {
@@ -131,8 +135,32 @@ describe('every data query is scoped to the signed-in user or their household', 
       await s.auth(api().get('/api/ai/status'));
       await s.auth(api().post('/api/ai/recipes'));
       await s.auth(api().post('/api/ai/meal-plan'));
+
+      // Meal reminders: settings, ideas kept for a meal, a reminder sent by the sweep, and its screen.
+      await s.auth(api().get('/api/notifications/alerts'));
+      await s.auth(api().put('/api/notifications/alerts').send({ sound: false }));
+      await s.auth(api().get('/api/notifications/meals'));
+      await s.auth(
+        api()
+          .put('/api/notifications/meals')
+          .send({ lunch: { enabled: true, time: '12:00' } }),
+      );
+      await s.auth(
+        api()
+          .post('/api/push/subscriptions')
+          .send({ endpoint: 'https://push.example.com/send/meals', keys: { p256dh: 'p', auth: 'a' } }),
+      );
+      setPushProvider({ name: 'fake', publicKey: 'K', send: async () => 'SENT' });
+      await s.auth(api().post('/api/ai/recipes').send({ mealType: 'breakfast' }));
+      // The reminder job itself looks across users (see sweep); what it does for one person is scoped to them.
+      await mealDue((await UserModel.findById(s.user.id))!);
+      await s.auth(api().get('/api/meal-reminders/lunch'));
+      await api()
+        .post('/api/push/actions')
+        .send({ token: signMealActionToken(s.user.id, 'lunch', '2026-09-29'), action: 'SNOOZE_MEAL' });
     } finally {
       setAiClient(null);
+      setPushProvider(null);
     }
     await s.auth(api().get('/api/meal-plan'));
     await s.auth(

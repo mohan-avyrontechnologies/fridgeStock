@@ -1,4 +1,14 @@
-import { CURRENCIES, REMINDER_MODES, type Currency, type DateString, type ReminderMode } from '@cook-first/shared';
+import {
+  CURRENCIES,
+  DEFAULT_ALERTS,
+  DEFAULT_MEAL_REMINDERS,
+  REMINDER_MODES,
+  type AlertSettings,
+  type Currency,
+  type DateString,
+  type MealReminders,
+  type ReminderMode,
+} from '@cook-first/shared';
 import { Schema, Types, model, type HydratedDocument } from 'mongoose';
 
 export interface NotificationPreferences {
@@ -24,6 +34,10 @@ export interface User {
   /** Every user starts in their own household; shared households (a later phase) will reuse it. */
   householdId: Types.ObjectId;
   reminderDelivery: ReminderDelivery;
+  /** Sound, vibration and quiet hours for push reminders. */
+  alerts: AlertSettings;
+  /** Breakfast, lunch and dinner cooking reminders. */
+  mealReminders: MealReminders;
   /** The user's calendar day the last daily digest was pushed on. */
   lastDigestDate: DateString | null;
 }
@@ -49,6 +63,29 @@ const userSchema = new Schema<User>(
       hour: { type: Number, min: 0, max: 23, default: 8 },
     },
     lastDigestDate: { type: String, default: null },
+    alerts: {
+      sound: { type: Boolean, default: DEFAULT_ALERTS.sound },
+      vibration: { type: Boolean, default: DEFAULT_ALERTS.vibration },
+      quietHours: {
+        enabled: { type: Boolean, default: DEFAULT_ALERTS.quietHours.enabled },
+        start: { type: String, default: DEFAULT_ALERTS.quietHours.start },
+        end: { type: String, default: DEFAULT_ALERTS.quietHours.end },
+      },
+    },
+    mealReminders: {
+      breakfast: {
+        enabled: { type: Boolean, default: DEFAULT_MEAL_REMINDERS.breakfast.enabled },
+        time: { type: String, default: DEFAULT_MEAL_REMINDERS.breakfast.time },
+      },
+      lunch: {
+        enabled: { type: Boolean, default: DEFAULT_MEAL_REMINDERS.lunch.enabled },
+        time: { type: String, default: DEFAULT_MEAL_REMINDERS.lunch.time },
+      },
+      dinner: {
+        enabled: { type: Boolean, default: DEFAULT_MEAL_REMINDERS.dinner.enabled },
+        time: { type: String, default: DEFAULT_MEAL_REMINDERS.dinner.time },
+      },
+    },
   },
   { timestamps: true },
 );

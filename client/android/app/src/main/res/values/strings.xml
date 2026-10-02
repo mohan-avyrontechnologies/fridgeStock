@@ -4,8 +4,6 @@
     <string name="title_activity_main">Cook First</string>
     <string name="package_name">com.example.cookfirst</string>
     <string name="custom_url_scheme">com.example.cookfirst</string>
-    <string name="reminders_channel_name">Reminders</string>
-    <string name="reminders_channel_description">Reminders about food to use up</string>
     <!-- Shown to explain why the camera is needed (Android shows its own permission box). -->
     <string name="camera_permission_message">Cook First uses the camera to scan barcodes and to take photos so it can identify your food. Photos are saved privately to your household.</string>
 </resources>

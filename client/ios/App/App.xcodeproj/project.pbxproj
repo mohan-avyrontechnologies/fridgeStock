@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7CF643E4D0743B34978CCAAD /* meal.caf in Resources */ = {isa = PBXBuildFile; fileRef = F1FA02ECB6B5027C9E6D04BE /* meal.caf */; };
+		BB6D82D1C47C4622435C261A /* strong.caf in Resources */ = {isa = PBXBuildFile; fileRef = 4A393D6AC8719B549F3C1915 /* strong.caf */; };
+		3847BB7A78AF440C9C77BAED /* gentle.caf in Resources */ = {isa = PBXBuildFile; fileRef = 16E4444B613013EE2A89E834 /* gentle.caf */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
@@ -19,6 +22,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		F1FA02ECB6B5027C9E6D04BE /* meal.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; path = meal.caf; sourceTree = "<group>"; };
+		4A393D6AC8719B549F3C1915 /* strong.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; path = strong.caf; sourceTree = "<group>"; };
+		16E4444B613013EE2A89E834 /* gentle.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; path = gentle.caf; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -82,6 +88,9 @@
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
 				504EC3131FED79650016851F /* Info.plist */,
+				F1FA02ECB6B5027C9E6D04BE /* meal.caf */,
+				4A393D6AC8719B549F3C1915 /* strong.caf */,
+				16E4444B613013EE2A89E834 /* gentle.caf */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
 				50B271D01FEDC1A000F3C39B /* public */,
 			);
@@ -166,6 +175,9 @@
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
+				7CF643E4D0743B34978CCAAD /* meal.caf in Resources */,
+				BB6D82D1C47C4622435C261A /* strong.caf in Resources */,
+				3847BB7A78AF440C9C77BAED /* gentle.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

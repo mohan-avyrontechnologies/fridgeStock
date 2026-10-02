@@ -112,13 +112,17 @@ export const aiPrompts = {
       'A photo cannot show everything. Report only what is visible, and leave the list empty if you see nothing.',
     ].join('\n'),
 
-  recipes: (cookFirst: string[], others: string[]) =>
+  recipes: (cookFirst: string[], others: string[], mealType?: string, avoid: string[] = []) =>
     [
       'My Cook First list, most urgent first:',
       ...cookFirst,
       ...(others.length ? ['', 'Other food I have:', ...others] : []),
       '',
       'Suggest up to 3 simple home recipes.',
+      ...(mealType ? [`They are for ${mealType}, so suggest dishes that suit ${mealType}.`] : []),
+      ...(avoid.length
+        ? [`Do not suggest these, which are already chosen for other meals today: ${avoid.join('; ')}.`]
+        : []),
       'Each recipe must use at least one item from the Cook First list, and the most urgent items should be used first.',
       'Only use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).',
       'For each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps.',
@@ -137,4 +141,19 @@ export const aiPrompts = {
   fixFormat: 'Your previous answer did not match the required format. Follow the schema exactly.',
   fixWording:
     'Your previous answer used wording that is not allowed. Do not describe any food as fit, okay or fine to eat, do not promise how long food lasts, and refer to dates only as "expected expiry".',
+};
+
+/** "a", "a and b", "a, b and c". */
+function list(names: string[]): string {
+  return names.length <= 1 ? (names[0] ?? '') : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
+}
+
+/** Meal-time cooking reminders. The lines naming items reuse pushCopy.digestLine, so they carry the expected-expiry wording. */
+export const mealCopy = {
+  title: { breakfast: 'Time to cook breakfast', lunch: 'Time to cook lunch', dinner: 'Time to cook dinner' },
+  plan: (title: string, foods: string[]) =>
+    foods.length ? `Planned: ${title}. It uses ${list(foods)}.` : `Planned: ${title}.`,
+  recipe: (title: string, minutes: number, uses: string[]) => `Try ${title} (${minutes} min). It uses ${list(uses)}.`,
+  itemsIntro: 'Use these up first:',
+  actions: { COOKED: 'Cooked it', RECIPE: 'Show recipe', SNOOZE_MEAL: 'Snooze 30 min' },
 };

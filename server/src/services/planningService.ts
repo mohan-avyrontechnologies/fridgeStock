@@ -8,11 +8,13 @@ import {
   type MealPlanDraft,
   type MealPlanEntry,
   type MealPlanEntryInput,
+  type MealType,
   type RecipeIdeas,
 } from '@cook-first/shared';
 import { aiPrompts, promptLine } from '../copy.js';
 import { FoodItemModel, type FoodItemDoc } from '../models/FoodItem.js';
 import { MealPlanEntryModel } from '../models/MealPlanEntry.js';
+import { RecipeIdeaCacheModel } from '../models/RecipeIdeaCache.js';
 import type { UserDoc } from '../models/User.js';
 import * as aiService from './aiService.js';
 import { mealPlanOutput, mealPlanSchema, recipeOutput, recipeSchema } from './aiOutputs.js';
@@ -69,15 +71,27 @@ async function codedFood(user: UserDoc, today: DateString) {
  * least one Cook First item; ideas are listed by the most urgent item they
  * use. With nothing in Cook First, no AI request is made (and none counted).
  */
-export async function suggestRecipes(user: UserDoc): Promise<RecipeIdeas> {
+export async function suggestRecipes(user: UserDoc, mealType?: MealType): Promise<RecipeIdeas> {
   const today = clock.today(user.timeZone);
   const { listed, cookFirstCount, cookFirst, resolve } = await codedFood(user, today);
   if (cookFirstCount === 0) return { basedOn: [], recipes: [] };
 
+  // For a meal: ideas already made for the household's other meals today, which are not to be repeated.
+  const avoid = mealType
+    ? (
+        await RecipeIdeaCacheModel.find({
+          householdId: user.householdId,
+          date: today,
+          mealType: { $ne: mealType },
+        })
+      ).flatMap((cached) => cached.recipes.map((recipe) => recipe.title))
+    : [];
   const result = await aiService.generate(user, {
     prompt: aiPrompts.recipes(
       listed.slice(0, cookFirstCount).map((item) => item.line),
       listed.slice(cookFirstCount).map((item) => item.line),
+      mealType,
+      avoid,
     ),
     schema: recipeSchema,
     output: recipeOutput,
@@ -96,6 +110,14 @@ export async function suggestRecipes(user: UserDoc): Promise<RecipeIdeas> {
       steps: recipe.steps,
       uses: used.map((item) => ref(item.doc)),
     }));
+  // Ideas made for a meal are kept for the day, so that meal's reminder can use one without asking again.
+  if (mealType) {
+    await RecipeIdeaCacheModel.updateOne(
+      { householdId: user.householdId, date: today, mealType },
+      { $set: { userId: user._id, recipes } },
+      { upsert: true },
+    );
+  }
   return { basedOn: cookFirst.map((item) => ref(item.doc)), recipes };
 }
 
@@ -108,8 +130,9 @@ async function foodsById(user: UserDoc, ids: string[]) {
   return new Map(foods.map((doc) => [doc._id.toString(), doc]));
 }
 
-function toEntry(title: string, ids: string[], foods: Map<string, FoodItemDoc>): MealPlanEntry {
+function toEntry(meal: MealType, title: string, ids: string[], foods: Map<string, FoodItemDoc>): MealPlanEntry {
   return {
+    meal,
     title,
     foods: ids
       .map((id) => foods.get(id))
@@ -124,17 +147,20 @@ export async function getPlan(user: UserDoc): Promise<MealPlan> {
   const entries = await MealPlanEntryModel.find({ householdId: user.householdId, date: { $in: dates } });
   const ids = entries.flatMap((entry) => entry.foodIds.map(String));
   const foods = await foodsById(user, ids);
-  const byDate = new Map(entries.map((entry) => [entry.date, entry]));
+  const byDay = (date: string) => entries.filter((entry) => entry.date === date);
   return {
     today,
     days: dates.map((date) => {
-      const entry = byDate.get(date);
-      return { date, entry: entry ? toEntry(entry.title, entry.foodIds.map(String), foods) : null };
+      const meals: Partial<Record<MealType, MealPlanEntry>> = {};
+      for (const entry of byDay(date)) {
+        meals[entry.meal] = toEntry(entry.meal, entry.title, entry.foodIds.map(String), foods);
+      }
+      return { date, entry: meals.dinner ?? null, meals };
     }),
   };
 }
 
-/** Sets the meal for one day (today to six days ahead), using only the user's own food. */
+/** Sets one meal (dinner unless another is given) for one day (today to six days ahead), using only the household's food. */
 export async function setEntry(user: UserDoc, date: string, input: MealPlanEntryInput): Promise<MealPlanEntry> {
   const today = clock.today(user.timeZone);
   if (!isValidDate(date) || !planDates(today).includes(date)) throw validationError(MESSAGES.mealDate, 'date');
@@ -142,15 +168,15 @@ export async function setEntry(user: UserDoc, date: string, input: MealPlanEntry
   const foods = await foodsById(user, ids);
   if (foods.size !== ids.length) throw validationError(MESSAGES.mealFoods, 'foodIds');
   await MealPlanEntryModel.updateOne(
-    { householdId: user.householdId, date },
+    { householdId: user.householdId, date, meal: input.meal },
     { $set: { title: input.title, foodIds: ids }, $setOnInsert: { userId: user._id } },
     { upsert: true },
   );
-  return toEntry(input.title, ids, foods);
+  return toEntry(input.meal, input.title, ids, foods);
 }
 
-export async function clearEntry(user: UserDoc, date: string): Promise<void> {
-  await MealPlanEntryModel.deleteOne({ householdId: user.householdId, date });
+export async function clearEntry(user: UserDoc, date: string, meal: MealType = 'dinner'): Promise<void> {
+  await MealPlanEntryModel.deleteOne({ householdId: user.householdId, date, meal });
 }
 
 /**
@@ -160,7 +186,11 @@ export async function clearEntry(user: UserDoc, date: string): Promise<void> {
 export async function suggestPlan(user: UserDoc): Promise<MealPlanDraft> {
   const today = clock.today(user.timeZone);
   const dates = planDates(today);
-  const planned = await MealPlanEntryModel.find({ householdId: user.householdId, date: { $in: dates } });
+  const planned = await MealPlanEntryModel.find({
+    householdId: user.householdId,
+    date: { $in: dates },
+    meal: 'dinner',
+  });
   const taken = new Set(planned.map((entry) => entry.date));
   const open = dates.filter((date) => !taken.has(date));
   if (open.length === 0) return { days: [] };

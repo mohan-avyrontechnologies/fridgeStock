@@ -50,6 +50,16 @@ export const handlers = [
   http.get(`${API_URL}/favourites`, () => HttpResponse.json({ items: [] })),
   http.get(`${API_URL}/suggestions/lifespans`, () => HttpResponse.json({ items: [] })),
   http.get(`${API_URL}/notifications/delivery`, () => HttpResponse.json({ mode: 'DIGEST', hour: 8 })),
+  http.get(`${API_URL}/notifications/alerts`, () =>
+    HttpResponse.json({ sound: true, vibration: true, quietHours: { enabled: true, start: '22:00', end: '07:00' } }),
+  ),
+  http.get(`${API_URL}/notifications/meals`, () =>
+    HttpResponse.json({
+      breakfast: { enabled: false, time: '07:30' },
+      lunch: { enabled: false, time: '12:30' },
+      dinner: { enabled: false, time: '19:30' },
+    }),
+  ),
   http.get(`${API_URL}/push/config`, () => HttpResponse.json({ publicKey: null })),
   http.get(`${API_URL}/ai/status`, () =>
     HttpResponse.json({ enabled: false, photoCheck: false, dailyLimit: 20, usedToday: 0 }),

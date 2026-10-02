@@ -136,3 +136,36 @@ export function Checkbox({ className = '', ...props }: Omit<InputHTMLAttributes<
     </span>
   );
 }
+
+/** An on/off switch with a label (and an optional hint), at least 44 px tall. */
+export function Switch({
+  label,
+  hint,
+  checked,
+  onChange,
+}: {
+  label: string;
+  hint?: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="flex min-h-11 cursor-pointer items-center justify-between gap-4">
+      <span>
+        <span className="block font-medium">{label}</span>
+        {hint && <span className="block text-sm text-muted">{hint}</span>}
+      </span>
+      <input
+        type="checkbox"
+        role="switch"
+        className="peer sr-only"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <span
+        aria-hidden
+        className="relative h-7 w-12 shrink-0 rounded-full bg-line transition-colors peer-checked:bg-brand peer-focus-visible:outline-2 peer-focus-visible:outline-brand after:absolute after:top-1 after:left-1 after:size-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"
+      />
+    </label>
+  );
+}

@@ -5,12 +5,14 @@ import {
   type MealPlan,
   type MealPlanDraft,
   type MealPlanEntry,
+  type MealType,
+  MEAL_TYPES,
 } from '@cook-first/shared';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { Button, Chip, EmptyState, Field, Spinner } from '../components/ui';
-import { aiCopy, planCopy as copy } from '../copy';
+import { aiCopy, mealSettingsCopy, planCopy as copy } from '../copy';
 import { check } from '../lib/validation';
 import { useAiStore } from '../stores/aiStore';
 import { useFoodStore } from '../stores/foodStore';
@@ -28,6 +30,8 @@ export function PlanPage() {
   const [draft, setDraft] = useState<MealPlanDraft | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Which meal the plan shows. Dinner is the main one, and the one the AI suggestions are for.
+  const [meal, setMeal] = useState<MealType>('dinner');
 
   const load = useCallback(async () => {
     try {
@@ -59,7 +63,7 @@ export function PlanPage() {
 
   async function clear(date: string) {
     try {
-      await api.clearMeal(date);
+      await api.clearMeal(date, meal);
       await load();
     } catch {
       toast('Couldn’t save that. Try again.');
@@ -85,7 +89,7 @@ export function PlanPage() {
     setBusy(true);
     try {
       for (const day of draft.days) {
-        await api.setMeal(day.date, { title: day.title, foodIds: day.foods.map((f) => f.id) });
+        await api.setMeal(day.date, { meal: 'dinner', title: day.title, foodIds: day.foods.map((f) => f.id) });
       }
       setDraft(null);
       toast(copy.added);
@@ -97,6 +101,7 @@ export function PlanPage() {
     }
   }
 
+  const entryOf = (day: MealPlan['days'][number]) => day.meals?.[meal] ?? (meal === 'dinner' ? day.entry : null);
   const hasEmptyDay = plan?.days.some((day) => !day.entry) ?? false;
 
   return (
@@ -106,7 +111,15 @@ export function PlanPage() {
         {!plan && !loadError && <Spinner />}
         {loadError && !plan && <EmptyState title={copy.loadError} />}
 
-        {plan && ai?.enabled && (
+        <div role="group" aria-label={copy.mealChoice} className="flex gap-2">
+          {MEAL_TYPES.map((type) => (
+            <Chip key={type} selected={meal === type} onClick={() => setMeal(type)}>
+              {mealSettingsCopy.meals[type]}
+            </Chip>
+          ))}
+        </div>
+
+        {plan && ai?.enabled && meal === 'dinner' && (
           <section className="space-y-2">
             {hasEmptyDay ? (
               <div className="flex flex-wrap items-center gap-3">
@@ -126,7 +139,7 @@ export function PlanPage() {
           </section>
         )}
 
-        {draft && draft.days.length > 0 && (
+        {meal === 'dinner' && draft && draft.days.length > 0 && (
           <section aria-labelledby="draft-title" className="rounded-2xl border border-brand/40 bg-brand-soft p-4">
             <h2 id="draft-title" className="font-semibold">
               {copy.draftTitle}
@@ -162,20 +175,21 @@ export function PlanPage() {
                 {editing === day.date ? (
                   <MealForm
                     date={day.date}
-                    entry={day.entry}
+                    meal={meal}
+                    entry={entryOf(day)}
                     onDone={async () => {
                       setEditing(null);
                       await load();
                     }}
                     onCancel={() => setEditing(null)}
                   />
-                ) : day.entry ? (
+                ) : entryOf(day) ? (
                   <>
-                    <p className="mt-1 text-base font-semibold">{day.entry.title}</p>
-                    {day.entry.foods.length > 0 && (
+                    <p className="mt-1 text-base font-semibold">{entryOf(day)!.title}</p>
+                    {entryOf(day)!.foods.length > 0 && (
                       <p className="text-sm text-muted">
-                        {day.entry.foods
-                          .map((f) => (f.status === 'ACTIVE' ? f.name : `${f.name} (${copy.gone})`))
+                        {entryOf(day)!
+                          .foods.map((f) => (f.status === 'ACTIVE' ? f.name : `${f.name} (${copy.gone})`))
                           .join(', ')}
                       </p>
                     )}
@@ -207,11 +221,13 @@ export function PlanPage() {
 
 function MealForm({
   date,
+  meal,
   entry,
   onDone,
   onCancel,
 }: {
   date: string;
+  meal: MealType;
   entry: MealPlanEntry | null;
   onDone: () => Promise<void>;
   onCancel: () => void;
@@ -235,7 +251,7 @@ function MealForm({
     if (!data) return setError(errors.title);
     setBusy(true);
     try {
-      await api.setMeal(date, { title: data.title, foodIds: chosen });
+      await api.setMeal(date, { meal, title: data.title, foodIds: chosen });
       await onDone();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
