@@ -238,7 +238,15 @@ npm run dev:server     # API     → http://localhost:4000/api
 npm run dev:client     # web app → http://localhost:5173
 ```
 
-Open http://localhost:5173 and create an account.
+Open http://localhost:5173 and create an account. For a ready-made login with sample food, run `npm run seed -w server` while the API is running (it prints the email and password).
+
+**If `npm run dev:server` won't start:**
+
+| What you see | Why, and what to do |
+|---|---|
+| `ERR_MODULE_NOT_FOUND: Cannot find package '…\node_modules\@cook-first\shared\index.js'`, or Vite saying it `Cannot find native binding` or `lightningcss.win32-x64-msvc.node` | `node_modules` is damaged, usually after the project folder was moved or copied while a copy was interrupted (a workspace link or a native file ends up empty). Delete `node_modules` (the root one and the ones inside `client`, `server` and `shared`) and run `npm ci`. |
+| `DBPathInUse: Unable to create/open the lock file … server\.data\mongod.lock` | Another API is already using the embedded database in `server/.data`. Stop it first (it listens on port 4000, with its database on 27027), or set `MONGO_URI`. |
+| `EADDRINUSE` on port 4000 or 5173 | Something else is on that port. Stop it, or change `PORT` / the Vite port (and `CLIENT_ORIGIN`, see above). |
 
 > **Running the client on a different port?** The browser calls the API directly, so add that address to `CLIENT_ORIGIN` in `server/.env`, for example `CLIENT_ORIGIN=http://localhost:5173,http://localhost:5180`.
 
@@ -765,7 +773,8 @@ The project was built in these phases; each one is complete.
 All notable changes to this project are listed here, newest first. Versions follow [Semantic Versioning](https://semver.org/).
 
 ### [Unreleased]
-- *Nothing yet.*
+**Changed**
+- README: a troubleshooting table for `npm run dev:server` (a damaged `node_modules`, the embedded database already in use, a busy port), and a pointer to the seed script from "Start the app". The server's watch mode was checked after a clean `npm ci`: it starts, and a changed file restarts the API and its database. An earlier crash with `ERR_MODULE_NOT_FOUND` came from `node_modules` damaged by an interrupted folder move, not from the script.
 
 ### [2.13.0] - 2026-10-02: Phase 7 (Photo Check) · `1c386de`
 **Added**
