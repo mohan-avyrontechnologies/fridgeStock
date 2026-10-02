@@ -785,7 +785,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.14.0] - 2026-10-02: camera screen and product photos · `COMMIT_HASH`
+### [2.14.0] - 2026-10-02: camera screen and product photos · `a3b3759`
 **Added**
 - **Camera screen** (first option on Add Food, with typing it in yourself below): **Scan barcode** reads codes live (the browser's `BarcodeDetector`, with `@zxing/browser` as the fallback, for example on an iPhone) and always offers typing the number; **Take photo** (when Photo Check is on) uses `<input type="file" accept="image/*" capture="environment">`, so it works on an iPhone and is a file chooser on a computer, and names the food through `POST /parse/photo`. Finds join a **Scanned so far** list: one fills in Add Food with the catalog lifespan suggestion; several become a **Bulk Add** list (and Bulk Add has **Scan more**). A denied or missing camera shows a short message and falls back to typing.
 - **Product photos** (`POST|GET|DELETE /foods/:id/photo`): uploaded after the food is saved with `multer` (memory storage, 5 MB limit); the real file type is checked (JPEG, PNG, WebP), then `sharp` re-encodes a WebP of at most 1280 px and a 320 px thumbnail, which removes EXIF data including GPS. Stored in a GridFS bucket `foodPhotos` (household, food and uploader in the metadata), one per item. Served only to a signed-in member of the household (404 otherwise), with `Cache-Control: private` and `X-Content-Type-Options: nosniff`; the app fetches photos with the login token and shows them through object URLs that are revoked on unmount.
