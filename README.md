@@ -281,7 +281,7 @@ Run these from the repository root:
 | `npm run lint` | ESLint across all three packages |
 | `npm run format` / `npm run format:check` | Format with Prettier / check formatting (CI runs the check) |
 | `npm run typecheck` | TypeScript check of `shared`, `server` and `client` |
-| `npm run seed -w server` | With the server running, create a demo account (`demo@cookfirst.local` / `cookfirst-demo`) with 10 sample items at every urgency level. Add `-- --reset` to re-seed. |
+| `npm run seed -w server` | With the server running, create a demo account (`demo@cookfirst.local` / `cookfirst-demo`) with 10 priced sample items at every urgency level, plus 5 used or wasted ones so Insights has data. Add `-- --reset` to re-seed. |
 | `npm run vapid:keys -w server` | Generate a Web Push (VAPID) key pair for `server/.env` |
 | `npm test` | Unit and API tests: shared (26) + server (258) + client (89) |
 | `npm run test:e2e` | Playwright end-to-end tests (24), at 375 px and 1440 px |
@@ -728,7 +728,8 @@ The project was built in these phases; each one is complete.
 All notable changes to this project are listed here, newest first. Versions follow [Semantic Versioning](https://semver.org/).
 
 ### [Unreleased]
-- *Nothing yet.*
+**Changed**
+- The demo seed script now gives the sample food prices and adds five finished items (used, wasted, partly wasted), so Insights shows data straight away.
 
 ### [2.9.0] - 2026-10-02: Phase 5 (insights) · `26c21c6`
 **Added**
