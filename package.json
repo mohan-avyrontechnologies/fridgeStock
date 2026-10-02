@@ -15,7 +15,8 @@
     "test": "npm test --workspaces",
     "test:e2e": "playwright test",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "check:staging": "node scripts/check-staging.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",

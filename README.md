@@ -32,7 +32,7 @@ A mobile-first web app that helps a household use perishable food before it goes
 14. [API reference](#api-reference)
 15. [Project rules](#project-rules)
 16. [Security](#security)
-17. [Deployment](#deployment)
+17. [Deployment: HTTPS staging on real phones](#deployment-https-staging-on-real-phones)
 18. [Differences from the design documents](#differences-from-the-design-documents)
 19. [Build phases](#build-phases)
 20. [Project status](#project-status)
@@ -692,14 +692,72 @@ These rules must never be broken. Each one is enforced in code and checked by an
 
 ---
 
-## Deployment
+## Deployment: HTTPS staging on real phones
 
-The configuration is ready but **nothing has been deployed yet**.
+The camera, barcode scanning, push reminders and installing to the Home Screen **only work over HTTPS** (`localhost` is the one exception), so a phone can't test them against your computer. Put a staging copy online:
 
-1. **Database: MongoDB Atlas.** Create a free cluster and copy its connection string.
-2. **API: Render** (or any Node host). New → Blueprint → select this repo. `render.yaml` builds `shared` and `server`, starts `node server/dist/index.js`, checks `/api/health`, and generates `JWT_SECRET`. Set `MONGO_URI` and `CLIENT_ORIGIN`, and, for push reminders, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `VAPID_SUBJECT`.
-3. **Web app: Vercel.** Import the repo and set the root directory to `client`. Set `VITE_API_URL` to `https://<api-host>/api`.
-4. **Finish up.** Put the Vercel address into `CLIENT_ORIGIN` on the API host and redeploy.
+| Part | Where | Notes |
+|---|---|---|
+| Web app (`client`) | **Vercel** | Static site; `client/vercel.json` sends every address to the app and never caches the service worker |
+| API (`server`) | **Render** (any Node host) | `render.yaml` builds `shared` and `server`, starts `node server/dist/index.js`, checks `/api/health` |
+| Database and photos | **MongoDB Atlas** | The free M0 cluster is enough. Product photos are stored in it (GridFS) |
+
+> **Nothing has been deployed yet.** These steps need your own Atlas, Render and Vercel accounts, so they can't be done from this repository.
+
+### 1. MongoDB Atlas
+1. Create a free **M0** cluster.
+2. **Database Access** → add a user with read and write access, and note its password.
+3. **Network Access** → allow `0.0.0.0/0` for staging (Render's free plan has no fixed address). Tighten this for production.
+4. **Connect** → *Drivers* → copy the `mongodb+srv://…` string and put a database name before the `?`, for example `…mongodb.net/cook-first-staging?retryWrites=true&w=majority`.
+
+### 2. Generate the push keys (optional, for reminders)
+```bash
+npm run vapid:keys -w server     # prints a public and a private key
+```
+
+### 3. The API on Render
+New → **Blueprint** → pick this repository. Then set these in the dashboard (`JWT_SECRET` is generated for you):
+
+| Variable | Value |
+|---|---|
+| `MONGO_URI` | The Atlas string from step 1 |
+| `CLIENT_ORIGIN` | Your Vercel address, **exactly** (for example `https://cook-first.vercel.app`, no trailing slash). Fill it in after step 4. |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | The keys from step 2, and `mailto:you@example.com`. Without them reminders stay in the app. |
+| `ANTHROPIC_API_KEY`, `PHOTO_CHECK` | Optional: AI features, and `on` for Photo Check |
+
+The free plan **sleeps after about 15 minutes idle**, so the first request afterwards can take 30 to 60 seconds. Open `https://<your-service>.onrender.com/api/health` once before testing on a phone.
+
+### 4. The web app on Vercel
+1. **Add New → Project** → import this repository.
+2. **Root Directory:** `client`. Leave *Include source files outside of the Root Directory* **on**, because the workspace needs the folders above `client`.
+3. **Environment variable:** `VITE_API_URL` = `https://<your-service>.onrender.com/api`.
+4. Deploy, then copy the address into `CLIENT_ORIGIN` on Render and let Render redeploy.
+
+### 5. Check it
+```bash
+npm run check:staging -- --api https://<your-service>.onrender.com --client https://<your-project>.vercel.app
+```
+It checks HTTPS, the API's health, that CORS allows your web app (and nobody else), the security headers, whether push is set up, and that the web app, manifest, service worker, icons and deep links are served. Fix anything marked FAIL before using a phone. Then create an account on the site. To get sample food on staging, run `API_URL=https://<your-service>.onrender.com/api npm run seed -w server` (it makes the demo account described in [Scripts](#scripts); remove it before sharing the address).
+
+### Install it to the Home Screen
+Open the Vercel address on the phone, then:
+
+- **Android (Chrome):** the **⋮** menu → **Install app** (or **Add to Home screen**) → **Install**. It opens in its own window. In Samsung Internet: menu → **Add page to** → **Home screen**.
+- **iPhone or iPad (Safari only):** tap **Share** (the square with an arrow) → **Add to Home Screen** → **Add**. **Open the app from the new icon**, not from Safari: iPhone only allows push reminders in the installed app, and only on **iOS 16.4 or later**.
+
+Then, on the phone:
+1. **Camera:** Add food → **Use the camera**. Allow the camera when asked. If you said no by mistake: Android → Chrome's site settings → Permissions; iPhone → Settings → Safari → Camera (or the app's entry).
+2. **Barcode scanning:** point it at a barcode. Chrome on Android uses the phone's own reader; Safari has none, so `@zxing/browser` takes over. Typing the number always works.
+3. **Take photo:** uses the phone's camera app (on iPhone too). Needs Photo Check on.
+4. **Reminders:** Settings → **Push reminders** → **Turn on reminders** and allow notifications. On Android the notification has **Used** and **Snooze** buttons; iPhone shows the reminder and opens the app when tapped (Safari's push doesn't offer buttons).
+
+| Problem | Likely cause |
+|---|---|
+| The page loads but nothing works, "Can't reach the server" | `VITE_API_URL` is wrong, or the API is asleep. Open its `/api/health` first. |
+| The browser console says CORS | `CLIENT_ORIGIN` on Render isn't exactly the Vercel address. `npm run check:staging` shows it. |
+| No **Install app** option on Android | The page isn't https, or you're in a private tab. |
+| No reminder permission on iPhone | It must be opened from the Home Screen icon, on iOS 16.4 or later. |
+| Photos don't show after a redeploy | They are in Atlas, not on the host. Check the Atlas connection and its 512 MB free limit. |
 
 **CI** (`.github/workflows/ci.yml`) runs on every push and pull request:
 - **install → lint → format check → typecheck → unit and API tests → build**, on Node **20.19** (the minimum) and **24**
@@ -764,7 +822,7 @@ The project was built in these phases; each one is complete.
 | Phone (375 px) and desktop layouts, 44 px tap targets | ✅ Done, checked in screenshots and by tests |
 | Docker MongoDB, Render/Vercel config, CI workflow | ✅ Written. CI hasn't run yet because the code isn't on GitHub. |
 | Code on GitHub (`rugvailabs/cook_first`) | ⏳ Not pushed yet: the repo is empty |
-| Online deployment | ⏳ Not started |
+| Online deployment | ⏳ Configuration and a step-by-step guide are ready ([Deployment](#deployment-https-staging-on-real-phones)); it needs your own Atlas, Render and Vercel accounts, so it has not been deployed |
 | Opening on a phone over Wi-Fi | ⏸ Paused: the phone's requests didn't reach the PC |
 | Post-MVP Phase 1 (faster entry) | ✅ Done |
 | Post-MVP Phase 2 (realistic estimates) | ✅ Done |
@@ -783,7 +841,13 @@ The project was built in these phases; each one is complete.
 All notable changes to this project are listed here, newest first. Versions follow [Semantic Versioning](https://semver.org/).
 
 ### [Unreleased]
-- *Nothing yet.*
+**Added**
+- **HTTPS staging guide** for testing the camera, barcode scanning, push and installing on real phones: MongoDB Atlas, Render and Vercel, with the variables to set, and how to install to the **Home Screen on Android (Chrome, Samsung Internet) and iPhone (Safari, opened from the icon, iOS 16.4 or later)**, plus a troubleshooting table. Nothing has been deployed: that needs your own accounts.
+- `npm run check:staging -- --api <url> --client <url>` (`scripts/check-staging.mjs`): checks a deployment from the outside without a login: HTTPS, health, CORS (your web app allowed, other sites refused), security headers, push set-up, and that the manifest, service worker, icons and deep links are served.
+- `render.yaml` lists `PUBLIC_API_URL` and `PHOTO_CHECK`; `client/vercel.json` never caches the service worker or manifest, so updates reach phones.
+
+**Checked**
+- A production build (`npm run build`) starts with `NODE_ENV=production`, serves `/api/health`, allows only the configured `CLIENT_ORIGIN` in CORS and sends HSTS and `nosniff`; `@zxing/browser` is a separate chunk that loads only when needed.
 
 ### [2.14.0] - 2026-10-02: camera screen and product photos · `a3b3759`
 **Added**

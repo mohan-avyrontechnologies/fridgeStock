@@ -1,6 +1,8 @@
 # Render Blueprint for the API (SRD §9: "suitable Node.js hosting").
 # New > Blueprint > pick this repo. Then set MONGO_URI (e.g. MongoDB Atlas)
-# and CLIENT_ORIGIN (your Vercel URL) in the dashboard.
+# and CLIENT_ORIGIN (your Vercel URL, exactly, with no trailing slash) in the dashboard.
+# The free plan sleeps after about 15 minutes idle, so the first request after that is slow.
+# The step-by-step guide is in the README ("Deployment: HTTPS staging on real phones").
 services:
   - type: web
     name: cook-first-api
@@ -31,6 +33,13 @@ services:
       - key: VAPID_PRIVATE_KEY
         sync: false
       - key: VAPID_SUBJECT
+        sync: false
+      # Where the API is reached from outside (https://<this-service>.onrender.com/api). Native push
+      # notification buttons call it. Optional for the web app.
+      - key: PUBLIC_API_URL
+        sync: false
+      # Photo Check: set to "on" (also needs ANTHROPIC_API_KEY).
+      - key: PHOTO_CHECK
         sync: false
       # Claude API key for AI features (optional). AI_MODEL defaults to claude-sonnet-5-5.
       - key: ANTHROPIC_API_KEY
