@@ -1056,7 +1056,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.20.0] - 2026-10-03: design and usability, stage 3 (cards and actions) · `COMMIT_HASH`
+### [2.20.0] - 2026-10-03: design and usability, stage 3 (cards and actions) · `1e98865`
 **Added**
 - **Swipe a food card right for "Used" and left for "Wasted"** (`SwipeActions`), with the existing **Undo** toast. The actions are drawn underneath while you drag, each with an icon and a word; a short or mostly vertical drag does nothing (the page still scrolls), and a drag that ends on the card doesn't also open it. The cards keep their visible **Used** and **Wasted** buttons, and **Food Details** keeps its buttons, so swiping is never required.
 - **Optimistic updates:** marking food as used or wasted (or using part of it) changes the lists at once; if the server refuses, the card comes back with a message saying what happened and what to do.
