@@ -20,7 +20,7 @@ import { FoodItemModel, type FoodItemDoc } from '../models/FoodItem.js';
 import type { UserDoc } from '../models/User.js';
 import { clock } from './clock.js';
 import { conflict, foodNotFound, validationError } from './errors.js';
-import { cancelForFood, dispatchDue, scheduleForFood } from './notificationService.js';
+import { cancelForFood, dispatchDue, scheduleForHousehold } from './notificationService.js';
 import { prioritise } from './priorityEngine.js';
 import { createRecord, deleteRecord, latestForFood } from './usageService.js';
 import { toFoodView, toUsageView } from './views.js';
@@ -34,7 +34,7 @@ const round = (n: number) => Math.round(n * 1000) / 1000;
  */
 async function findOwned(user: UserDoc, id: string): Promise<FoodItemDoc> {
   if (!isValidObjectId(id)) throw foodNotFound();
-  const food = await FoodItemModel.findOne({ _id: id, userId: user._id });
+  const food = await FoodItemModel.findOne({ _id: id, householdId: user.householdId });
   if (!food) throw foodNotFound();
   return food;
 }
@@ -51,7 +51,7 @@ function assertNotFuture(addedDate: DateString, today: DateString) {
 
 async function prioritisedFor(user: UserDoc) {
   const today = clock.today(user.timeZone);
-  const foods = await FoodItemModel.find({ userId: user._id, status: 'ACTIVE' });
+  const foods = await FoodItemModel.find({ householdId: user.householdId, status: 'ACTIVE' });
   const result = prioritise(
     foods.map((doc) => ({
       id: doc._id.toString(),
@@ -173,7 +173,7 @@ export async function createFood(user: UserDoc, input: FoodInput): Promise<FoodI
   assertOpenedDate(input.openedDate, input.addedDate, today);
   assertLeftoverLifespan(input.leftover ?? false, input.storage ?? 'FRIDGE', input.lifespanDays);
   const food = await FoodItemModel.create(newItem(user, input));
-  await scheduleForFood(food, user);
+  await scheduleForHousehold(food);
   return toFoodView(food, today);
 }
 
@@ -205,7 +205,7 @@ export async function updateFood(user: UserDoc, id: string, input: FoodUpdateInp
   const datesChanged = addedDate !== undefined || lifespanDays !== undefined;
   if (datesChanged) food.expiryDate = expiryFor(food.addedDate, food.lifespanDays);
   await food.save();
-  if (datesChanged) await scheduleForFood(food, user);
+  if (datesChanged) await scheduleForHousehold(food);
   return toFoodView(food, today);
 }
 
@@ -249,7 +249,7 @@ export async function bulkCreate(user: UserDoc, input: BulkCreateInput): Promise
     newItem(user, { ...row, addedDate: input.addedDate, storage: row.storage ?? input.storage }),
   );
   const saved = await FoodItemModel.insertMany(docs);
-  for (const food of saved) await scheduleForFood(food, user);
+  for (const food of saved) await scheduleForHousehold(food);
   return { items: saved.map((food) => toFoodView(food, today)) };
 }
 
@@ -273,7 +273,7 @@ export async function undoLastAction(user: UserDoc, id: string): Promise<FoodIte
   }
   await food.save();
   await deleteRecord(user, record);
-  if (record.action !== 'PARTIALLY_USED') await scheduleForFood(food, user);
+  if (record.action !== 'PARTIALLY_USED') await scheduleForHousehold(food);
   return toFoodView(food, clock.today(user.timeZone));
 }
 
@@ -306,7 +306,7 @@ export async function openFood(user: UserDoc, id: string, input: OpenFoodInput):
   const candidate = addDays(openedDate, daysLeft);
   if (candidate < food.expiryDate) setExpiry(food, candidate);
   await food.save();
-  await scheduleForFood(food, user);
+  await scheduleForHousehold(food);
   return toFoodView(food, today);
 }
 
@@ -320,7 +320,7 @@ export async function undoOpen(user: UserDoc, id: string): Promise<FoodItem> {
   food.openedDate = null;
   food.lifespanBeforeOpened = null;
   await food.save();
-  await scheduleForFood(food, user);
+  await scheduleForHousehold(food);
   return toFoodView(food, clock.today(user.timeZone));
 }
 
@@ -341,7 +341,7 @@ export async function moveFood(user: UserDoc, id: string, input: MoveFoodInput):
   food.storage = input.storage;
   setExpiry(food, addDays(today, daysLeft));
   await food.save();
-  await scheduleForFood(food, user);
+  await scheduleForHousehold(food);
   return toFoodView(food, today);
 }
 

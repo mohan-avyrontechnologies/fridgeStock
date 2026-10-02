@@ -34,7 +34,7 @@ const ref = (doc: FoodItemDoc): FoodRef => ({ id: doc._id.toString(), name: doc.
  * returns is used to change it.
  */
 async function codedFood(user: UserDoc, today: DateString) {
-  const foods = await FoodItemModel.find({ userId: user._id, status: 'ACTIVE' });
+  const foods = await FoodItemModel.find({ householdId: user.householdId, status: 'ACTIVE' });
   const { items, cookFirst } = prioritise(
     foods.map((doc) => ({
       doc,
@@ -104,7 +104,7 @@ export async function suggestRecipes(user: UserDoc): Promise<RecipeIdeas> {
 const planDates = (today: DateString) => Array.from({ length: PLAN_DAYS }, (_, i) => addDays(today, i));
 
 async function foodsById(user: UserDoc, ids: string[]) {
-  const foods = await FoodItemModel.find({ userId: user._id, _id: { $in: ids } });
+  const foods = await FoodItemModel.find({ householdId: user.householdId, _id: { $in: ids } });
   return new Map(foods.map((doc) => [doc._id.toString(), doc]));
 }
 
@@ -121,7 +121,7 @@ function toEntry(title: string, ids: string[], foods: Map<string, FoodItemDoc>):
 export async function getPlan(user: UserDoc): Promise<MealPlan> {
   const today = clock.today(user.timeZone);
   const dates = planDates(today);
-  const entries = await MealPlanEntryModel.find({ userId: user._id, date: { $in: dates } });
+  const entries = await MealPlanEntryModel.find({ householdId: user.householdId, date: { $in: dates } });
   const ids = entries.flatMap((entry) => entry.foodIds.map(String));
   const foods = await foodsById(user, ids);
   const byDate = new Map(entries.map((entry) => [entry.date, entry]));
@@ -142,15 +142,15 @@ export async function setEntry(user: UserDoc, date: string, input: MealPlanEntry
   const foods = await foodsById(user, ids);
   if (foods.size !== ids.length) throw validationError(MESSAGES.mealFoods, 'foodIds');
   await MealPlanEntryModel.updateOne(
-    { userId: user._id, date },
-    { $set: { title: input.title, foodIds: ids } },
+    { householdId: user.householdId, date },
+    { $set: { title: input.title, foodIds: ids }, $setOnInsert: { userId: user._id } },
     { upsert: true },
   );
   return toEntry(input.title, ids, foods);
 }
 
 export async function clearEntry(user: UserDoc, date: string): Promise<void> {
-  await MealPlanEntryModel.deleteOne({ userId: user._id, date });
+  await MealPlanEntryModel.deleteOne({ householdId: user.householdId, date });
 }
 
 /**
@@ -160,7 +160,7 @@ export async function clearEntry(user: UserDoc, date: string): Promise<void> {
 export async function suggestPlan(user: UserDoc): Promise<MealPlanDraft> {
   const today = clock.today(user.timeZone);
   const dates = planDates(today);
-  const planned = await MealPlanEntryModel.find({ userId: user._id, date: { $in: dates } });
+  const planned = await MealPlanEntryModel.find({ householdId: user.householdId, date: { $in: dates } });
   const taken = new Set(planned.map((entry) => entry.date));
   const open = dates.filter((date) => !taken.has(date));
   if (open.length === 0) return { days: [] };

@@ -573,3 +573,70 @@ test('phase 6: dark mode, downloading your data, and deleting the account', asyn
   await page.getByRole('button', { name: /Log in|Sign in/ }).click();
   await expect(page.getByText('Email or password is incorrect.')).toBeVisible();
 });
+
+test('phase 6: two people share a household, see each other’s food and activity, and one leaves', async ({
+  browser,
+}) => {
+  const alicePage = await (await browser.newContext()).newPage();
+  const bobPage = await (await browser.newContext()).newPage();
+  const openHousehold = async (page: Page) => {
+    await openSettings(page);
+    await page.getByRole('link', { name: 'Household' }).first().click();
+    await expect(page).toHaveURL('/household');
+  };
+
+  await register(alicePage, 'Alice Roy');
+  await addFood(alicePage, 'Milk', '4', 'l');
+  await register(bobPage, 'Bob Roy');
+  await addFood(bobPage, 'Bread', '3', 'pack');
+
+  // Alice makes an invite code; she is alone so far.
+  await openHousehold(alicePage);
+  await expect(alicePage.getByText(/It’s just you/)).toBeVisible();
+  await alicePage.getByRole('button', { name: 'Make an invite code' }).click();
+  const code = (await alicePage
+    .getByRole('status')
+    .getByText(/^[A-Z0-9]{4}-[A-Z0-9]{4}$/)
+    .textContent())!;
+
+  // Bob joins with it (typed in lower case), and brings his bread.
+  await openHousehold(bobPage);
+  await bobPage.getByLabel('Invite code').fill(code.toLowerCase());
+  await bobPage.getByRole('button', { name: 'Join', exact: true }).click();
+  await expect(bobPage.getByText('Alice Roy', { exact: true })).toBeVisible();
+  await expect(bobPage.getByText('Bob Roy joined the household')).toBeVisible();
+  await bobPage.getByRole('link', { name: 'Home', exact: true }).first().click();
+  await expect(allFood(bobPage)).toHaveCount(2);
+  await expect(allFood(bobPage).filter({ hasText: 'Milk' })).toHaveCount(1);
+
+  // Alice sees Bob's bread, and uses it.
+  await alicePage.goto('/');
+  await expect(allFood(alicePage)).toHaveCount(2);
+  await alicePage.getByRole('link', { name: /Bread/ }).first().click();
+  await alicePage.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Used all' }).click();
+  await expect(alicePage).toHaveURL('/');
+  await expect(allFood(alicePage)).toHaveCount(1);
+
+  // The log says who did what, for both of them.
+  for (const page of [alicePage, bobPage]) {
+    await page.goto('/household');
+    await expect(page.getByText('Alice Roy added Milk')).toBeVisible();
+    await expect(page.getByText('Bob Roy added Bread')).toBeVisible();
+    await expect(page.getByText('Alice Roy used Bread')).toBeVisible();
+    await expect(page.getByText('Bob Roy joined the household')).toBeVisible();
+    await expectNoSafetyClaim(page);
+  }
+  await shot(alicePage, '20-household');
+
+  // Bob leaves: Alice keeps the milk, and each is on their own again.
+  await bobPage.getByRole('button', { name: 'Leave household' }).click();
+  await bobPage.getByRole('button', { name: 'Leave', exact: true }).click();
+  await expect(bobPage.getByText(/It’s just you/)).toBeVisible();
+  await bobPage.getByRole('link', { name: 'Home', exact: true }).first().click();
+  await expect(bobPage.getByText('Your fridge is empty. Add your first item.')).toBeVisible();
+  await alicePage.goto('/household');
+  await expect(alicePage.getByText('Bob Roy left the household')).toBeVisible();
+  await expect(alicePage.getByText(/It’s just you/)).toBeVisible();
+  await alicePage.getByRole('link', { name: 'Home', exact: true }).first().click();
+  await expect(allFood(alicePage).filter({ hasText: 'Milk' })).toHaveCount(1);
+});

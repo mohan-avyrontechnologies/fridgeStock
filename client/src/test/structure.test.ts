@@ -29,6 +29,7 @@ describe('client/src layout', () => {
       'DashboardPage.tsx',
       'FoodDetailPage.tsx',
       'HistoryPage.tsx',
+      'HouseholdPage.tsx',
       'InsightsPage.tsx',
       'LoginPage.tsx',
       'NotificationsPage.tsx',
@@ -62,7 +63,7 @@ describe('api', () => {
   it('has one function per endpoint', () => {
     const client = read('api/client.ts');
     const endpoints = [...client.matchAll(/^\s*\/\/ (GET|POST|PUT|DELETE) (\S+)$/gm)].map((m) => `${m[1]} ${m[2]}`);
-    expect(endpoints).toHaveLength(47);
+    expect(endpoints).toHaveLength(53);
     expect(new Set(endpoints).size).toBe(endpoints.length);
   });
 });

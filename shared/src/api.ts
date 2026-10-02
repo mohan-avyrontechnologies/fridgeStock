@@ -1,5 +1,6 @@
 import type { DateString } from './dates.js';
 import type {
+  ActivityType,
   Currency,
   FoodStatus,
   NotificationStatus,
@@ -320,4 +321,42 @@ export interface AccountExport {
   favourites: Record<string, unknown>[];
   shopping: Record<string, unknown>[];
   mealPlan: Record<string, unknown>[];
+}
+
+export interface HouseholdMember {
+  id: string;
+  name: string;
+  isYou: boolean;
+}
+
+/** An invite someone in the household created; the code is shared by hand (nothing is emailed). */
+export interface HouseholdInvite {
+  /** Eight letters and digits, shown as XXXX-XXXX. */
+  code: string;
+  expiresAt: string;
+  createdBy: string;
+}
+
+/** The signed-in user's household. Everyone is always in one: alone, with just themselves. */
+export interface Household {
+  members: HouseholdMember[];
+  /** Open invites from this household. */
+  invites: HouseholdInvite[];
+  maxMembers: number;
+}
+
+export interface ActivityEvent {
+  id: string;
+  type: ActivityType;
+  /** Name of who did it ("A former member" if they have since left or deleted their account). */
+  actor: string;
+  /** The food, for food events. */
+  foodName: string | null;
+  /** When it happened (ISO timestamp). */
+  at: string;
+}
+
+export interface ActivityLog {
+  items: ActivityEvent[];
+  hasMore: boolean;
 }

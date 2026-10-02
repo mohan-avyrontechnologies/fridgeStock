@@ -24,6 +24,7 @@ export function createRecord(
 ): Promise<UsageRecordDoc> {
   return UsageRecordModel.create({
     userId: user._id,
+    householdId: food.householdId,
     foodId: food._id,
     action,
     date: clock.today(user.timeZone),
@@ -37,16 +38,16 @@ export function createRecord(
 
 /** The most recent usage record for one of the user's items. */
 export function latestForFood(user: UserDoc, foodId: Types.ObjectId): Promise<UsageRecordDoc | null> {
-  return UsageRecordModel.findOne({ userId: user._id, foodId }).sort({ createdAt: -1, _id: -1 });
+  return UsageRecordModel.findOne({ householdId: user.householdId, foodId }).sort({ createdAt: -1, _id: -1 });
 }
 
 export async function deleteRecord(user: UserDoc, record: UsageRecordDoc): Promise<void> {
-  await UsageRecordModel.deleteOne({ _id: record._id, userId: user._id });
+  await UsageRecordModel.deleteOne({ _id: record._id, householdId: user.householdId });
 }
 
 /** The user's usage/waste history, newest first, with per-action totals. */
 export async function listHistory(user: UserDoc, { limit, offset }: Pagination): Promise<UsageHistory> {
-  const filter = { userId: user._id };
+  const filter = { householdId: user.householdId };
   const [records, total, grouped] = await Promise.all([
     UsageRecordModel.find(filter).sort({ date: -1, createdAt: -1, _id: -1 }).skip(offset).limit(limit),
     UsageRecordModel.countDocuments(filter),

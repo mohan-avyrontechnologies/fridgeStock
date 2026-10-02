@@ -4,6 +4,8 @@ import { UsageRecordModel } from './UsageRecord.js';
 import { UserModel } from './User.js';
 import { FavouriteModel } from './Favourite.js';
 import { Types } from 'mongoose';
+import { MealPlanEntryModel } from './MealPlanEntry.js';
+import { ShoppingItemModel } from './ShoppingItem.js';
 
 /**
  * Data written before v2.0 stored food dates as BSON dates at UTC midnight.
@@ -46,8 +48,28 @@ async function backfillHouseholdAndStorage() {
   ]);
 }
 
+/**
+ * v2.11 shares usage history, the shopping list and the meal plan within a
+ * household. Give existing records the household of the user who made them.
+ */
+async function backfillSharedHouseholds() {
+  for (const model of [UsageRecordModel, ShoppingItemModel, MealPlanEntryModel]) {
+    const missing = await model.collection.distinct('userId', { householdId: { $exists: false } });
+    for (const userId of missing) {
+      const user = await UserModel.collection.findOne({ _id: userId });
+      if (user) {
+        await model.collection.updateMany(
+          { userId, householdId: { $exists: false } },
+          { $set: { householdId: user.householdId } },
+        );
+      }
+    }
+  }
+}
+
 export async function runMigrations(): Promise<void> {
   await backfillHouseholdAndStorage();
+  await backfillSharedHouseholds();
   await datesToStrings(FoodItemModel.collection, ['addedDate', 'expiryDate']);
   await datesToStrings(NotificationModel.collection, ['expiryDate', 'scheduledDate']);
   await datesToStrings(UsageRecordModel.collection, ['date']);
@@ -56,6 +78,8 @@ export async function runMigrations(): Promise<void> {
     FoodItemModel.syncIndexes(),
     NotificationModel.syncIndexes(),
     UsageRecordModel.syncIndexes(),
+    ShoppingItemModel.syncIndexes(),
+    MealPlanEntryModel.syncIndexes(),
     UserModel.syncIndexes(),
     FavouriteModel.syncIndexes(),
   ]);

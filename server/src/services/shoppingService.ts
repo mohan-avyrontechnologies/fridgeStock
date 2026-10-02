@@ -36,7 +36,7 @@ export function sameFood(a: string, b: string): boolean {
 }
 
 async function activeFood(user: UserDoc) {
-  const foods = await FoodItemModel.find({ userId: user._id, status: 'ACTIVE' });
+  const foods = await FoodItemModel.find({ householdId: user.householdId, status: 'ACTIVE' });
   return prioritise(
     foods.map((doc) => ({
       doc,
@@ -76,7 +76,7 @@ function toView(doc: ShoppingItemDoc, food: ActiveFood): ShoppingItem {
 /** Still to buy first, then ticked items; each in the order added, with any matching food already at home. */
 export async function list(user: UserDoc): Promise<{ items: ShoppingItem[] }> {
   const [items, food] = await Promise.all([
-    ShoppingItemModel.find({ userId: user._id }).sort({ checked: 1, createdAt: 1, _id: 1 }),
+    ShoppingItemModel.find({ householdId: user.householdId }).sort({ checked: 1, createdAt: 1, _id: 1 }),
     activeFood(user),
   ]);
   return { items: items.map((doc) => toView(doc, food)) };
@@ -85,6 +85,7 @@ export async function list(user: UserDoc): Promise<{ items: ShoppingItem[] }> {
 export async function add(user: UserDoc, input: ShoppingItemInput): Promise<ShoppingItem> {
   const doc = await ShoppingItemModel.create({
     userId: user._id,
+    householdId: user.householdId,
     name: input.name,
     quantity: input.quantity ?? null,
     unit: input.unit ?? null,
@@ -94,7 +95,7 @@ export async function add(user: UserDoc, input: ShoppingItemInput): Promise<Shop
 
 async function findOwned(user: UserDoc, id: string): Promise<ShoppingItemDoc> {
   if (!isValidObjectId(id)) throw notFound();
-  const doc = await ShoppingItemModel.findOne({ _id: id, userId: user._id });
+  const doc = await ShoppingItemModel.findOne({ _id: id, householdId: user.householdId });
   if (!doc) throw notFound();
   return doc;
 }
@@ -115,5 +116,5 @@ export async function remove(user: UserDoc, id: string): Promise<void> {
 }
 
 export async function clearChecked(user: UserDoc): Promise<void> {
-  await ShoppingItemModel.deleteMany({ userId: user._id, checked: true });
+  await ShoppingItemModel.deleteMany({ householdId: user.householdId, checked: true });
 }

@@ -31,6 +31,10 @@ import type {
   ShoppingUpdateInput,
   UpdateAccountInput,
   AccountExport,
+  ActivityLog,
+  Household,
+  HouseholdInvite,
+  JoinHouseholdInput,
   DeleteAccountInput,
   Insights,
   UsageHistory,
@@ -150,6 +154,25 @@ export const api = {
 
   // DELETE /account
   deleteAccount: (body: DeleteAccountInput) => request<void>('DELETE', '/account', body),
+
+  // GET /household
+  household: () => request<Household>('GET', '/household'),
+
+  // POST /household/invites
+  createInvite: () => request<HouseholdInvite>('POST', '/household/invites'),
+
+  // DELETE /household/invites/:code
+  cancelInvite: (code: string) => request<void>('DELETE', `/household/invites/${encodeURIComponent(code)}`),
+
+  // POST /household/join
+  joinHousehold: (body: JoinHouseholdInput) => request<Household>('POST', '/household/join', body),
+
+  // POST /household/leave
+  leaveHousehold: () => request<Household>('POST', '/household/leave'),
+
+  // GET /household/activity
+  householdActivity: (offset = 0, limit = 20) =>
+    request<ActivityLog>('GET', `/household/activity?offset=${offset}&limit=${limit}`),
 
   // GET /insights
   insights: () => request<Insights>('GET', '/insights'),

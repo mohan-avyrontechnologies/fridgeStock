@@ -10,7 +10,7 @@ import { api, food, registerUser, setToday } from './helpers.js';
 
 /** Project rules that must never be broken, each checked directly. */
 
-describe('every data query is scoped to the signed-in user', () => {
+describe('every data query is scoped to the signed-in user or their household', () => {
   type Op = { collection: string; method: string; args: unknown[] };
   const SCOPED = new Set([
     'fooditems',
@@ -22,6 +22,9 @@ describe('every data query is scoped to the signed-in user', () => {
     'mealplanentries',
     'aiusages',
   ]);
+  // Shared within a household (food, its history, the shopping list and the meal plan): scoped by the
+  // household's id. Everything else is personal: scoped by the user's own id.
+  const SHARED = new Set(['fooditems', 'usagerecords', 'shoppingitems', 'mealplanentries']);
   const IGNORED = new Set(['createIndex', 'createIndexes', 'listIndexes', 'dropIndex']);
 
   afterEach(() => {
@@ -37,7 +40,7 @@ describe('every data query is scoped to the signed-in user', () => {
     return first;
   }
 
-  it('food items, usage records and notifications: every read and write carries userId', async () => {
+  it('every read and write carries the user id, or the household id for shared data', async () => {
     setToday('2026-09-29');
     const s = await registerUser();
     const ops: Op[] = [];
@@ -149,10 +152,24 @@ describe('every data query is scoped to the signed-in user', () => {
     const dataOps = ops.filter((op) => SCOPED.has(op.collection) && !IGNORED.has(op.method));
     expect(new Set(dataOps.map((op) => op.collection))).toEqual(SCOPED);
 
+    const householdId = (await UserModel.findById(s.user.id))!.householdId.toString();
+    expect(householdId).not.toBe(s.user.id);
     const unscoped = dataOps.filter((op) => {
       const scope = JSON.stringify(scopeOf(op) ?? {});
+      // Learned lifespans read only the user's own items, so a user id is fine for food too.
+      if (SHARED.has(op.collection)) return !scope.includes(householdId) && !scope.includes(s.user.id);
       return !scope.includes(s.user.id);
     });
+    // Shared data is scoped by the household's id. The only exceptions are the learned-lifespans lookup
+    // (the user's own items) and saving or deleting a document that was just found through the household
+    // (Mongoose adds the owner's id to that filter as the shard key).
+    const sharedByUserOnly = dataOps.filter((op) => {
+      const scope = JSON.stringify(scopeOf(op) ?? {});
+      return SHARED.has(op.collection) && !scope.includes(householdId);
+    });
+    expect(new Set(sharedByUserOnly.map((op) => `${op.collection}.${op.method}`))).toEqual(
+      new Set(['fooditems.find', 'fooditems.updateOne', 'shoppingitems.updateOne', 'shoppingitems.deleteOne']),
+    );
     expect(unscoped.map((op) => `${op.collection}.${op.method} ${JSON.stringify(op.args[0])}`)).toEqual([]);
   });
 

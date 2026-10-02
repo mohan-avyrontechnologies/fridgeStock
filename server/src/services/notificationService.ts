@@ -98,8 +98,17 @@ export async function scheduleForFood(food: FoodItemDoc, user: UserDoc): Promise
   }
 }
 
+/**
+ * Schedules an item's reminders for everyone in its household (each member has
+ * their own reminders, settings and time zone). A household of one is just the owner.
+ */
+export async function scheduleForHousehold(food: FoodItemDoc): Promise<void> {
+  const members = await UserModel.find({ householdId: food.householdId });
+  for (const member of members) await scheduleForFood(food, member);
+}
+
 async function rescheduleAllForUser(user: UserDoc): Promise<void> {
-  const foods = await FoodItemModel.find({ userId: user._id, status: 'ACTIVE' });
+  const foods = await FoodItemModel.find({ householdId: user.householdId, status: 'ACTIVE' });
   for (const food of foods) await scheduleForFood(food, user);
 }
 
@@ -137,7 +146,7 @@ export async function dispatchDue(user: UserDoc): Promise<void> {
   });
 
   for (const notification of due) {
-    const food = await FoodItemModel.findOne({ _id: notification.foodId, userId: user._id });
+    const food = await FoodItemModel.findOne({ _id: notification.foodId, householdId: user.householdId });
     const stillRelevant =
       food &&
       food.status === 'ACTIVE' &&
@@ -228,7 +237,7 @@ export async function pushDue(user: UserDoc): Promise<void> {
   const pushedFoods = new Set<string>();
 
   if (!eachItem && user.lastDigestDate !== today) {
-    const foods = await FoodItemModel.find({ userId: user._id, status: 'ACTIVE' });
+    const foods = await FoodItemModel.find({ householdId: user.householdId, status: 'ACTIVE' });
     const payload = digestPush(
       user,
       foods.filter((food) => !snoozed(food)),
@@ -251,7 +260,7 @@ export async function pushDue(user: UserDoc): Promise<void> {
       pushedAt: null,
     });
     for (const notification of delivered) {
-      const food = await FoodItemModel.findOne({ _id: notification.foodId, userId: user._id });
+      const food = await FoodItemModel.findOne({ _id: notification.foodId, householdId: user.householdId });
       if (food?.status === 'ACTIVE' && !snoozed(food) && notification.message) {
         await pushService.sendToUser(user, itemPush(user, food, pushCopy.title, notification.message));
         pushedFoods.add(food._id.toString());

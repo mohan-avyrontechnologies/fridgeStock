@@ -42,6 +42,13 @@ export const MESSAGES = {
   price: 'Price must be a number from 0 to 100,000.',
   currency: 'Choose one of the listed currencies.',
   passwordIncorrect: 'Password is incorrect.',
+  inviteCode: 'Enter the invite code you were given.',
+  inviteInvalid: 'That invite code isn’t valid, or it is out of date.',
+  inviteOwn: 'That invite is from your own household.',
+  alreadyShared: 'Leave your current household before joining another.',
+  householdFull: 'That household is full.',
+  notShared: 'You aren’t in a shared household.',
+  tooManyInvites: 'You already have the most open invites. Cancel one first.',
   openedDate: "Opened date must be a valid date that isn't in the future or before the added date.",
   bulkEmpty: 'Add at least one item.',
   bulkTooMany: 'Add at most 50 items at once.',
@@ -80,6 +87,15 @@ export const loginSchema = z.object({
 /** Deleting the account needs the password again. */
 export const deleteAccountSchema = z.object({
   password: z.string({ error: MESSAGES.loginPassword }).min(1, MESSAGES.loginPassword),
+});
+
+/** An invite code is 8 letters and digits; people may type it with a dash, spaces or lower case. */
+export const joinHouseholdSchema = z.object({
+  code: z
+    .string({ error: MESSAGES.inviteCode })
+    .trim()
+    .transform((value) => value.replace(/[\s-]/g, '').toUpperCase())
+    .pipe(z.string().min(1, MESSAGES.inviteCode).max(20, MESSAGES.inviteInvalid)),
 });
 
 export const updateAccountSchema = z
@@ -258,6 +274,7 @@ export const notificationPageSchema = z.object({
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type JoinHouseholdInput = z.infer<typeof joinHouseholdSchema>;
 export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
 export type UpdateAccountInput = z.infer<typeof updateAccountSchema>;
 export type FoodInput = z.infer<typeof createFoodSchema>;

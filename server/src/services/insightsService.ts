@@ -107,8 +107,8 @@ export async function getInsights(user: UserDoc): Promise<Insights> {
   const today = clock.today(user.timeZone);
   const firstDay = addDays(today, -(WEEK_DAYS * WEEKS_SHOWN - 1));
   const [entries, overdueNow] = await Promise.all([
-    UsageRecordModel.find({ userId: user._id, date: { $gte: firstDay, $lte: today } }).lean<Entry[]>(),
-    FoodItemModel.countDocuments({ userId: user._id, status: 'ACTIVE', expiryDate: { $lt: today } }),
+    UsageRecordModel.find({ householdId: user.householdId, date: { $gte: firstDay, $lte: today } }).lean<Entry[]>(),
+    FoodItemModel.countDocuments({ householdId: user.householdId, status: 'ACTIVE', expiryDate: { $lt: today } }),
   ]);
 
   const weeks: InsightsWeek[] = [];

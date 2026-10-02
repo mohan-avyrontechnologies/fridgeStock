@@ -155,6 +155,16 @@ export function SettingsPage() {
         </section>
 
         <Link
+          to="/household"
+          className="flex min-h-14 items-center justify-between rounded-2xl border border-line bg-card px-4 font-medium hover:bg-paper"
+        >
+          Household
+          <span aria-hidden className="text-muted">
+            ›
+          </span>
+        </Link>
+
+        <Link
           to="/insights"
           className="flex min-h-14 items-center justify-between rounded-2xl border border-line bg-card px-4 font-medium hover:bg-paper"
         >

@@ -5,7 +5,10 @@ import { clock } from '../services/clock.js';
 export interface UsageRecord {
   // userId is not in the TDD entity, but history is listed per user and every
   // query must be scoped to its owner, so it is stored rather than joined.
+  /** Who did it. */
   userId: Types.ObjectId;
+  /** The household that owns the food; history is shared by everyone in it. */
+  householdId: Types.ObjectId;
   foodId: Types.ObjectId;
   action: UsageAction;
   /** The user's calendar day when the action was recorded. */
@@ -24,6 +27,7 @@ export interface UsageRecord {
 const usageRecordSchema = new Schema<UsageRecord>(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    householdId: { type: Schema.Types.ObjectId, required: true, index: true },
     foodId: { type: Schema.Types.ObjectId, ref: 'FoodItem', required: true, index: true },
     action: { type: String, enum: USAGE_ACTIONS, required: true },
     date: {
@@ -42,6 +46,7 @@ const usageRecordSchema = new Schema<UsageRecord>(
 );
 
 usageRecordSchema.index({ userId: 1, date: -1, createdAt: -1 });
+usageRecordSchema.index({ householdId: 1, date: -1, createdAt: -1 });
 
 export type UsageRecordDoc = HydratedDocument<UsageRecord>;
 export const UsageRecordModel = model<UsageRecord>('UsageRecord', usageRecordSchema);

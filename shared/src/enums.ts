@@ -24,6 +24,18 @@ export type UsageAction = (typeof USAGE_ACTIONS)[number];
 export const CURRENCIES = ['USD', 'EUR', 'GBP', 'CAD', 'AUD', 'INR'] as const;
 export type Currency = (typeof CURRENCIES)[number];
 
+/** Things that show in a household's activity log. */
+export const ACTIVITY_TYPES = [
+  'FOOD_ADDED',
+  'USED',
+  'PARTIALLY_USED',
+  'WASTED',
+  'REMOVED',
+  'MEMBER_JOINED',
+  'MEMBER_LEFT',
+] as const;
+export type ActivityType = (typeof ACTIVITY_TYPES)[number];
+
 export const REMINDER_TYPES = ['APPROACHING_EXPIRY', 'DUE', 'OVERDUE'] as const;
 export type ReminderType = (typeof REMINDER_TYPES)[number];
 

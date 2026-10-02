@@ -17,6 +17,7 @@ import {
   shoppingItemSchema,
   shoppingUpdateSchema,
   deleteAccountSchema,
+  joinHouseholdSchema,
   updateAccountSchema,
   updateFoodSchema,
   useFoodSchema,
@@ -34,6 +35,7 @@ import { notificationController } from '../controllers/notificationController.js
 import { pushController } from '../controllers/pushController.js';
 import { shoppingController } from '../controllers/shoppingController.js';
 import { accountController } from '../controllers/accountController.js';
+import { householdController } from '../controllers/householdController.js';
 import { insightsController } from '../controllers/insightsController.js';
 import { usageController } from '../controllers/usageController.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -85,6 +87,13 @@ router.put('/auth/me', validate(updateAccountSchema), authController.updateMe);
 
 router.get('/account/export', accountController.export);
 router.delete('/account', authLimiter, validate(deleteAccountSchema), accountController.remove);
+
+router.get('/household', householdController.get);
+router.post('/household/invites', householdController.createInvite);
+router.delete('/household/invites/:code', householdController.cancelInvite);
+router.post('/household/join', authLimiter, validate(joinHouseholdSchema), householdController.join);
+router.post('/household/leave', householdController.leave);
+router.get('/household/activity', validate(paginationSchema, 'query'), householdController.activity);
 
 router.get('/foods', foodController.list);
 router.post('/foods', validate(createFoodSchema), foodController.create);

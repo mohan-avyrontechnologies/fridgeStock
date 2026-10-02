@@ -2,6 +2,8 @@ import { MESSAGES, type AccountExport, type DeleteAccountInput } from '@cook-fir
 import { AiUsageModel } from '../models/AiUsage.js';
 import { FavouriteModel } from '../models/Favourite.js';
 import { FoodItemModel } from '../models/FoodItem.js';
+import { HouseholdEventModel } from '../models/HouseholdEvent.js';
+import { InviteModel } from '../models/Invite.js';
 import { MealPlanEntryModel } from '../models/MealPlanEntry.js';
 import { NotificationModel } from '../models/Notification.js';
 import { PushSubscriptionModel } from '../models/PushSubscription.js';
@@ -10,6 +12,7 @@ import { UsageRecordModel } from '../models/UsageRecord.js';
 import { UserModel, type UserDoc } from '../models/User.js';
 import { clock } from './clock.js';
 import { validationError } from './errors.js';
+import { leaveHousehold } from './householdService.js';
 import { passwordHashService } from './passwordHash.js';
 import { toUserView } from './views.js';
 
@@ -50,15 +53,23 @@ export async function exportAccount(user: UserDoc): Promise<AccountExport> {
 /**
  * Permanently deletes the account and everything it owns. The password is asked
  * for again; a wrong one is a 400 (not a 401, which would sign the person out).
+ *
+ * In a shared household they leave first: what they added goes with them and is
+ * deleted, while everyone else keeps their food, shopping list and meal plan.
+ * What they did to other people's food stays in that household's history, with
+ * no name on it.
  */
 export async function deleteAccount(user: UserDoc, { password }: DeleteAccountInput): Promise<void> {
   if (!(await passwordHashService.verify(password, user.passwordHash))) {
     throw validationError(MESSAGES.passwordIncorrect, 'password');
   }
+  if ((await UserModel.countDocuments({ householdId: user.householdId })) > 1) await leaveHousehold(user);
   const owner = { userId: user._id };
   await Promise.all([
     FoodItemModel.deleteMany(owner),
-    UsageRecordModel.deleteMany(owner),
+    UsageRecordModel.deleteMany({ ...owner, householdId: user.householdId }),
+    InviteModel.deleteMany({ createdBy: user._id }),
+    HouseholdEventModel.deleteMany(owner),
     NotificationModel.deleteMany(owner),
     PushSubscriptionModel.deleteMany(owner),
     FavouriteModel.deleteMany(owner),
