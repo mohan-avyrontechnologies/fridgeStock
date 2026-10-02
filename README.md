@@ -774,7 +774,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 
 ### [Unreleased]
 **Changed**
-- README: a troubleshooting table for `npm run dev:server` (a damaged `node_modules`, the embedded database already in use, a busy port), and a pointer to the seed script from "Start the app". The server's watch mode was checked after a clean `npm ci`: it starts, and a changed file restarts the API and its database. An earlier crash with `ERR_MODULE_NOT_FOUND` came from `node_modules` damaged by an interrupted folder move, not from the script.
+- README: a troubleshooting table for `npm run dev:server` (a damaged `node_modules`, the embedded database already in use, a busy port), and a pointer to the seed script from "Start the app". The server's watch mode was checked after a clean `npm ci`: it starts, and a changed file restarts the API and its database. An earlier crash with `ERR_MODULE_NOT_FOUND` could not be reproduced afterwards, from Git Bash, PowerShell or `cmd`; it most likely came from `node_modules` damaged by an interrupted folder move.
 
 ### [2.13.0] - 2026-10-02: Phase 7 (Photo Check) · `1c386de`
 **Added**
