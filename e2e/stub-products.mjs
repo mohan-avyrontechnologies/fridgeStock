@@ -13,6 +13,13 @@ const PRODUCTS = {
     product_quantity: '1000',
     product_quantity_unit: 'ml',
   },
+  // A real EAN-13 (valid check digit).
+  5449000000996: {
+    product_name: 'Cola',
+    brands: 'Fizz Co',
+    product_quantity: '330',
+    product_quantity_unit: 'ml',
+  },
 };
 
 http

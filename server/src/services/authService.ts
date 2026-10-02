@@ -56,13 +56,17 @@ export async function login({ email, password, timeZone }: LoginInput): Promise<
   return { token: signToken(user.id), user: toUserView(user) };
 }
 
-export async function updateAccount(user: UserDoc, { name, timeZone, currency }: UpdateAccountInput): Promise<User> {
+export async function updateAccount(
+  user: UserDoc,
+  { name, timeZone, currency, savePhotos }: UpdateAccountInput,
+): Promise<User> {
   if (timeZone !== undefined && !isValidTimeZone(timeZone)) {
     throw new AppError(400, 'VALIDATION_ERROR', 'Time zone is not recognised.', 'timeZone');
   }
   if (name !== undefined) user.name = name;
   if (timeZone !== undefined) user.timeZone = timeZone;
   if (currency !== undefined) user.currency = currency;
+  if (savePhotos !== undefined) user.savePhotos = savePhotos;
   await user.save();
   return toUserView(user);
 }

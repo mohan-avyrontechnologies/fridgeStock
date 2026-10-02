@@ -13,12 +13,15 @@ import {
   type Unit,
 } from '@cook-first/shared';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
+import { CameraScreen } from '../components/CameraScreen';
 import { EstimateNote } from '../components/Urgency';
 import { Button, Chip, Field, FormError, Spinner } from '../components/ui';
-import { bulkCopy, receiptCopy, referenceCopy, storageLabel } from '../copy';
+import { bulkCopy, cameraCopy, productPhotoCopy, receiptCopy, referenceCopy, storageLabel } from '../copy';
+import { BlobThumb } from '../lib/foodPhoto';
+import { fieldsFor, type ScannedItem } from '../lib/scanned';
 import { photoForUpload } from '../lib/image';
 import { firstSuggestion, suggestFor } from '../lib/suggestions';
 import { check } from '../lib/validation';
@@ -37,6 +40,10 @@ interface Row {
   storage: StorageLocation;
   /** Optional: what the line cost. */
   price: string;
+  /** A note carried over from a scan (the brand). Not shown; it is saved with the food. */
+  notes?: string;
+  /** The photo taken for it, kept with the food when it is saved. */
+  photo?: Blob;
 }
 
 let nextKey = 0;
@@ -62,6 +69,20 @@ function rowFromReceipt(item: ReceiptItem, learned: LearnedLifespan[]): Row {
   const suggestion = firstSuggestion(item.name, learned);
   return suggestion ? { ...base, storage: suggestion.storage, lifespan: String(suggestion.days) } : base;
 }
+/** A row from a scanned product, with the usual lifespan and place for a food the catalog knows. */
+function rowFromScanned(item: ScannedItem, learned: LearnedLifespan[]): Row {
+  const fields = fieldsFor(item, learned);
+  return {
+    ...emptyRow(),
+    name: fields.name,
+    quantity: String(fields.quantity ?? 1),
+    unit: fields.unit ?? 'pcs',
+    lifespan: fields.lifespanDays === undefined ? '' : String(fields.lifespanDays),
+    storage: fields.storage ?? 'FRIDGE',
+    ...(fields.notes && { notes: fields.notes }),
+    ...(item.photo && { photo: item.photo }),
+  };
+}
 const toNumber = (value: string) => (value.trim() === '' ? undefined : Number(value));
 const isBlank = (row: Row) => !row.name.trim() && !row.lifespan.trim();
 
@@ -77,7 +98,17 @@ export function BulkAddPage() {
   const navigate = useNavigate();
   const listId = useId();
   const [addedDate, setAddedDate] = useState(today);
-  const [rows, setRows] = useState<Row[]>(() => [emptyRow(), emptyRow(), emptyRow()]);
+  // Several products scanned on Add Food arrive here as rows to check.
+  const scannedOnArrival = ((useLocation().state as { scanned?: ScannedItem[] } | null)?.scanned ??
+    []) as ScannedItem[];
+  const savePhotos = useAuthStore((s) => s.user?.savePhotos ?? true);
+  const [camera, setCamera] = useState(false);
+  const [fromScan, setFromScan] = useState(scannedOnArrival.length > 0);
+  const [rows, setRows] = useState<Row[]>(() =>
+    scannedOnArrival.length > 0
+      ? scannedOnArrival.map((item) => rowFromScanned(item, []))
+      : [emptyRow(), emptyRow(), emptyRow()],
+  );
   // Errors keyed by "<row key>.<field>", plus "form" and "addedDate".
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -101,7 +132,8 @@ export function BulkAddPage() {
     setReading(true);
     setErrors({});
     try {
-      const draft = await api.readReceipt(await photoForUpload(file));
+      const { mediaType, image } = await photoForUpload(file);
+      const draft = await api.readReceipt({ mediaType, image });
       if (draft.items.length === 0) {
         toast(receiptCopy.none);
         return;
@@ -149,6 +181,7 @@ export function BulkAddPage() {
         lifespanDays: toNumber(r.lifespan),
         storage: r.storage,
         price: r.price.trim() === '' ? undefined : Number(r.price),
+        notes: r.notes,
       })),
     };
     const { data, errors: found } = check(bulkCreateSchema, input);
@@ -158,7 +191,20 @@ export function BulkAddPage() {
     setBusy(true);
     try {
       const items = await addBulk(data as BulkCreateInput);
-      toast(bulkCopy.added(items.length));
+      // Photos go up once the food exists, in the order it was added. If one can't be kept the food is still saved.
+      let missed = false;
+      if (savePhotos) {
+        for (const [i, row] of filled.entries()) {
+          if (!row.photo || !items[i]) continue;
+          try {
+            await api.uploadFoodPhoto(items[i].id, row.photo);
+          } catch {
+            missed = true;
+          }
+        }
+        void useFoodStore.getState().refresh();
+      }
+      toast(missed ? productPhotoCopy.someNotKept : bulkCopy.added(items.length));
       navigate('/');
     } catch (err) {
       if (err instanceof ApiError && err.field) showErrors([err.field, err.message]);
@@ -179,8 +225,30 @@ export function BulkAddPage() {
     <>
       <PageHeader title={bulkCopy.title} subtitle={bulkCopy.subtitle} back="/add" />
       <PageBody narrow>
+        {camera && (
+          <CameraScreen
+            onClose={() => setCamera(false)}
+            onDone={(items) => {
+              setCamera(false);
+              setFromScan(true);
+              setRows((prev) => [
+                ...prev.filter((row) => !isBlank(row)),
+                ...items.map((item) => rowFromScanned(item, learned)),
+              ]);
+            }}
+          />
+        )}
         <form onSubmit={submit} className="space-y-5" noValidate>
           <FormError message={errors.form ?? null} />
+
+          {fromScan && (
+            <p className="rounded-xl bg-brand-soft px-3.5 py-3 text-sm text-ink">
+              {cameraCopy.fromScan(filled.length)}
+            </p>
+          )}
+          <Button type="button" variant="secondary" className="w-full" onClick={() => setCamera(true)}>
+            {cameraCopy.scanMore}
+          </Button>
 
           {aiEnabled && (
             <section aria-labelledby="receipt-title" className="space-y-2 rounded-2xl border border-line bg-card p-4">
@@ -241,6 +309,13 @@ export function BulkAddPage() {
               return (
                 <li key={row.key} className="space-y-2 rounded-2xl border border-line bg-card p-3">
                   <div className="flex items-center gap-2">
+                    {row.photo && (
+                      <BlobThumb
+                        blob={row.photo}
+                        alt={`Photo of ${row.name || label}`}
+                        className="size-11 shrink-0 rounded-lg object-cover"
+                      />
+                    )}
                     <input
                       aria-label={`${label} name`}
                       list={listId}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { api, ApiError } from '../api/client';
 import type { Favourite, FoodItem } from '@cook-first/shared';
@@ -7,6 +7,8 @@ import { PageBody, PageHeader } from '../components/AppShell';
 import { MoveSheet, OpenSheet } from '../components/EstimateSheets';
 import { FoodForm } from '../components/FoodForm';
 import { PhotoCheck } from '../components/PhotoCheck';
+import { FoodPhoto } from '../lib/foodPhoto';
+import { photoForUpload } from '../lib/image';
 import { EstimateNote, UrgencyBadge } from '../components/Urgency';
 import { Button, EmptyState, Spinner } from '../components/ui';
 import {
@@ -16,6 +18,7 @@ import {
   leftoverCopy,
   moveCopy,
   openCopy,
+  productPhotoCopy,
   storageLabel,
   historyActionLabel,
   pastExpectedExpiryNote,
@@ -35,6 +38,8 @@ export function FoodDetailPage() {
   const update = useFoodStore((s) => s.update);
   const toast = useToastStore((s) => s.show);
   const currency = useAuthStore((s) => s.user?.currency) ?? 'USD';
+  const savePhotos = useAuthStore((s) => s.user?.savePhotos ?? true);
+  const photoInput = useRef<HTMLInputElement>(null);
   const [food, setFood] = useState<FoodItem | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -70,6 +75,31 @@ export function FoodDetailPage() {
       toast(openCopy.undone(food.name));
     } catch (err) {
       toast(err instanceof ApiError ? err.message : 'Something went wrong. Try again.');
+    }
+  }
+
+  /** A photo from the camera or the files, scaled in the browser; it replaces the item's photo. */
+  async function changePhoto(file: File) {
+    if (!food) return;
+    try {
+      const { blob } = await photoForUpload(file);
+      setFood(await api.uploadFoodPhoto(food.id, blob));
+      toast(productPhotoCopy.saved);
+    } catch (err) {
+      toast(err instanceof ApiError || err instanceof Error ? err.message : productPhotoCopy.error);
+    } finally {
+      if (photoInput.current) photoInput.current.value = '';
+    }
+  }
+
+  async function removePhoto() {
+    if (!food) return;
+    try {
+      await api.removeFoodPhoto(food.id);
+      setFood({ ...food, photoAt: null });
+      toast(productPhotoCopy.removed);
+    } catch (err) {
+      toast(err instanceof ApiError ? err.message : productPhotoCopy.error);
     }
   }
 
@@ -178,6 +208,15 @@ export function FoodDetailPage() {
         ) : (
           <>
             <section className="rounded-2xl border border-line bg-card p-4">
+              {food.photoAt && (
+                <FoodPhoto
+                  foodId={food.id}
+                  photoAt={food.photoAt}
+                  name={food.name}
+                  size="full"
+                  className="mb-4 aspect-[4/3] w-full rounded-xl object-cover"
+                />
+              )}
               {active && food.urgency !== null && food.remainingDays !== null ? (
                 <>
                   <UrgencyBadge urgency={food.urgency} />
@@ -249,7 +288,34 @@ export function FoodDetailPage() {
                     {moveCopy.button}
                   </Button>
                 </div>
-                <PhotoCheck mode="item" food={food} onWaste={() => close('WASTED')} onFoodChanged={setFood} />
+                <input
+                  ref={photoInput}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  aria-label={productPhotoCopy.inputLabel}
+                  className="sr-only"
+                  tabIndex={-1}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) void changePhoto(file);
+                  }}
+                />
+                {(savePhotos || food.photoAt) && (
+                  <div className="grid grid-cols-2 gap-2">
+                    {savePhotos && (
+                      <Button variant="secondary" onClick={() => photoInput.current?.click()}>
+                        {food.photoAt ? productPhotoCopy.change : productPhotoCopy.add}
+                      </Button>
+                    )}
+                    {food.photoAt && (
+                      <Button variant="secondary" onClick={removePhoto}>
+                        {productPhotoCopy.remove}
+                      </Button>
+                    )}
+                  </div>
+                )}
+                <PhotoCheck food={food} onWaste={() => close('WASTED')} onFoodChanged={setFood} />
                 <div className="grid grid-cols-2 gap-2">
                   <Button variant="ghost" onClick={() => setEditing(true)}>
                     Edit

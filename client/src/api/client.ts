@@ -73,7 +73,9 @@ export function configureApi(options: { getToken: () => string | null; onUnauthe
 /** `explicitToken` is for calls made while signing out, after the stored token is cleared. */
 async function request<T>(method: string, path: string, body?: unknown, explicitToken?: string): Promise<T> {
   const headers: Record<string, string> = {};
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  // A form (a photo upload) sets its own content type, with the boundary the browser makes.
+  const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
+  if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
   const token = explicitToken ?? getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
 
@@ -82,7 +84,7 @@ async function request<T>(method: string, path: string, body?: unknown, explicit
     res = await fetch(`${API_URL}${path}`, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
     });
   } catch {
     throw new ApiError(0, 'NETWORK', 'Can’t reach the server. Check your connection and try again.');
@@ -102,6 +104,25 @@ async function request<T>(method: string, path: string, body?: unknown, explicit
 const browserTimeZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 /** One function per API endpoint. */
+/**
+ * A product photo as a Blob. Photos are private, so this sends the login token (an <img> tag can't);
+ * `version` is the photo's time stamp, so a replaced photo isn't served from the browser's cache.
+ */
+async function requestPhoto(id: string, size: 'thumb' | 'full', version: string): Promise<Blob> {
+  const token = getToken();
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}/foods/${id}/photo?size=${size}&v=${encodeURIComponent(version)}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+  } catch {
+    throw new ApiError(0, 'NETWORK', 'Can’t reach the server. Check your connection and try again.');
+  }
+  if (res.status === 401 && token) onUnauthenticated();
+  if (!res.ok) throw new ApiError(res.status, 'NOT_FOUND', 'That photo isn’t available.');
+  return res.blob();
+}
+
 export const api = {
   // POST /auth/register
   register: (body: { name: string; email: string; password: string }) =>
@@ -190,6 +211,19 @@ export const api = {
 
   // POST /foods/:id/use-today
   useToday: (id: string) => request<FoodItem>('POST', `/foods/${id}/use-today`),
+
+  // POST /foods/:id/photo
+  uploadFoodPhoto: (id: string, photo: Blob) => {
+    const form = new FormData();
+    form.append('photo', photo, 'photo.jpg');
+    return request<FoodItem>('POST', `/foods/${id}/photo`, form);
+  },
+
+  // GET /foods/:id/photo
+  foodPhoto: (id: string, size: 'thumb' | 'full', version: string) => requestPhoto(id, size, version),
+
+  // DELETE /foods/:id/photo
+  removeFoodPhoto: (id: string) => request<void>('DELETE', `/foods/${id}/photo`),
 
   // GET /insights
   insights: () => request<Insights>('GET', '/insights'),

@@ -24,6 +24,7 @@ export function toUserView(user: UserDoc): User {
     email: user.email,
     timeZone: user.timeZone,
     currency: user.currency ?? 'USD',
+    savePhotos: user.savePhotos ?? true,
     notificationPreferences: { approachingExpiry: prefs.approachingExpiry, due: prefs.due, overdue: prefs.overdue },
     reminderDelivery: { mode: user.reminderDelivery.mode, hour: user.reminderDelivery.hour },
   };
@@ -51,6 +52,7 @@ export function toFoodView(doc: FoodItemDoc, today: DateString): FoodItem {
     openedDate: doc.openedDate ?? null,
     leftover: doc.leftover ?? false,
     price: currentPrice(doc),
+    photoAt: doc.photoAt ? doc.photoAt.toISOString() : null,
     status: doc.status,
     remainingDays,
     urgency: remainingDays === null ? null : classifyUrgency(remainingDays),

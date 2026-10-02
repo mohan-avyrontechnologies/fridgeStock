@@ -94,6 +94,7 @@ function renderAddWithState(state: unknown) {
       email: 'asha@example.com',
       timeZone: 'UTC',
       currency: 'USD',
+      savePhotos: true,
       notificationPreferences: { approachingExpiry: true, due: true, overdue: true },
       reminderDelivery: { mode: 'DIGEST', hour: 8 },
     },

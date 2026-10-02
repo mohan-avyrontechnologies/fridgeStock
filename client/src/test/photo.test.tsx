@@ -6,7 +6,6 @@ import type { PhotoCheck } from '@cook-first/shared';
 import { API_URL } from '../api/client';
 import { item } from '../mocks/handlers';
 import { server } from '../mocks/server';
-import { AddFoodPage } from '../pages/AddFoodPage';
 import { FoodDetailPage } from '../pages/FoodDetailPage';
 import { HouseholdPage } from '../pages/HouseholdPage';
 import { useAiStore } from '../stores/aiStore';
@@ -15,7 +14,7 @@ import { renderSignedIn } from './render';
 // The browser's canvas and image decoding aren't in the test environment; the real function is covered elsewhere.
 vi.mock('../lib/image', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../lib/image')>()),
-  photoForUpload: vi.fn(async () => ({ mediaType: 'image/jpeg' as const, image: 'QUJD' })),
+  photoForUpload: vi.fn(async () => ({ mediaType: 'image/jpeg' as const, image: 'QUJD', blob: new Blob(['x']) })),
 }));
 
 /** Phase 7: Photo Check. The API is faked with MSW; the AI's answers are canned. */
@@ -66,9 +65,10 @@ function answers(result: PhotoCheck | { status: number }) {
 describe('availability: a feature flag, and AI', () => {
   it('shows no photo controls when the flag is off, even with AI on', async () => {
     status(true, false);
-    renderSignedIn('/add', <AddFoodPage />);
-    expect(await screen.findByLabelText('Food')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Identify from a photo' })).not.toBeInTheDocument();
+    server.use(http.get(`${API_URL}/foods/p1`, () => HttpResponse.json(item({ id: 'p1' }))));
+    renderSignedIn('/food/p1', <FoodDetailPage />, '/food/:id');
+    expect(await screen.findByRole('region', { name: 'Actions' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Check with photo' })).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Food photo')).not.toBeInTheDocument();
   });
 
@@ -78,94 +78,6 @@ describe('availability: a feature flag, and AI', () => {
     renderSignedIn('/food/p1', <FoodDetailPage />, '/food/:id');
     expect(await screen.findByRole('region', { name: 'Actions' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Check with photo' })).not.toBeInTheDocument();
-  });
-});
-
-describe('Photo Check on Add Food', () => {
-  it('pre-fills the name and the usual lifespan when it is sure', async () => {
-    const user = userEvent.setup();
-    const bodies = answers(milk);
-    renderSignedIn('/add', <AddFoodPage />);
-    await user.upload(await screen.findByLabelText('Food photo'), photo());
-    await waitFor(() => expect(screen.getByLabelText('Food')).toHaveValue('Milk'));
-    expect(bodies).toEqual([{ mediaType: 'image/jpeg', image: 'QUJD' }]); // an item not at home yet: no food id
-    expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(5);
-    expect(screen.getByLabelText('Unit')).toHaveValue('l');
-    expect(await screen.findByText(/Looks like Milk\. Check the details/)).toBeInTheDocument();
-  });
-
-  it('leaves the lifespan blank for a food it does not know', async () => {
-    const user = userEvent.setup();
-    answers({ ...milk, name: 'Zorblax', category: 'unknown' });
-    renderSignedIn('/add', <AddFoodPage />);
-    await user.upload(await screen.findByLabelText('Food photo'), photo());
-    await waitFor(() => expect(screen.getByLabelText('Food')).toHaveValue('Zorblax'));
-    expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(null);
-  });
-
-  it('asks you to type the name when it is not sure enough (below 0.6), and pre-fills nothing', async () => {
-    const user = userEvent.setup();
-    answers({ ...milk, confidence: 0.59 });
-    renderSignedIn('/add', <AddFoodPage />);
-    await user.upload(await screen.findByLabelText('Food photo'), photo());
-    expect(
-      await screen.findByText('I couldn’t tell what this is from the photo. Type the name instead.'),
-    ).toBeInTheDocument();
-    expect(screen.getByLabelText('Food')).toHaveValue('');
-    expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(null);
-  });
-
-  it('uses the name from exactly 0.6 up', async () => {
-    const user = userEvent.setup();
-    answers({ ...milk, confidence: 0.6 });
-    renderSignedIn('/add', <AddFoodPage />);
-    await user.upload(await screen.findByLabelText('Food photo'), photo());
-    await waitFor(() => expect(screen.getByLabelText('Food')).toHaveValue('Milk'));
-  });
-
-  it('keeps the name editable after it is filled in', async () => {
-    const user = userEvent.setup();
-    answers(milk);
-    renderSignedIn('/add', <AddFoodPage />);
-    await user.upload(await screen.findByLabelText('Food photo'), photo());
-    await waitFor(() => expect(screen.getByLabelText('Food')).toHaveValue('Milk'));
-    await user.type(screen.getByLabelText('Food'), ' (oat)');
-    expect(screen.getByLabelText('Food')).toHaveValue('Milk (oat)');
-  });
-
-  it('says nothing about condition when no warning signs are found', async () => {
-    const user = userEvent.setup();
-    answers(milk);
-    renderSignedIn('/add', <AddFoodPage />);
-    await user.upload(await screen.findByLabelText('Food photo'), photo());
-    await waitFor(() => expect(screen.getByLabelText('Food')).toHaveValue('Milk'));
-    expect(screen.queryByText(/Visible signs noticed/)).not.toBeInTheDocument();
-    expect(screen.queryByRole('group', { name: 'Visible signs noticed' })).not.toBeInTheDocument();
-    expect(document.body.textContent).not.toMatch(
-      /\b(fine|fresh|normal|good condition|no problems?|looks good|okay)\b/i,
-    );
-  });
-
-  it('shows the warning with only a Dismiss button, since there is no item to waste yet', async () => {
-    const user = userEvent.setup();
-    answers(mouldy);
-    renderSignedIn('/add', <AddFoodPage />);
-    await user.upload(await screen.findByLabelText('Food photo'), photo());
-    const group = await screen.findByRole('group', { name: 'Visible signs noticed' });
-    expect(within(group).getByText(SIGNS_SENTENCE('green patches on the crust; dark spots'))).toBeInTheDocument();
-    expect(within(group).queryByRole('button', { name: 'Mark as wasted' })).not.toBeInTheDocument();
-    expect(within(group).queryByRole('button', { name: 'Use today' })).not.toBeInTheDocument();
-    await user.click(within(group).getByRole('button', { name: 'Dismiss' }));
-    expect(screen.queryByRole('group', { name: 'Visible signs noticed' })).not.toBeInTheDocument();
-  });
-
-  it('shows the message from the server when the photo cannot be checked', async () => {
-    const user = userEvent.setup();
-    answers({ status: 503 });
-    renderSignedIn('/add', <AddFoodPage />);
-    await user.upload(await screen.findByLabelText('Food photo'), photo());
-    expect(await screen.findByText('Couldn’t get suggestions right now. Try again later.')).toBeInTheDocument();
-    expect(screen.getByLabelText('Food')).toHaveValue('');
   });
 });
 

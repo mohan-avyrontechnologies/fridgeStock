@@ -18,6 +18,8 @@ export interface User {
   passwordHash: string;
   timeZone: string;
   currency: Currency;
+  /** Keep a photo with each food item added by camera. */
+  savePhotos: boolean;
   notificationPreferences: NotificationPreferences;
   /** Every user starts in their own household; shared households (a later phase) will reuse it. */
   householdId: Types.ObjectId;
@@ -34,6 +36,7 @@ const userSchema = new Schema<User>(
     // IANA zone used to decide which calendar day is "today" for this user.
     timeZone: { type: String, required: true, default: 'UTC' },
     currency: { type: String, enum: CURRENCIES, default: 'USD' },
+    savePhotos: { type: Boolean, default: true },
     notificationPreferences: {
       approachingExpiry: { type: Boolean, default: true },
       due: { type: Boolean, default: true },

@@ -14,6 +14,7 @@ export function renderSignedIn(path: string, element: ReactElement, routePath = 
       email: 'asha@example.com',
       timeZone: 'UTC',
       currency: 'USD',
+      savePhotos: true,
       notificationPreferences: { approachingExpiry: true, due: true, overdue: true },
       reminderDelivery: { mode: 'DIGEST', hour: 8 },
     },

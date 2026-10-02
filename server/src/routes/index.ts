@@ -20,6 +20,8 @@ import {
   deleteAccountSchema,
   joinHouseholdSchema,
   photoCheckSchema,
+  photoSizeSchema,
+  PRODUCT_PHOTO_MAX_BYTES,
   receiptSchema,
   updateAccountSchema,
   updateFoodSchema,
@@ -28,6 +30,7 @@ import {
 } from '@cook-first/shared';
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
+import multer from 'multer';
 import { aiController } from '../controllers/aiController.js';
 import { authController } from '../controllers/authController.js';
 import { favouriteController } from '../controllers/favouriteController.js';
@@ -41,6 +44,7 @@ import { accountController } from '../controllers/accountController.js';
 import { householdController } from '../controllers/householdController.js';
 import { insightsController } from '../controllers/insightsController.js';
 import { usageController } from '../controllers/usageController.js';
+import { foodPhotoController } from '../controllers/foodPhotoController.js';
 import { productController } from '../controllers/productController.js';
 import { requireAuth } from '../middleware/auth.js';
 import { validate } from '../middleware/validate.js';
@@ -90,6 +94,23 @@ const scanLimiter = rateLimit({
   message: { error: { code: 'RATE_LIMITED', message: 'Too many attempts. Try again later.' } },
 });
 
+/** Product photo uploads: 60 per 15 minutes per IP address (a big shop is a few dozen items). */
+export const PHOTO_UPLOAD_RATE_LIMIT = { windowMs: 15 * 60 * 1000, limit: 60 };
+
+const photoUploadLimiter = rateLimit({
+  ...PHOTO_UPLOAD_RATE_LIMIT,
+  skip: () => process.env.AUTH_RATE_LIMIT === 'off',
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  message: { error: { code: 'RATE_LIMITED', message: 'Too many photos. Try again later.' } },
+});
+
+/** One photo, held in memory (never written to disk) and capped at 5 MB. */
+const photoUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: PRODUCT_PHOTO_MAX_BYTES, files: 1, fields: 0 },
+});
+
 // "Used" and "Snooze" inside a push notification. The service worker has no
 // login token; the body carries a single-item action token instead.
 router.post('/push/actions', pushActionLimiter, validate(pushActionSchema), pushController.action);
@@ -122,6 +143,9 @@ router.post('/foods/:id/use', validate(useFoodSchema), foodController.use);
 router.post('/foods/:id/waste', validate(wasteFoodSchema), foodController.waste);
 router.post('/foods/:id/undo', foodController.undo);
 router.post('/foods/:id/use-today', foodController.useToday);
+router.post('/foods/:id/photo', photoUploadLimiter, photoUpload.single('photo'), foodPhotoController.upload);
+router.get('/foods/:id/photo', validate(photoSizeSchema, 'query'), foodPhotoController.get);
+router.delete('/foods/:id/photo', foodPhotoController.remove);
 router.post('/foods/:id/open', validate(openFoodSchema), foodController.open);
 router.delete('/foods/:id/open', foodController.undoOpen);
 router.post('/foods/:id/move', validate(moveFoodSchema), foodController.move);

@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import { MESSAGES } from '@cook-first/shared';
 import mongoose from 'mongoose';
 import { AppError } from '../services/errors.js';
 
@@ -23,6 +24,18 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
   }
   if (err instanceof SyntaxError && 'body' in err) {
     res.status(400).json({ error: { code: 'VALIDATION_ERROR', message: 'Request body is not valid JSON.' } });
+    return;
+  }
+  // An upload the file parser refused: too big, or not one file called "photo".
+  if (typeof err === 'object' && err !== null && (err as { name?: string }).name === 'MulterError') {
+    const tooBig = (err as { code?: string }).code === 'LIMIT_FILE_SIZE';
+    res.status(tooBig ? 413 : 400).json({
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: tooBig ? MESSAGES.photoTooBig : MESSAGES.photoMissing,
+        field: 'photo',
+      },
+    });
     return;
   }
   // A request body over the size limit: say so, rather than a 500.

@@ -11,6 +11,7 @@ import {
 import { Types } from 'mongoose';
 import { HOUSEHOLD_MAX_MEMBERS, INVITE_DAYS, MAX_OPEN_INVITES } from '../config/household.js';
 import { FoodItemModel } from '../models/FoodItem.js';
+import { movePhotos } from '../models/FoodPhoto.js';
 import { HouseholdEventModel } from '../models/HouseholdEvent.js';
 import { InviteModel, type InviteDoc } from '../models/Invite.js';
 import { MealPlanEntryModel } from '../models/MealPlanEntry.js';
@@ -112,6 +113,7 @@ export async function joinHousehold(user: UserDoc, { code }: JoinHouseholdInput)
     throw validationError(MESSAGES.inviteInvalid, 'code');
   }
 
+  await movePhotos({ householdId: from }, target); // their food's photos come along
   // The meal plan has one meal a day: where both have one, the household's stays.
   const taken = await MealPlanEntryModel.distinct('date', { householdId: target });
   await MealPlanEntryModel.deleteMany({ householdId: from, date: { $in: taken } });
@@ -148,6 +150,7 @@ export async function leaveHousehold(user: UserDoc): Promise<Household> {
 
   const mine = await FoodItemModel.find({ householdId: from, userId: user._id }, { _id: 1 });
   const foodIds: Types.ObjectId[] = mine.map((food) => food._id as Types.ObjectId);
+  await movePhotos({ foodIds }, to); // and so do the photos of what they added
   await Promise.all([
     FoodItemModel.updateMany({ householdId: from, userId: user._id }, { $set: { householdId: to } }),
     UsageRecordModel.updateMany({ householdId: from, foodId: { $in: foodIds } }, { $set: { householdId: to } }),

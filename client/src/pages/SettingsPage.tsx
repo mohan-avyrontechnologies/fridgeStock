@@ -7,7 +7,7 @@ import { PushReminders } from '../components/PushReminders';
 import { YourData } from '../components/YourData';
 import { EstimateNote } from '../components/Urgency';
 import { Button, Chip } from '../components/ui';
-import { appearanceCopy, insightsCopy, reminderPreferenceCopy, screenCopy } from '../copy';
+import { appearanceCopy, insightsCopy, productPhotoCopy, reminderPreferenceCopy, screenCopy } from '../copy';
 import { useAuthStore } from '../stores/authStore';
 import { useThemeStore, type Theme } from '../stores/themeStore';
 import { useToastStore } from '../stores/toastStore';
@@ -41,6 +41,15 @@ export function SettingsPage() {
     } catch {
       setPrefs(prefs);
       toast('Couldn’t save that. Try again.');
+    }
+  }
+
+  async function changeSavePhotos(savePhotos: boolean) {
+    try {
+      const { user: updated } = await api.updateMe({ savePhotos });
+      setUser(updated);
+    } catch {
+      toast(productPhotoCopy.settingError);
     }
   }
 
@@ -145,6 +154,29 @@ export function SettingsPage() {
               </Chip>
             ))}
           </div>
+        </section>
+
+        <section aria-labelledby="photos-title">
+          <h2 id="photos-title" className="mb-1 text-lg font-semibold">
+            {productPhotoCopy.settingTitle}
+          </h2>
+          <label className="flex min-h-16 cursor-pointer items-center gap-4 rounded-2xl border border-line bg-card px-4 py-3">
+            <span className="flex-1">
+              <span className="block font-medium">{productPhotoCopy.settingLabel}</span>
+              <span className="block text-sm text-muted">{productPhotoCopy.settingHint}</span>
+            </span>
+            <input
+              type="checkbox"
+              role="switch"
+              className="peer sr-only"
+              checked={user?.savePhotos ?? true}
+              onChange={(e) => changeSavePhotos(e.target.checked)}
+            />
+            <span
+              aria-hidden
+              className="relative h-7 w-12 shrink-0 rounded-full bg-line transition-colors peer-checked:bg-brand peer-focus-visible:outline-2 peer-focus-visible:outline-brand after:absolute after:top-1 after:left-1 after:size-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5"
+            />
+          </label>
         </section>
 
         <PushReminders />

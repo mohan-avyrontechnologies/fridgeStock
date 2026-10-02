@@ -1,14 +1,14 @@
-import type { Favourite, PhotoCheck as PhotoCheckResult, ProductLookup } from '@cook-first/shared';
+import type { Favourite } from '@cook-first/shared';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { BarcodeScanner } from '../components/BarcodeScanner';
-import { PhotoCheck } from '../components/PhotoCheck';
+import { CameraScreen } from '../components/CameraScreen';
 import { FoodForm } from '../components/FoodForm';
 import { Button, Chip } from '../components/ui';
-import { bulkCopy, favouriteCopy, scanCopy } from '../copy';
-import { firstSuggestion } from '../lib/suggestions';
+import { bulkCopy, cameraCopy, favouriteCopy, photoCopy, productPhotoCopy } from '../copy';
+import { fieldsFor, type ScannedFields, type ScannedItem } from '../lib/scanned';
+import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
 import { useSuggestionStore } from '../stores/suggestionStore';
 import { useToastStore } from '../stores/toastStore';
@@ -17,13 +17,19 @@ export function AddFoodPage() {
   const add = useFoodStore((s) => s.add);
   const addFavourite = useFoodStore((s) => s.addFavourite);
   const toast = useToastStore((s) => s.show);
+  const savePhotos = useAuthStore((s) => s.user?.savePhotos ?? true);
   const navigate = useNavigate();
   // Leftovers saved from a recipe idea arrive with a name and the leftovers box ticked.
   const prefill = (useLocation().state ?? undefined) as { name?: string; leftover?: boolean } | undefined;
   const [favourites, setFavourites] = useState<Favourite[]>([]);
-  const [scanning, setScanning] = useState(false);
-  // A scanned product pre-fills the form; a new key starts the form again from it.
-  const [scanned, setScanned] = useState<{ key: number; prefill: NonNullable<typeof prefill> } | null>(null);
+  const [camera, setCamera] = useState(false);
+  // One scanned product pre-fills the form; a new key starts the form again from it.
+  const [scanned, setScanned] = useState<{ key: number; fields: ScannedFields } | null>(null);
+  // The photo taken for it, kept to save with the food once the food is saved.
+  const [photo, setPhoto] = useState<Blob | null>(null);
+  const [signs, setSigns] = useState<string[] | null>(null);
+  const learned = useSuggestionStore((s) => s.learned);
+  const loadLearned = useSuggestionStore((s) => s.load);
 
   useEffect(() => {
     let current = true;
@@ -36,35 +42,22 @@ export function AddFoodPage() {
     };
   }, []);
 
-  const learned = useSuggestionStore((s) => s.learned);
-  const loadLearned = useSuggestionStore((s) => s.load);
   useEffect(() => {
     void loadLearned();
   }, [loadLearned]);
 
-  /** A confident photo identification pre-fills the name and, if it is a known food, its usual lifespan and place. */
-  function applyPhoto(check: PhotoCheckResult) {
-    const suggestion = firstSuggestion(check.name, learned);
-    setScanned((previous) => ({
-      key: (previous?.key ?? 0) + 1,
-      prefill: {
-        name: check.name,
-        ...(suggestion && { lifespanDays: suggestion.days, storage: suggestion.storage, unit: suggestion.unit }),
-      },
-    }));
-  }
-
-  function applyProduct(product: ProductLookup) {
-    setScanned((previous) => ({
-      key: (previous?.key ?? 0) + 1,
-      prefill: {
-        name: product.name ?? '',
-        ...(product.quantity !== null && product.unit !== null && { quantity: product.quantity, unit: product.unit }),
-        ...(product.brand && { notes: product.brand }),
-      },
-    }));
-    setScanning(false);
-    toast(scanCopy.found(product.name ?? ''));
+  /** Back from the camera: one product fills in this form; several become a Bulk Add list. */
+  function finishCamera(items: ScannedItem[]) {
+    setCamera(false);
+    if (items.length === 1) {
+      const [item] = items as [ScannedItem];
+      setScanned((previous) => ({ key: (previous?.key ?? 0) + 1, fields: fieldsFor(item, learned) }));
+      setPhoto(item.photo ?? null);
+      setSigns(item.signs ?? null);
+      toast(cameraCopy.foundOne(item.name));
+    } else if (items.length > 1) {
+      navigate('/add/bulk', { state: { scanned: items } });
+    }
   }
 
   /** One tap re-adds a favourite, added today. */
@@ -81,6 +74,15 @@ export function AddFoodPage() {
     <>
       <PageHeader title="Add food" back="/" />
       <PageBody narrow>
+        {/* The camera is the first way in; typing it in yourself is just below. */}
+        <section aria-label={cameraCopy.title} className="space-y-1">
+          <Button className="w-full" onClick={() => setCamera(true)}>
+            {cameraCopy.open}
+          </Button>
+          <p className="text-center text-sm text-muted">{cameraCopy.or}</p>
+        </section>
+        {camera && <CameraScreen onDone={finishCamera} onClose={() => setCamera(false)} />}
+
         {favourites.length > 0 && (
           <section aria-labelledby="favourites-heading">
             <h2 id="favourites-heading" className="text-sm font-semibold text-ink">
@@ -97,25 +99,41 @@ export function AddFoodPage() {
           </section>
         )}
 
-        {scanning ? (
-          <BarcodeScanner onFound={applyProduct} onClose={() => setScanning(false)} />
-        ) : (
-          <Button variant="secondary" onClick={() => setScanning(true)}>
-            {scanCopy.open}
-          </Button>
+        {signs && (
+          <div
+            role="group"
+            aria-label={photoCopy.signsRegion}
+            className="space-y-2 rounded-2xl bg-soon px-4 py-3 text-soon-ink"
+          >
+            <p>{photoCopy.signs(signs)}</p>
+            <Button variant="ghost" onClick={() => setSigns(null)}>
+              {photoCopy.dismiss}
+            </Button>
+          </div>
         )}
-
-        <PhotoCheck mode="add" onIdentified={applyPhoto} />
 
         <FoodForm
           key={scanned?.key ?? 0}
-          prefill={scanned?.prefill ?? prefill}
+          prefill={scanned?.fields ?? prefill}
           submitLabel="Save"
           allowAddAnother
           autoFocus
           onSubmit={async (input, addAnother) => {
-            await add(input);
-            toast(`Added ${input.name}`);
+            const saved = await add(input);
+            // The photo goes up once the food exists. If it can't be kept, the food is still saved.
+            let kept = true;
+            if (photo && savePhotos) {
+              try {
+                await api.uploadFoodPhoto(saved.id, photo);
+                void useFoodStore.getState().refresh();
+              } catch {
+                kept = false;
+              }
+            }
+            setPhoto(null);
+            setSigns(null);
+            // One message: the toast shows a single line, so a lost photo must not be covered by "Added".
+            toast(kept ? `Added ${input.name}` : productPhotoCopy.notKept);
             if (!addAnother) navigate('/');
           }}
         />

@@ -662,28 +662,31 @@ test('phase 6: scanning a barcode fills in the form, and a receipt photo becomes
   await register(page, 'Kiran Rao');
   await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
 
-  // The camera isn't used in tests: the number under the barcode is typed instead.
-  await page.getByRole('button', { name: 'Scan a barcode' }).click();
-  const panel = page.getByRole('region', { name: 'Scan a barcode' });
-  await panel.getByLabel('Or type the number under the barcode').fill('4006381333932');
-  await panel.getByRole('button', { name: 'Look up' }).click();
-  await expect(panel.getByText('Enter the 8 to 14 digits printed under the barcode.')).toBeVisible();
+  // The test browser has no camera, so the camera screen says so and the number is typed instead.
+  await page.getByRole('button', { name: 'Use the camera' }).click();
+  const camera = page.getByRole('dialog', { name: 'Camera' });
+  await expect(camera.getByText(/The camera isn’t available/)).toBeVisible();
+  await camera.getByLabel('Or type the number under the barcode').fill('4006381333932');
+  await camera.getByRole('button', { name: 'Look up' }).click();
+  await expect(camera.getByText('Enter the 8 to 14 digits printed under the barcode.')).toBeVisible();
 
   // A valid number that is not in the product list.
-  await panel.getByLabel('Or type the number under the barcode').fill('96385074');
-  await panel.getByRole('button', { name: 'Look up' }).click();
-  await expect(panel.getByText('That barcode isn’t in the product list. Type the name instead.')).toBeVisible();
-  await expect(page.getByLabel('Food', { exact: true })).toHaveValue('');
+  await camera.getByLabel('Or type the number under the barcode').fill('96385074');
+  await camera.getByRole('button', { name: 'Look up' }).click();
+  await expect(camera.getByText(/That barcode isn’t in the product list/)).toBeVisible();
+  await expect(camera.getByText('Scanned so far')).toHaveCount(0);
   await shot(page, '21-barcode');
 
-  // A product it knows fills in the form (spaces and dashes are fine).
-  await panel.getByLabel('Or type the number under the barcode').fill('4006 3813-33931');
-  await panel.getByRole('button', { name: 'Look up' }).click();
+  // A product it knows goes on the list (spaces and dashes are fine), then fills in the form.
+  await camera.getByLabel('Or type the number under the barcode').fill('4006 3813-33931');
+  await camera.getByRole('button', { name: 'Look up' }).click();
+  await expect(camera.getByText('Added Whole milk. Scan the next one, or finish below.')).toBeVisible();
+  await camera.getByRole('button', { name: 'Fill in Add Food' }).click();
+  await expect(page.getByRole('dialog', { name: 'Camera' })).toHaveCount(0);
   await expect(page.getByLabel('Food', { exact: true })).toHaveValue('Whole milk');
   await expect(page.getByLabel('Quantity')).toHaveValue('1000');
   await expect(page.getByLabel('Unit')).toHaveValue('ml');
   await expect(page.getByLabel(/Notes/)).toHaveValue('Acme Dairy');
-  await expect(page.getByRole('region', { name: 'Scan a barcode' })).toHaveCount(0);
 
   // How long it lasts is still the person's choice.
   await page.getByLabel('Lifespan (days)').fill('5');
@@ -716,28 +719,41 @@ test('phase 7: Photo Check names food on Add Food, and warns on Food Details wit
   await register(page, 'Tara Nair');
   await addFood(page, 'Bread', '5', 'pack');
 
-  // Add Food: a confident photo pre-fills the name and the usual lifespan; the name stays editable.
+  // Add Food > camera > Take photo: a confident photo names the food, and the catalog suggests how long it lasts.
+  const openPhotoMode = async () => {
+    await page.getByRole('button', { name: 'Use the camera' }).click();
+    const camera = page.getByRole('dialog', { name: 'Camera' });
+    await camera.getByRole('tab', { name: 'Take photo' }).click();
+    await camera.getByLabel('Food photo').setInputFiles(PNG);
+    return camera;
+  };
   await nextPhoto('milk');
   await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
-  await page.getByLabel('Food photo').setInputFiles(PNG);
+  let camera = await openPhotoMode();
+  await expect(camera.getByText('Added Milk. Scan the next one, or finish below.')).toBeVisible();
+  await camera.getByRole('button', { name: 'Fill in Add Food' }).click();
   await expect(page.getByLabel('Food', { exact: true })).toHaveValue('Milk');
   await expect(page.getByLabel('Lifespan (days)')).toHaveValue('5');
-  await page.getByLabel('Food', { exact: true }).fill('Oat milk');
+  await page.getByLabel('Food', { exact: true }).fill('Oat milk'); // the name stays editable
   await expect(page.getByLabel('Food', { exact: true })).toHaveValue('Oat milk');
   // No warning signs: nothing is said about condition.
   await expect(page.getByText(/Visible signs noticed/)).toHaveCount(0);
 
-  // Not sure enough: it asks for the name instead of guessing.
+  // Not sure enough: it asks you to try again instead of guessing, and adds nothing.
   await nextPhoto('unsure');
   await page.reload();
-  await page.getByLabel('Food photo').setInputFiles(PNG);
-  await expect(page.getByText('I couldn’t tell what this is from the photo. Type the name instead.')).toBeVisible();
-  await expect(page.getByLabel('Food', { exact: true })).toHaveValue('');
+  camera = await openPhotoMode();
+  await expect(camera.getByText(/I couldn’t tell what this is from the photo/)).toBeVisible();
+  await expect(camera.getByText('Scanned so far')).toHaveCount(0);
+  await camera.getByRole('button', { name: 'Close' }).click();
 
-  // Add Food with a warning: shown, but only Dismiss (there is no item to waste yet).
+  // A photo with a warning: noted on the item in the list; on Add Food only Dismiss (there is no item to waste yet).
   await nextPhoto('mouldy');
-  await page.reload();
-  await page.getByLabel('Food photo').setInputFiles(PNG);
+  camera = await openPhotoMode();
+  await expect(
+    camera.getByText('Visible signs noticed: green patches on the crust; dark spots near the edge.'),
+  ).toBeVisible();
+  await camera.getByRole('button', { name: 'Fill in Add Food' }).click();
   const addWarning = page.getByRole('group', { name: 'Visible signs noticed' });
   await expect(addWarning).toContainText(
     'Visible signs noticed: green patches on the crust; dark spots near the edge.',
@@ -790,4 +806,84 @@ test('phase 7: Photo Check names food on Add Food, and warns on Food Details wit
   // The checks are in the household's activity log.
   await page.goto('/household');
   await expect(page.getByText('Tara Nair checked Bread with a photo').first()).toBeVisible();
+});
+
+test('phase 6: a photo is kept with the food, shown privately, removed on request, and several scans become a Bulk Add list', async ({
+  page,
+}) => {
+  await register(page, 'Neha Shah');
+  const takePhoto = async () => {
+    await page.getByRole('button', { name: 'Use the camera' }).click();
+    const camera = page.getByRole('dialog', { name: 'Camera' });
+    await camera.getByRole('tab', { name: 'Take photo' }).click();
+    await camera.getByLabel('Food photo').setInputFiles(PNG);
+    await camera.getByRole('button', { name: 'Fill in Add Food' }).click();
+  };
+
+  // Take a photo of milk on the camera screen and save the food: the photo is kept with it.
+  await nextPhoto('milk');
+  await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
+  await takePhoto();
+  await expect(page.getByLabel('Lifespan (days)')).toHaveValue('5');
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page).toHaveURL('/');
+
+  // A thumbnail on the card, fetched with the login token.
+  const card = allFood(page).filter({ hasText: 'Milk' });
+  await expect(card.getByRole('img', { name: 'Photo of Milk' })).toBeVisible();
+  const foodId = (await card.getByRole('link').first().getAttribute('href'))!.split('/').pop()!;
+
+  // Photos are never public: the same address without the login is refused.
+  const anonymous = await page.request.get(`http://localhost:4100/api/foods/${foodId}/photo?size=thumb`);
+  expect(anonymous.status()).toBe(401);
+
+  // Food Details shows the full photo; it can be removed, and added back.
+  await card.getByRole('link').first().click();
+  await expect(page.getByRole('img', { name: 'Photo of Milk' })).toBeVisible();
+  await page.getByRole('button', { name: 'Remove photo' }).click();
+  await expect(page.getByText('Photo removed')).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Photo of Milk' })).toHaveCount(0);
+  await page.getByLabel('Product photo').setInputFiles(PNG);
+  await expect(page.getByRole('img', { name: 'Photo of Milk' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Change photo' })).toBeVisible();
+
+  // With "Save product photos" off, a new photo is not kept and photos can't be added.
+  await openSettings(page);
+  await page.locator('label', { hasText: 'Save product photos' }).click();
+  await expect(page.getByRole('switch', { name: /Save product photos/ })).not.toBeChecked();
+  await page.getByRole('link', { name: 'Home', exact: true }).first().click();
+  await nextPhoto('mouldy');
+  await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
+  await takePhoto();
+  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page).toHaveURL('/');
+  await expect(allFood(page).filter({ hasText: 'Bread' })).toHaveCount(1);
+  await expect(allFood(page).filter({ hasText: 'Bread' }).getByRole('img')).toHaveCount(0);
+  await allFood(page).filter({ hasText: 'Bread' }).getByRole('link').first().click();
+  await expect(page.getByRole('button', { name: 'Add photo' })).toHaveCount(0);
+  await shot(page, '24-details');
+
+  // Several barcodes in a row make a Bulk Add list to check and put away together.
+  await page.goto('/add');
+  await page.getByRole('button', { name: 'Use the camera' }).click();
+  const camera = page.getByRole('dialog', { name: 'Camera' });
+  for (const [code, name] of [
+    ['4006381333931', 'Whole milk'],
+    ['5449000000996', 'Cola'],
+  ] as const) {
+    await camera.getByLabel('Or type the number under the barcode').fill(code);
+    await camera.getByRole('button', { name: 'Look up' }).click();
+    await expect(camera.getByText(`Added ${name}. Scan the next one, or finish below.`)).toBeVisible();
+  }
+  await camera.getByRole('button', { name: 'Add 2 items together' }).click();
+  await expect(page).toHaveURL('/add/bulk');
+  await expect(page.getByLabel('Item 1 name')).toHaveValue('Whole milk');
+  await expect(page.getByLabel('Item 2 name')).toHaveValue('Cola');
+  await expect(page.getByText('Added 2 scanned items. Check each one before saving.')).toBeVisible();
+  await page.getByLabel('Item 1 lifespan in days').fill('5');
+  await page.getByLabel('Item 2 lifespan in days').fill('90');
+  await page.getByRole('button', { name: 'Add 2 items' }).click();
+  await expect(page).toHaveURL('/');
+  await expect(allFood(page).filter({ hasText: 'Cola' })).toHaveCount(1);
+  await expectNoSafetyClaim(page);
 });

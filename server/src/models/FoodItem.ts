@@ -37,6 +37,8 @@ export interface FoodItem {
   leftover: boolean;
   /** What priceQuantity of this item cost; used only for money saved and lost on Insights. */
   price?: number | null;
+  /** When the item's photo was last set (null when it has none). The photo itself is in GridFS. */
+  photoAt?: Date | null;
   /** The quantity the price was for (the quantity when the price was entered). */
   priceQuantity?: number | null;
   /** The lifespan before "Opened" shortened it, so opening can be undone. */
@@ -90,6 +92,7 @@ const foodItemSchema = new Schema<FoodItem>(
     snoozedUntil: { type: String, default: null },
     leftover: { type: Boolean, default: false },
     price: { type: Number, default: null, min: 0, max: 100_000 },
+    photoAt: { type: Date, default: null },
     priceQuantity: { type: Number, default: null, min: 0 },
     enteredLifespanDays: { type: Number, required: true, min: 0, max: 365 },
     enteredStorage: { type: String, enum: STORAGE_LOCATIONS, required: true },

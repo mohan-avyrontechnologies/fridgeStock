@@ -20,7 +20,7 @@ function toBase64(bytes: Uint8Array): string {
  * JPEG base64 text for the server. A phone photo can be 10 MB; a receipt reads fine at this size.
  * Quality drops a step at a time if the result is still too big to send.
  */
-export async function photoForUpload(file: File): Promise<{ mediaType: 'image/jpeg'; image: string }> {
+export async function photoForUpload(file: File): Promise<{ mediaType: 'image/jpeg'; image: string; blob: Blob }> {
   // createImageBitmap applies the photo's rotation, so a sideways phone photo comes out upright.
   const bitmap = await createImageBitmap(file);
   const { width, height } = scaledSize(bitmap.width, bitmap.height, RECEIPT_MAX_SIDE);
@@ -34,7 +34,7 @@ export async function photoForUpload(file: File): Promise<{ mediaType: 'image/jp
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
     if (!blob) break;
     const image = toBase64(new Uint8Array(await blob.arrayBuffer()));
-    if (image.length <= MAX_RECEIPT_BASE64) return { mediaType: 'image/jpeg', image };
+    if (image.length <= MAX_RECEIPT_BASE64) return { mediaType: 'image/jpeg', image, blob };
   }
   throw new Error('That photo is too large. Try a smaller one.');
 }

@@ -1,6 +1,7 @@
 import { formatDisplay, type ActiveFoodItem } from '@cook-first/shared';
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { FoodPhoto } from '../lib/foodPhoto';
 import { cardExpiryLine, remainingText, urgencyCopy, leftoverCopy } from '../copy';
 import { formatQuantity } from '../lib/format';
 import { ActionSheet, useFoodActions, type SheetStep } from './ActionSheet';
@@ -19,28 +20,39 @@ export function FoodCard({ item }: { item: ActiveFoodItem }) {
     <li className="relative flex overflow-hidden rounded-2xl border border-line bg-card">
       <span aria-hidden className={`w-1.5 shrink-0 ${URGENCY_STYLE[item.urgency].bar}`} />
       <div className="min-w-0 flex-1">
-        <Link to={`/food/${item.id}`} className="block px-3.5 pt-3 pb-2">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="truncate text-base font-semibold text-ink">{item.name}</span>
-            <UrgencyBadge urgency={item.urgency} />
-            {item.leftover && (
-              <span className="rounded-full bg-paper px-2 py-0.5 text-xs font-semibold text-muted">
-                {leftoverCopy.tag}
-              </span>
-            )}
+        <Link to={`/food/${item.id}`} className="flex gap-3 px-3.5 pt-3 pb-2">
+          {item.photoAt && (
+            <FoodPhoto
+              foodId={item.id}
+              photoAt={item.photoAt}
+              name={item.name}
+              size="thumb"
+              className="size-16 shrink-0 rounded-xl object-cover"
+            />
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span className="truncate text-base font-semibold text-ink">{item.name}</span>
+              <UrgencyBadge urgency={item.urgency} />
+              {item.leftover && (
+                <span className="rounded-full bg-paper px-2 py-0.5 text-xs font-semibold text-muted">
+                  {leftoverCopy.tag}
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-sm text-ink">
+              {formatQuantity(item.quantity, item.unit)}
+              {/* When due today the badge already says "Expected expiry today". */}
+              {remaining !== urgencyCopy[item.urgency].label && (
+                <>
+                  {' · '}
+                  <span className="font-medium">{remaining}</span>
+                </>
+              )}
+            </p>
+            <p className="text-sm text-muted">{cardExpiryLine(formatDisplay(item.expiryDate))}</p>
+            {item.notes && <p className="mt-0.5 truncate text-sm text-muted italic">{item.notes}</p>}
           </div>
-          <p className="mt-1 text-sm text-ink">
-            {formatQuantity(item.quantity, item.unit)}
-            {/* When due today the badge already says "Expected expiry today". */}
-            {remaining !== urgencyCopy[item.urgency].label && (
-              <>
-                {' · '}
-                <span className="font-medium">{remaining}</span>
-              </>
-            )}
-          </p>
-          <p className="text-sm text-muted">{cardExpiryLine(formatDisplay(item.expiryDate))}</p>
-          {item.notes && <p className="mt-0.5 truncate text-sm text-muted italic">{item.notes}</p>}
         </Link>
         <div className="flex gap-2 px-3.5 pb-3">
           <button

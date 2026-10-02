@@ -1,7 +1,9 @@
 import { MESSAGES, type AccountExport, type DeleteAccountInput } from '@cook-first/shared';
+import type { Types } from 'mongoose';
 import { AiUsageModel } from '../models/AiUsage.js';
 import { FavouriteModel } from '../models/Favourite.js';
 import { FoodItemModel } from '../models/FoodItem.js';
+import { deletePhotosForFoods, deletePhotosForHousehold, deletePhotosUploadedBy } from '../models/FoodPhoto.js';
 import { HouseholdEventModel } from '../models/HouseholdEvent.js';
 import { InviteModel } from '../models/Invite.js';
 import { MealPlanEntryModel } from '../models/MealPlanEntry.js';
@@ -65,6 +67,11 @@ export async function deleteAccount(user: UserDoc, { password }: DeleteAccountIn
   }
   if ((await UserModel.countDocuments({ householdId: user.householdId })) > 1) await leaveHousehold(user);
   const owner = { userId: user._id };
+  // Photos go at once: those of the food they added, any they uploaded, and those of their own household.
+  const added = await FoodItemModel.find(owner, { _id: 1 });
+  await deletePhotosForFoods(added.map((food) => food._id as Types.ObjectId));
+  await deletePhotosUploadedBy(user._id);
+  await deletePhotosForHousehold(user.householdId);
   await Promise.all([
     FoodItemModel.deleteMany(owner),
     UsageRecordModel.deleteMany({ ...owner, householdId: user.householdId }),

@@ -83,6 +83,7 @@ describe('responses', () => {
       'name',
       'notificationPreferences',
       'reminderDelivery',
+      'savePhotos',
       'timeZone',
     ]);
   });

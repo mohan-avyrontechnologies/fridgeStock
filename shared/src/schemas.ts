@@ -56,6 +56,13 @@ export const MESSAGES = {
   photoCheckOff: 'Photo Check isn’t turned on for this app.',
   photoFood: 'Choose one of your own food items.',
   alreadyDue: 'This item is already due today or overdue.',
+  photoMissing: 'Choose a photo to upload.',
+  photoType: 'Only JPEG, PNG or WebP photos are accepted.',
+  photoTooBig: 'That photo is too large (5 MB at most).',
+  photoUnreadable: 'That photo couldn’t be read. Try another.',
+  photosOff: 'Product photos are turned off in Settings.',
+  photoClosed: 'Photos can only be added to food that is still active.',
+  photoSize: 'Choose a thumbnail or the full photo.',
   openedDate: "Opened date must be a valid date that isn't in the future or before the added date.",
   bulkEmpty: 'Add at least one item.',
   bulkTooMany: 'Add at most 50 items at once.',
@@ -106,7 +113,13 @@ export const joinHouseholdSchema = z.object({
 });
 
 export const updateAccountSchema = z
-  .object({ name, timeZone: z.string(), currency: z.enum(CURRENCIES, { error: MESSAGES.currency }) })
+  .object({
+    name,
+    timeZone: z.string(),
+    currency: z.enum(CURRENCIES, { error: MESSAGES.currency }),
+    /** Keep a photo with each food item you add by camera. */
+    savePhotos: z.boolean(),
+  })
   .partial();
 
 const quantity = z.number({ error: MESSAGES.quantity }).positive(MESSAGES.quantity).max(1_000_000, MESSAGES.quantity);
@@ -308,6 +321,7 @@ export type LoginInput = z.infer<typeof loginSchema>;
 export type JoinHouseholdInput = z.infer<typeof joinHouseholdSchema>;
 export type ReceiptInput = z.infer<typeof receiptSchema>;
 export type PhotoCheckInput = z.infer<typeof photoCheckSchema>;
+export type PhotoSizeInput = z.infer<typeof photoSizeSchema>;
 export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
 export type UpdateAccountInput = z.infer<typeof updateAccountSchema>;
 export type FoodInput = z.infer<typeof createFoodSchema>;
@@ -338,4 +352,18 @@ export const photoCheckSchema = receiptSchema.extend({
     .string()
     .regex(/^[0-9a-f]{24}$/i, MESSAGES.photoFood)
     .optional(),
+});
+
+/** The largest product photo that can be uploaded. */
+export const PRODUCT_PHOTO_MAX_BYTES = 5 * 1024 * 1024;
+/** Product photos are kept this many days after their item is closed (used, wasted or removed). */
+export const PHOTO_RETENTION_DAYS = 30;
+/** Stored photos: the full size is at most this many pixels on its longest side, and the thumbnail this many. */
+export const PHOTO_FULL_PIXELS = 1280;
+export const PHOTO_THUMB_PIXELS = 320;
+
+/** GET /foods/:id/photo?size=thumb|full. `v` is the photo's version (its time stamp), so a new photo isn't served from a cache. */
+export const photoSizeSchema = z.object({
+  size: z.enum(['thumb', 'full'], { error: MESSAGES.photoSize }).default('full'),
+  v: z.string().max(40).optional(),
 });

@@ -35,6 +35,8 @@ export interface User {
   reminderDelivery: ReminderDelivery;
   /** Currency prices are shown in. */
   currency: Currency;
+  /** Whether a photo taken with the camera is kept with the food item (on by default). */
+  savePhotos: boolean;
 }
 
 export interface AuthResponse {
@@ -58,6 +60,8 @@ export interface FoodItem {
   leftover: boolean;
   /** What the whole quantity cost, if the user entered it. */
   price: number | null;
+  /** When the item's photo was last set, or null when it has none. Also the photo's version. */
+  photoAt: string | null;
   status: FoodStatus;
   /** Only while the item is active. */
   remainingDays: number | null;
