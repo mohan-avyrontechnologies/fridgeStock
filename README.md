@@ -1057,7 +1057,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.21.0] - 2026-10-03: design and usability, stage 4 (adding food and first run) · `COMMIT_HASH`
+### [2.21.0] - 2026-10-03: design and usability, stage 4 (adding food and first run) · `d21d5af`
 **Added**
 - **Add food is a bottom sheet** (on a phone it slides up; on a larger screen it is a centred dialog). It is a real dialog: focus starts on the food name, Tab stays inside, Escape or the backdrop closes it and focus goes back. The **camera is first**, then favourites, then **Recent** (the foods you added most recently, one of each, without your favourites): tapping one fills the form from that food (amount, unit, lifespan, place) for you to check and save.
 - **A + / - stepper for quantity** (a half for kilos and litres, 50 for grams and millilitres, 1 for the rest), with the number still typeable. Quantity and price open a **decimal keyboard** and lifespan a **numeric** one; the lifespan **quick-pick chips** (1, 2, 3, 5, 7 and 14 days) stay.
