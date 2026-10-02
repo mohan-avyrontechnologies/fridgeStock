@@ -60,6 +60,7 @@ export const handlers = [
       dinner: { enabled: false, time: '19:30' },
     }),
   ),
+  http.get(`${API_URL}/meal-plan`, () => HttpResponse.json({ today: '2026-09-29', days: [] })),
   http.get(`${API_URL}/push/config`, () => HttpResponse.json({ publicKey: null })),
   http.get(`${API_URL}/ai/status`, () =>
     HttpResponse.json({ enabled: false, photoCheck: false, dailyLimit: 20, usedToday: 0 }),

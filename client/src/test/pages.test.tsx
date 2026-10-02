@@ -50,7 +50,9 @@ describe('Dashboard', () => {
     );
     renderSignedIn('/', <DashboardPage />);
     expect(await screen.findByText('Your fridge is empty. Add your first item.')).toBeInTheDocument();
-    expect(screen.getByText('Nothing urgent right now.')).toBeInTheDocument();
+    expect(screen.getByText('Nothing needs cooking first')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Plan a meal' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Add food' }).length).toBeGreaterThan(0);
   });
 
   it('signs out when the token is rejected', async () => {
@@ -261,7 +263,7 @@ describe('Reminders screen', () => {
 });
 
 describe('dashboard layout', () => {
-  it('has the name, a bell with the unread count, a settings icon, and Cook First limited to three with "See all"', async () => {
+  it('has the name, a bell with the unread count, a settings icon, and a Cook first today row with "See all"', async () => {
     server.use(
       http.get(`${API_URL}/foods/cook-first`, () =>
         HttpResponse.json({
@@ -276,8 +278,8 @@ describe('dashboard layout', () => {
     expect(await screen.findByRole('heading', { name: 'Hi, Asha Rao' })).toBeInTheDocument();
     expect((await screen.findAllByRole('link', { name: 'Reminders, 2 unread' })).length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: 'Open settings' })).toHaveAttribute('href', '/settings');
-    const section = screen.getByRole('region', { name: 'Cook First' });
-    expect(within(section).getAllByRole('listitem')).toHaveLength(3);
+    const section = screen.getByRole('region', { name: 'Cook first today' });
+    expect(within(section).getAllByRole('listitem')).toHaveLength(4);
     expect(within(section).getByRole('link', { name: 'See all' })).toHaveAttribute('href', '/cook-first');
     expect(screen.getAllByRole('link', { name: /Add food/ }).length).toBeGreaterThan(0);
   });

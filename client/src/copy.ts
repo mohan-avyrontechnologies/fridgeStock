@@ -550,3 +550,23 @@ export const mealPageCopy = {
 
 /** Said when a meal reminder is snoozed from a notification button. */
 export const mealSnoozeToast = 'We’ll remind you again in 30 minutes';
+
+/** The Home screen: the "Cook first today" panel, the location filter and the empty states. */
+export const homeCopy = {
+  title: 'Cook first today',
+  seeAll: 'See all',
+  rowLabel: 'Food to cook first',
+  calmTitle: 'Nothing needs cooking first',
+  calmBody: 'Nothing is close to its expected expiry. A good moment to plan a meal or add what you bought.',
+  planMeal: 'Plan a meal',
+  addFood: 'Add food',
+  cooked: 'Cooked something',
+  noSuggestion: 'Nothing planned. Add food to get ideas.',
+  planned: (meal: string, title: string) => `Planned for ${meal}: ${title}`,
+  startWith: (meal: string, names: string[]) =>
+    `For ${meal}, start with ${names.length > 1 ? `${names[0]} and ${names[1]}` : names[0]}.`,
+  expectedOn: (date: string) => `Expected expiry ${date}`,
+  locationGroup: 'Where it’s kept',
+  all: 'All',
+  noneIn: (place: string) => `Nothing in the ${place} yet`,
+};

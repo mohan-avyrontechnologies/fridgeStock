@@ -6,17 +6,18 @@ import {
   CookingPot,
   History,
   House,
+  Ellipsis,
   Plus,
   Settings,
   ShoppingCart,
   Users,
 } from 'lucide-react';
-import { useEffect, type ReactNode } from 'react';
-import { Link, NavLink, Outlet } from 'react-router';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
 import { useNotificationStore } from '../stores/notificationStore';
-import { Toast } from './ui';
+import { BottomSheet, Toast } from './ui';
 
 const REFRESH_MS = 5 * 60 * 1000;
 
@@ -245,7 +246,7 @@ function BottomNav() {
           </Link>
         </li>
         <NavItem to="/shopping" label="Shopping" icon={<ShoppingCart {...iconProps} />} />
-        <NavItem to="/plan" label="Plan" icon={<CalendarDays {...iconProps} />} />
+        <MoreTab />
       </ul>
     </nav>
   );
@@ -283,6 +284,55 @@ function NavItem({
           </span>
         )}
       </NavLink>
+    </li>
+  );
+}
+
+/** Where "More" leads: the screens that don't have a tab of their own. */
+const MORE_LINKS = [
+  { to: '/plan', label: 'Meal plan', Icon: CalendarDays },
+  { to: '/settings', label: 'Settings', Icon: Settings },
+  { to: '/history', label: 'History', Icon: History },
+  { to: '/insights', label: 'Insights', Icon: ChartColumn },
+  { to: '/household', label: 'Household', Icon: Users },
+] as const;
+
+/** The last tab: opens a sheet with Meal plan, Settings, History, Insights and Household. */
+function MoreTab() {
+  const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
+  const active = MORE_LINKS.some((link) => pathname.startsWith(link.to));
+  return (
+    <li>
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        onClick={() => setOpen(true)}
+        className={`flex min-h-16 w-full flex-col items-center justify-center gap-0.5 text-xs font-medium ${
+          active ? 'text-brand' : 'text-muted'
+        }`}
+      >
+        <Ellipsis {...iconProps} />
+        More
+      </button>
+      {open && (
+        <BottomSheet title="More" onClose={() => setOpen(false)}>
+          <ul className="space-y-1 pb-2">
+            {MORE_LINKS.map(({ to, label, Icon }) => (
+              <li key={to}>
+                <Link
+                  to={to}
+                  onClick={() => setOpen(false)}
+                  className="flex min-h-14 items-center gap-3 rounded-button px-3 text-base font-medium hover:bg-brand-soft"
+                >
+                  <Icon aria-hidden className="size-6 text-brand" strokeWidth={1.9} />
+                  {label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </BottomSheet>
+      )}
     </li>
   );
 }

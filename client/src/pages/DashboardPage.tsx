@@ -1,23 +1,42 @@
+import { formatDisplay, STORAGE_LOCATIONS, type MealPlan, type StorageLocation } from '@cook-first/shared';
 import { ChevronRight } from 'lucide-react';
-import { formatDisplay, type Urgency } from '@cook-first/shared';
-import { Link } from 'react-router';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router';
+import { api } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
+import { CookFirstToday } from '../components/CookFirstToday';
 import { FoodList } from '../components/FoodCard';
-import { EstimateNote, URGENCY_STYLE } from '../components/Urgency';
-import { Button, EmptyState, SectionTitle, Spinner } from '../components/ui';
-import { screenCopy, urgencyCopy, urgencyShortLabel } from '../copy';
+import { Button, Chip, EmptyState, SectionTitle, Spinner } from '../components/ui';
+import { EstimateNote } from '../components/Urgency';
+import { homeCopy, screenCopy, storageLabel } from '../copy';
+import { currentMeal } from '../lib/meal';
 import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
 
-/** How many urgent items the dashboard's Cook First section shows (unrelated to the urgency threshold). */
-const COOK_FIRST_PREVIEW = 3;
-
-/** Summary bar order: past expected expiry, due today, use soon, not urgent. */
-const ORDER: Urgency[] = ['OVERDUE', 'DUE', 'APPROACHING_EXPIRY', 'NOT_URGENT'];
+type Filter = 'ALL' | StorageLocation;
 
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
+  const navigate = useNavigate();
   const { inventory, cookFirst, error, refresh } = useFoodStore();
+  const [filter, setFilter] = useState<Filter>('ALL');
+  const [plan, setPlan] = useState<MealPlan | null>(null);
+
+  // Today's planned meals, for the current meal's suggestion. Home works without them.
+  useEffect(() => {
+    let current = true;
+    api.mealPlan().then(
+      (loaded) => current && setPlan(loaded),
+      () => {},
+    );
+    return () => {
+      current = false;
+    };
+  }, []);
+
+  const meal = currentMeal(user?.timeZone ?? 'UTC', new Date());
+  const shown = inventory?.items.filter((item) => filter === 'ALL' || item.storage === filter) ?? [];
+  const title = filter === 'ALL' ? `All food (${shown.length})` : `${storageLabel[filter]} (${shown.length})`;
 
   return (
     <>
@@ -39,62 +58,39 @@ export function DashboardPage() {
 
         {inventory && (
           <>
-            <section aria-label="Summary">
-              <ul className="grid grid-cols-4 gap-2 lg:gap-4">
-                {ORDER.map((u) => (
-                  <li
-                    key={u}
-                    className={`rounded-card px-2 py-3 text-center lg:px-5 lg:py-5 lg:text-left ${URGENCY_STYLE[u].tile}`}
-                  >
-                    <p className="text-2xl font-bold tabular-nums lg:text-4xl">{inventory.summary[u]}</p>
-                    <p className="text-xs leading-tight font-semibold lg:hidden">{urgencyShortLabel[u]}</p>
-                    <p className="hidden text-sm font-semibold lg:block">{urgencyCopy[u].label}</p>
-                  </li>
+            <CookFirstToday items={cookFirst ?? []} meal={meal} plan={plan} />
+
+            <section aria-labelledby="all-food-heading" className="space-y-3">
+              <div
+                role="group"
+                aria-label={homeCopy.locationGroup}
+                className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1"
+              >
+                {(['ALL', ...STORAGE_LOCATIONS] as const).map((option) => (
+                  <Chip key={option} selected={filter === option} onClick={() => setFilter(option)}>
+                    {option === 'ALL' ? homeCopy.all : storageLabel[option]}
+                  </Chip>
                 ))}
-              </ul>
+              </div>
+              <SectionTitle id="all-food-heading">{title}</SectionTitle>
+              {inventory.items.length === 0 ? (
+                <EmptyState
+                  title={screenCopy.dashboard.emptyInventory}
+                  action={<Button onClick={() => navigate('/add')}>{homeCopy.addFood}</Button>}
+                />
+              ) : shown.length === 0 ? (
+                <EmptyState
+                  title={homeCopy.noneIn(storageLabel[filter as StorageLocation].toLowerCase())}
+                  action={<Button onClick={() => navigate('/add')}>{homeCopy.addFood}</Button>}
+                />
+              ) : (
+                <>
+                  <p className="-mt-2 text-sm text-muted">{screenCopy.dashboard.sortedHint}</p>
+                  <FoodList items={shown} />
+                </>
+              )}
             </section>
 
-            <div className="grid gap-7 lg:grid-cols-2 lg:items-start lg:gap-8">
-              <section aria-labelledby="cook-first-heading">
-                <SectionTitle
-                  id="cook-first-heading"
-                  action={
-                    <Link
-                      to="/cook-first"
-                      className="inline-flex min-h-12 items-center text-sm font-semibold text-brand"
-                    >
-                      {screenCopy.dashboard.seeAll}
-                    </Link>
-                  }
-                >
-                  Cook First
-                </SectionTitle>
-                {cookFirst && cookFirst.length > 0 ? (
-                  <FoodList items={cookFirst.slice(0, COOK_FIRST_PREVIEW)} />
-                ) : (
-                  <EmptyState title={screenCopy.dashboard.nothingUrgent} />
-                )}
-              </section>
-
-              <section aria-labelledby="all-food-heading">
-                <SectionTitle id="all-food-heading">All food ({inventory.items.length})</SectionTitle>
-                {inventory.items.length === 0 ? (
-                  <EmptyState title={screenCopy.dashboard.emptyInventory}>
-                    <Link
-                      to="/add"
-                      className="mt-4 inline-flex min-h-12 items-center rounded-button bg-brand px-4 font-semibold text-on-brand"
-                    >
-                      Add food
-                    </Link>
-                  </EmptyState>
-                ) : (
-                  <>
-                    <p className="-mt-2 mb-3 text-sm text-muted">{screenCopy.dashboard.sortedHint}</p>
-                    <FoodList items={inventory.items} />
-                  </>
-                )}
-              </section>
-            </div>
             <Link
               to="/insights"
               className="flex min-h-14 items-center justify-between rounded-card border border-line bg-card px-4 font-medium hover:bg-paper"

@@ -33,6 +33,17 @@ async function openSettings(page: Page) {
   await expect(page).toHaveURL('/settings');
 }
 
+/** The meal plan: under "More" on a phone, in the sidebar on desktop. */
+async function openPlan(page: Page) {
+  const more = page.getByRole('button', { name: 'More' });
+  if (await more.isVisible()) {
+    await more.click();
+    await page.getByRole('dialog', { name: 'More' }).getByRole('link', { name: 'Meal plan' }).click();
+  } else {
+    await page.getByRole('link', { name: 'Meal plan' }).first().click();
+  }
+}
+
 /** History is linked from Settings (and from the sidebar on desktop). */
 async function openHistory(page: Page) {
   await openSettings(page);
@@ -140,7 +151,7 @@ test('spec journey: chicken (1 day) and eggs (8 days); only chicken in Cook Firs
   await expect(allFood.getByRole('listitem')).toHaveCount(1);
   await expect(allFood).toContainText('Eggs');
   await expect(page.getByRole('main')).not.toContainText('Chicken');
-  await expect(page.getByText('Nothing urgent right now.')).toBeVisible();
+  await expect(page.getByText('Nothing needs cooking first')).toBeVisible();
 });
 
 test('register → add food → Cook First → mark used → history', async ({ page }) => {
@@ -483,10 +494,7 @@ test('phase 4: leftovers, a shopping list that warns about food at home, and a w
   await expect(page.getByRole('checkbox', { name: 'Bought Flour' })).toHaveCount(0);
 
   // Meal plan: plan tomorrow's dinner with the chicken.
-  await page
-    .getByRole('link', { name: /^(Plan|Meal plan)$/ })
-    .first()
-    .click();
+  await openPlan(page);
   await expect(page.getByRole('heading', { name: 'Today' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Suggest meals for empty days' })).toBeVisible();
   await page.getByRole('button', { name: 'Plan a meal' }).nth(1).click();
@@ -927,10 +935,7 @@ test('phase 8: sounds and quiet hours, meal reminders, a breakfast plan, and the
   await expect(page.getByRole('switch', { name: 'Lunch' })).not.toBeChecked();
 
   // The meal plan has a breakfast, separate from dinner.
-  await page
-    .getByRole('link', { name: /^(Plan|Meal plan)$/ })
-    .first()
-    .click();
+  await openPlan(page);
   await expect(page.getByRole('heading', { name: 'Today' })).toBeVisible();
   const meals = page.getByRole('group', { name: 'Breakfast, lunch or dinner' });
   await meals.getByRole('button', { name: 'Breakfast' }).click();
