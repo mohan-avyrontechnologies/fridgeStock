@@ -736,7 +736,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.10.0] - 2026-10-02: Phase 6, part 1 (dark mode, your data) · `COMMIT_HASH`
+### [2.10.0] - 2026-10-02: Phase 6, part 1 (dark mode, your data) · `19248ad`
 **Added**
 - **Dark mode** with an **Appearance** choice in Settings (System, Light, Dark), kept on the device and applied before the first paint. New `--color-on-brand` token for text on brand-coloured buttons.
 - **Download my data** (`GET /account/export`): one JSON file with the account, food, history, reminders, favourites, shopping list and meal plan. The password hash, push keys and internal owner ids are left out.
