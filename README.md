@@ -1054,7 +1054,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.19.0] - 2026-10-03: design and usability, stage 2 (navigation and home) · `COMMIT_HASH`
+### [2.19.0] - 2026-10-03: design and usability, stage 2 (navigation and home) · `227e87e`
 **Added**
 - **A new bottom tab bar** on phones: **Home**, **Cook First** (with its count), a large central **Add food** button, **Shopping**, and **More**. More opens a sheet with **Meal plan**, **Settings**, **History**, **Insights** and **Household** (Meal plan joins the four you asked for, because it no longer has a tab and would otherwise be hard to reach). The sidebar on desktop is unchanged.
 - **Home now starts with a "Cook first today" panel:** the most urgent food (up to six) as large cards in a row you scroll sideways, each with its photo or category icon, name, days left in words and the urgency badge; below it the **current meal's suggestion** (today's planned breakfast, lunch or dinner, otherwise "start with" the two most urgent items; the meal is chosen by the time of day in your time zone) and a **Cooked something** button that opens the leftovers form. When nothing is urgent the panel is a calm message with **Plan a meal** and **Add food**.
