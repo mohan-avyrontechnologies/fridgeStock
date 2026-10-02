@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { EstimateNote } from '../components/Urgency';
-import { Button, EmptyState, Spinner } from '../components/ui';
+import { Button, EmptyState, SkeletonList } from '../components/ui';
 import { reminderTypeLabel, screenCopy } from '../copy';
 import { formatInstant } from '../lib/format';
 import { useNotificationStore } from '../stores/notificationStore';
@@ -29,7 +29,7 @@ export function NotificationsPage() {
     <>
       <PageHeader title="Reminders" subtitle={newCount ? `${newCount} new` : undefined} back="/" />
       <PageBody narrow>
-        {loading && items.length === 0 && <Spinner />}
+        {loading && items.length === 0 && <SkeletonList />}
         {error && (
           <EmptyState title={screenCopy.reminders.loadError}>
             <Button variant="secondary" className="mt-4" onClick={() => openFeed()}>

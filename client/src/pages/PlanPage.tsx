@@ -11,7 +11,7 @@ import {
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { Button, Chip, EmptyState, Field, Spinner, Card } from '../components/ui';
+import { Button, Chip, EmptyState, Field, SkeletonList, Card } from '../components/ui';
 import { aiCopy, mealSettingsCopy, planCopy as copy } from '../copy';
 import { check } from '../lib/validation';
 import { useAiStore } from '../stores/aiStore';
@@ -108,7 +108,7 @@ export function PlanPage() {
     <>
       <PageHeader title={copy.title} subtitle={copy.subtitle} />
       <PageBody narrow>
-        {!plan && !loadError && <Spinner />}
+        {!plan && !loadError && <SkeletonList />}
         {loadError && !plan && <EmptyState title={copy.loadError} />}
 
         <div role="group" aria-label={copy.mealChoice} className="flex gap-2">

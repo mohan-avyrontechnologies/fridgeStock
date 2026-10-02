@@ -17,6 +17,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
 import { useNotificationStore } from '../stores/notificationStore';
+import { PullToRefresh } from './PullToRefresh';
 import { BottomSheet, Toast } from './ui';
 
 const REFRESH_MS = 5 * 60 * 1000;
@@ -51,7 +52,9 @@ export function AppShell() {
       <Sidebar />
       <div className="lg:pl-64">
         <div className="pb-nav mx-auto min-h-dvh max-w-xl lg:max-w-5xl lg:pb-12">
-          <Outlet />
+          <PullToRefresh onRefresh={() => Promise.all([refresh(), fetchUnread()])}>
+            <Outlet />
+          </PullToRefresh>
         </div>
       </div>
       <Toast />

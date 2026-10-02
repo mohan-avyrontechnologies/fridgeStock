@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
 import { actionCopy, undoCopy } from '../copy';
 import { formatQuantity } from '../lib/format';
+import { platform } from '../platform';
 import { useFoodStore } from '../stores/foodStore';
 import { useToastStore } from '../stores/toastStore';
 import { BottomSheet, Button, Field, FormError } from './ui';
@@ -21,6 +22,8 @@ export function useFoodActions() {
 
   return async function run(item: FoodItem, action: Action, quantity?: number): Promise<boolean> {
     await act(item.id, action, quantity);
+    if (action === 'WASTED' || action === 'REMOVED') platform.haptics.warning();
+    else platform.haptics.success();
     // Using part of it leaves the item open; the server closes it if the whole amount was used.
     const stillOpen = action === 'PARTIALLY_USED' && quantity! < item.quantity;
     const done = stillOpen ? 'PARTIALLY_USED' : action === 'PARTIALLY_USED' ? 'USED' : action;
@@ -49,10 +52,13 @@ export function ActionSheet({
   item,
   initialStep,
   onClose,
+  onUsedAll,
 }: {
   item: FoodItem;
   initialStep: SheetStep;
   onClose: (closed: boolean) => void;
+  /** When given, "Used all" hands over to it (the card plays its own animation) instead of acting here. */
+  onUsedAll?: () => void;
 }) {
   const run = useFoodActions();
   const [step, setStep] = useState<SheetStep>(initialStep);
@@ -97,7 +103,7 @@ export function ActionSheet({
               title={actionCopy.USED.label}
               detail="Finished all of it"
               disabled={busy}
-              onClick={() => perform('USED')}
+              onClick={() => (onUsedAll ? onUsedAll() : perform('USED'))}
             />
             <SheetOption
               title={actionCopy.PARTIALLY_USED.label}

@@ -960,3 +960,47 @@ test('phase 8: sounds and quiet hours, meal reminders, a breakfast plan, and the
   await expect(page.getByText('There’s no reminder for this meal today.')).toBeVisible();
   await expectNoSafetyClaim(page);
 });
+
+test('stage 3: swipe a card right for used and left for wasted, with Undo; Food Details keeps its buttons', async ({
+  page,
+}) => {
+  await register(page, 'Mira Das');
+  await addFood(page, 'Chicken', '1', 'g');
+  await addFood(page, 'Spinach', '2', 'g');
+
+  const card = (name: string) => allFood(page).filter({ has: page.getByRole('heading', { level: 3, name }) });
+  const drag = async (name: string, dx: number) => {
+    const box = (await card(name).getByRole('heading', { level: 3 }).boundingBox())!;
+    const y = box.y + box.height / 2;
+    const x = box.x + 40;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + dx / 2, y, { steps: 4 });
+    await page.mouse.move(x + dx, y, { steps: 4 });
+    await page.mouse.up();
+  };
+
+  // A short swipe changes nothing.
+  await drag('Chicken', 40);
+  await expect(card('Chicken')).toHaveCount(1);
+
+  // Right: used. The card closes up, and the toast offers Undo.
+  await drag('Chicken', 200);
+  await expect(page.getByText('Marked as used: Chicken')).toBeVisible();
+  await expect(card('Chicken')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Undo' }).click();
+  await expect(card('Chicken')).toHaveCount(1);
+
+  // Left: wasted.
+  await drag('Chicken', -200);
+  await expect(page.getByText('Marked as wasted: Chicken')).toBeVisible();
+  await expect(card('Chicken')).toHaveCount(0);
+  await expect(card('Spinach')).toHaveCount(1);
+
+  // Swiping is never required: Food Details has the buttons.
+  await card('Spinach').getByRole('link').first().click();
+  const actions = page.getByRole('region', { name: 'Actions' });
+  await expect(actions.getByRole('button', { name: 'Used all' })).toBeVisible();
+  await expect(actions.getByRole('button', { name: 'Wasted' })).toBeVisible();
+  await expectNoSafetyClaim(page);
+});

@@ -48,6 +48,14 @@ export interface PushPlatform {
   start(): void;
 }
 
+/** A short physical tap to confirm a completed action. Only the apps have one; a browser does nothing. */
+export interface HapticsPlatform {
+  /** An action went through (marked as used, undone). */
+  success(): void;
+  /** An action that closes food as lost went through (marked as wasted). */
+  warning(): void;
+}
+
 export interface Platform {
   readonly name: 'web' | 'android' | 'ios';
   readonly native: boolean;
@@ -55,4 +63,5 @@ export interface Platform {
   readonly camera: CameraPlatform;
   readonly barcode: BarcodePlatform;
   readonly push: PushPlatform;
+  readonly haptics: HapticsPlatform;
 }

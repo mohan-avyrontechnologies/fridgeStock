@@ -6,7 +6,7 @@ import { photoForUpload } from '../lib/image';
 import { pickPhoto } from '../platform/pickPhoto';
 import { useAiStore } from '../stores/aiStore';
 import { useToastStore } from '../stores/toastStore';
-import { Button, Spinner } from './ui';
+import { Button, SkeletonList } from './ui';
 
 interface Props {
   food: FoodItem;
@@ -99,7 +99,7 @@ export function PhotoCheck({ food, onWaste, onFoodChanged }: Props) {
       >
         {reading ? photoCopy.reading : photoCopy.checkButton}
       </Button>
-      {reading && <Spinner label={photoCopy.reading} />}
+      {reading && <SkeletonList count={1} label={photoCopy.reading} />}
       {error && (
         <p role="alert" className="rounded-button bg-past px-3.5 py-3 text-sm text-past-ink">
           {error}

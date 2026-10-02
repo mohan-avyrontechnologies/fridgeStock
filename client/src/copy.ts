@@ -570,3 +570,9 @@ export const homeCopy = {
   all: 'All',
   noneIn: (place: string) => `Nothing in the ${place} yet`,
 };
+
+/** Swiping a food card (the visible buttons do the same). */
+export const swipeCopy = { used: 'Used', wasted: 'Wasted' };
+
+/** Pulling down to refresh. */
+export const pullCopy = { refreshing: 'Refreshing' };

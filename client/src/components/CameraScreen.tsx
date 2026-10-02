@@ -12,7 +12,7 @@ import { photoForUpload } from '../lib/image';
 import { formatQuantity } from '../lib/format';
 import type { ScannedItem } from '../lib/scanned';
 import { useAiStore } from '../stores/aiStore';
-import { Button, Field, Spinner, Card } from './ui';
+import { Button, Field, SkeletonList, Card } from './ui';
 
 type Mode = 'barcode' | 'photo';
 
@@ -300,7 +300,7 @@ export function CameraScreen({ onDone, onClose }: Props) {
           </section>
         )}
 
-        {busy && <Spinner label={mode === 'photo' ? cameraCopy.reading : cameraCopy.looking} />}
+        {busy && <SkeletonList count={1} label={mode === 'photo' ? cameraCopy.reading : cameraCopy.looking} />}
         {message && (
           <p role="status" className="rounded-button bg-calm px-3.5 py-3 text-sm text-calm-ink">
             {message}

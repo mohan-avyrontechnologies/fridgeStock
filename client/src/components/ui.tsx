@@ -125,15 +125,6 @@ export function EmptyState({ title, children, action }: { title: string; childre
   );
 }
 
-export function Spinner({ label = 'Loading' }: { label?: string }) {
-  return (
-    <div role="status" className="flex justify-center py-10">
-      <span className="size-6 animate-spin rounded-full border-2 border-line border-t-brand" />
-      <span className="sr-only">{label}</span>
-    </div>
-  );
-}
-
 /** A grey placeholder shape shown while something loads (it pulses, unless the person prefers less motion). */
 export function Skeleton({ className = '' }: { className?: string }) {
   return <div aria-hidden className={`skeleton rounded-card bg-line ${className}`} />;

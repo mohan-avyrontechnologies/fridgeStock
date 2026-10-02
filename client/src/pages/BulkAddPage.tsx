@@ -19,7 +19,7 @@ import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { CameraScreen } from '../components/CameraScreen';
 import { EstimateNote } from '../components/Urgency';
-import { Button, Chip, Field, FormError, Spinner, Card } from '../components/ui';
+import { Button, Chip, Field, FormError, SkeletonList, Card } from '../components/ui';
 import { bulkCopy, cameraCopy, productPhotoCopy, receiptCopy, referenceCopy, storageLabel } from '../copy';
 import { BlobThumb } from '../lib/foodPhoto';
 import { fieldsFor, type ScannedItem } from '../lib/scanned';
@@ -279,7 +279,7 @@ export function BulkAddPage() {
               >
                 {reading ? receiptCopy.reading : receiptCopy.button}
               </Button>
-              {reading && <Spinner label={receiptCopy.reading} />}
+              {reading && <SkeletonList count={1} label={receiptCopy.reading} />}
               {fromReceipt && !reading && <p className="text-sm text-muted">{receiptCopy.checkNote}</p>}
             </Card>
           )}

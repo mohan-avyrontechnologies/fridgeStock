@@ -6,7 +6,7 @@ import { api } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { CookFirstToday } from '../components/CookFirstToday';
 import { FoodList } from '../components/FoodCard';
-import { Button, Chip, EmptyState, SectionTitle, Spinner } from '../components/ui';
+import { Button, Chip, EmptyState, SectionTitle, SkeletonList } from '../components/ui';
 import { EstimateNote } from '../components/Urgency';
 import { homeCopy, screenCopy, storageLabel } from '../copy';
 import { currentMeal } from '../lib/meal';
@@ -46,7 +46,7 @@ export function DashboardPage() {
         showIcons
       />
       <PageBody>
-        {!inventory && !error && <Spinner />}
+        {!inventory && !error && <SkeletonList />}
         {error && !inventory && (
           <EmptyState title={screenCopy.dashboard.loadError}>
             <p>{error}</p>

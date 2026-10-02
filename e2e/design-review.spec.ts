@@ -55,6 +55,23 @@ test('design review: every main screen, light and dark', async ({ browser }) => 
     await page.waitForTimeout(400);
     await page.screenshot({ path: `${OUT}/${scheme}/${String(screens.length + 1).padStart(2, '0')}-used-sheet.png` });
     await page.keyboard.press('Escape');
+    // Half-way through a swipe to the right (used), then to the left (wasted): the actions underneath.
+    const heading = page.getByRole('heading', { level: 3, name: 'Chicken breast' }).last();
+    const box = (await heading.boundingBox())!;
+    for (const [name, dx] of [
+      ['swipe-used', 80],
+      ['swipe-wasted', -80],
+    ] as const) {
+      await page.mouse.move(box.x + 40, box.y + 10);
+      await page.mouse.down();
+      await page.mouse.move(box.x + 40 + dx / 2, box.y + 10, { steps: 3 });
+      await page.mouse.move(box.x + 40 + dx, box.y + 10, { steps: 3 });
+      await page.screenshot({
+        path: `${OUT}/${scheme}/${String(screens.length + 2).padStart(2, '0')}-${name}.png`,
+        clip: { x: 0, y: Math.max(0, box.y - 70), width: 375, height: 260 },
+      });
+      await page.mouse.up();
+    }
   }
   await context.close();
 });

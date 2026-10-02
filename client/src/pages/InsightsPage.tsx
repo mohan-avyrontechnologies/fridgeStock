@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { api } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { EmptyState, SectionTitle, Spinner } from '../components/ui';
+import { EmptyState, SectionTitle, SkeletonList } from '../components/ui';
 import { insightsCopy } from '../copy';
 import { formatMoney } from '../lib/format';
 import { useAuthStore } from '../stores/authStore';
@@ -103,7 +103,7 @@ export function InsightsPage() {
       <PageHeader title="Insights" subtitle={insightsCopy.subtitle} />
       <PageBody narrow>
         {error && <EmptyState title={insightsCopy.loadError} />}
-        {!data && !error && <Spinner />}
+        {!data && !error && <SkeletonList />}
         {empty && (
           <EmptyState title={insightsCopy.emptyTitle}>
             {insightsCopy.emptyBody}

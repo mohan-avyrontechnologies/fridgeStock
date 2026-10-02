@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { Button, Checkbox, EmptyState, Field, Spinner, Card } from '../components/ui';
+import { Button, Checkbox, EmptyState, Field, SkeletonList, Card } from '../components/ui';
 import { shoppingCopy as copy } from '../copy';
 import { formatQuantity } from '../lib/format';
 import { check } from '../lib/validation';
@@ -133,7 +133,7 @@ export function ShoppingPage() {
           </Button>
         </Card>
 
-        {!items && !loadError && <Spinner />}
+        {!items && !loadError && <SkeletonList />}
         {loadError && !items && <EmptyState title={copy.loadError} />}
         {items && items.length === 0 && <EmptyState title={copy.empty} />}
 

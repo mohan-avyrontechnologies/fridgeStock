@@ -32,6 +32,28 @@ interface FoodState {
   reset: () => void;
 }
 
+/** The items after an action: closed ones are gone, a partly used one has less left. */
+function reduceItems(items: ActiveFoodItem[], id: string, action: UsageAction, quantity?: number): ActiveFoodItem[] {
+  return items.flatMap((item) => {
+    if (item.id !== id) return [item];
+    if (action === 'PARTIALLY_USED' && quantity !== undefined && quantity < item.quantity) {
+      return [{ ...item, quantity: item.quantity - quantity }];
+    }
+    return [];
+  });
+}
+
+/** The inventory after an action, with the urgency counts kept in step. */
+function withoutOrReduced(list: FoodList, id: string, action: UsageAction, quantity?: number): FoodList {
+  const items = reduceItems(list.items, id, action, quantity);
+  if (items.length === list.items.length) return { ...list, items };
+  const gone = list.items.find((item) => item.id === id);
+  const summary = gone
+    ? { ...list.summary, [gone.urgency]: list.summary[gone.urgency] - 1, total: list.summary.total - 1 }
+    : list.summary;
+  return { ...list, items, summary };
+}
+
 export const useFoodStore = create<FoodState>()((set, get) => ({
   inventory: null,
   cookFirst: null,
@@ -61,9 +83,20 @@ export const useFoodStore = create<FoodState>()((set, get) => ({
   },
 
   async act(id, action, quantity) {
-    if (action === 'REMOVED') await api.removeFood(id);
-    else if (action === 'WASTED') await api.wasteFood(id);
-    else await api.useFood(id, action === 'PARTIALLY_USED' ? quantity : undefined);
+    // Optimistic: the item leaves (or shrinks in) the lists at once; if the server refuses, it comes back.
+    const before = { inventory: get().inventory, cookFirst: get().cookFirst };
+    set({
+      inventory: before.inventory && withoutOrReduced(before.inventory, id, action, quantity),
+      cookFirst: before.cookFirst && reduceItems(before.cookFirst, id, action, quantity),
+    });
+    try {
+      if (action === 'REMOVED') await api.removeFood(id);
+      else if (action === 'WASTED') await api.wasteFood(id);
+      else await api.useFood(id, action === 'PARTIALLY_USED' ? quantity : undefined);
+    } catch (error) {
+      set(before);
+      throw error;
+    }
     await get().refresh();
   },
 

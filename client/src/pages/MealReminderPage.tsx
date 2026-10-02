@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { api } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { Button, EmptyState, Spinner, Card } from '../components/ui';
+import { Button, EmptyState, SkeletonList, Card } from '../components/ui';
 import { mealPageCopy as copy, recipeCopy } from '../copy';
 
 /** The title the "Cooked it" form starts from: the planned meal's or the recipe's. */
@@ -41,7 +41,7 @@ export function MealReminderPage() {
     <>
       <PageHeader title={copy.title(label)} />
       <PageBody narrow>
-        {!view && !missing && <Spinner />}
+        {!view && !missing && <SkeletonList />}
         {missing && (
           <EmptyState title={copy.none}>
             <Link to="/cook-first" className="text-brand underline-offset-2 hover:underline">

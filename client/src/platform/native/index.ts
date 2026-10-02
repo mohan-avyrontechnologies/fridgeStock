@@ -1,6 +1,7 @@
 import type { Platform } from '../types';
 import { nativeBarcode } from './barcode';
 import { nativeCamera } from './camera';
+import { nativeHaptics } from './haptics';
 import { nativePush } from './push';
 import { nativeStorage } from './storage';
 
@@ -13,5 +14,6 @@ export function createNativePlatform(name: 'android' | 'ios'): Platform {
     camera: nativeCamera,
     barcode: nativeBarcode,
     push: nativePush,
+    haptics: nativeHaptics,
   };
 }

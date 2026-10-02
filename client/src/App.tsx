@@ -16,7 +16,7 @@ import { MealReminderPage } from './pages/MealReminderPage';
 import { PlanPage } from './pages/PlanPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ShoppingPage } from './pages/ShoppingPage';
-import { Spinner } from './components/ui';
+import { SkeletonList } from './components/ui';
 import { mealSnoozeToast } from './copy';
 import { useReminderChime } from './lib/useReminderChime';
 import { OPEN_PAGE_EVENT, PUSH_ACTION_DONE_EVENT, PUSH_RECEIVED_EVENT } from './platform/events';
@@ -77,7 +77,7 @@ export function App() {
   useReminderChime();
   const hydrated = useAuthHydrated();
   // In the apps the saved login is read from secure storage first.
-  if (!hydrated) return <Spinner />;
+  if (!hydrated) return <SkeletonList />;
   return (
     <Routes>
       <Route element={<GuestOnly />}>

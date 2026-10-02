@@ -7,7 +7,7 @@ A mobile-first web app that helps a household use perishable food before it goes
 | | |
 |---|---|
 | **Status** | MVP complete; post-MVP Phases 1 (faster entry), 2 (realistic estimates), 3 (better reminders), 4 (using the food), 5 (insights) and 6 (dark mode, data export, account deletion, shared households) complete, barcode and receipt scanning, and 7 (Photo Check, behind a feature flag) complete, with a camera screen and product photos, ready-made Android and iOS apps (Capacitor, not yet built on a device), and reminder sounds, quiet hours and meal-time cooking reminders (the sounds are placeholders); voice entry, extra languages and grocery integrations are not built. Not yet deployed. |
-| **Version** | 2.19.0 (see the [Changelog](#changelog)) |
+| **Version** | 2.20.0 (see the [Changelog](#changelog)) |
 | **Requires** | Node.js 20.19 or later |
 | **Specifications** | PFCP BRD v2.0, FRD v1.0, SRD v1.0, TDD v1.0 (internal documents, not stored in this repo) |
 | **Repository** | `github.com/rugvailabs/cook_first` |
@@ -112,6 +112,7 @@ The project is a **TypeScript monorepo** using npm workspaces, with three packag
 | | Service worker + web app manifest (installable app, push notifications; no extra library) | |
 | | Vite (build and dev server) | 8.3 |
 | | React Router | 7.18 |
+| | `@capacitor/haptics` (taps for completed actions in the apps) | 8 |
 | | Tailwind CSS (design tokens in `index.css`), `lucide-react` icons, `@fontsource` fonts (Bricolage Grotesque, Figtree) | 4.3 |
 | | @zxing/browser (reads barcodes from the camera where the browser has no `BarcodeDetector`; loaded only when needed) | 0.2 |
 | | Capacitor (Android and iOS apps) with `@capacitor/camera`, `@capacitor/push-notifications`, `@capacitor-mlkit/barcode-scanning` and `@aparajita/capacitor-secure-storage` | 8 |
@@ -322,8 +323,8 @@ Run these from the repository root:
 | `npm run typecheck` | TypeScript check of `shared`, `server` and `client` |
 | `npm run seed -w server` | With the server running, create a demo account (`demo@cookfirst.local` / `cookfirst-demo`) with 10 priced sample items at every urgency level, plus 5 used or wasted ones so Insights has data. Add `-- --reset` to re-seed. |
 | `npm run vapid:keys -w server` | Generate a Web Push (VAPID) key pair for `server/.env` |
-| `npm test` | Unit and API tests: shared (45) + server (468) + client (346) |
-| `npm run test:e2e` | Playwright end-to-end tests (40), at 375 px and 1440 px |
+| `npm test` | Unit and API tests: shared (45) + server (468) + client (370) |
+| `npm run test:e2e` | Playwright end-to-end tests (42), at 375 px and 1440 px |
 | `npm run check:staging -- --api <api-url> --client <web-url>` | Check a deployment from the outside (HTTPS, health, CORS, headers, push, install files) |
 | `npm run cap:sync -w client` | Build the web app for the apps and copy it into the Android and iOS projects |
 | `npm run android -w client` / `npm run ios -w client` | Open the Android project in Android Studio / the iOS project in Xcode (see [Native apps](#native-apps-android-and-ios)) |
@@ -358,6 +359,7 @@ Run these from the repository root:
 | **Server structure** (`structure.test.ts`) | Vitest | 12 | The `server/src` folders; thin controllers; only models talk to MongoDB; no `new Date()` in date logic; dates only from `shared`; hourly node-cron job; env variable names and defaults; the threshold of 3 exists only in `config/urgency.ts` (checked across client, server and shared); expiry calculated in the food service with no Mongoose hook |
 | **Sounds, quiet hours and meals** (`sounds.test.tsx`, `native-sounds.test.ts`, in the native tests) | Vitest, Testing Library, MSW, file checks | 69 | **The chime** (three different files, not before a touch, the matching sound per kind, never in quiet hours in the person's own time zone, sound switch, a refusing browser, a push from the service worker or the app, stopped on close); **Settings** (defaults, each switch saved, quiet hours off and the times, failure puts it back; meal switches and times); **the meal screen** (recipe, plan, items, Cooked it, none today, a bad meal); Add Food from "Cooked it"; the plan one meal at a time; **native**: the Android channels are created at start (not on iPhone), the push kind is passed on, and the three meal buttons; **the project files**: the six channels agree between JavaScript and Java and cover everything the server can choose, the sound files are where the apps look, under 30 seconds and registered in Xcode, `sounds:sync` (placeholders, licensed files win, once in the project, too long refused), nothing asks for an alarm, a ringing notification or a critical alert, and the service worker's vibration, `requireInteraction`, tag and silent handling |
 | **Native platform** (`platform*.test.ts`, `native*.test.ts*`) | Vitest, Testing Library, MSW, fake Capacitor plugins | 78 | **Platform choice** (web in a browser and in tests, iOS or Android in the apps); the web platform is localStorage, the file input and the live camera, unchanged; the **login token in secure storage** (not localStorage, not synced, the app waits for it to be read); the **native camera** (system photo, scaled and upright, cancel is not an error), the **ML Kit scanner** (grocery formats, camera permission, the Android Google module install and its failure), **native push** (permission, registration, token and platform sent to the server, blocked and dismissed, turning off, the listeners started once, **Used and Snooze buttons call the API and fall back to opening the page**); the camera screen, Photo Check, product photos, receipts and Settings push in the app; the app opens a tapped notification's page and refreshes on a push; **native project files**: permissions and the text explaining them, one app ID everywhere, Firebase and notification set-up that matches the server, and `native:set-app-id` |
+| **Cards and actions** (`cards.test.tsx`, `haptics.test.ts`) | Vitest, Testing Library, MSW | 24 | What a card shows (and no meter, ring or bar); swiping right and left, a short or vertical drag doing nothing, Undo, the visible buttons; optimistic updates and putting back on failure; skeleton loading; pull to refresh (not from a dialog); haptics; the used animation with and without reduced motion; Capacitor Haptics in the apps and nothing in a browser |
 | **Home and tab bar** (`home.test.tsx`) | Vitest, Testing Library, MSW | 15 | The Cook first today row (order, badges, days left in words, at most six cards, See all), the current meal's suggestion (planned, or start with the two most urgent; breakfast, lunch and dinner by the hour), the calm state with Plan a meal and Add food, Cooked something, the location chips (priority order kept, empty places, the panel not filtered), the five tabs, and the More sheet (links, closes after a choice, Escape returns focus) |
 | **Design tokens** (`tokens.test.ts`) | Vitest | 20 | The colours from the design brief in both themes; WCAG AA contrast (text 4.5:1, badge text 7:1, bars and field outlines 3:1) for every pair the interface uses; card and button corners; the two fonts, bundled and not fetched from a CDN |
 | **Accessibility** (`e2e/a11y.spec.ts`) | Playwright, axe | 2 | axe (WCAG 2.0 and 2.1, A and AA) finds nothing on any main screen, signed in or out, in light and dark mode, at phone and desktop size |
@@ -1025,7 +1027,7 @@ The project was built in these phases; each one is complete.
 |---|---|
 | All MVP functional requirements (FR-AUTH, FOOD, EXP, PRI, UI, NOT, USE, VAL) | ✅ Done |
 | Monorepo with `client`, `server` and `shared`; Node 20.19+ | ✅ Done |
-| Tests: 45 shared + 468 server + 346 client + 40 end-to-end = **899** | ✅ Passing |
+| Tests: 45 shared + 468 server + 370 client + 42 end-to-end = **925** | ✅ Passing |
 | ESLint, Prettier and typecheck on all packages | ✅ Clean |
 | All project rules (see [Project rules](#project-rules)) | ✅ Met, each one checked by a test |
 | Phone (375 px) and desktop layouts, 44 px tap targets | ✅ Done, checked in screenshots and by tests |
@@ -1053,6 +1055,21 @@ All notable changes to this project are listed here, newest first. Versions foll
 
 ### [Unreleased]
 - *Nothing yet.*
+
+### [2.20.0] - 2026-10-03: design and usability, stage 3 (cards and actions) · `COMMIT_HASH`
+**Added**
+- **Swipe a food card right for "Used" and left for "Wasted"** (`SwipeActions`), with the existing **Undo** toast. The actions are drawn underneath while you drag, each with an icon and a word; a short or mostly vertical drag does nothing (the page still scrolls), and a drag that ends on the card doesn't also open it. The cards keep their visible **Used** and **Wasted** buttons, and **Food Details** keeps its buttons, so swiping is never required.
+- **Optimistic updates:** marking food as used or wasted (or using part of it) changes the lists at once; if the server refuses, the card comes back with a message saying what happened and what to do.
+- **The one deliberate animation:** when an item is marked as used, its card shows a short check mark and closes up (`card-collapse`, 380 ms). It is skipped when the phone asks for reduced motion.
+- **Skeleton loading** (`SkeletonList`) replaces every spinner, announced once to a screen reader as "Loading".
+- **Pull to refresh** (`PullToRefresh`): pull down from the top of any signed-in screen to reload the food and reminders.
+- **Haptics:** `@capacitor/haptics` in the apps (a success tap for a completed action, a warning tap for wasted); a browser does nothing. A new `platform.haptics`.
+- Tests: 20 for the cards (`cards.test.tsx`: what a card shows and that it has no meter, ring or bar; swiping right and left, short and vertical drags, Undo, the buttons; optimistic updates and putting back on failure; skeletons; pull to refresh; haptics; the animation with and without reduced motion), 4 for haptics, and a swipe journey end to end.
+
+**Changed**
+- A card shows the time left only as words and the urgency badge. There is no freshness meter, filling ring or emptying bar anywhere (a test checks).
+- The food name on a card, and `Spinner`, are replaced as above.
+
 
 ### [2.19.0] - 2026-10-03: design and usability, stage 2 (navigation and home) · `227e87e`
 **Added**

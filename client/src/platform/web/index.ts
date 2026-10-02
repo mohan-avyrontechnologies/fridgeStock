@@ -1,5 +1,5 @@
 import * as push from '../../lib/push';
-import type { BarcodePlatform, CameraPlatform, Platform, PushPlatform, TokenStorage } from '../types';
+import type { BarcodePlatform, CameraPlatform, HapticsPlatform, Platform, PushPlatform, TokenStorage } from '../types';
 
 /** The web app: exactly what it did before the apps existed. */
 
@@ -24,6 +24,12 @@ export const webBarcode: BarcodePlatform = {
   async scan() {
     return null;
   },
+};
+
+/** A browser has no haptic engine to use here, so completed actions are silent and still. */
+export const webHaptics: HapticsPlatform = {
+  success() {},
+  warning() {},
 };
 
 /** Web Push, through the service worker (lib/push). */
@@ -51,4 +57,5 @@ export const webPlatform: Platform = {
   camera: webCamera,
   barcode: webBarcode,
   push: webPush,
+  haptics: webHaptics,
 };

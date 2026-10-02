@@ -2,7 +2,7 @@ import { formatDisplay, type ActivityEvent, type Household } from '@cook-first/s
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { Button, EmptyState, Field, FormError, SectionTitle, Spinner, Card } from '../components/ui';
+import { Button, EmptyState, Field, FormError, SectionTitle, SkeletonList, Card } from '../components/ui';
 import { householdCopy as copy } from '../copy';
 import { formatInstant } from '../lib/format';
 import { useFoodStore } from '../stores/foodStore';
@@ -127,7 +127,7 @@ export function HouseholdPage() {
       <PageHeader title={copy.title} subtitle={copy.subtitle} back="/settings" />
       <PageBody narrow>
         {loadError && <EmptyState title={copy.loadError} />}
-        {!household && !loadError && <Spinner />}
+        {!household && !loadError && <SkeletonList />}
         {household && (
           <>
             <FormError message={formError} />

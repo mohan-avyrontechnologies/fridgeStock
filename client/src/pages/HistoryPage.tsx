@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 import { api } from '../api/client';
 import { formatDisplay, type UsageAction, type UsageRecord } from '@cook-first/shared';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { Button, EmptyState, Spinner, Card } from '../components/ui';
+import { Button, EmptyState, SkeletonList, Card } from '../components/ui';
 import { historyActionLabel, screenCopy } from '../copy';
 import { formatQuantity } from '../lib/format';
 
@@ -42,7 +42,7 @@ export function HistoryPage() {
       <PageHeader title="History" subtitle="What you used, wasted or removed" />
       <PageBody narrow>
         {error && <EmptyState title={error} />}
-        {!records && !error && <Spinner />}
+        {!records && !error && <SkeletonList />}
         {counts && (
           <ul className="grid grid-cols-4 gap-2">
             {ACTIONS.map((a) => (

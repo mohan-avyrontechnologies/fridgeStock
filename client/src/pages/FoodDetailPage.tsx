@@ -11,7 +11,7 @@ import { FoodPhoto } from '../lib/foodPhoto';
 import { photoForUpload } from '../lib/image';
 import { pickPhoto } from '../platform/pickPhoto';
 import { EstimateNote, UrgencyBadge } from '../components/Urgency';
-import { Button, EmptyState, Spinner, Card } from '../components/ui';
+import { Button, EmptyState, SkeletonList, Card } from '../components/ui';
 import {
   actionCopy,
   expectedExpiryLabel,
@@ -170,7 +170,7 @@ export function FoodDetailPage() {
     return (
       <>
         <PageHeader title="Food" back="/" />
-        <Spinner />
+        <SkeletonList />
       </>
     );
   }
