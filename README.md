@@ -1053,7 +1053,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.18.0] - 2026-10-03: design and usability, stage 1 (design system) · `COMMIT_HASH`
+### [2.18.0] - 2026-10-03: design and usability, stage 1 (design system) · `79054fc`
 **Added**
 - **Design tokens** in `client/src/index.css`: the light and dark palettes and urgency colours from the design brief, 16 px card and 12 px button corners, and the type scale (see [Design system](#design-system-v218)).
 - **Fonts:** Bricolage Grotesque (600, 700) for headings and food names and Figtree (400 to 600) for body text, installed with `@fontsource` (bundled, so they work offline in the apps).
