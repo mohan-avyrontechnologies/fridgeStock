@@ -955,7 +955,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.16.0] - 2026-10-02: Android and iOS apps (Capacitor) · `COMMIT_HASH`
+### [2.16.0] - 2026-10-02: Android and iOS apps (Capacitor) · `87a7f5e`
 **Added**
 - **Capacitor** in the client workspace, with an Android and an iOS project (`client/android`, `client/ios`; iOS uses CocoaPods because the ML Kit scanner and Firebase need it). App name **Cook First**; the app ID is the placeholder `com.example.cookfirst` in one place each, and `npm run native:set-app-id -w client -- <id>` changes every place (it keeps the Android Java package, so no files move).
 - **`client/src/platform`:** web and native implementations of the **camera**, **barcode scanning**, **push** and **token storage**, chosen once with `Capacitor.isNativePlatform()`. Native: `@capacitor/camera` for photos, `@capacitor-mlkit/barcode-scanning`, `@capacitor/push-notifications`, and `@aparajita/capacitor-secure-storage` (iOS Keychain, Android Keystore) for the login token instead of `localStorage`. The plugins load on demand, so a browser never downloads them. The web implementations wrap exactly what the app did before.
