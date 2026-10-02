@@ -730,7 +730,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.9.0] - 2026-10-02: Phase 5 (insights) · `COMMIT_HASH`
+### [2.9.0] - 2026-10-02: Phase 5 (insights) · `26c21c6`
 **Added**
 - **Insights screen** (`/insights`, `GET /insights`): used versus wasted this week with the waste rate and last week for comparison, an eight-week stacked bar chart (a table for screen readers sits beside it), the foods wasted most in the last 30 days, and tips. Linked from the dashboard, Settings and the desktop sidebar.
 - **Optional price** on food (Add Food and the edit form; shown on Food Details). Usage records keep a `value`: a partly used item counts for the share used, the rest when wasted, and removals and unpriced items count for nothing. The price shown on an item shrinks with the quantity left.
