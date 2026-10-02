@@ -749,7 +749,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-### [2.11.0] - 2026-10-02: Phase 6, part 2 (shared households) · `COMMIT_HASH`
+### [2.11.0] - 2026-10-02: Phase 6, part 2 (shared households) · `ee6ecbe`
 **Added**
 - **Shared households** (`/household`): invite codes (single-use, a week, up to 5 open, shown as XXXX-XXXX and shared by hand), joining with a code (rate-limited like login), leaving, and a household of up to 6. Members share food, usage history and insights, the shopping list and the meal plan; favourites, reminder settings, currency, AI allowance and push devices stay personal.
 - **Activity log:** who added, used, wasted or removed what, and who joined or left, newest first, with paging.
