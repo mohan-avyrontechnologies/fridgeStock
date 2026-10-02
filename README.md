@@ -1027,7 +1027,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 ### [Unreleased]
 - *Nothing yet.*
 
-`### [2.17.0] - 2026-10-03: reminder sounds and meal-time cooking reminders · `COMMIT_HASH`
+`### [2.17.0] - 2026-10-03: reminder sounds and meal-time cooking reminders · `fa453f1`
 `**Added**
 `- **Three reminder sounds** in `client/assets/sounds` (gentle, strong, meal), as clearly named **placeholders** (`<sound>.placeholder.wav` and `.caf`, synthetic tones) until licensed files are added; a licensed `<sound>.wav` or `.caf` wins over its placeholder. `client/scripts/sounds.mjs` (`sounds:generate`, `sounds:sync`, `sounds:check`; `cap:sync` runs `sounds:sync`) copies them to `android/.../res/raw/reminder_<sound>.*` and `ios/App/App/<sound>.caf`, converts a 16-bit PCM WAV to CAF, refuses an iOS sound of 30 seconds or more, and registers the `.caf` files in the Xcode project.
 `- **Android notification channels**, created at app start with `@capacitor/push-notifications` `createChannel`: `food-soon` (default importance, gentle sound), `food-urgent` (high importance, strong sound and vibration), `meal-reminders` (default importance, meal sound), and `food-urgent-sound`. `reminders-vibrate` and `reminders-silent` have no sound and are made natively (that plugin can't), because Android fixes sound and vibration per channel and the sound, vibration and quiet-hours switches need one for each combination. `ReminderChannels.java` makes any that is missing when a reminder arrives, and a test keeps it in step with the JavaScript table.
