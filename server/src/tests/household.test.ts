@@ -77,6 +77,14 @@ describe('invites', () => {
     await invite(a);
   });
 
+  it('can be cancelled however the code is written, and a code that can’t be one is a 400', async () => {
+    const a = await registerUser();
+    const code = await invite(a);
+    await a.auth(api().delete(`/api/household/invites/${encodeURIComponent(` ${code.toLowerCase()} `)}`)).expect(204);
+    const tooLong = await a.auth(api().delete(`/api/household/invites/${'A'.repeat(21)}`)).expect(400);
+    expect(tooLong.body.error).toMatchObject({ code: 'VALIDATION_ERROR', field: 'code' });
+  });
+
   it('can be cancelled only by someone in that household', async () => {
     const a = await registerUser();
     const stranger = await registerUser();

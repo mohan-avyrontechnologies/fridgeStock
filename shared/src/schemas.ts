@@ -126,6 +126,9 @@ export const joinHouseholdSchema = z.object({
     .pipe(z.string().min(1, MESSAGES.inviteCode).max(20, MESSAGES.inviteInvalid)),
 });
 
+/** DELETE /household/invites/:code: the same code, written the same ways. */
+export const inviteCodeParamSchema = joinHouseholdSchema;
+
 export const updateAccountSchema = z
   .object({
     name,
@@ -380,6 +383,16 @@ export const recipesRequestSchema = z.object({ mealType: z.enum(MEAL_TYPES, { er
 
 /** GET /meal-reminders/:meal */
 export const mealParamSchema = z.object({ meal: z.enum(MEAL_TYPES, { error: MESSAGES.mealType }) });
+
+/** PUT and DELETE /meal-plan/:date: a real calendar date (whether it is in this week is the service's check). */
+export const mealDateParamSchema = z.object({
+  date: z.string({ error: MESSAGES.mealDate }).refine(isValidDate, MESSAGES.mealDate),
+});
+
+/** DELETE /meal-plan/:date?meal=: which meal; leaving it out means dinner. */
+export const mealQuerySchema = z.object({
+  meal: z.enum(MEAL_TYPES, { error: MESSAGES.mealType }).default('dinner'),
+});
 
 /** POST /shopping */
 export const shoppingItemSchema = z.object({

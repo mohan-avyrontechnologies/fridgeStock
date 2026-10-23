@@ -3,7 +3,18 @@
 All notable changes to this project are listed here, newest first. Versions follow [Semantic Versioning](https://semver.org/).
 
 ### [Unreleased]
-- *Nothing yet.*
+**Security**
+- **Notification button tokens** (`POST /push/actions`) now work for 24 hours instead of 7 days, carry out one action once (a second tap, or the other button on the same notification, is a 401 "This notification button has already been used."), and are unique to each notification. Buttons on notifications sent before this change stop working and open Food Details instead.
+
+**Fixed**
+- A request body the server can't read (an unknown or corrupt `Content-Encoding`) is a 415 or 400 `VALIDATION_ERROR`, not a 500.
+- The account export no longer includes the push service's own delivery errors on reminders.
+
+**Changed**
+- Path and query values are checked with shared zod schemas: `:meal` (`mealParamSchema`), `:date` (`mealDateParamSchema`, so `DELETE /meal-plan/:date` with a date that isn't real is now a 400), `?meal` (`mealQuerySchema`) and `:code` (`inviteCodeParamSchema`).
+- `docs/API.md` lists all 68 routes in router order, with the public routes, every rate limit and the `AI_UNAVAILABLE` code; a test keeps it in step with the router.
+- A root `.env.example` points to the package's own example files.
+- Tests: every route is a 401 without a login (except the four public ones); another household's item is a 404 for undo, use-today, open, undo-open and move; favourites and meal-plan food are checked across accounts.
 
 ### [2.23.0] - 2026-10-23: automatic expiry, a second AI provider, and the release set-up
 **Added**

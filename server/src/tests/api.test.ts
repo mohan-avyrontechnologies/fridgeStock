@@ -56,6 +56,24 @@ describe('errors', () => {
     expect(res.body.error.field).toEqual(expect.any(String));
   });
 
+  it('a body that can’t be read is the client’s 4xx, never a 500: unknown or corrupt Content-Encoding', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const login = (encoding: string) =>
+      api()
+        .post('/api/auth/login')
+        .set('Content-Type', 'application/json')
+        .set('Content-Encoding', encoding)
+        .send('{"email":"a@example.com","password":"x"}');
+    const unknown = await login('zstd-x').expect(415);
+    const corrupt = await login('gzip').expect(400);
+    for (const res of [unknown, corrupt]) {
+      expect(res.body).toEqual({ error: { code: 'VALIDATION_ERROR', message: "The request body couldn't be read." } });
+      expect(res.text).not.toMatch(/at \w|incorrect header|zstd/);
+    }
+    // Nothing unexpected happened, so nothing was logged as a server error.
+    expect(error).not.toHaveBeenCalled();
+  });
+
   it('login failure is 401 UNAUTHENTICATED "Email or password is incorrect."', async () => {
     const res = await api()
       .post('/api/auth/login')

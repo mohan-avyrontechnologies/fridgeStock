@@ -9,7 +9,15 @@ import { PUSH_ACTION_RATE_LIMIT } from '../routes/index.js';
 import { clock } from '../services/clock.js';
 import { sweep } from '../services/notificationService.js';
 import { createWebPushProvider, setPushProvider, type PushProvider } from '../services/pushProvider.js';
-import { signActionToken, signToken } from '../services/token.js';
+import { UsedActionTokenModel } from '../models/UsedActionToken.js';
+import {
+  ACTION_TOKEN_TTL_SECONDS,
+  signActionToken,
+  signMealActionToken,
+  signToken,
+  verifyActionToken,
+  verifyMealActionToken,
+} from '../services/token.js';
 import { api, food, gentleAlert, registerUser } from './helpers.js';
 
 /** Phase 3: better reminders (Web Push, daily digest, Used and Snooze buttons). */
@@ -396,9 +404,15 @@ describe('notification buttons', () => {
     const saved = await FoodItemModel.findById(chicken.id);
     expect(saved!.status).toBe('USED');
     expect(await UsageRecordModel.countDocuments({ userId: s.user.id, action: 'USED' })).toBe(1);
-    // A second tap finds it already closed; the service worker then opens Food Details.
-    const again = await api().post('/api/push/actions').send({ token, action: 'USED' }).expect(409);
-    expect(again.body.error.message).toBe('This item is no longer active.');
+    // A second tap on the same button is refused: the token has done its one action.
+    const again = await api().post('/api/push/actions').send({ token, action: 'USED' }).expect(401);
+    expect(again.body.error.message).toBe('This notification button has already been used.');
+    // Another notification's button finds it already closed; the service worker then opens Food Details.
+    const other = await api()
+      .post('/api/push/actions')
+      .send({ token: signActionToken(s.user.id, chicken.id), action: 'USED' })
+      .expect(409);
+    expect(other.body.error.message).toBe('This item is no longer active.');
   });
 
   it('"Snooze" leaves the item out of today’s summary and brings it back tomorrow', async () => {
@@ -479,6 +493,95 @@ describe('notification buttons', () => {
 
   it('are rate-limited to 60 requests per 15 minutes per IP', () => {
     expect(PUSH_ACTION_RATE_LIMIT).toEqual({ windowMs: 15 * 60 * 1000, limit: 60 });
+  });
+});
+
+describe('notification button tokens', () => {
+  const tap = (token: string, action: string) => api().post('/api/push/actions').send({ token, action });
+
+  /** Two items, and a push for each in one-per-item mode, so every notification carries its own token. */
+  async function twoPushes() {
+    const sent = fakePush();
+    at('2026-09-29', 6);
+    const s = await withDevice();
+    await s.auth(api().put('/api/notifications/delivery').send({ mode: 'EACH_ITEM' })).expect(200);
+    const chicken = await add(s, 'Chicken', 1);
+    const bread = await add(s, 'Bread', 1);
+    at('2026-09-29', 8);
+    await sweep();
+    const tokenFor = (id: string) => sent.find((push) => push.payload.url === `/food/${id}`)!.payload.actionToken!;
+    return { s, chicken, bread, chickenToken: tokenFor(chicken.id), breadToken: tokenFor(bread.id) };
+  }
+
+  it('expire after a day, and an expired one changes nothing', async () => {
+    const s = await registerUser();
+    at('2026-09-29', 6);
+    const chicken = await add(s, 'Chicken', 3);
+    const token = signActionToken(s.user.id, chicken.id);
+    expect(ACTION_TOKEN_TTL_SECONDS).toBe(24 * 60 * 60);
+
+    at('2026-09-30', 6);
+    const res = await tap(token, 'SNOOZE').expect(401);
+    expect(res.body.error.code).toBe('UNAUTHENTICATED');
+    expect((await FoodItemModel.findById(chicken.id))!.snoozedUntil).toBeNull();
+
+    // One minute earlier it still worked.
+    at('2026-09-30', 5, 59);
+    await tap(token, 'SNOOZE').expect(204);
+  });
+
+  it('can be used only once, even with two taps at the same moment', async () => {
+    const { s, chicken, chickenToken } = await twoPushes();
+    const results = await Promise.all([tap(chickenToken, 'USED'), tap(chickenToken, 'USED')]);
+    expect(results.map((r) => r.status).sort()).toEqual([204, 401]);
+    expect(await UsageRecordModel.countDocuments({ userId: s.user.id, foodId: chicken.id })).toBe(1);
+    await tap(chickenToken, 'USED').expect(401);
+  });
+
+  it('do one action: after "Snooze", the same notification’s "Used" is refused', async () => {
+    const { chicken, chickenToken } = await twoPushes();
+    await tap(chickenToken, 'SNOOZE').expect(204);
+    const res = await tap(chickenToken, 'USED').expect(401);
+    expect(res.body.error.message).toBe('This notification button has already been used.');
+    expect((await FoodItemModel.findById(chicken.id))!.status).toBe('ACTIVE');
+  });
+
+  it('belong to one notification: each push has its own, and one can’t act on another item', async () => {
+    const { chicken, bread, chickenToken, breadToken } = await twoPushes();
+    expect(chickenToken).not.toBe(breadToken);
+    expect(verifyActionToken(chickenToken)!.jti).not.toBe(verifyActionToken(breadToken)!.jti);
+
+    // Using one notification's button leaves the other's working.
+    await tap(chickenToken, 'USED').expect(204);
+    await tap(breadToken, 'SNOOZE').expect(204);
+    expect((await FoodItemModel.findById(chicken.id))!.status).toBe('USED');
+    expect((await FoodItemModel.findById(bread.id))!.snoozedUntil).toBe('2026-09-30');
+
+    // Pointing a token at another item breaks its signature.
+    const [header, payload, signature] = breadToken.split('.');
+    const claims = JSON.parse(Buffer.from(payload!, 'base64url').toString());
+    const forged = Buffer.from(JSON.stringify({ ...claims, foodId: chicken.id, jti: 'new' })).toString('base64url');
+    await tap(`${header}.${forged}.${signature}`, 'SNOOZE').expect(401);
+  });
+
+  it('is given back when its action fails, so nothing is lost', async () => {
+    const alice = await registerUser();
+    at('2026-09-29', 6);
+    const chicken = await add(alice, 'Chicken', 1);
+    const mallory = await registerUser();
+    const token = signActionToken(mallory.user.id, chicken.id);
+    await tap(token, 'USED').expect(404);
+    expect(await UsedActionTokenModel.countDocuments({ jti: verifyActionToken(token)!.jti })).toBe(0);
+  });
+
+  it('meal "Snooze 30 min" tokens expire after a day too (single use is in meals.test.ts)', async () => {
+    const s = await registerUser();
+    at('2026-09-29', 6);
+    const token = signMealActionToken(s.user.id, 'breakfast', '2026-09-29');
+    expect(verifyMealActionToken(token)!.expiresAt.toISOString()).toBe('2026-09-30T06:00:00.000Z');
+    at('2026-09-30', 6);
+    expect(verifyMealActionToken(token)).toBeNull();
+    await tap(token, 'SNOOZE_MEAL').expect(401);
   });
 });
 

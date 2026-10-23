@@ -1,7 +1,10 @@
+import type { MealType } from '@cook-first/shared';
 import type { Request, Response } from 'express';
 import { currentUser } from '../middleware/auth.js';
-import { parseMeal } from '../services/mealReminderService.js';
+import { validatedParams, validatedQuery } from '../middleware/validate.js';
 import * as planningService from '../services/planningService.js';
+
+type DateParam = { date: string };
 
 /** Thin: parse the request, call the service, send the response. */
 export const mealPlanController = {
@@ -10,12 +13,12 @@ export const mealPlanController = {
   },
 
   async set(req: Request, res: Response) {
-    res.json(await planningService.setEntry(currentUser(req), String(req.params.date), req.body));
+    res.json(await planningService.setEntry(currentUser(req), validatedParams<DateParam>(req).date, req.body));
   },
 
   async clear(req: Request, res: Response) {
-    const meal = req.query.meal === undefined ? 'dinner' : parseMeal(String(req.query.meal));
-    await planningService.clearEntry(currentUser(req), String(req.params.date), meal);
+    const { meal } = validatedQuery<{ meal: MealType }>(req);
+    await planningService.clearEntry(currentUser(req), validatedParams<DateParam>(req).date, meal);
     res.status(204).end();
   },
 };

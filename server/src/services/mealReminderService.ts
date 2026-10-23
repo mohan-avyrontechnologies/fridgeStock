@@ -3,7 +3,6 @@ import {
   MEAL_TYPES,
   mergesWithDigest,
   minutesInTz,
-  MESSAGES,
   type DateString,
   type MealContent,
   type MealRecipe,
@@ -18,7 +17,7 @@ import type { UserDoc } from '../models/User.js';
 import { aiClient } from './aiClient.js';
 import { clock } from './clock.js';
 import { markDigestSent } from './digest.js';
-import { AppError, validationError } from './errors.js';
+import { AppError } from './errors.js';
 import { chooseMealContent } from './mealContent.js';
 import * as planningService from './planningService.js';
 import { prioritise } from './priorityEngine.js';
@@ -36,12 +35,6 @@ export const MEAL_CATCH_UP_MINUTES = 30;
 export const MEAL_SNOOZE_MINUTES = 30;
 
 export const isMeal = (value: string): value is MealType => (MEAL_TYPES as readonly string[]).includes(value);
-
-/** Reads a meal name from the address, or throws the shared validation message. */
-export function parseMeal(value: string): MealType {
-  if (!isMeal(value)) throw validationError(MESSAGES.mealType, 'meal');
-  return value;
-}
 
 const notFound = () => new AppError(404, 'NOT_FOUND', 'There is no reminder for that meal today.');
 

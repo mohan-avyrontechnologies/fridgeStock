@@ -7,7 +7,10 @@ import {
   recipesRequestSchema,
   favouriteSchema,
   loginSchema,
+  mealDateParamSchema,
+  mealParamSchema,
   mealPlanEntrySchema,
+  mealQuerySchema,
   moveFoodSchema,
   openFoodSchema,
   notificationPageSchema,
@@ -21,6 +24,7 @@ import {
   shoppingUpdateSchema,
   barcodeSchema,
   deleteAccountSchema,
+  inviteCodeParamSchema,
   joinHouseholdSchema,
   photoCheckSchema,
   printedDateSchema,
@@ -131,7 +135,7 @@ router.delete('/account', authLimiter, validate(deleteAccountSchema), accountCon
 
 router.get('/household', householdController.get);
 router.post('/household/invites', householdController.createInvite);
-router.delete('/household/invites/:code', householdController.cancelInvite);
+router.delete('/household/invites/:code', validate(inviteCodeParamSchema, 'params'), householdController.cancelInvite);
 router.post('/household/join', authLimiter, validate(joinHouseholdSchema), householdController.join);
 router.post('/household/leave', householdController.leave);
 router.get('/household/activity', validate(paginationSchema, 'query'), householdController.activity);
@@ -198,6 +202,16 @@ router.put('/shopping/:id', validate(shoppingUpdateSchema), shoppingController.u
 router.delete('/shopping/:id', shoppingController.remove);
 
 router.get('/meal-plan', mealPlanController.get);
-router.get('/meal-reminders/:meal', mealReminderController.get);
-router.put('/meal-plan/:date', validate(mealPlanEntrySchema), mealPlanController.set);
-router.delete('/meal-plan/:date', mealPlanController.clear);
+router.get('/meal-reminders/:meal', validate(mealParamSchema, 'params'), mealReminderController.get);
+router.put(
+  '/meal-plan/:date',
+  validate(mealDateParamSchema, 'params'),
+  validate(mealPlanEntrySchema),
+  mealPlanController.set,
+);
+router.delete(
+  '/meal-plan/:date',
+  validate(mealDateParamSchema, 'params'),
+  validate(mealQuerySchema, 'query'),
+  mealPlanController.clear,
+);

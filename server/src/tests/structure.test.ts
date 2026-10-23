@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { REMINDER_SCHEDULE } from '../jobs/reminderJob.js';
+import { router } from '../routes/index.js';
 
 /** Architecture rules for server/src, checked against the source itself. */
 const SRC = path.resolve('src');
@@ -59,6 +60,33 @@ describe('request flow: routes → middleware → controllers → services → m
     for (const spec of imports(path.join(SRC, 'routes/index.ts'))) {
       expect(spec).not.toMatch(/\/models\/|\/services\/|^mongoose$/);
     }
+  });
+
+  it('every path value other than :id is checked with a zod schema, and controllers never read raw params', () => {
+    const routes = source(path.join(SRC, 'routes/index.ts')).replace(/\s+/g, ' ');
+    const calls = [...routes.matchAll(/router\.\w+\( ?'([^']+)',([^;]*)\);/g)];
+    for (const [, url, rest] of calls) {
+      const params = [...url!.matchAll(/:(\w+)/g)].map((m) => m[1]!).filter((name) => name !== 'id');
+      if (params.length) expect(rest, url).toMatch(/validate\(\w+, 'params'\)/);
+    }
+    for (const file of appFiles.filter((f) => rel(f).startsWith('controllers/'))) {
+      const reads = [...stripComments(source(file)).matchAll(/req\.params\.(\w+)/g)].map((m) => m[1]);
+      expect(
+        reads.filter((name) => name !== 'id'),
+        rel(file),
+      ).toEqual([]);
+    }
+  });
+
+  it('docs/API.md lists exactly the routes the server registers, in the same order', () => {
+    const registered = router.stack.flatMap((layer) => {
+      const route = (layer as { route?: { path: string; methods: Record<string, boolean> } }).route;
+      return route ? Object.keys(route.methods).map((method) => `${method.toUpperCase()} ${route.path}`) : [];
+    });
+    const documented = [
+      ...source(path.resolve('../docs/API.md')).matchAll(/^\| (GET|POST|PUT|DELETE) \| `([^`]+)`/gm),
+    ].map((m) => `${m[1]} ${m[2]}`);
+    expect(documented).toEqual(registered);
   });
 
   it('only models (and the connection in config/db.ts) talk to MongoDB directly', () => {
@@ -146,5 +174,15 @@ describe('environment variables', () => {
     }
     const all = appFiles.map(source).join('\n');
     expect(all).not.toMatch(/MONGODB_URI|CORS_ORIGIN/);
+  });
+
+  it('the root .env.example points to each package’s own example file, and each one exists', () => {
+    const root = path.resolve('..');
+    const pointer = source(path.join(root, '.env.example'));
+    const named = [...pointer.matchAll(/^#\s+(\S+\.example)\s+->/gm)].map((m) => m[1]!);
+    expect(named).toEqual(['server/.env.example', 'client/.env.example', 'client/.env.native.example']);
+    for (const file of named) expect(existsSync(path.join(root, file)), file).toBe(true);
+    // It holds no settings of its own: every line is a comment or blank.
+    expect(pointer.split('\n').filter((line) => line.trim() && !line.startsWith('#'))).toEqual([]);
   });
 });

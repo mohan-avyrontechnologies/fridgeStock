@@ -1,4 +1,4 @@
-import { hasBannedWording, type PushPayload } from '@cook-first/shared';
+import { hasBannedWording, MESSAGES, type PushPayload } from '@cook-first/shared';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MealReminderLogModel } from '../models/MealReminderLog.js';
 import { RecipeIdeaCacheModel } from '../models/RecipeIdeaCache.js';
@@ -801,6 +801,13 @@ describe('"Snooze 30 min" and "Show recipe"', () => {
     expect(sent).toHaveLength(2);
   });
 
+  it('a reminder’s snooze button works once: the same token is refused the second time', async () => {
+    const { token } = await sentOnce();
+    await api().post('/api/push/actions').send({ token, action: 'SNOOZE_MEAL' }).expect(204);
+    const again = await api().post('/api/push/actions').send({ token, action: 'SNOOZE_MEAL' }).expect(401);
+    expect(again.body.error.message).toBe('This notification button has already been used.');
+  });
+
   it('can be snoozed again', async () => {
     const { sent } = await sentOnce();
     await api()
@@ -1099,5 +1106,21 @@ describe('meal plans with a meal', () => {
     at('06:00');
     await s.auth(api().put(`/api/meal-plan/${TODAY}`).send({ meal: 'supper', title: 'Stew' })).expect(400);
     await s.auth(api().delete(`/api/meal-plan/${TODAY}?meal=supper`)).expect(400);
+  });
+
+  it('check the date in the address with the shared schema: not a real date is a 400 naming "date"', async () => {
+    const s = await registerUser();
+    at('06:00');
+    for (const date of ['tomorrow', '2026-02-30', '2026-9-29']) {
+      const put = await s.auth(api().put(`/api/meal-plan/${date}`).send({ title: 'Stew' })).expect(400);
+      expect(put.body.error).toMatchObject({ code: 'VALIDATION_ERROR', field: 'date', message: MESSAGES.mealDate });
+      const del = await s.auth(api().delete(`/api/meal-plan/${date}`)).expect(400);
+      expect(del.body.error.field).toBe('date');
+    }
+    // A real date outside this week is still the service's own 400.
+    const far = await s.auth(api().put('/api/meal-plan/2030-01-01').send({ title: 'Stew' })).expect(400);
+    expect(far.body.error.field).toBe('date');
+    const meal = await s.auth(api().get('/api/meal-reminders/supper')).expect(400);
+    expect(meal.body.error).toMatchObject({ field: 'meal', message: MESSAGES.mealType });
   });
 });

@@ -2,9 +2,9 @@ import type { NextFunction, Request, Response } from 'express';
 import type { ZodType } from 'zod';
 import { validationError } from '../services/errors.js';
 
-type Source = 'body' | 'query';
-// Express 5 makes req.query read-only, so validated query values live here.
-type WithQuery<T = unknown> = Request & { validatedQuery: T };
+type Source = 'body' | 'query' | 'params';
+// Express 5 makes req.query read-only, so validated query and path values live here.
+type WithValidated<T = unknown> = Request & { validatedQuery: T; validatedParams: T };
 
 /**
  * Parses req[source] with a shared zod schema; the parsed value replaces the
@@ -18,11 +18,16 @@ export function validate(schema: ZodType, source: Source = 'body') {
       throw validationError(issue.message, issue.path.length ? issue.path.map(String).join('.') : undefined);
     }
     if (source === 'body') req.body = result.data;
-    else (req as WithQuery).validatedQuery = result.data;
+    else if (source === 'query') (req as WithValidated).validatedQuery = result.data;
+    else (req as WithValidated).validatedParams = result.data;
     next();
   };
 }
 
 export function validatedQuery<T>(req: Request): T {
-  return (req as WithQuery<T>).validatedQuery;
+  return (req as WithValidated<T>).validatedQuery;
+}
+
+export function validatedParams<T>(req: Request): T {
+  return (req as WithValidated<T>).validatedParams;
 }

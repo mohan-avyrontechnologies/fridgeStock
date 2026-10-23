@@ -81,6 +81,16 @@ describe('GET /api/account/export', () => {
     expect(text).not.toContain(other.user.email);
     expect(JSON.parse(text).foods).toHaveLength(2);
   });
+
+  it('leaves out the push service’s own error text on reminders', async () => {
+    await fillAccount();
+    const failure = 'Received unexpected response code 410 from https://fcm.googleapis.com/fcm/send/abc';
+    await NotificationModel.updateMany(owned(s.user.id), { $set: { lastError: failure } });
+    const res = await s.auth(api().get('/api/account/export')).expect(200);
+    expect(res.body.reminders.length).toBeGreaterThan(0);
+    for (const reminder of res.body.reminders) expect(reminder).not.toHaveProperty('lastError');
+    expect(res.text).not.toContain('fcm.googleapis.com');
+  });
 });
 
 describe('DELETE /api/account', () => {

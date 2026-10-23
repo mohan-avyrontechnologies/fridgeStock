@@ -29,13 +29,17 @@ function plain({ _id, userId: _userId, householdId: _householdId, __v: _version,
 
 const rows = async (query: PromiseLike<unknown[]>) => (await query).map((doc) => plain(doc as Raw));
 
-/** Everything the app holds about the user, as one JSON document. Never includes the password hash or push keys. */
+/**
+ * Everything the app holds about the user, as one JSON document. Never includes the password hash, push keys
+ * or internal delivery errors.
+ */
 export async function exportAccount(user: UserDoc): Promise<AccountExport> {
   const owner = { userId: user._id };
   const [foods, history, reminders, favourites, shopping, mealPlan, pushDevices] = await Promise.all([
     rows(FoodItemModel.find(owner).sort({ _id: 1 }).lean()),
     rows(UsageRecordModel.find(owner).sort({ _id: 1 }).lean()),
-    rows(NotificationModel.find(owner).sort({ _id: 1 }).lean()),
+    // Without the push service's own error text, which is about delivery, not about the person.
+    rows(NotificationModel.find(owner, { lastError: 0 }).sort({ _id: 1 }).lean()),
     rows(FavouriteModel.find(owner).sort({ _id: 1 }).lean()),
     rows(ShoppingItemModel.find(owner).sort({ _id: 1 }).lean()),
     rows(MealPlanEntryModel.find(owner).sort({ _id: 1 }).lean()),

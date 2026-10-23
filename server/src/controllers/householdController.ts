@@ -1,7 +1,7 @@
 import type { JoinHouseholdInput, Pagination } from '@cook-first/shared';
 import type { Request, Response } from 'express';
 import { currentUser } from '../middleware/auth.js';
-import { validatedQuery } from '../middleware/validate.js';
+import { validatedParams, validatedQuery } from '../middleware/validate.js';
 import * as householdService from '../services/householdService.js';
 
 /** Thin: parse the request, call the service, send the response. */
@@ -13,7 +13,7 @@ export const householdController = {
     res.status(201).json(await householdService.createInvite(currentUser(req)));
   },
   async cancelInvite(req: Request, res: Response) {
-    await householdService.cancelInvite(currentUser(req), String(req.params.code));
+    await householdService.cancelInvite(currentUser(req), validatedParams<JoinHouseholdInput>(req).code);
     res.status(204).end();
   },
   async join(req: Request, res: Response) {
