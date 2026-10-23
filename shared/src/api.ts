@@ -482,6 +482,15 @@ export interface ReceiptDraft {
   items: ReceiptItem[];
 }
 
+/** What was read off the pack in a photo. The date is null when none could be read or it was out of range. */
+export interface PrintedDateRead {
+  /** The text as printed, for the person to check. */
+  text: string | null;
+  /** The text turned into a calendar date, using the person's locale for day and month order. */
+  printedDate: DateString | null;
+  printedDateType: PrintedDateType;
+}
+
 /** A problem a photo shows. The app never reports anything good about a photo. */
 export interface WarningSign {
   type: WarningSignType;

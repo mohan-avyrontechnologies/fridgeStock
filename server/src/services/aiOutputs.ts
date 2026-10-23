@@ -1,4 +1,4 @@
-import { UNITS, WARNING_SIGN_TYPES } from '@cook-first/shared';
+import { PRINTED_DATE_TYPES, UNITS, WARNING_SIGN_TYPES } from '@cook-first/shared';
 import { z } from 'zod';
 
 /**
@@ -154,3 +154,26 @@ export const photoCheckOutput = z
   })
   .strict();
 export type PhotoCheckOutput = z.infer<typeof photoCheckOutput>;
+
+/**
+ * Reading the date printed on a pack. The AI copies the text it can see and says what the date is called;
+ * it has no field for a lifespan or a number of days, and the text is turned into a date by
+ * parsePrintedDate (using the person's locale), not by the AI.
+ */
+export const printedDateJsonSchema = {
+  type: 'object',
+  properties: {
+    text: { type: ['string', 'null'] },
+    kind: { type: 'string', enum: [...PRINTED_DATE_TYPES] },
+  },
+  required: ['text', 'kind'],
+  additionalProperties: false,
+};
+
+export const printedDateOutput = z
+  .object({
+    text: z.string().trim().max(40).nullable(),
+    kind: z.enum(PRINTED_DATE_TYPES),
+  })
+  .strict();
+export type PrintedDateOutput = z.infer<typeof printedDateOutput>;

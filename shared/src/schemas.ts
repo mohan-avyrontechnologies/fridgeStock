@@ -42,6 +42,7 @@ export const MESSAGES = {
   addedDate: "Added date must be a valid date that isn't in the future.",
   printedDate: 'Printed date must be a valid date.',
   printedDateType: 'Choose a label for the date from the list.',
+  locale: 'Locale must be a language tag such as en-GB.',
   lifespan: 'Lifespan must be a whole number of days from 0 to 365.',
   notes: 'Notes must be at most 200 characters.',
   email: 'Enter a valid email address.',
@@ -186,6 +187,13 @@ export const updateFoodSchema = z
   .object(foodFields)
   .partial()
   .refine((body) => Object.keys(body).length > 0, 'Provide at least one field to update.');
+
+/** A browser language tag such as "en-GB". Decides whether a printed 03/04 means 3 April or 4 March. */
+const locale = z
+  .string({ error: MESSAGES.locale })
+  .trim()
+  .max(35, MESSAGES.locale)
+  .regex(/^[A-Za-z]{2,3}([-_][A-Za-z0-9]{2,8})*$/, MESSAGES.locale);
 
 /** The longest base64 text accepted for a receipt photo (about 3 MB of image). */
 export const MAX_RECEIPT_BASE64 = 4_000_000;
@@ -418,6 +426,7 @@ export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type JoinHouseholdInput = z.infer<typeof joinHouseholdSchema>;
 export type ReceiptInput = z.infer<typeof receiptSchema>;
+export type PrintedDateInput = z.infer<typeof printedDateSchema>;
 export type PhotoCheckInput = z.infer<typeof photoCheckSchema>;
 export type PhotoSizeInput = z.infer<typeof photoSizeSchema>;
 export type DeleteAccountInput = z.infer<typeof deleteAccountSchema>;
@@ -454,6 +463,9 @@ export const photoCheckSchema = receiptSchema.extend({
     .regex(/^[0-9a-f]{24}$/i, MESSAGES.photoFood)
     .optional(),
 });
+
+/** POST /parse/date: a photo of the date on a pack (like the receipt photo), plus the person's locale. */
+export const printedDateSchema = receiptSchema.extend({ locale: locale.optional() });
 
 /** The largest product photo that can be uploaded. */
 export const PRODUCT_PHOTO_MAX_BYTES = 5 * 1024 * 1024;

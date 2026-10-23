@@ -398,7 +398,7 @@ describe('typing a barcode number', () => {
 });
 
 describe('one product', () => {
-  it('pre-fills Add Food with the catalog lifespan suggestion for you to confirm', async () => {
+  it('pre-fills Add Food with where the catalog keeps it, and an estimated expiry for you to confirm', async () => {
     const user = userEvent.setup();
     noCamera();
     products();
@@ -407,12 +407,12 @@ describe('one product', () => {
     await typeNumber(user, dialog, MILK_CODE); // "Milk" is in the catalog: 5 days in the fridge
     await user.click(await within(dialog).findByRole('button', { name: 'Fill in the form' }));
     await waitFor(() => expect(screen.getByLabelText('Food')).toHaveValue('Milk'));
-    expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(5);
+    expect(screen.getByText(/lasts about 5 days in the fridge/)).toBeInTheDocument();
     expect(screen.getByLabelText('Kept in')).toHaveValue('FRIDGE');
     expect(screen.getByLabelText('Unit')).toHaveValue('ml'); // the pack size from the barcode keeps its own unit
   });
 
-  it('leaves the lifespan blank for a food the catalog does not know', async () => {
+  it('gives a rough estimate for a food the catalog does not know', async () => {
     const user = userEvent.setup();
     noCamera();
     products();
@@ -421,13 +421,13 @@ describe('one product', () => {
     await typeNumber(user, dialog, OTHER_CODE);
     await user.click(await within(dialog).findByRole('button', { name: 'Fill in the form' }));
     await waitFor(() => expect(screen.getByLabelText('Food')).toHaveValue('Zorblax Drink'));
-    expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(null);
+    expect(screen.getByText('· Rough estimate')).toBeInTheDocument();
     expect(screen.queryByLabelText(/Notes/)).not.toBeInTheDocument();
   });
 });
 
 describe('scanning several products in a row', () => {
-  it('builds a Bulk Add list, with catalog lifespans suggested, ready to check', async () => {
+  it('builds a Bulk Add list, with food put where it is usually kept, ready to check', async () => {
     const user = userEvent.setup();
     noCamera();
     products();
@@ -447,7 +447,7 @@ describe('scanning several products in a row', () => {
     expect(screen.queryByLabelText('Item 3 name')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Item 1 quantity')).toHaveValue(1000);
     expect(screen.getByLabelText('Item 1 unit')).toHaveValue('ml');
-    expect(screen.getByLabelText('Item 1 lifespan in days')).toHaveValue(5);
+    expect(screen.getByLabelText('Item 1 lifespan in days')).toHaveValue(null);
     expect(screen.getByLabelText('Item 2 lifespan in days')).toHaveValue(null);
     expect(screen.getByText('Added 2 scanned items. Check each one before saving.')).toBeInTheDocument();
   });
@@ -678,7 +678,6 @@ describe('saving the photo with the food', () => {
     );
     renderApp();
     await user.type(await screen.findByLabelText('Food'), 'Peas');
-    await user.type(screen.getByLabelText('Lifespan (days)'), '9');
     await user.click(screen.getByRole('button', { name: 'Add food' }));
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Save' })).not.toBeInTheDocument());
     expect(seen).toEqual([]);
@@ -837,5 +836,114 @@ describe('the "Save product photos" setting', () => {
     await user.click(toggle);
     await waitFor(() => expect(body).toEqual({ savePhotos: false }));
     await waitFor(() => expect(useAuthStore.getState().user?.savePhotos).toBe(false));
+  });
+});
+
+describe('the date step after a scan', () => {
+  const inDays = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
+  const dmy = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
+
+  async function scanMilk(user: ReturnType<typeof userEvent.setup>) {
+    noCamera();
+    products();
+    renderApp();
+    const dialog = await openCamera(user);
+    await typeNumber(user, dialog, MILK_CODE);
+    await within(dialog).findByRole('region', { name: 'Show the date on the pack' });
+    return dialog;
+  }
+
+  it('asks to see the date on the pack after a barcode, and skipping is always allowed', async () => {
+    const user = userEvent.setup();
+    const dialog = await scanMilk(user);
+    await user.click(within(dialog).getByRole('button', { name: 'Skip' }));
+    expect(within(dialog).queryByRole('region', { name: 'Show the date on the pack' })).not.toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Fill in the form' }));
+    await waitFor(() => expect(screen.getByLabelText('Food')).toHaveValue('Milk'));
+    expect(screen.queryByLabelText('Date on the pack')).not.toBeInTheDocument();
+    expect(screen.getByText(/· Catalog/)).toBeInTheDocument();
+  });
+
+  it('uses a date typed as printed, with no AI at all, and sends it with the food', async () => {
+    const user = userEvent.setup();
+    let body: Record<string, unknown> | undefined;
+    server.use(
+      http.post(`${API_URL}/foods`, async ({ request }) => {
+        body = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json(item({ id: 'new1' }), { status: 201 });
+      }),
+    );
+    const dialog = await scanMilk(user);
+    // Written with a month name, so it reads the same in any locale.
+    const date = inDays(2);
+    const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    const printed = `USE BY ${Number(date.slice(8, 10))} ${months[Number(date.slice(5, 7)) - 1]} ${date.slice(0, 4)}`;
+    await user.type(within(dialog).getByLabelText('Date as printed'), printed);
+    await user.click(within(dialog).getByRole('button', { name: 'Use this date' }));
+    expect(await within(dialog).findByText(/Found use by/i)).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Fill in the form' }));
+    await waitFor(() => expect(screen.getByLabelText('Food')).toHaveValue('Milk'));
+    expect(screen.getByLabelText('Date on the pack')).toHaveValue(date);
+    expect(screen.getByText(/· Printed date/)).toBeInTheDocument();
+    expect(screen.getByText(/2 days left/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Add food' }));
+    await waitFor(() => expect(body).toBeDefined());
+    expect(body).toMatchObject({ name: 'Milk', printedDate: date, printedDateType: 'USE_BY' });
+    expect(body).not.toHaveProperty('lifespanDays');
+  });
+
+  it('says so when a typed date is not a date or is out of range, and the step stays open', async () => {
+    const user = userEvent.setup();
+    const dialog = await scanMilk(user);
+    const box = within(dialog).getByLabelText('Date as printed');
+    await user.type(box, 'LOT 4471');
+    await user.click(within(dialog).getByRole('button', { name: 'Use this date' }));
+    expect(await within(dialog).findByText(/Couldn’t read a usable date/)).toBeInTheDocument();
+    await user.clear(box);
+    await user.type(box, dmy(inDays(900)));
+    await user.click(within(dialog).getByRole('button', { name: 'Use this date' }));
+    expect(await within(dialog).findByText(/Couldn’t read a usable date/)).toBeInTheDocument();
+    expect(within(dialog).getByRole('region', { name: 'Show the date on the pack' })).toBeInTheDocument();
+  });
+
+  it('reads a photo of the date with the AI only when the device cannot, and AI is on', async () => {
+    const user = userEvent.setup();
+    useAiStore.setState({ status: { enabled: true, photoCheck: false, dailyLimit: 20, usedToday: 0 } });
+    server.use(
+      http.get(`${API_URL}/ai/status`, () =>
+        HttpResponse.json({ enabled: true, photoCheck: false, dailyLimit: 20, usedToday: 0 }),
+      ),
+    );
+    const seen: Record<string, unknown>[] = [];
+    const date = inDays(3);
+    server.use(
+      http.post(`${API_URL}/parse/date`, async ({ request }) => {
+        seen.push((await request.json()) as Record<string, unknown>);
+        return HttpResponse.json({ text: dmy(date), printedDate: date, printedDateType: 'BEST_BEFORE' });
+      }),
+    );
+    const dialog = await scanMilk(user);
+    await user.upload(within(dialog).getByLabelText('Read the date'), photoFile());
+    expect(await within(dialog).findByText(/Found best before/i)).toBeInTheDocument();
+    expect(seen).toHaveLength(1);
+    expect(seen[0]).toMatchObject({ mediaType: 'image/jpeg', image: 'QUJD' });
+    expect(typeof seen[0]!.locale).toBe('string');
+  });
+
+  it('never calls the AI date reader when AI is off', async () => {
+    const user = userEvent.setup();
+    useAiStore.setState({ status: { enabled: false, photoCheck: false, dailyLimit: 20, usedToday: 0 } });
+    let called = false;
+    server.use(
+      http.post(`${API_URL}/parse/date`, () => {
+        called = true;
+        return HttpResponse.json({ text: null, printedDate: null, printedDateType: 'UNKNOWN' });
+      }),
+    );
+    const dialog = await scanMilk(user);
+    await user.upload(within(dialog).getByLabelText('Read the date'), photoFile());
+    expect(await within(dialog).findByText(/Couldn’t read a usable date/)).toBeInTheDocument();
+    expect(called).toBe(false);
   });
 });

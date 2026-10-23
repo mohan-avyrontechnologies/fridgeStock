@@ -1,17 +1,29 @@
 import { X } from 'lucide-react';
-import { cleanBarcode, isValidBarcode, MESSAGES, PHOTO_CONFIDENCE_MIN } from '@cook-first/shared';
+import {
+  cleanBarcode,
+  formatDisplay,
+  isUsablePrintedDate,
+  isValidBarcode,
+  MESSAGES,
+  parsePrintedDate,
+  PHOTO_CONFIDENCE_MIN,
+  todayInTz,
+  type PrintedDateType,
+} from '@cook-first/shared';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { api, ApiError } from '../api/client';
-import { cameraCopy, photoCopy } from '../copy';
+import { cameraCopy, expiryCopy, photoCopy } from '../copy';
 import { cameraSupported, startCameraScan } from '../lib/barcodeCamera';
 import { platform } from '../platform';
 import { pickPhoto } from '../platform/pickPhoto';
 import { BlobThumb } from '../lib/foodPhoto';
 import { photoForUpload } from '../lib/image';
+import { findPrintedDate, kindFromText, readTextOnDevice, userLocale } from '../lib/printedDate';
 import { formatQuantity } from '../lib/format';
 import type { ScannedItem } from '../lib/scanned';
 import { useAiStore } from '../stores/aiStore';
+import { useAuthStore } from '../stores/authStore';
 import { Button, Field, SkeletonList, Card } from './ui';
 
 type Mode = 'barcode' | 'photo';
@@ -80,7 +92,9 @@ function CameraView({
  */
 export function CameraScreen({ onDone, onClose }: Props) {
   const photoEnabled = useAiStore((s) => s.status?.photoCheck ?? false);
+  const aiEnabled = useAiStore((s) => s.status?.enabled ?? false);
   const loadAi = useAiStore((s) => s.load);
+  const timeZone = useAuthStore((s) => s.user?.timeZone) ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [mode, setMode] = useState<Mode>('barcode');
   const [items, setItems] = useState<ScannedItem[]>([]);
   // In the apps the scanner is the system's (ML Kit), opened with a button; in a browser it is the live camera view.
@@ -95,6 +109,13 @@ export function CameraScreen({ onDone, onClose }: Props) {
   const working = useRef(false);
   const lastCode = useRef<{ code: string; at: number } | null>(null);
   const photoInput = useRef<HTMLInputElement>(null);
+  // The date step: after each find, the camera asks to see the date on the pack. It can always be skipped.
+  const [dateFor, setDateFor] = useState<number | null>(null);
+  const dateOpen = useRef(false);
+  const [dateText, setDateText] = useState('');
+  const [dateMessage, setDateMessage] = useState<string | null>(null);
+  const [dateBusy, setDateBusy] = useState(false);
+  const dateInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     void loadAi();
@@ -107,9 +128,64 @@ export function CameraScreen({ onDone, onClose }: Props) {
   }, [onClose]);
 
   const add = (item: Omit<ScannedItem, 'key'>) => {
-    setItems((prev) => [...prev, { ...item, key: nextKey++ }]);
+    const key = nextKey++;
+    setItems((prev) => [...prev, { ...item, key }]);
     setMessage(cameraCopy.added(item.name));
+    // Ask for the date on the pack next.
+    dateOpen.current = true;
+    setDateFor(key);
+    setDateText('');
+    setDateMessage(null);
   };
+
+  function closeDateStep() {
+    dateOpen.current = false;
+    setDateFor(null);
+    setDateText('');
+    setDateMessage(null);
+  }
+
+  /** Keeps a date for the item that is waiting for one, and closes the step. */
+  function keepDate(date: string, kind: PrintedDateType) {
+    setItems((prev) => prev.map((i) => (i.key === dateFor ? { ...i, printedDate: date, printedDateType: kind } : i)));
+    setMessage(expiryCopy.dateStep.found(formatDisplay(date), expiryCopy.printedTypes[kind]));
+    closeDateStep();
+  }
+
+  /** A photo of the date: read on the device first; the AI reader is only tried if that finds nothing and AI is on. */
+  async function readDate(file: File) {
+    setDateBusy(true);
+    setDateMessage(null);
+    const today = todayInTz(timeZone);
+    try {
+      const lines = await readTextOnDevice(file);
+      const onDevice = lines ? findPrintedDate(lines, userLocale(), today) : null;
+      if (onDevice) return keepDate(onDevice.date, onDevice.kind);
+      if (aiEnabled) {
+        const { mediaType, image } = await photoForUpload(file);
+        const read = await api.readPrintedDate({ mediaType, image, locale: userLocale() });
+        if (read.printedDate) return keepDate(read.printedDate, read.printedDateType);
+      }
+      setDateMessage(expiryCopy.dateStep.couldNot);
+    } catch {
+      setDateMessage(expiryCopy.dateStep.couldNot);
+    } finally {
+      setDateBusy(false);
+      if (dateInput.current) dateInput.current.value = '';
+    }
+  }
+
+  /** A date typed as printed. The person's locale decides day/month order; an unclear one takes the earlier reading. */
+  function submitDate(e: FormEvent) {
+    e.preventDefault();
+    // The text may be just the date ("05/11/26") or have its label too ("USE BY 5 NOV 2026").
+    const today = todayInTz(timeZone);
+    const found = findPrintedDate([dateText], userLocale(), today);
+    const bare = parsePrintedDate(dateText, userLocale());
+    if (found) keepDate(found.date, found.kind);
+    else if (bare && isUsablePrintedDate(bare, today)) keepDate(bare, kindFromText(dateText));
+    else setDateMessage(expiryCopy.dateStep.couldNot);
+  }
 
   /** A barcode: from the camera (`typed` false: anything unreadable is ignored) or typed in. */
   const lookUp = useCallback(async (raw: string, typed: boolean) => {
@@ -118,6 +194,8 @@ export function CameraScreen({ onDone, onClose }: Props) {
       if (typed) setError(MESSAGES.barcode);
       return;
     }
+    // While the date step is open the camera is for the date, not another product.
+    if (dateOpen.current && !typed) return;
     const now = Date.now();
     // The camera sees the same barcode many times a second: one look-up per code, and not again for a few seconds.
     if (working.current || (!typed && lastCode.current?.code === code && now - lastCode.current.at < 5000)) return;
@@ -300,6 +378,52 @@ export function CameraScreen({ onDone, onClose }: Props) {
           </section>
         )}
 
+        {dateFor !== null && (
+          <section aria-label={expiryCopy.dateStep.title} className="space-y-3 rounded-card bg-brand-soft px-4 py-3">
+            <h3 className="text-base font-semibold">{expiryCopy.dateStep.title}</h3>
+            <p className="text-sm text-muted">{expiryCopy.dateStep.hint}</p>
+            <input
+              ref={dateInput}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              aria-label={expiryCopy.dateStep.read}
+              className="sr-only"
+              tabIndex={-1}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void readDate(file);
+              }}
+            />
+            <Button disabled={dateBusy} onClick={() => void pickPhoto(dateInput.current, readDate)}>
+              {dateBusy ? expiryCopy.dateStep.reading : expiryCopy.dateStep.read}
+            </Button>
+            <form onSubmit={submitDate} className="space-y-2" noValidate>
+              <Field
+                label={expiryCopy.dateStep.typeLabel}
+                autoComplete="off"
+                placeholder={expiryCopy.dateStep.typePlaceholder}
+                value={dateText}
+                onChange={(e) => {
+                  setDateText(e.target.value);
+                  setDateMessage(null);
+                }}
+              />
+              <Button type="submit" variant="secondary" disabled={dateBusy || dateText.trim() === ''}>
+                {expiryCopy.dateStep.use}
+              </Button>
+            </form>
+            {dateMessage && (
+              <p role="status" className="text-sm text-calm-ink">
+                {dateMessage}
+              </p>
+            )}
+            <Button variant="ghost" onClick={closeDateStep}>
+              {expiryCopy.dateStep.skip}
+            </Button>
+          </section>
+        )}
+
         {busy && <SkeletonList count={1} label={mode === 'photo' ? cameraCopy.reading : cameraCopy.looking} />}
         {message && (
           <p role="status" className="rounded-button bg-calm px-3.5 py-3 text-sm text-calm-ink">
@@ -329,6 +453,9 @@ export function CameraScreen({ onDone, onClose }: Props) {
                         {[
                           item.quantity !== undefined && item.unit ? formatQuantity(item.quantity, item.unit) : null,
                           item.brand ?? item.category,
+                          item.printedDate
+                            ? `${expiryCopy.printedTypes[item.printedDateType ?? 'UNKNOWN']} ${formatDisplay(item.printedDate)}`
+                            : null,
                         ]
                           .filter(Boolean)
                           .join(' · ')}

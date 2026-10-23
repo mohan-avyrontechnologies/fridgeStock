@@ -1,4 +1,6 @@
 import type {
+  PrintedDateInput,
+  PrintedDateRead,
   AiStatus,
   AlertSettings,
   AlertSettingsInput,
@@ -212,6 +214,9 @@ export const api = {
 
   // POST /parse/receipt
   readReceipt: (body: ReceiptInput) => request<ReceiptDraft>('POST', '/parse/receipt', body),
+
+  // POST /parse/date
+  readPrintedDate: (body: PrintedDateInput) => request<PrintedDateRead>('POST', '/parse/date', body),
 
   // POST /parse/photo
   checkPhoto: (body: PhotoCheckInput) => request<PhotoCheck>('POST', '/parse/photo', body),

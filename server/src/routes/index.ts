@@ -23,6 +23,7 @@ import {
   deleteAccountSchema,
   joinHouseholdSchema,
   photoCheckSchema,
+  printedDateSchema,
   photoSizeSchema,
   PRODUCT_PHOTO_MAX_BYTES,
   receiptSchema,
@@ -188,6 +189,7 @@ router.post('/ai/meal-plan', aiController.mealPlan);
 router.get('/products/barcode', scanLimiter, validate(barcodeSchema, 'query'), productController.barcode);
 router.post('/parse/receipt', scanLimiter, validate(receiptSchema), productController.receipt);
 router.post('/parse/photo', scanLimiter, validate(photoCheckSchema), productController.photo);
+router.post('/parse/date', scanLimiter, validate(printedDateSchema), productController.printedDate);
 
 router.get('/shopping', shoppingController.list);
 router.post('/shopping', validate(shoppingItemSchema), shoppingController.add);

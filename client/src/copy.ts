@@ -159,6 +159,20 @@ export const expiryCopy = {
   printedIgnored: 'That date is more than 2 years away or more than 30 days past, so it isn’t used.',
   printedTypeLabel: 'What the date is called',
   printedTypes: { USE_BY: 'Use by', BEST_BEFORE: 'Best before', EXPIRY: 'Expiry', UNKNOWN: 'Date' },
+  /** The camera step after a barcode or product photo. */
+  dateStep: {
+    title: 'Show the date on the pack',
+    hint: 'Point the camera at the use by, best before or expiry date. You can skip this.',
+    skip: 'Skip',
+    read: 'Read the date',
+    reading: 'Reading the date…',
+    typeInstead: 'Or type the date as printed',
+    typeLabel: 'Date as printed',
+    typePlaceholder: 'e.g. 05/11/26 or 5 NOV 2026',
+    use: 'Use this date',
+    couldNot: 'Couldn’t read a usable date. Try again, type it, or skip.',
+    found: (date: string, kind: string) => `Found ${kind.toLowerCase()} ${date}.`,
+  },
 };
 
 /** Suggested lifespans come from a clearly identified reference list, and are always editable. */

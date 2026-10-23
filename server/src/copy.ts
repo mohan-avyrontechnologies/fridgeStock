@@ -118,6 +118,19 @@ export const aiPrompts = {
       'A photo cannot show everything. Report only what is visible, and leave the list empty if you see nothing.',
     ].join('\n'),
 
+  /** Reading a date off a pack. It copies text and names the date; it never works out how long food lasts. */
+  dateSystem: [
+    'You read the date printed on a food package for a home cook.',
+    'Rules for everything you write:',
+    '- Copy the date exactly as it is printed, such as "05/11/26" or "5 NOV 2026". Never convert, correct or guess it.',
+    '- Say what the date is called on the pack: USE_BY for "use by", BEST_BEFORE for "best before" or "BBE", EXPIRY for "exp" or "expiry", or UNKNOWN if no label is readable.',
+    '- Ignore batch codes, lot numbers, barcodes and prices. If there is no readable date, return null for the text.',
+    '- Never say how long any food lasts and never say anything about the food itself.',
+    'Reply only with JSON that matches the schema.',
+  ].join('\n'),
+
+  date: () => 'This is a photo of the date printed on a food package. Copy that date and say what it is called.',
+
   recipes: (cookFirst: string[], others: string[], mealType?: string, avoid: string[] = []) =>
     [
       'My Cook First list, most urgent first:',

@@ -1,8 +1,9 @@
-import type { PhotoCheckInput, ReceiptInput } from '@cook-first/shared';
+import type { PhotoCheckInput, PrintedDateInput, ReceiptInput } from '@cook-first/shared';
 import type { Request, Response } from 'express';
 import { currentUser } from '../middleware/auth.js';
 import { validatedQuery } from '../middleware/validate.js';
 import * as photoService from '../services/photoService.js';
+import * as printedDateService from '../services/printedDateService.js';
 import * as productService from '../services/productService.js';
 import * as receiptService from '../services/receiptService.js';
 
@@ -15,6 +16,10 @@ export const productController = {
 
   async photo(req: Request, res: Response) {
     res.json(await photoService.checkPhoto(currentUser(req), req.body as PhotoCheckInput));
+  },
+
+  async printedDate(req: Request, res: Response) {
+    res.json(await printedDateService.readPrintedDate(currentUser(req), req.body as PrintedDateInput));
   },
 
   async receipt(req: Request, res: Response) {
