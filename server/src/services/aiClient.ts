@@ -7,6 +7,12 @@ export interface AiImage {
   base64: string;
 }
 
+/**
+ * How much model the request needs. "fast" is for reading text off a photo; "smart" for naming food in a
+ * photo and for writing ideas. A provider with one model for both (Claude) ignores it.
+ */
+export type AiTier = 'fast' | 'smart';
+
 export interface AiRequest {
   system: string;
   prompt: string;
@@ -14,6 +20,7 @@ export interface AiRequest {
   schema: Record<string, unknown>;
   maxTokens: number;
   images?: AiImage[];
+  tier?: AiTier;
 }
 
 /**

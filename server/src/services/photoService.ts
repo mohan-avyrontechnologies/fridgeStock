@@ -32,6 +32,7 @@ export async function checkPhoto(user: UserDoc, input: PhotoCheckInput): Promise
     output: photoCheckOutput,
     texts: (r) => [r.name, r.category, ...r.warningSigns.map((sign) => sign.description)],
     maxTokens: 800,
+    tier: 'smart',
   });
 
   await HouseholdEventModel.create({

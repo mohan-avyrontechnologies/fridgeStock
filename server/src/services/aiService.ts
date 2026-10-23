@@ -4,7 +4,7 @@ import { AI_ATTEMPTS, AI_DAILY_LIMIT } from '../config/ai.js';
 import { aiCopy, aiPrompts } from '../copy.js';
 import { AiUsageModel } from '../models/AiUsage.js';
 import type { UserDoc } from '../models/User.js';
-import { aiClient, type AiImage } from './aiClient.js';
+import { aiClient, type AiImage, type AiTier } from './aiClient.js';
 import { clock } from './clock.js';
 import { aiLimitReached, aiUnavailable } from './errors.js';
 import { photoCheckEnabled } from '../config/features.js';
@@ -54,6 +54,8 @@ export interface AiTask<T> {
   maxTokens: number;
   /** Replaces the default system prompt (the receipt reader is not about Cook First codes). */
   system?: string;
+  /** Which of the provider's models to use (see AiTier). Defaults to "fast". */
+  tier?: AiTier;
   /** Photos sent with the prompt. Used for this request only: never stored or logged. */
   images?: AiImage[];
 }
@@ -81,6 +83,7 @@ export async function generate<T>(user: UserDoc, task: AiTask<T>): Promise<T> {
         schema: task.schema,
         maxTokens: task.maxTokens,
         images: task.images,
+        tier: task.tier,
       });
     } catch (error) {
       console.error('AI request failed', error instanceof Error ? error.message : error);

@@ -97,6 +97,7 @@ export async function suggestRecipes(user: UserDoc, mealType?: MealType): Promis
     output: recipeOutput,
     texts: (r) => r.recipes.flatMap((recipe) => [recipe.title, ...recipe.steps]),
     maxTokens: 3000,
+    tier: 'smart',
   });
 
   const recipes = result.recipes
@@ -205,6 +206,7 @@ export async function suggestPlan(user: UserDoc): Promise<MealPlanDraft> {
     output: mealPlanOutput,
     texts: (r) => r.days.map((day) => day.title),
     maxTokens: 2000,
+    tier: 'smart',
   });
 
   const seen = new Set<string>();
