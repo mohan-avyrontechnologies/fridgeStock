@@ -1,0 +1,66 @@
+name: Android debug APK
+
+# Builds an installable debug APK and uploads it as a downloadable artifact:
+# Actions → "Android debug APK" → a run → Artifacts → cook-first-debug-apk.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  apk:
+    name: Build the debug APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+      - name: Install
+        run: npm ci
+
+      # The app is built with its API address inside it. Set the repository variable NATIVE_API_URL
+      # (Settings → Secrets and variables → Actions → Variables) to https://<your-api>/api.
+      - name: API address for the app
+        env:
+          NATIVE_API_URL: ${{ vars.NATIVE_API_URL }}
+        run: |
+          if [ -n "$NATIVE_API_URL" ]; then
+            echo "VITE_API_URL=$NATIVE_API_URL" > client/.env.native
+          else
+            echo "::warning::NATIVE_API_URL is not set, so this APK talks to http://localhost:4000/api and can't reach an API from a phone."
+          fi
+
+      # Optional: push needs your Firebase project's google-services.json, stored as the secret GOOGLE_SERVICES_JSON.
+      - name: Firebase config for push
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON" ]; then
+            printf '%s' "$GOOGLE_SERVICES_JSON" > client/android/app/google-services.json
+          else
+            echo "::notice::GOOGLE_SERVICES_JSON is not set: the APK works, but push notifications are off."
+          fi
+
+      - name: Build the web app for the apps
+        run: npm run sounds:sync -w client && npm run build:native -w client
+      - name: Copy it into the Android project
+        working-directory: client
+        run: npx cap sync android
+      - name: Build the APK
+        working-directory: client/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cook-first-debug-apk
+          path: client/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
+          if-no-files-found: error
