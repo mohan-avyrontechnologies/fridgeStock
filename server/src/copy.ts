@@ -36,6 +36,7 @@ export const pushCopy = {
 export const aiCopy = {
   notEnabled: 'AI suggestions aren’t turned on for this app.',
   failed: 'Couldn’t get suggestions right now. Try again later.',
+  busy: 'AI is busy, try again later.',
   limitReached: (limit: number) => `You’ve used all ${limit} AI suggestions for today. Try again tomorrow.`,
 };
 

@@ -32,6 +32,60 @@ export interface AiRequest {
 }
 
 /**
+ * Thrown when the provider says it is out of capacity (HTTP 429, or a quota error) and a retry did not
+ * help. The service turns it into the friendly "AI is busy" message instead of a failure.
+ */
+export class AiBusyError extends Error {
+  constructor(cause?: unknown) {
+    super('The AI provider is rate-limited or out of quota.', { cause });
+    this.name = 'AiBusyError';
+  }
+}
+
+/** True for HTTP 429, a quota or rate-limit message, or an overloaded provider (529), from either SDK. */
+export function isRateLimitError(error: unknown): boolean {
+  if (error instanceof AiBusyError) return true;
+  const e = error as { status?: unknown; code?: unknown; message?: unknown } | null;
+  if (!e || typeof e !== 'object') return false;
+  if ([e.status, e.code].some((value) => value === 429 || value === 529 || value === '429')) return true;
+  return (
+    typeof e.message === 'string' && /\b429\b|quota|rate.?limit|RESOURCE_EXHAUSTED|too many requests/i.test(e.message)
+  );
+}
+
+/** How long to wait before the one retry after a rate limit. */
+export const RATE_LIMIT_BACKOFF_MS = 2000;
+
+/**
+ * Wraps a client so a rate limit gets one retry after a pause, then becomes an AiBusyError. Any other
+ * error passes through untouched. Both providers go through this, so they behave the same.
+ */
+export function withRateLimitRetry(
+  inner: AiClient,
+  options: { backoffMs?: number; sleep?: (ms: number) => Promise<void> } = {},
+): AiClient {
+  const { backoffMs = RATE_LIMIT_BACKOFF_MS, sleep = (ms) => new Promise<void>((resolve) => setTimeout(resolve, ms)) } =
+    options;
+  return {
+    model: inner.model,
+    async generate(request) {
+      try {
+        return await inner.generate(request);
+      } catch (first) {
+        if (!isRateLimitError(first)) throw first;
+        await sleep(backoffMs);
+        try {
+          return await inner.generate(request);
+        } catch (second) {
+          if (isRateLimitError(second)) throw new AiBusyError(second);
+          throw second;
+        }
+      }
+    },
+  };
+}
+
+/**
  * The only way the app talks to an AI model. Services depend on this
  * interface, and every test uses a fake one, so no test calls a real API.
  * The result is unchecked JSON: callers validate it with zod.
@@ -49,7 +103,8 @@ export interface MessagesApi {
 /** Claude via the official @anthropic-ai/sdk, with JSON structured outputs. */
 export function createClaudeClient(
   config: { apiKey: string; model: string; onUsage?: (usage: AiUsage) => void },
-  messages: MessagesApi = new Anthropic({ apiKey: config.apiKey, maxRetries: 2, timeout: 60_000 }).messages,
+  // Retries are ours (withRateLimitRetry), so the SDK's own are off: one policy for both providers.
+  messages: MessagesApi = new Anthropic({ apiKey: config.apiKey, maxRetries: 0, timeout: 60_000 }).messages,
 ): AiClient {
   return {
     model: config.model,
@@ -84,10 +139,10 @@ export function createClaudeClient(
   };
 }
 
-/** The client for the configured provider. A null config means AI is off. */
+/** The client for the configured provider, with rate limits handled. A null config means AI is off. */
 export function createAiClient(config: AiConfig | null): AiClient | null {
   if (!config) return null;
-  return config.provider === 'gemini' ? createGeminiClient(config) : createClaudeClient(config);
+  return withRateLimitRetry(config.provider === 'gemini' ? createGeminiClient(config) : createClaudeClient(config));
 }
 
 let client: AiClient | null = createAiClient(env.ai);

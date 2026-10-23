@@ -4,7 +4,7 @@ import { AI_ATTEMPTS, AI_DAILY_LIMIT } from '../config/ai.js';
 import { aiCopy, aiPrompts } from '../copy.js';
 import { AiUsageModel } from '../models/AiUsage.js';
 import type { UserDoc } from '../models/User.js';
-import { aiClient, type AiImage, type AiTier } from './aiClient.js';
+import { AiBusyError, aiClient, type AiImage, type AiTier } from './aiClient.js';
 import { clock } from './clock.js';
 import { aiLimitReached, aiUnavailable } from './errors.js';
 import { photoCheckEnabled } from '../config/features.js';
@@ -86,6 +86,11 @@ export async function generate<T>(user: UserDoc, task: AiTask<T>): Promise<T> {
         tier: task.tier,
       });
     } catch (error) {
+      // Out of capacity after the client's own retry: say so plainly rather than trying again at once.
+      if (error instanceof AiBusyError) {
+        await refund(user, date);
+        throw aiUnavailable(aiCopy.busy);
+      }
       console.error('AI request failed', error instanceof Error ? error.message : error);
       continue;
     }
