@@ -1,20 +1,49 @@
 node_modules/
 dist/
-.env
-.data/
+build/
 coverage/
 *.log
 *.tsbuildinfo
 e2e/.results/
 e2e/screenshots/
 playwright-report/
+test-results/
 .test-db-*/
+.data/
 .tmp/
+tmp/
+
+# Environment files: only the *.example templates are committed
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Keys and credentials: Firebase service accounts, VAPID key files, APNs keys, signing keys
+*service-account*.json
+*serviceAccount*.json
+*firebase-adminsdk*.json
+*vapid*.json
+*.pem
+*.p8
+*.p12
+*.key
+*.keystore
+*.jks
 
 # Native apps: your own Firebase files and API address (they belong to your project, not the repository)
 client/android/app/google-services.json
 client/ios/App/App/GoogleService-Info.plist
 client/.env.native
+client/android/app/build/
+client/ios/App/build/
+client/ios/App/Pods/
+client/ios/DerivedData/
+
+# AI evaluation: real samples, prices and photos stay local (the *.example.json files are committed)
+server/scripts/ai-eval/images/
+server/scripts/ai-eval/samples.json
+server/scripts/ai-eval/prices.json
 
 # Design review screenshots (regenerate with npm run design:shots)
 docs/design-review/

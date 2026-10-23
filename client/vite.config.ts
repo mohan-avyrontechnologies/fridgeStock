@@ -13,5 +13,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     css: false,
+    // jsdom workers are memory-hungry: more than two can run a machine with little free RAM out of memory.
+    maxWorkers: 2,
   },
 });
