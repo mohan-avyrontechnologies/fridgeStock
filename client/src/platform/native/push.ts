@@ -95,7 +95,8 @@ async function handleAction(event: { actionId: string; notification: { data?: Re
       window.dispatchEvent(new CustomEvent(PUSH_ACTION_DONE_EVENT, { detail: action }));
       return;
     } catch {
-      // Offline or the API is down: open the page instead, like the web app's service worker does.
+      // Offline, the API is down, or the token was refused (expired or already used): open the page instead,
+      // like the web app's service worker does. The person stays signed in (api.pushAction sends no login).
     }
   }
   openPage(typeof data.url === 'string' ? data.url : '/');

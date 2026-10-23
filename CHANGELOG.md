@@ -7,6 +7,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 - **Notification button tokens** (`POST /push/actions`) now work for 24 hours instead of 7 days, carry out one action once (a second tap, or the other button on the same notification, is a 401 "This notification button has already been used."), and are unique to each notification. Buttons on notifications sent before this change stop working and open Food Details instead.
 
 **Fixed**
+- **A refused notification button no longer signs you out on iPhone.** The app's own call to `POST /push/actions` sent the login token, and its 401 (an expired or already-used action token, such as from a double tap) went to the "401 means sign out" handler. It now sends no login and never signs out; the item opens instead. The web service worker and the Android receiver were already safe (they send no login and only open the item), and now have tests (`service-worker.test.ts`, `native-config.test.ts`, `platform-native.test.ts`).
 - A request body the server can't read (an unknown or corrupt `Content-Encoding`) is a 415 or 400 `VALIDATION_ERROR`, not a 500.
 - The account export no longer includes the push service's own delivery errors on reminders.
 

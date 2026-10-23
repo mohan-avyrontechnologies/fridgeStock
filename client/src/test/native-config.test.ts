@@ -87,6 +87,15 @@ describe('Android', () => {
     expect(receiver).toContain('"Content-Type", "application/json"');
   });
 
+  it('never sends a login with a button, and any refusal (an expired or used token) just opens the item', () => {
+    const receiver = read('android/app/src/main/java/com/example/cookfirst/NotificationActionReceiver.java');
+    expect(receiver).not.toMatch(/Authorization|Bearer/);
+    expect(receiver).toContain('return status >= 200 && status < 300;');
+    expect(receiver).toMatch(/if \(done\) \{[\s\S]*?\} else \{[\s\S]*?open\.putExtra\(MainActivity\.EXTRA_PAGE/);
+    // It runs outside the web view, so it cannot reach the app's sign-out.
+    expect(receiver).not.toMatch(/logout|evaluateJavascript|cook-first-auth/);
+  });
+
   it('opens a tapped notification’s page through the web view, the way the web app expects', () => {
     const activity = read('android/app/src/main/java/com/example/cookfirst/MainActivity.java');
     const app = read('src/App.tsx');

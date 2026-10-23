@@ -79,13 +79,17 @@ export function configureApi(options: { getToken: () => string | null; onUnauthe
   onUnauthenticated = options.onUnauthenticated;
 }
 
-/** `explicitToken` is for calls made while signing out, after the stored token is cleared. */
-async function request<T>(method: string, path: string, body?: unknown, explicitToken?: string): Promise<T> {
+/**
+ * `explicitToken` is for calls made while signing out, after the stored token is cleared. `false` sends no
+ * login at all, for a call authorised some other way (a notification button's action token): its 401 is about
+ * that other token, so it never signs the person out.
+ */
+async function request<T>(method: string, path: string, body?: unknown, explicitToken?: string | false): Promise<T> {
   const headers: Record<string, string> = {};
   // A form (a photo upload) sets its own content type, with the boundary the browser makes.
   const isForm = typeof FormData !== 'undefined' && body instanceof FormData;
   if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json';
-  const token = explicitToken ?? getToken();
+  const token = explicitToken === false ? null : (explicitToken ?? getToken());
   if (token) headers.Authorization = `Bearer ${token}`;
 
   let res: Response;
@@ -279,7 +283,8 @@ export const api = {
   unsubscribePush: (which: string | { token: string }, authToken?: string) =>
     request<void>('DELETE', '/push/subscriptions', typeof which === 'string' ? { endpoint: which } : which, authToken),
   // POST /push/actions
-  pushAction: (body: PushActionInput) => request<void>('POST', '/push/actions', body),
+  // Public: the action token is the authorisation, so no login is sent, and its 401 never signs out.
+  pushAction: (body: PushActionInput) => request<void>('POST', '/push/actions', body, false),
 
   // GET /ai/status
   aiStatus: () => request<AiStatus>('GET', '/ai/status'),

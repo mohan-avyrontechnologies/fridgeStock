@@ -369,6 +369,33 @@ describe('native push', () => {
       await vi.waitFor(() => expect(events).toContainEqual({ type: OPEN_PAGE_EVENT, detail: '/food/9' }));
     });
 
+    it('a double tap keeps the person signed in: the refused second tap (a 401) only opens the item', async () => {
+      const { useAuthStore } = await import('../stores/authStore');
+      useAuthStore.setState({ token: 'login-jwt', user: { id: 'u1' } as never });
+      const headers: (string | null)[] = [];
+      let taps = 0;
+      server.use(
+        http.post(`${API_URL}/push/actions`, ({ request }) => {
+          headers.push(request.headers.get('Authorization'));
+          return ++taps === 1
+            ? new HttpResponse(null, { status: 204 })
+            : HttpResponse.json(
+                { error: { code: 'UNAUTHENTICATED', message: 'This notification button has already been used.' } },
+                { status: 401 },
+              );
+        }),
+      );
+
+      tapped('USED', { actionToken: 'tok', url: '/food/1' });
+      await vi.waitFor(() => expect(events.map((e) => e.type)).toContain(PUSH_ACTION_DONE_EVENT));
+      tapped('USED', { actionToken: 'tok', url: '/food/1' });
+      await vi.waitFor(() => expect(events).toContainEqual({ type: OPEN_PAGE_EVENT, detail: '/food/1' }));
+
+      expect(headers).toEqual([null, null]); // the action token is the authorisation; no login is sent
+      expect(useAuthStore.getState().token).toBe('login-jwt');
+      expect(pushPlugin.unregister).not.toHaveBeenCalled(); // signing out would turn push off on the phone
+    });
+
     it('opens the page when the notification itself is tapped, or when it has no token', async () => {
       tapped('tap', { actionToken: 'tok', url: '/cook-first' });
       tapped('USED', { url: '/food/2' });
