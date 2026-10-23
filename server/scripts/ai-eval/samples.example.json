@@ -1,0 +1,37 @@
+[
+  {
+    "id": "milk-use-by-uk",
+    "task": "date",
+    "image": "images/milk-use-by.jpg",
+    "locale": "en-GB",
+    "expected": { "printedDate": "2026-11-05", "kind": "USE_BY" }
+  },
+  {
+    "id": "yoghurt-best-before-us",
+    "task": "date",
+    "image": "images/yoghurt-bb.jpg",
+    "locale": "en-US",
+    "expected": { "printedDate": "2026-12-03", "kind": "BEST_BEFORE" }
+  },
+  {
+    "id": "weekly-shop",
+    "task": "receipt",
+    "image": "images/receipt-1.jpg",
+    "expected": {
+      "purchaseDate": "2026-09-28",
+      "items": [{ "name": "Milk" }, { "name": "Eggs" }, { "name": "Bread" }]
+    }
+  },
+  {
+    "id": "spinach-wilting",
+    "task": "photo",
+    "image": "images/spinach.jpg",
+    "expected": { "name": "Spinach", "warningSigns": ["WILTING"] }
+  },
+  {
+    "id": "plain-chicken",
+    "task": "photo",
+    "image": "images/chicken.jpg",
+    "expected": { "name": "Chicken", "warningSigns": [] }
+  }
+]

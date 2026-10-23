@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
     "seed": "tsx --conditions=source scripts/seed.ts",
+    "eval:ai": "tsx --conditions=source scripts/ai-eval.ts",
     "vapid:keys": "web-push generate-vapid-keys"
   },
   "dependencies": {
