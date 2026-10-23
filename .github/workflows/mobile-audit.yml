@@ -1,0 +1,38 @@
+name: Mobile UI audit
+
+# Screenshots of every main screen on phone and tablet profiles (light/dark, portrait/landscape, 200 % text),
+# with a report of layout problems. Run it by hand: Actions → "Mobile UI audit" → Run workflow.
+# The app runs here with its own throwaway in-memory MongoDB, seeded demo data and the stand-in AI and product
+# servers from e2e/, so no real API keys or secrets are used.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Mobile UI audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Audit
+        env:
+          MOBILE_AUDIT: '1'
+        run: npx playwright test --project=audit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-audit
+          path: |
+            e2e/mobile-audit
+            e2e/.results
+          retention-days: 7
+          if-no-files-found: warn

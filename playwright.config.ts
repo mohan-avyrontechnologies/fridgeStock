@@ -32,7 +32,7 @@ export default defineConfig({
     // A 375 px-wide phone (the narrowest common size), in Chromium.
     {
       name: 'mobile',
-      testIgnore: /design-review/,
+      testIgnore: /design-review|mobile-audit/,
       use: {
         viewport: { width: 375, height: 812 },
         deviceScaleFactor: 3,
@@ -41,9 +41,11 @@ export default defineConfig({
         userAgent: devices['Pixel 7'].userAgent,
       },
     },
-    { name: 'desktop', testIgnore: /design-review/, use: { viewport: { width: 1440, height: 900 } } },
+    { name: 'desktop', testIgnore: /design-review|mobile-audit/, use: { viewport: { width: 1440, height: 900 } } },
     // Design review screenshots (npm run design:shots): not part of the normal run.
     { name: 'review', testMatch: /design-review/ },
+    // Mobile UI audit (MOBILE_AUDIT=1 npx playwright test --project=audit, or the "Mobile UI audit" workflow).
+    { name: 'audit', testMatch: /mobile-audit/ },
   ],
   webServer: [
     {

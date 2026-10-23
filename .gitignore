@@ -47,3 +47,6 @@ server/scripts/ai-eval/prices.json
 
 # Design review screenshots (regenerate with npm run design:shots)
 docs/design-review/
+
+# Mobile UI audit screenshots and report (MOBILE_AUDIT=1 npx playwright test --project=audit)
+e2e/mobile-audit/
