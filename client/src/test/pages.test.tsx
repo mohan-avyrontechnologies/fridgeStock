@@ -297,9 +297,17 @@ describe('Add food form', () => {
     expect(screen.getByLabelText('Quantity')).toHaveValue(1);
     expect(screen.getByLabelText('Unit')).toHaveValue('pcs');
     expect((screen.getByLabelText('Added on') as HTMLInputElement).value).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    // There is no lifespan to fill in: only a link to change the estimate.
+    // There is no lifespan to fill in, and no expected expiry (or empty box) until there's a food to estimate.
     expect(screen.queryByLabelText('Lifespan (days)')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Change estimate' })).toBeInTheDocument();
+    expect(screen.queryByText(/^Expected expiry:/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Change estimate' })).not.toBeInTheDocument();
+  });
+
+  it('puts "Add the date from the pack" and "Add note" on separate lines', () => {
+    renderSignedIn('/add', <AddFoodPage />);
+    for (const name of ['+ Add the date from the pack', '+ Add note']) {
+      expect(screen.getByRole('button', { name })).toHaveClass('flex', 'w-fit');
+    }
   });
 
   it('shows the live preview as "Expected expiry: <date> (<n> days left)" with the disclaimer', async () => {
@@ -308,6 +316,9 @@ describe('Add food form', () => {
     await user.type(screen.getByLabelText('Food'), 'Zorblax');
     expect(screen.getByText(/^Expected expiry: \w{3}, \d{1,2} \w{3} \(3 days left\)$/)).toBeInTheDocument();
     expect(screen.getByText('· Rough estimate')).toBeInTheDocument();
+    await user.clear(screen.getByLabelText('Food'));
+    expect(screen.queryByText(/^Expected expiry:/)).not.toBeInTheDocument();
+    await user.type(screen.getByLabelText('Food'), 'Zorblax');
     await user.click(screen.getByRole('button', { name: 'Change estimate' }));
     await user.click(screen.getByRole('button', { name: '2 days' }));
     expect(screen.getByText(/^Expected expiry: \w{3}, \d{1,2} \w{3} \(2 days left\)$/)).toBeInTheDocument();

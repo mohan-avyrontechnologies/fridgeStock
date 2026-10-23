@@ -65,7 +65,7 @@ test('design review: every main screen, light and dark', async ({ browser }) => 
       await page.screenshot({
         path: `${OUT}/${scheme}/${String(i + 1).padStart(2, '0')}-${screen.name}.png`,
         fullPage: true,
-        style: '[aria-live="polite"] { visibility: hidden !important; }',
+        style: '[data-toast] { visibility: hidden !important; }',
       });
     }
     // The "Used" sheet, over the home screen.

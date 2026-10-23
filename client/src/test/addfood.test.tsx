@@ -158,6 +158,7 @@ describe('number keyboards and lifespan quick picks', () => {
     expect(screen.getByLabelText(/^Price/)).toHaveAttribute('inputmode', 'decimal');
     // The lifespan is not asked for; it appears behind "Change estimate".
     expect(screen.queryByLabelText('Lifespan (days)')).not.toBeInTheDocument();
+    await reader.type(screen.getByLabelText('Food'), 'Milk');
     await reader.click(screen.getByRole('button', { name: 'Change estimate' }));
     expect(screen.getByLabelText('Lifespan (days)')).toHaveAttribute('inputmode', 'numeric');
   });
@@ -165,6 +166,8 @@ describe('number keyboards and lifespan quick picks', () => {
   it('has quick-pick chips for the lifespan behind "Change estimate", and choosing one fills it in', async () => {
     const reader = userEvent.setup();
     renderSignedIn('/add', <AddFoodPage />);
+    // "Change estimate" sits with the estimate, which appears once there's a food to estimate.
+    await reader.type(await screen.findByLabelText('Food'), 'Milk');
     await reader.click(screen.getByRole('button', { name: 'Change estimate' }));
     for (const label of ['1 day', '2 days', '3 days', '5 days', '7 days', '14 days']) {
       expect(await screen.findByRole('button', { name: label })).toBeInTheDocument();

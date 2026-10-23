@@ -219,7 +219,6 @@ export function FoodForm({ initial, prefill, current, submitLabel, onSubmit, all
       explanation: estimate.explanation,
     };
   }
-  const expiryDate = shown?.expiryDate ?? null;
 
   function validate(): FoodInput | null {
     const { data, errors: found } = check(createFoodSchema, {
@@ -473,86 +472,93 @@ export function FoodForm({ initial, prefill, current, submitLabel, onSubmit, all
         </div>
       </div>
 
-      {!showPrinted ? (
-        <button
-          type="button"
-          onClick={() => setShowPrinted(true)}
-          className="inline-flex min-h-12 items-center text-sm font-semibold text-brand underline-offset-2 hover:underline"
-        >
-          + {expiryCopy.addPrinted}
-        </button>
-      ) : (
-        <div className="space-y-2">
-          <Field
-            label={expiryCopy.printedLabel}
-            type="date"
-            value={printedDate}
-            onChange={(e) => setPrintedDate(e.target.value)}
-            hint={printedDate !== '' && !printedUsable ? expiryCopy.printedIgnored : expiryCopy.printedHint}
-          />
-          <div className="flex flex-wrap gap-2" role="group" aria-label={expiryCopy.printedTypeLabel}>
-            {PRINTED_DATE_TYPES.filter((type) => type !== 'UNKNOWN').map((type) => (
-              <Chip key={type} selected={printedDateType === type} onClick={() => setPrintedDateType(type)}>
-                {expiryCopy.printedTypes[type]}
-              </Chip>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {!showNotes ? (
-        <button
-          type="button"
-          onClick={() => setShowNotes(true)}
-          className="inline-flex min-h-12 items-center text-sm font-semibold text-brand underline-offset-2 hover:underline"
-        >
-          + {screenCopy.form.addNote}
-        </button>
-      ) : (
-        <div>
-          <label htmlFor={notesId} className="mb-1.5 block text-sm font-medium text-ink">
-            Notes <span className="font-normal text-muted">(optional)</span>
-          </label>
-          <textarea
-            id={notesId}
-            rows={2}
-            maxLength={NOTES_MAX}
-            placeholder="e.g. Opened, top shelf"
-            value={notes}
-            onChange={(e) => {
-              setNotes(e.target.value);
-              clearError('notes');
-            }}
-            aria-invalid={errors.notes ? true : undefined}
-            className={`block w-full rounded-button border bg-card px-3.5 py-3 text-base text-ink placeholder:text-muted/70 focus:border-brand focus:outline-none ${
-              errors.notes ? 'border-danger' : 'border-field'
-            }`}
-          />
-          <p className={`mt-1.5 text-sm ${errors.notes ? 'text-danger' : 'text-muted'}`}>
-            {errors.notes ?? `${notes.length}/${NOTES_MAX}`}
-          </p>
-        </div>
-      )}
-
-      <div aria-live="polite" className="space-y-2 rounded-card bg-brand-soft px-4 py-3">
-        <p className="text-base font-semibold text-ink">
-          {expiryDate
-            ? screenCopy.form.preview(formatDisplay(expiryDate), diffDays(today, expiryDate))
-            : screenCopy.form.previewEmpty}
-          {shown && <span className="ml-2 text-sm font-normal text-muted">· {shown.label}</span>}
-        </p>
-        {shown && <p className="text-sm leading-snug text-muted">{shown.explanation}</p>}
-        {!showEstimate && (
+      {/* The optional extras: each link sits on its own line, and opens in place. */}
+      <div className="space-y-3">
+        {!showPrinted ? (
           <button
             type="button"
-            onClick={() => setShowEstimate(true)}
-            className="inline-flex min-h-12 items-center text-sm font-semibold text-brand underline-offset-2 hover:underline"
+            onClick={() => setShowPrinted(true)}
+            className="flex min-h-12 w-fit items-center text-sm font-semibold text-brand underline-offset-2 hover:underline"
           >
-            {expiryCopy.changeEstimate}
+            + {expiryCopy.addPrinted}
           </button>
+        ) : (
+          <div className="space-y-2">
+            <Field
+              label={expiryCopy.printedLabel}
+              type="date"
+              value={printedDate}
+              onChange={(e) => setPrintedDate(e.target.value)}
+              hint={printedDate !== '' && !printedUsable ? expiryCopy.printedIgnored : expiryCopy.printedHint}
+            />
+            <div className="flex flex-wrap gap-2" role="group" aria-label={expiryCopy.printedTypeLabel}>
+              {PRINTED_DATE_TYPES.filter((type) => type !== 'UNKNOWN').map((type) => (
+                <Chip key={type} selected={printedDateType === type} onClick={() => setPrintedDateType(type)}>
+                  {expiryCopy.printedTypes[type]}
+                </Chip>
+              ))}
+            </div>
+          </div>
         )}
-        <EstimateNote />
+
+        {!showNotes ? (
+          <button
+            type="button"
+            onClick={() => setShowNotes(true)}
+            className="flex min-h-12 w-fit items-center text-sm font-semibold text-brand underline-offset-2 hover:underline"
+          >
+            + {screenCopy.form.addNote}
+          </button>
+        ) : (
+          <div>
+            <label htmlFor={notesId} className="mb-1.5 block text-sm font-medium text-ink">
+              Notes <span className="font-normal text-muted">(optional)</span>
+            </label>
+            <textarea
+              id={notesId}
+              rows={2}
+              maxLength={NOTES_MAX}
+              placeholder="e.g. Opened, top shelf"
+              value={notes}
+              onChange={(e) => {
+                setNotes(e.target.value);
+                clearError('notes');
+              }}
+              aria-invalid={errors.notes ? true : undefined}
+              className={`block w-full rounded-button border bg-card px-3.5 py-3 text-base text-ink placeholder:text-muted/70 focus:border-brand focus:outline-none ${
+                errors.notes ? 'border-danger' : 'border-field'
+              }`}
+            />
+            <p className={`mt-1.5 text-sm ${errors.notes ? 'text-danger' : 'text-muted'}`}>
+              {errors.notes ?? `${notes.length}/${NOTES_MAX}`}
+            </p>
+          </div>
+        )}
       </div>
+
+      {/* The expected expiry and where it comes from, once there's one to show; until then nothing, not an empty box. */}
+      <div aria-live="polite" className="empty:hidden">
+        {shown && (
+          <div className="space-y-2 rounded-card bg-brand-soft px-4 py-3">
+            <p className="text-base font-semibold text-ink">
+              {screenCopy.form.preview(formatDisplay(shown.expiryDate), diffDays(today, shown.expiryDate))}
+              <span className="ml-2 text-sm font-normal text-muted">· {shown.label}</span>
+            </p>
+            <p className="text-sm leading-snug text-muted">{shown.explanation}</p>
+            {!showEstimate && (
+              <button
+                type="button"
+                onClick={() => setShowEstimate(true)}
+                className="inline-flex min-h-12 items-center text-sm font-semibold text-brand underline-offset-2 hover:underline"
+              >
+                {expiryCopy.changeEstimate}
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+      {/* The reminder to check food is always on screen, estimate or not. */}
+      <EstimateNote />
 
       {showEstimate && (
         <div>

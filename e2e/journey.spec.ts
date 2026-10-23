@@ -124,7 +124,7 @@ async function shot(page: Page, name: string) {
   // Hide passing toasts so they don't cover the screen being shown.
   await page.screenshot({
     path: `e2e/screenshots/${test.info().project.name}/${name}.png`,
-    style: '[aria-live="polite"] { visibility: hidden !important; }',
+    style: '[data-toast] { visibility: hidden !important; }',
   });
 }
 
@@ -443,7 +443,7 @@ test('phase 3: installable app; push reminders ask for permission only after "Tu
   await shot(page, '14-settings-full');
   await page.getByRole('region', { name: 'Push reminders' }).screenshot({
     path: `e2e/screenshots/${test.info().project.name}/14-push-settings.png`,
-    style: '[aria-live="polite"], nav { visibility: hidden !important; }',
+    style: '[data-toast], nav { visibility: hidden !important; }',
   });
   await page.reload();
   await expect(page.getByRole('button', { name: /One per item/ })).toHaveAttribute('aria-pressed', 'true');

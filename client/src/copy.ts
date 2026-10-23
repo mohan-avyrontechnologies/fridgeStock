@@ -86,7 +86,6 @@ export const screenCopy = {
     /** "Expected expiry: Thu, 1 Oct (2 days left)". */
     preview: (date: string, remainingDays: number) =>
       `Expected expiry: ${date} (${remainingDays === 0 ? 'today' : remainingText(remainingDays)})`,
-    previewEmpty: 'Expected expiry: enter the food to see it',
     lifespanHint: 'Your own estimate, counted from the added date. 0 means it expires the same day.',
     addNote: 'Add note',
     priceHint: 'Optional. What it cost in total. Used only for the money figures on Insights.',

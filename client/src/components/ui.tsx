@@ -339,6 +339,7 @@ export function Toast() {
   return (
     <div
       aria-live="polite"
+      data-toast
       className="pointer-events-none fixed inset-x-0 bottom-28 z-50 flex justify-center px-4 lg:bottom-8 lg:left-64"
     >
       {message && (
