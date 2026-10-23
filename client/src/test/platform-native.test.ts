@@ -100,7 +100,9 @@ beforeEach(() => {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string, init?: RequestInit) => {
-      if (url === 'blob:photo') return new Response('jpeg bytes', { headers: { 'Content-Type': 'image/jpeg' } });
+      // The photo comes back as the page's own Blob, as it does in a web view. (A Node Response's Blob is not
+      // jsdom's on Node 20, so jsdom's File would store it as the text "[object Blob]".)
+      if (url === 'blob:photo') return { blob: async () => new Blob(['jpeg bytes'], { type: 'image/jpeg' }) };
       return mswFetch(url, init);
     }),
   );
