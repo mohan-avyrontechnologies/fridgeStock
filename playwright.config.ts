@@ -24,7 +24,9 @@ export default defineConfig({
   reporter: [['list']],
   use: {
     baseURL: `http://localhost:${WEB_PORT}`,
-    channel: process.env.CI ? undefined : 'chrome',
+    // On CI, Playwright's full Chromium rather than its default headless shell: the shell reports
+    // Notification.permission as "denied" before anything has asked, which breaks the permission journeys.
+    channel: process.env.CI ? 'chromium' : 'chrome',
     trace: 'retain-on-failure',
   },
   // Every journey runs on a phone and on a desktop screen.
