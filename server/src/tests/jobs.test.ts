@@ -2,6 +2,12 @@ import cron from 'node-cron';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { jobsEnabledFrom } from '../config/env.js';
 import { startScheduledJobs } from '../jobs/scheduler.js';
+import { purgeClosedPhotos } from '../services/foodPhotoService.js';
+import { sweep } from '../services/notificationService.js';
+
+// The jobs' work itself is tested elsewhere; here it only has to be started, or not.
+vi.mock('../services/notificationService.js', () => ({ sweep: vi.fn(async () => {}) }));
+vi.mock('../services/foodPhotoService.js', () => ({ purgeClosedPhotos: vi.fn(async () => {}) }));
 
 /**
  * JOBS_ENABLED: while two servers share one database (Node and Python, during the fallback period), exactly
@@ -10,6 +16,8 @@ import { startScheduledJobs } from '../jobs/scheduler.js';
 describe('JOBS_ENABLED', () => {
   afterEach(async () => {
     for (const task of cron.getTasks().values()) await task.destroy();
+    vi.mocked(sweep).mockClear();
+    vi.mocked(purgeClosedPhotos).mockClear();
   });
 
   it('is on when unset, and reads the usual on and off words', () => {
@@ -27,13 +35,17 @@ describe('JOBS_ENABLED', () => {
     const log = vi.fn();
     expect(startScheduledJobs(false, log)).toEqual([]);
     expect(cron.getTasks().size).toBe(0);
+    expect(sweep).not.toHaveBeenCalled();
+    expect(purgeClosedPhotos).not.toHaveBeenCalled();
     expect(log).toHaveBeenCalledWith('Scheduled jobs are off on this server (JOBS_ENABLED=false).');
   });
 
-  it('switched on, starts the reminder sweep and the photo clean-up', () => {
+  it('switched on, starts the reminder sweep and the photo clean-up, each run once straight away', () => {
     const log = vi.fn();
     const tasks = startScheduledJobs(true, log);
     expect(tasks.map((task) => task.name).sort()).toEqual(['photo-cleanup', 'reminder-sweep']);
+    expect(sweep).toHaveBeenCalledOnce();
+    expect(purgeClosedPhotos).toHaveBeenCalledOnce();
     expect(log).not.toHaveBeenCalled();
   });
 });
