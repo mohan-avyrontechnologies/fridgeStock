@@ -26,14 +26,60 @@ function vapid() {
   return publicKey && privateKey && subject ? { publicKey, privateKey, subject } : null;
 }
 
+export type AiProvider = 'anthropic' | 'gemini';
+
+/** What a provider needs to make requests. null (see ai()) means AI features are off. */
+export type AiConfig =
+  | { provider: 'anthropic'; apiKey: string; model: string }
+  | { provider: 'gemini'; apiKey: string; fastModel: string; smartModel: string; tier: 'free' | 'paid' };
+
+/** Gemini models for the two tiers. Override with GEMINI_MODEL_FAST / GEMINI_MODEL_SMART. */
+export const DEFAULT_GEMINI_MODEL_FAST = 'gemini-2.5-flash';
+export const DEFAULT_GEMINI_MODEL_SMART = 'gemini-2.5-pro';
+
+/** Which AI provider to use: AI_PROVIDER, else Gemini in development and Claude in production. */
+export function aiProviderFrom(value: string | undefined, production: boolean): AiProvider {
+  const wanted = (value ?? '').trim().toLowerCase();
+  if (wanted === '') return production ? 'anthropic' : 'gemini';
+  if (wanted === 'anthropic' || wanted === 'gemini') return wanted;
+  throw new Error(`AI_PROVIDER must be "anthropic" or "gemini" (got "${value}").`);
+}
+
 /**
- * Claude API (Phase 4). AI features are on only when ANTHROPIC_API_KEY is set.
- * Tests never read the key, so no test can call the real API.
+ * The AI provider (Phase 4). AI features are on only when the chosen provider's key is set
+ * (ANTHROPIC_API_KEY or GEMINI_API_KEY). Tests never read the keys, so no test can call a real API.
  */
-function ai() {
-  const apiKey = isTest ? '' : (process.env.ANTHROPIC_API_KEY ?? '');
-  const model = process.env.AI_MODEL || DEFAULT_AI_MODEL;
-  return apiKey ? { apiKey, model } : null;
+function ai(): AiConfig | null {
+  if (isTest) return null;
+  const provider = aiProviderFrom(process.env.AI_PROVIDER, isProduction);
+  if (provider === 'gemini') {
+    const apiKey = process.env.GEMINI_API_KEY ?? '';
+    if (!apiKey) return null;
+    return {
+      provider,
+      apiKey,
+      fastModel: process.env.GEMINI_MODEL_FAST || DEFAULT_GEMINI_MODEL_FAST,
+      smartModel: process.env.GEMINI_MODEL_SMART || DEFAULT_GEMINI_MODEL_SMART,
+      tier: process.env.GEMINI_TIER?.trim().toLowerCase() === 'paid' ? 'paid' : 'free',
+    };
+  }
+  const apiKey = process.env.ANTHROPIC_API_KEY ?? '';
+  return apiKey ? { provider, apiKey, model: process.env.AI_MODEL || DEFAULT_AI_MODEL } : null;
+}
+
+/**
+ * Warnings to print when the server starts. A Gemini key is treated as free-tier unless GEMINI_TIER=paid,
+ * and in production that is worth a warning: Google may use free-tier prompts (and the photos in them) to
+ * improve its products.
+ */
+export function aiStartupWarnings(config: AiConfig | null, production: boolean): string[] {
+  if (production && config?.provider === 'gemini' && config.tier !== 'paid') {
+    return [
+      'AI_PROVIDER=gemini is using a free-tier key in production. Google may use free-tier prompts, including photos, ' +
+        'to improve its products. Use a paid key and set GEMINI_TIER=paid, or set AI_PROVIDER=anthropic.',
+    ];
+  }
+  return [];
 }
 
 /**

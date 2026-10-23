@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { env } from '../config/env.js';
+import { env, type AiConfig } from '../config/env.js';
+import { createGeminiClient } from './geminiClient.js';
 
 /** An image sent with a request (receipt scanning, and Photo Check later). */
 export interface AiImage {
@@ -12,6 +13,13 @@ export interface AiImage {
  * photo and for writing ideas. A provider with one model for both (Claude) ignores it.
  */
 export type AiTier = 'fast' | 'smart';
+
+/** Tokens a request used, reported to an optional `onUsage` callback (the evaluation script prices them). */
+export interface AiUsage {
+  model: string;
+  inputTokens: number;
+  outputTokens: number;
+}
 
 export interface AiRequest {
   system: string;
@@ -40,7 +48,7 @@ export interface MessagesApi {
 
 /** Claude via the official @anthropic-ai/sdk, with JSON structured outputs. */
 export function createClaudeClient(
-  config: { apiKey: string; model: string },
+  config: { apiKey: string; model: string; onUsage?: (usage: AiUsage) => void },
   messages: MessagesApi = new Anthropic({ apiKey: config.apiKey, maxRetries: 2, timeout: 60_000 }).messages,
 ): AiClient {
   return {
@@ -64,6 +72,11 @@ export function createClaudeClient(
         ],
         output_config: { effort: 'low', format: { type: 'json_schema', schema } },
       });
+      config.onUsage?.({
+        model: config.model,
+        inputTokens: response.usage?.input_tokens ?? 0,
+        outputTokens: response.usage?.output_tokens ?? 0,
+      });
       if (response.stop_reason !== 'end_turn') throw new Error(`AI stopped early: ${response.stop_reason}`);
       const text = response.content.map((block) => (block.type === 'text' ? block.text : '')).join('');
       return JSON.parse(text);
@@ -71,7 +84,13 @@ export function createClaudeClient(
   };
 }
 
-let client: AiClient | null = env.ai ? createClaudeClient(env.ai) : null;
+/** The client for the configured provider. A null config means AI is off. */
+export function createAiClient(config: AiConfig | null): AiClient | null {
+  if (!config) return null;
+  return config.provider === 'gemini' ? createGeminiClient(config) : createClaudeClient(config);
+}
+
+let client: AiClient | null = createAiClient(env.ai);
 
 /** The configured AI client, or null when AI features are off. */
 export function aiClient(): AiClient | null {
