@@ -1,7 +1,15 @@
 import { z } from 'zod';
 import { isValidBarcode } from './barcode.js';
 import { isValidDate } from './dates.js';
-import { CURRENCIES, MEAL_TYPES, PUSH_ACTIONS, REMINDER_MODES, STORAGE_LOCATIONS, UNITS } from './enums.js';
+import {
+  CURRENCIES,
+  MEAL_TYPES,
+  PRINTED_DATE_TYPES,
+  PUSH_ACTIONS,
+  REMINDER_MODES,
+  STORAGE_LOCATIONS,
+  UNITS,
+} from './enums.js';
 
 /**
  * Request schemas. The server's check is the only one that counts; the client
@@ -32,6 +40,8 @@ export const MESSAGES = {
   quantity: 'Quantity must be a positive number.',
   unit: 'Choose a unit from the list.',
   addedDate: "Added date must be a valid date that isn't in the future.",
+  printedDate: 'Printed date must be a valid date.',
+  printedDateType: 'Choose a label for the date from the list.',
   lifespan: 'Lifespan must be a whole number of days from 0 to 365.',
   notes: 'Notes must be at most 200 characters.',
   email: 'Enter a valid email address.',
@@ -155,7 +165,22 @@ const foodFields = {
  * The expiry date is not a field: the server always calculates it from the
  * added date and lifespan. Unknown keys (such as an expiry date) are dropped.
  */
-export const createFoodSchema = z.object(foodFields);
+export const createFoodSchema = z.object({
+  ...foodFields,
+  /** Left out: today (the receipt date for a receipt item) in the person's time zone. */
+  addedDate: foodFields.addedDate.optional(),
+  /** Left out: the server estimates the expected expiry. Given: the person set it, and the source is USER. */
+  lifespanDays: foodFields.lifespanDays.optional(),
+  /** A date read from the pack (a calendar date from the date reader). */
+  printedDate: z
+    .string({ error: MESSAGES.printedDate })
+    .refine(isValidDate, MESSAGES.printedDate)
+    .nullable()
+    .optional(),
+  printedDateType: z.enum(PRINTED_DATE_TYPES, { error: MESSAGES.printedDateType }).nullable().optional(),
+  /** A free-text category, such as a photo check's, used if the catalog has no entry for the food. */
+  category: z.string().trim().max(40).optional(),
+});
 
 export const updateFoodSchema = z
   .object(foodFields)
@@ -190,10 +215,19 @@ const bulkItem = z.object({
   name: foodFields.name,
   quantity,
   unit: foodFields.unit,
-  lifespanDays: foodFields.lifespanDays,
+  /** Left out: estimated by the server. Given: the person set it (source USER). */
+  lifespanDays: foodFields.lifespanDays.optional(),
   storage: foodFields.storage,
   notes: foodFields.notes,
   price: foodFields.price,
+  /** A date read off the pack and a free-text category (see createFoodSchema). */
+  printedDate: z
+    .string({ error: MESSAGES.printedDate })
+    .refine(isValidDate, MESSAGES.printedDate)
+    .nullable()
+    .optional(),
+  printedDateType: z.enum(PRINTED_DATE_TYPES, { error: MESSAGES.printedDateType }).nullable().optional(),
+  category: z.string().trim().max(40).optional(),
 });
 
 /** A whole shopping haul in one request: 1–50 items sharing an added date. */

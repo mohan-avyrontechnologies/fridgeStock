@@ -109,11 +109,11 @@ function renderAddWithState(state: unknown) {
 }
 
 describe('leftovers', () => {
-  it('"Save leftovers" on a recipe opens Add Food with the name and a short lifespan', async () => {
+  it('"Save leftovers" on a recipe opens Add Food with the name and a short estimate', async () => {
     renderAddWithState({ name: 'Leftover spinach and yoghurt dip', leftover: true });
     expect(screen.getByLabelText('Food')).toHaveValue('Leftover spinach and yoghurt dip');
     expect(screen.getByRole('checkbox', { name: /These are leftovers/ })).toBeChecked();
-    expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(3);
+    expect(screen.getByText(/lasts about 3 days in the fridge/)).toBeInTheDocument();
   });
 
   it('ticking "These are leftovers" suggests a short lifespan per location and sends the flag', async () => {
@@ -128,12 +128,13 @@ describe('leftovers', () => {
     renderSignedIn('/add', <AddFoodPage />);
     await user.type(screen.getByLabelText('Food'), 'Leftover curry');
     await user.click(screen.getByRole('checkbox', { name: /These are leftovers/ }));
-    expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(3);
+    expect(screen.getByText(/lasts about 3 days in the fridge/)).toBeInTheDocument();
     await user.selectOptions(screen.getByLabelText('Kept in'), 'FREEZER');
-    expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(60);
+    expect(screen.getByText(/lasts about 60 days in the freezer/)).toBeInTheDocument();
     await user.selectOptions(screen.getByLabelText('Kept in'), 'FRIDGE');
-    expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(3);
+    expect(screen.getByText(/lasts about 3 days in the fridge/)).toBeInTheDocument();
 
+    await user.click(screen.getByRole('button', { name: 'Change estimate' }));
     await user.clear(screen.getByLabelText('Lifespan (days)'));
     await user.type(screen.getByLabelText('Lifespan (days)'), '6');
     await user.click(screen.getByRole('button', { name: 'Add food' }));

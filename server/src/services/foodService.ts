@@ -1,4 +1,20 @@
-import { addDays, diffDays, findReference, MESSAGES, type StorageLocation } from '@cook-first/shared';
+import {
+  addDays,
+  diffDays,
+  estimateExpiry,
+  findReference,
+  isUsablePrintedDate,
+  lifespanFor,
+  MESSAGES,
+  recalculateExpiry,
+  usualStorage,
+  USER_EXPLANATION,
+  type ExpiryEstimate,
+  type ExpirySource,
+  type LearnedLifespan,
+  type PrintedDateType,
+  type StorageLocation,
+} from '@cook-first/shared';
 import type {
   ActiveFoodItem,
   BulkCreateInput,
@@ -23,6 +39,8 @@ import { conflict, foodNotFound, validationError } from './errors.js';
 import { cancelForFood, dispatchDue, scheduleForHousehold } from './notificationService.js';
 import { prioritise } from './priorityEngine.js';
 import { createRecord, deleteRecord, latestForFood } from './usageService.js';
+import { adjustedCopy } from '../copy.js';
+import { learnedLifespans } from './suggestionService.js';
 import { toFoodView, toUsageView } from './views.js';
 
 /** Avoids 0.30000000000000004-style leftovers after subtracting decimals. */
@@ -132,9 +150,72 @@ export async function getFood(user: UserDoc, id: string): Promise<FoodItem> {
   return toFoodView(await findOwned(user, id), clock.today(user.timeZone));
 }
 
-/** The fields of a new item: owner, household, calculated expiry and a FRIDGE default. */
-function newItem(user: UserDoc, input: FoodInput) {
-  const { name, quantity, unit, addedDate, lifespanDays, notes, storage, openedDate, leftover, price } = input;
+/** The pieces of an item's expected expiry that are stored with it. */
+interface ExpiryFields {
+  lifespanDays: number;
+  expiryDate: DateString;
+  expirySource: ExpirySource;
+  estimateExplanation: string;
+}
+
+/** A person-set lifespan: the source is USER. */
+function userExpiry(addedDate: DateString, lifespanDays: number): ExpiryFields {
+  return {
+    lifespanDays,
+    expiryDate: expiryFor(addedDate, lifespanDays),
+    expirySource: 'USER',
+    estimateExplanation: USER_EXPLANATION,
+  };
+}
+
+/** An estimate as stored fields. An expected expiry before the added date counts as the added date. */
+function fromEstimate(addedDate: DateString, estimate: ExpiryEstimate): ExpiryFields {
+  const lifespanDays = lifespanFor(addedDate, estimate.expiryDate);
+  return {
+    lifespanDays,
+    expiryDate: expiryFor(addedDate, lifespanDays),
+    expirySource: estimate.source,
+    estimateExplanation: estimate.explanation,
+  };
+}
+
+/** What a new item is made from: the form's fields plus the estimate's inputs. */
+type NewItemInput = Pick<FoodInput, 'name' | 'quantity' | 'unit'> &
+  Partial<Pick<FoodInput, 'lifespanDays' | 'notes' | 'storage' | 'openedDate' | 'leftover' | 'price' | 'category'>> & {
+    addedDate: DateString;
+    printedDate?: DateString | null;
+    printedDateType?: PrintedDateType | null;
+  };
+
+/**
+ * The fields of a new item: owner, household, expected expiry and its source. A lifespan the person gave
+ * is kept as it is (source USER); otherwise the expiry is estimated from the pack's printed date, this
+ * household's history, the catalog, the category and a rough default, in that order of preference.
+ * With no storage given the catalog's usual place is used (the fridge for an unknown food).
+ */
+function newItem(user: UserDoc, input: NewItemInput, learned: readonly LearnedLifespan[], today: DateString) {
+  const { name, quantity, unit, addedDate, notes, openedDate, leftover, price } = input;
+  const catalog = leftover ? findReference('Leftovers') : findReference(name);
+  const storage = input.storage ?? (catalog && !leftover ? usualStorage(catalog) : 'FRIDGE');
+  const printedDate = input.printedDate && isUsablePrintedDate(input.printedDate, today) ? input.printedDate : null;
+  const fields =
+    input.lifespanDays !== undefined
+      ? userExpiry(addedDate, input.lifespanDays)
+      : fromEstimate(
+          addedDate,
+          estimateExpiry({
+            product: { name },
+            catalogMatch: catalog ?? null,
+            category: input.category,
+            storage,
+            addedDate,
+            today,
+            printedDate,
+            printedDateType: printedDate ? (input.printedDateType ?? 'UNKNOWN') : null,
+            usageHistory: learned,
+            openedDate: openedDate ?? null,
+          }),
+        );
   return {
     userId: user._id,
     householdId: user.householdId,
@@ -142,13 +223,15 @@ function newItem(user: UserDoc, input: FoodInput) {
     quantity,
     unit,
     addedDate,
-    lifespanDays,
-    expiryDate: expiryFor(addedDate, lifespanDays),
+    ...fields,
+    printedDate,
+    printedDateType: printedDate ? (input.printedDateType ?? 'UNKNOWN') : null,
     notes: cleanNotes(notes) ?? undefined,
-    storage: storage ?? 'FRIDGE',
+    storage,
     openedDate: openedDate ?? null,
-    enteredLifespanDays: lifespanDays,
-    enteredStorage: storage ?? 'FRIDGE',
+    enteredLifespanDays: fields.lifespanDays,
+    enteredStorage: storage,
+    enteredByUser: input.lifespanDays !== undefined,
     leftover: leftover ?? false,
     price: price ?? null,
     priceQuantity: price == null ? null : quantity,
@@ -169,10 +252,13 @@ function assertLeftoverLifespan(
 
 export async function createFood(user: UserDoc, input: FoodInput): Promise<FoodItem> {
   const today = clock.today(user.timeZone);
-  assertNotFuture(input.addedDate, today);
-  assertOpenedDate(input.openedDate, input.addedDate, today);
-  assertLeftoverLifespan(input.leftover ?? false, input.storage ?? 'FRIDGE', input.lifespanDays);
-  const food = await FoodItemModel.create(newItem(user, input));
+  const addedDate = input.addedDate ?? today;
+  assertNotFuture(addedDate, today);
+  assertOpenedDate(input.openedDate, addedDate, today);
+  const learned = input.lifespanDays === undefined ? await learnedLifespans(user) : [];
+  const fields = newItem(user, { ...input, addedDate }, learned, today);
+  assertLeftoverLifespan(fields.leftover, fields.storage, fields.lifespanDays);
+  const food = await FoodItemModel.create(fields);
   await scheduleForHousehold(food);
   return toFoodView(food, today);
 }
@@ -190,6 +276,8 @@ export async function useToday(user: UserDoc, id: string): Promise<FoodItem> {
   if (food.expiryDate <= today) throw conflict(MESSAGES.alreadyDue);
   food.lifespanDays = diffDays(food.addedDate, today);
   food.expiryDate = today;
+  food.expirySource = 'USER';
+  food.estimateExplanation = adjustedCopy.photoCheck;
   await food.save();
   await scheduleForHousehold(food);
   return toFoodView(food, today);
@@ -208,7 +296,13 @@ export async function updateFood(user: UserDoc, id: string, input: FoodUpdateInp
   if (quantity !== undefined) food.quantity = quantity;
   if (unit !== undefined) food.unit = unit;
   if (addedDate !== undefined) food.addedDate = addedDate;
-  if (lifespanDays !== undefined) food.lifespanDays = food.enteredLifespanDays = lifespanDays;
+  if (lifespanDays !== undefined) {
+    // Editing the estimate makes it the person's own.
+    Object.assign(food, userExpiry(food.addedDate, lifespanDays), {
+      enteredLifespanDays: lifespanDays,
+      enteredByUser: true,
+    });
+  }
   if (notes !== undefined) food.notes = cleanNotes(notes) ?? undefined;
   if (storage !== undefined) food.storage = food.enteredStorage = storage;
   if (openedDate !== undefined) food.openedDate = openedDate;
@@ -221,6 +315,10 @@ export async function updateFood(user: UserDoc, id: string, input: FoodUpdateInp
 
   // No Mongoose hook for this: hooks don't run on update queries.
   const datesChanged = addedDate !== undefined || lifespanDays !== undefined;
+  if (addedDate !== undefined && lifespanDays === undefined && food.expirySource === 'PRINTED_DATE') {
+    // The pack's date doesn't move with the added date.
+    food.lifespanDays = lifespanFor(food.addedDate, food.expiryDate);
+  }
   if (datesChanged) food.expiryDate = expiryFor(food.addedDate, food.lifespanDays);
   await food.save();
   if (datesChanged) await scheduleForHousehold(food);
@@ -263,8 +361,9 @@ export async function wasteFood(user: UserDoc, id: string): Promise<UsageResult>
 export async function bulkCreate(user: UserDoc, input: BulkCreateInput): Promise<BulkCreateResult> {
   const today = clock.today(user.timeZone);
   assertNotFuture(input.addedDate, today);
+  const learned = input.items.some((row) => row.lifespanDays === undefined) ? await learnedLifespans(user) : [];
   const docs = input.items.map((row) =>
-    newItem(user, { ...row, addedDate: input.addedDate, storage: row.storage ?? input.storage }),
+    newItem(user, { ...row, addedDate: input.addedDate, storage: row.storage ?? input.storage }, learned, today),
   );
   const saved = await FoodItemModel.insertMany(docs);
   for (const food of saved) await scheduleForHousehold(food);
@@ -305,9 +404,42 @@ function setExpiry(food: FoodItemDoc, expiryDate: DateString) {
 }
 
 /**
- * Marks an item as opened. The expected expiry becomes the opened date plus
- * the days it lasts once opened, but only if that is earlier: opening never
- * lengthens it. Without `daysLeft`, the reference list's "once opened" value is used.
+ * Re-estimates an item that was just moved or opened. It can only bring the expected expiry forward: a
+ * new estimate that is the same or later changes nothing (see recalculateExpiry in the shared package),
+ * and a rough FALLBACK guess never replaces a date the person set.
+ */
+async function recalculate(user: UserDoc, food: FoodItemDoc, today: DateString): Promise<void> {
+  const next = recalculateExpiry(food.expiryDate, {
+    product: { name: food.name },
+    catalogMatch: food.leftover ? findReference('Leftovers') : undefined,
+    storage: food.storage,
+    addedDate: food.addedDate,
+    today,
+    printedDate: food.printedDate,
+    printedDateType: food.printedDateType,
+    usageHistory: await learnedLifespans(user),
+    openedDate: food.openedDate,
+  });
+  if (!next) return;
+  // A rough guess is no reason to override a date the person chose.
+  if (next.source === 'FALLBACK' && food.expirySource === 'USER') return;
+  const fields = fromEstimate(food.addedDate, next);
+  // Never later, even once the added date's whole days are rounded.
+  if (fields.expiryDate >= food.expiryDate) return;
+  Object.assign(food, fields);
+}
+
+/** A person-given number of days: the expected expiry the person chose, which may be later than the old one for a move. */
+function setByUser(food: FoodItemDoc, expiryDate: DateString, explanation: string) {
+  setExpiry(food, expiryDate);
+  food.expirySource = 'USER';
+  food.estimateExplanation = explanation;
+}
+
+/**
+ * Marks an item as opened. Without `daysLeft`, the expected expiry is re-estimated (the catalog's
+ * once-opened lifespan counted from the opened date) and only ever gets shorter. With `daysLeft`, the
+ * person chose how long it lasts once opened (source USER), still only if that is earlier.
  */
 export async function openFood(user: UserDoc, id: string, input: OpenFoodInput): Promise<FoodItem> {
   const today = clock.today(user.timeZone);
@@ -316,13 +448,17 @@ export async function openFood(user: UserDoc, id: string, input: OpenFoodInput):
   if (food.openedDate) throw conflict(MESSAGES.alreadyOpened);
   const openedDate = input.openedDate ?? today;
   assertOpenedDate(openedDate, food.addedDate, today);
-  const daysLeft = input.daysLeft ?? findReference(food.name)?.openedDays ?? null;
-  if (daysLeft === null) throw validationError(MESSAGES.openedDaysNeeded, 'daysLeft');
 
   food.lifespanBeforeOpened = food.lifespanDays;
+  food.sourceBeforeOpened = food.expirySource;
+  food.explanationBeforeOpened = food.estimateExplanation;
   food.openedDate = openedDate;
-  const candidate = addDays(openedDate, daysLeft);
-  if (candidate < food.expiryDate) setExpiry(food, candidate);
+  if (input.daysLeft !== undefined) {
+    const candidate = addDays(openedDate, input.daysLeft);
+    if (candidate < food.expiryDate) setByUser(food, candidate, 'You set how long this lasts once opened.');
+  } else {
+    await recalculate(user, food, today);
+  }
   await food.save();
   await scheduleForHousehold(food);
   return toFoodView(food, today);
@@ -335,37 +471,38 @@ export async function undoOpen(user: UserDoc, id: string): Promise<FoodItem> {
   if (!food.openedDate || food.lifespanBeforeOpened == null) throw conflict(MESSAGES.notOpened);
   food.lifespanDays = food.lifespanBeforeOpened;
   food.expiryDate = expiryFor(food.addedDate, food.lifespanDays);
+  if (food.sourceBeforeOpened) food.expirySource = food.sourceBeforeOpened;
+  if (food.explanationBeforeOpened != null) food.estimateExplanation = food.explanationBeforeOpened;
   food.openedDate = null;
   food.lifespanBeforeOpened = null;
+  food.sourceBeforeOpened = null;
+  food.explanationBeforeOpened = null;
   await food.save();
   await scheduleForHousehold(food);
   return toFoodView(food, clock.today(user.timeZone));
 }
 
 /**
- * Moves an item to another location. The expected expiry becomes today plus
- * the days it lasts there (the location's reference value unless given),
- * capped so the lifespan stays within 365 days.
+ * Moves an item to another location. Without `daysLeft` the expected expiry is re-estimated for the new
+ * place and only ever gets shorter. With `daysLeft` (counted from today) the person chose it (source USER),
+ * and that may be later, for example when moving food to the freezer.
  */
 export async function moveFood(user: UserDoc, id: string, input: MoveFoodInput): Promise<FoodItem> {
   const today = clock.today(user.timeZone);
   const food = await findOwned(user, id);
   assertActive(food);
   if (food.storage === input.storage) throw validationError(MESSAGES.sameStorage, 'storage');
-  const daysLeft = input.daysLeft ?? suggestedDaysIn(food.name, input.storage);
-  if (daysLeft === null) throw validationError(MESSAGES.storageDaysNeeded, 'daysLeft');
-  assertLeftoverLifespan(food.leftover, input.storage, daysLeft, 'daysLeft');
+  if (input.daysLeft !== undefined) assertLeftoverLifespan(food.leftover, input.storage, input.daysLeft, 'daysLeft');
 
   food.storage = input.storage;
-  setExpiry(food, addDays(today, daysLeft));
+  if (input.daysLeft !== undefined) {
+    setByUser(food, addDays(today, input.daysLeft), 'You set how long this lasts in its new place.');
+  } else {
+    await recalculate(user, food, today);
+  }
   await food.save();
   await scheduleForHousehold(food);
   return toFoodView(food, today);
-}
-
-/** The reference list's typical lifespan for this food in a location, if it has one. */
-function suggestedDaysIn(name: string, storage: StorageLocation): number | null {
-  return findReference(name)?.lifespanDays[storage] ?? null;
 }
 
 /** How long "Snooze" on a push notification keeps an item out of push reminders. */

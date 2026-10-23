@@ -13,7 +13,7 @@ import { renderSignedIn } from './render';
 /** Phase 1: faster entry. */
 
 describe('reference suggestions on Add Food', () => {
-  it('suggests common foods as you type, and picking one fills unit and lifespan', async () => {
+  it('suggests common foods as you type, and picking one fills the unit and where it is kept', async () => {
     const user = userEvent.setup();
     renderSignedIn('/add', <AddFoodPage />);
     await user.type(screen.getByLabelText('Food'), 'chick');
@@ -21,13 +21,11 @@ describe('reference suggestions on Add Food', () => {
     await user.click(within(suggestions).getByRole('button', { name: /Chicken/ }));
     expect(screen.getByLabelText('Food')).toHaveValue('Chicken');
     expect(screen.getByLabelText('Unit')).toHaveValue('g');
-    expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(2);
-    expect(
-      screen.getByText(/Suggested 2 days\. Suggested lifespans are typical planning estimates/),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText('Kept in')).toHaveValue('FRIDGE');
+    expect(screen.getByText(/lasts about 2 days in the fridge/)).toBeInTheDocument();
   });
 
-  it('follows the suggestion when the storage location changes', async () => {
+  it('re-estimates when the storage location changes', async () => {
     const user = userEvent.setup();
     renderSignedIn('/add', <AddFoodPage />);
     await user.type(screen.getByLabelText('Food'), 'chick');
@@ -35,10 +33,10 @@ describe('reference suggestions on Add Food', () => {
       within(screen.getByRole('group', { name: 'Suggestions' })).getByRole('button', { name: /Chicken/ }),
     );
     await user.selectOptions(screen.getByLabelText('Kept in'), 'FREEZER');
-    expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(270);
+    expect(screen.getByText(/lasts about 270 days in the freezer/)).toBeInTheDocument();
     await user.selectOptions(screen.getByLabelText('Kept in'), 'PANTRY');
-    expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(null);
-    expect(screen.getByText('Not usually kept in the pantry. Enter your own lifespan.')).toBeInTheDocument();
+    // Chicken isn't usually kept in the pantry, and meat has no pantry default: a rough estimate.
+    expect(screen.getByText('· Rough estimate')).toBeInTheDocument();
   });
 
   it('sends the storage location with the item', async () => {
@@ -53,6 +51,7 @@ describe('reference suggestions on Add Food', () => {
     renderSignedIn('/add', <AddFoodPage />);
     await user.type(screen.getByLabelText('Food'), 'Peas');
     await user.selectOptions(screen.getByLabelText('Kept in'), 'FREEZER');
+    await user.click(screen.getByRole('button', { name: 'Change estimate' }));
     await user.type(screen.getByLabelText('Lifespan (days)'), '200');
     await user.click(screen.getByRole('button', { name: 'Add food' }));
     await waitFor(() => expect(body).toMatchObject({ name: 'Peas', storage: 'FREEZER', lifespanDays: 200 }));
@@ -124,7 +123,7 @@ describe('Undo instead of confirmation dialogs', () => {
 });
 
 describe('bulk add', () => {
-  it('fills rows from the reference list and sends them in one request', async () => {
+  it('fills rows from the reference list and sends them in one request, estimating what has no lifespan', async () => {
     const user = userEvent.setup();
     let body: { addedDate: string; items: Record<string, unknown>[] } | undefined;
     server.use(
@@ -136,13 +135,14 @@ describe('bulk add', () => {
     renderSignedIn('/add/bulk', <BulkAddPage />);
     await user.type(screen.getByLabelText('Item 1 name'), 'Spinach');
     expect(screen.getByLabelText('Item 1 unit')).toHaveValue('bunch');
-    expect(screen.getByLabelText('Item 1 lifespan in days')).toHaveValue(4);
+    expect(screen.getByLabelText('Item 1 lifespan in days')).toHaveValue(null);
     await user.type(screen.getByLabelText('Item 2 name'), 'Peas');
     await user.type(screen.getByLabelText('Item 2 lifespan in days'), '240');
     await user.selectOptions(screen.getByLabelText('Item 2 kept in'), 'FREEZER');
     await user.click(screen.getByRole('button', { name: 'Add 2 items' }));
     await waitFor(() => expect(body?.items).toHaveLength(2));
-    expect(body!.items[0]).toMatchObject({ name: 'Spinach', unit: 'bunch', lifespanDays: 4, storage: 'FRIDGE' });
+    expect(body!.items[0]).toMatchObject({ name: 'Spinach', unit: 'bunch', storage: 'FRIDGE' });
+    expect(body!.items[0]).not.toHaveProperty('lifespanDays');
     expect(body!.items[1]).toMatchObject({ name: 'Peas', lifespanDays: 240, storage: 'FREEZER' });
     expect(body!.addedDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
@@ -159,6 +159,7 @@ describe('bulk add', () => {
     renderSignedIn('/add/bulk', <BulkAddPage />);
     await user.type(screen.getByLabelText('Item 1 name'), 'Spinach');
     await user.type(screen.getByLabelText('Item 2 name'), 'Mystery');
+    await user.type(screen.getByLabelText('Item 2 lifespan in days'), '999');
     await user.click(screen.getByRole('button', { name: 'Add 2 items' }));
     expect(await screen.findByText('Lifespan must be a whole number of days from 0 to 365.')).toBeInTheDocument();
     expect(screen.getByLabelText('Item 2 lifespan in days')).toHaveClass('border-danger');

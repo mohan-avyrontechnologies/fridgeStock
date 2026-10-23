@@ -3,13 +3,15 @@ import { describeError } from '../lib/errors';
 import {
   addDays,
   bulkCreateSchema,
+  findReference,
   FOOD_REFERENCE,
   MESSAGES,
   STORAGE_LOCATIONS,
   todayInTz,
   UNITS,
+  usualStorage,
   type BulkCreateInput,
-  type LearnedLifespan,
+  type PrintedDateType,
   type ReceiptItem,
   type StorageLocation,
   type Unit,
@@ -26,7 +28,6 @@ import { BlobThumb } from '../lib/foodPhoto';
 import { fieldsFor, type ScannedItem } from '../lib/scanned';
 import { photoForUpload } from '../lib/image';
 import { pickPhoto } from '../platform/pickPhoto';
-import { firstSuggestion, suggestFor } from '../lib/suggestions';
 import { check } from '../lib/validation';
 import { useAiStore } from '../stores/aiStore';
 import { useSuggestionStore } from '../stores/suggestionStore';
@@ -47,6 +48,10 @@ interface Row {
   notes?: string;
   /** The photo taken for it, kept with the food when it is saved. */
   photo?: Blob;
+  /** From the camera's date step, and a photo's category: used to estimate the expected expiry. */
+  printedDate?: string | null;
+  printedDateType?: PrintedDateType | null;
+  category?: string;
 }
 
 let nextKey = 0;
@@ -60,30 +65,31 @@ const emptyRow = (): Row => ({
   price: '',
 });
 
-/** A row from a receipt line, with a lifespan suggested from your own usual first, then the reference list. */
-function rowFromReceipt(item: ReceiptItem, learned: LearnedLifespan[]): Row {
-  const base: Row = {
+/** A row from a receipt line, kept where the catalog says it usually is. Its expected expiry is estimated. */
+function rowFromReceipt(item: ReceiptItem): Row {
+  const reference = findReference(item.name);
+  return {
     ...emptyRow(),
     name: item.name,
     quantity: String(item.quantity),
     unit: item.unit,
+    storage: reference ? usualStorage(reference) : 'FRIDGE',
     price: item.price === null ? '' : String(item.price),
   };
-  const suggestion = firstSuggestion(item.name, learned);
-  return suggestion ? { ...base, storage: suggestion.storage, lifespan: String(suggestion.days) } : base;
 }
-/** A row from a scanned product, with the usual lifespan and place for a food the catalog knows. */
-function rowFromScanned(item: ScannedItem, learned: LearnedLifespan[]): Row {
-  const fields = fieldsFor(item, learned);
+/** A row from a scanned product, in the place the catalog says the food is usually kept. */
+function rowFromScanned(item: ScannedItem): Row {
+  const fields = fieldsFor(item);
   return {
     ...emptyRow(),
     name: fields.name,
     quantity: String(fields.quantity ?? 1),
     unit: fields.unit ?? 'pcs',
-    lifespan: fields.lifespanDays === undefined ? '' : String(fields.lifespanDays),
     storage: fields.storage ?? 'FRIDGE',
     ...(fields.notes && { notes: fields.notes }),
     ...(item.photo && { photo: item.photo }),
+    ...(fields.printedDate && { printedDate: fields.printedDate, printedDateType: fields.printedDateType }),
+    ...(fields.category && { category: fields.category }),
   };
 }
 const toNumber = (value: string) => (value.trim() === '' ? undefined : Number(value));
@@ -109,7 +115,7 @@ export function BulkAddPage() {
   const [fromScan, setFromScan] = useState(scannedOnArrival.length > 0);
   const [rows, setRows] = useState<Row[]>(() =>
     scannedOnArrival.length > 0
-      ? scannedOnArrival.map((item) => rowFromScanned(item, []))
+      ? scannedOnArrival.map((item) => rowFromScanned(item))
       : [emptyRow(), emptyRow(), emptyRow()],
   );
   // Errors keyed by "<row key>.<field>", plus "form" and "addedDate".
@@ -141,10 +147,7 @@ export function BulkAddPage() {
         toast(receiptCopy.none);
         return;
       }
-      setRows((prev) => [
-        ...prev.filter((row) => !isBlank(row)),
-        ...draft.items.map((i) => rowFromReceipt(i, learned)),
-      ]);
+      setRows((prev) => [...prev.filter((row) => !isBlank(row)), ...draft.items.map((i) => rowFromReceipt(i))]);
       if (draft.purchaseDate) setAddedDate(draft.purchaseDate);
       setFromReceipt(true);
       toast(receiptCopy.found(draft.items.length));
@@ -161,11 +164,10 @@ export function BulkAddPage() {
       prev.map((row) => {
         if (row.key !== key) return row;
         const next = { ...row, ...patch };
-        // A known food (your usual first, then the reference list) suggests its unit and lifespan.
-        if (patch.name !== undefined && !row.lifespan) {
-          const suggestion = suggestFor(patch.name, next.storage, learned);
-          if (suggestion && suggestion.days !== null)
-            Object.assign(next, { unit: suggestion.unit, lifespan: String(suggestion.days) });
+        // A food the catalog knows suggests its unit and where it is usually kept (when the name becomes one it knows).
+        if (patch.name !== undefined && !findReference(row.name)) {
+          const reference = findReference(patch.name);
+          if (reference) Object.assign(next, { unit: reference.unit, storage: usualStorage(reference) });
         }
         return next;
       }),
@@ -185,6 +187,9 @@ export function BulkAddPage() {
         storage: r.storage,
         price: r.price.trim() === '' ? undefined : Number(r.price),
         notes: r.notes,
+        printedDate: r.printedDate ?? undefined,
+        printedDateType: r.printedDate ? (r.printedDateType ?? 'UNKNOWN') : undefined,
+        category: r.category,
       })),
     };
     const { data, errors: found } = check(bulkCreateSchema, input);
@@ -234,10 +239,7 @@ export function BulkAddPage() {
             onDone={(items) => {
               setCamera(false);
               setFromScan(true);
-              setRows((prev) => [
-                ...prev.filter((row) => !isBlank(row)),
-                ...items.map((item) => rowFromScanned(item, learned)),
-              ]);
+              setRows((prev) => [...prev.filter((row) => !isBlank(row)), ...items.map((item) => rowFromScanned(item))]);
             }}
           />
         )}
@@ -374,14 +376,14 @@ export function BulkAddPage() {
                       </select>
                     </label>
                     <label className="flex flex-col gap-1 text-xs font-medium text-muted">
-                      Lifespan (days)
+                      Lifespan (days, optional)
                       <input
                         aria-label={`${label} lifespan in days`}
                         type="number"
                         inputMode="numeric"
                         min="0"
                         max="365"
-                        placeholder="days"
+                        placeholder="estimated"
                         value={row.lifespan}
                         onChange={(e) => update(row.key, { lifespan: e.target.value })}
                         className={`${inputClass} ${err('lifespanDays') ? 'border-danger' : 'border-line'}`}

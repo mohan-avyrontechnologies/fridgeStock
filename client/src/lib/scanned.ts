@@ -1,5 +1,4 @@
-import type { LearnedLifespan, StorageLocation, Unit } from '@cook-first/shared';
-import { firstSuggestion } from './suggestions';
+import { findReference, usualStorage, type PrintedDateType, type StorageLocation, type Unit } from '@cook-first/shared';
 
 /** One product the camera found, waiting to be put away. */
 export interface ScannedItem {
@@ -14,6 +13,9 @@ export interface ScannedItem {
   from: 'barcode' | 'photo';
   /** The photo taken (photo mode), kept with the food when it is saved. */
   photo?: Blob;
+  /** A date read off the pack by the date step (on the device, or by the AI), and what it is called. */
+  printedDate?: string | null;
+  printedDateType?: PrintedDateType | null;
   /** Visible warning signs the AI noticed. They are only shown here; Photo Check on Food Details is where you act on them. */
   signs?: string[];
 }
@@ -24,23 +26,27 @@ export interface ScannedFields {
   quantity?: number;
   unit?: Unit;
   notes?: string;
-  /** The usual lifespan and place for a food in the catalog (your own usual first, then the reference list). */
-  lifespanDays?: number;
+  /** Where the catalog says the food is usually kept. */
   storage?: StorageLocation;
+  category?: string;
+  printedDate?: string | null;
+  printedDateType?: PrintedDateType | null;
 }
 
 /**
- * The fields for a scanned product. A food the catalog knows gets its usual lifespan and where it is kept,
- * for the person to confirm; a pack size from a barcode keeps its own unit.
+ * The fields for a scanned product. A food the catalog knows gets the place it is usually kept, for the person
+ * to confirm (its expected expiry is estimated, never typed); a pack size from a barcode keeps its own unit.
  */
-export function fieldsFor(item: ScannedItem, learned: LearnedLifespan[]): ScannedFields {
-  const suggestion = firstSuggestion(item.name, learned);
-  const unit = item.unit ?? suggestion?.unit;
+export function fieldsFor(item: ScannedItem): ScannedFields {
+  const reference = findReference(item.name);
+  const unit = item.unit ?? reference?.unit;
   return {
     name: item.name,
     ...(item.quantity !== undefined && { quantity: item.quantity }),
     ...(unit && { unit }),
     ...(item.brand && { notes: item.brand }),
-    ...(suggestion && { lifespanDays: suggestion.days, storage: suggestion.storage }),
+    ...(reference && { storage: usualStorage(reference) }),
+    ...(item.category && { category: item.category }),
+    ...(item.printedDate && { printedDate: item.printedDate, printedDateType: item.printedDateType ?? 'UNKNOWN' }),
   };
 }

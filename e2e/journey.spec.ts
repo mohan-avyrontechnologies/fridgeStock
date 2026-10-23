@@ -21,6 +21,8 @@ async function addFood(page: Page, name: string, lifespan: string, unit = 'pcs')
   await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
   await page.getByLabel('Food', { exact: true }).fill(name);
   await page.getByLabel('Unit').selectOption(unit);
+  // The lifespan is estimated; "Change estimate" is how a test (or a person) sets their own.
+  await page.getByRole('button', { name: 'Change estimate' }).click();
   await page.getByLabel('Lifespan (days)').fill(lifespan);
   await page.getByRole('button', { name: 'Add food', exact: true }).click();
   await expect(page).toHaveURL('/');
@@ -526,6 +528,7 @@ test('phase 5: a price on the item, then used and wasted figures and money on In
   await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
   await page.getByLabel('Food', { exact: true }).fill('Milk');
   await page.getByLabel('Unit').selectOption('l');
+  await page.getByRole('button', { name: 'Change estimate' }).click();
   await page.getByLabel('Lifespan (days)').fill('4');
   await page.getByLabel('Price (USD, optional)').fill('4');
   await page.getByRole('button', { name: 'Add food', exact: true }).click();
@@ -701,6 +704,7 @@ test('phase 6: scanning a barcode fills in the form, and a receipt photo becomes
   await expect(page.getByLabel(/Notes/)).toHaveValue('Acme Dairy');
 
   // How long it lasts is still the person's choice.
+  await page.getByRole('button', { name: 'Change estimate' }).click();
   await page.getByLabel('Lifespan (days)').fill('5');
   await page.getByRole('button', { name: 'Add food', exact: true }).click();
   await expect(page).toHaveURL('/');

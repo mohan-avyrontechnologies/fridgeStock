@@ -4,22 +4,29 @@ import {
   addDays,
   createFoodSchema,
   diffDays,
+  estimateExpiry,
+  expirySourceLabel,
   findReference,
   formatDisplay,
+  isUsablePrintedDate,
   isValidDate,
   LEFTOVER_MAX_DAYS,
   MESSAGES,
+  PRINTED_DATE_TYPES,
   STORAGE_LOCATIONS,
   todayInTz,
   UNITS,
+  usualStorage,
+  type ExpirySource,
   type FoodInput,
+  type PrintedDateType,
   type StorageLocation,
   type Unit,
 } from '@cook-first/shared';
-import { useEffect, useId, useState, type FormEvent } from 'react';
+import { useEffect, useId, useMemo, useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
-import { leftoverCopy, referenceCopy, screenCopy, storageLabel } from '../copy';
-import { searchSuggestions, suggestFor, type LifespanSuggestion } from '../lib/suggestions';
+import { expiryCopy, leftoverCopy, screenCopy, storageLabel } from '../copy';
+import { searchSuggestions, type LifespanSuggestion } from '../lib/suggestions';
 import { check } from '../lib/validation';
 import { useSuggestionStore } from '../stores/suggestionStore';
 import { useAuthStore } from '../stores/authStore';
@@ -41,9 +48,17 @@ interface Props {
     quantity?: number;
     unit?: Unit;
     notes?: string;
-    lifespanDays?: number;
     storage?: StorageLocation;
+    /** The date to count from: the receipt's date for an item that came from a receipt. Defaults to today. */
+    addedDate?: string;
+    /** A free-text category (a photo's), used to estimate a food the catalog doesn't list. */
+    category?: string;
+    /** A date read off the pack by the camera step. */
+    printedDate?: string | null;
+    printedDateType?: PrintedDateType | null;
   };
+  /** When editing: the expected expiry the item has now, and where it came from. */
+  current?: { expiryDate: string; expirySource: ExpirySource; estimateExplanation: string };
   submitLabel: string;
   /** Resolves when saved. `addAnother` is set when the secondary button was used. */
   onSubmit: (input: FoodInput, addAnother: boolean) => Promise<void>;
@@ -60,10 +75,10 @@ const toNumber = (value: string) => (value.trim() === '' ? undefined : Number(va
  * same shared schema as the server, purely so errors show instantly; the
  * server re-validates everything and calculates the expiry date itself.
  */
-/** Suggested lifespan for leftovers in a location (from the reference list), within the leftover limit. */
-function leftoverDays(storage: StorageLocation): number | null {
-  const days = findReference('Leftovers')?.lifespanDays[storage] ?? null;
-  return days === null ? null : storage === 'FREEZER' ? days : Math.min(days, LEFTOVER_MAX_DAYS);
+/** Where the catalog says a food is usually kept (the fridge for a food it doesn't list). */
+function usualPlace(name: string): StorageLocation {
+  const entry = findReference(name);
+  return entry ? usualStorage(entry) : 'FRIDGE';
 }
 
 /** How much the quantity stepper moves for a unit. */
@@ -73,7 +88,7 @@ export function quantityStep(unit: Unit): number {
   return 1;
 }
 
-export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnother, autoFocus }: Props) {
+export function FoodForm({ initial, prefill, current, submitLabel, onSubmit, allowAddAnother, autoFocus }: Props) {
   const timeZone = useAuthStore((s) => s.user?.timeZone) ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
   const today = todayInTz(timeZone);
   const notesId = useId();
@@ -83,22 +98,25 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
   const [name, setName] = useState(initial?.name ?? prefill?.name ?? '');
   const [quantity, setQuantity] = useState(String(initial?.quantity ?? prefill?.quantity ?? 1));
   const [unit, setUnit] = useState<Unit>(initial?.unit ?? prefill?.unit ?? 'pcs');
-  const [addedDate, setAddedDate] = useState(initial?.addedDate ?? today);
+  const [addedDate, setAddedDate] = useState(initial?.addedDate ?? prefill?.addedDate ?? today);
   const [leftover, setLeftover] = useState(initial?.leftover ?? prefill?.leftover ?? false);
-  const [lifespan, setLifespan] = useState(
-    initial
-      ? String(initial.lifespanDays)
-      : prefill?.leftover
-        ? String(leftoverDays('FRIDGE') ?? '')
-        : prefill?.lifespanDays !== undefined
-          ? String(prefill.lifespanDays)
-          : '',
+  // Nobody has to enter a lifespan: the expected expiry is estimated. "Change estimate" reveals the field, and
+  // only a lifespan the person typed is sent (the server then marks the source as theirs).
+  const [lifespan, setLifespan] = useState(initial?.lifespanDays !== undefined ? String(initial.lifespanDays) : '');
+  const [showEstimate, setShowEstimate] = useState(false);
+  const [lifespanTouched, setLifespanTouched] = useState(false);
+  const [storage, setStorage] = useState<StorageLocation>(
+    initial?.storage ?? prefill?.storage ?? (prefill?.name && !prefill.leftover ? usualPlace(prefill.name) : 'FRIDGE'),
   );
-  const [storage, setStorage] = useState<StorageLocation>(initial?.storage ?? prefill?.storage ?? 'FRIDGE');
+  // Once the person picks a place themselves, naming a food no longer moves it.
+  const [storageTouched, setStorageTouched] = useState(Boolean(initial?.storage ?? prefill?.storage));
+  const [printedDate, setPrintedDate] = useState(initial?.printedDate ?? prefill?.printedDate ?? '');
+  const [printedDateType, setPrintedDateType] = useState<PrintedDateType>(
+    initial?.printedDateType ?? prefill?.printedDateType ?? 'UNKNOWN',
+  );
+  const [showPrinted, setShowPrinted] = useState(Boolean(initial?.printedDate ?? prefill?.printedDate));
   const [price, setPrice] = useState(initial?.price == null ? '' : String(initial.price));
   const currency = useAuthStore((s) => s.user?.currency) ?? 'USD';
-  // The food name the lifespan was suggested for, if the user picked a suggestion.
-  const [suggestedFrom, setSuggestedFrom] = useState<string | null>(null);
   const learned = useSuggestionStore((s) => s.learned);
   const loadLearned = useSuggestionStore((s) => s.load);
 
@@ -129,50 +147,79 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
   // Your own foods first, then the reference list (hidden once the name is an exact match).
   const suggestions = initial ? [] : searchSuggestions(name, storage, learned);
 
-  /** Picking a suggestion fills in its name, unit and lifespan for the chosen location. */
+  /** Picking a suggestion fills in its name and unit, and the place the catalog says it is usually kept. */
   function pick(suggestion: LifespanSuggestion) {
     setName(suggestion.name);
     setUnit(suggestion.unit);
-    setLifespan(suggestion.days === null ? '' : String(suggestion.days));
-    setSuggestedFrom(suggestion.name);
+    if (!storageTouched && !initial) setStorage(usualPlace(suggestion.name));
     setErrors({});
   }
 
   function toggleLeftover(next: boolean) {
     setLeftover(next);
     clearError('lifespanDays');
-    // Leftovers start from a short lifespan the user can still change.
-    if (next) {
-      const days = leftoverDays(storage);
-      setLifespan(days === null ? '' : String(days));
-      setSuggestedFrom(null);
-    }
   }
 
   function changeStorage(next: StorageLocation) {
     setStorage(next);
-    if (leftover) {
-      const days = leftoverDays(next);
-      setLifespan(days === null ? '' : String(days));
-      return;
-    }
-    // Follow the suggestion for the new location, unless the user has typed their own lifespan.
-    if (suggestedFrom) {
-      const days = suggestFor(suggestedFrom, next, learned)?.days ?? null;
-      setLifespan(days === null ? '' : String(days));
-    }
+    setStorageTouched(true);
   }
 
-  const current = suggestedFrom ? suggestFor(suggestedFrom, storage, learned) : null;
-
   const lifespanNumber = Number(lifespan);
-  const previewValid =
-    lifespan !== '' &&
-    Number.isInteger(lifespanNumber) &&
-    lifespanNumber >= 0 &&
-    lifespanNumber <= 365 &&
-    isValidDate(addedDate);
-  const expiryDate = previewValid ? addDays(addedDate, lifespanNumber) : null;
+  const lifespanValid =
+    lifespan !== '' && Number.isInteger(lifespanNumber) && lifespanNumber >= 0 && lifespanNumber <= 365;
+
+  // Shown for what will be saved. Your own number first; else, when editing, the date the item has now; else the
+  // same estimate the server will make (the shared estimateExpiry, with your own history).
+  const printedUsable = printedDate !== '' && isUsablePrintedDate(printedDate, today);
+  const estimate = useMemo(() => {
+    if (!name.trim() || !isValidDate(addedDate)) return null;
+    return estimateExpiry({
+      product: { name: name.trim() },
+      catalogMatch: leftover ? (findReference('Leftovers') ?? null) : undefined,
+      category: prefill?.category,
+      storage,
+      addedDate,
+      today,
+      printedDate: printedUsable ? printedDate : null,
+      printedDateType: printedUsable ? printedDateType : null,
+      usageHistory: initial ? [] : learned,
+    });
+  }, [
+    name,
+    addedDate,
+    leftover,
+    prefill?.category,
+    storage,
+    today,
+    printedUsable,
+    printedDate,
+    printedDateType,
+    initial,
+    learned,
+  ]);
+
+  let shown: { expiryDate: string; label: string; explanation: string } | null = null;
+  if (lifespanTouched && lifespanValid && isValidDate(addedDate)) {
+    shown = {
+      expiryDate: addDays(addedDate, lifespanNumber),
+      label: expirySourceLabel('USER'),
+      explanation: expiryCopy.userExplanation,
+    };
+  } else if (initial && current && !lifespanTouched) {
+    shown = {
+      expiryDate: current.expiryDate,
+      label: expirySourceLabel(current.expirySource),
+      explanation: current.estimateExplanation,
+    };
+  } else if (estimate) {
+    shown = {
+      expiryDate: addDays(addedDate, Math.max(diffDays(addedDate, estimate.expiryDate), 0)),
+      label: expirySourceLabel(estimate.source),
+      explanation: estimate.explanation,
+    };
+  }
+  const expiryDate = shown?.expiryDate ?? null;
 
   function validate(): FoodInput | null {
     const { data, errors: found } = check(createFoodSchema, {
@@ -180,15 +227,25 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
       quantity: toNumber(quantity),
       unit,
       addedDate,
-      lifespanDays: toNumber(lifespan),
+      // Only a lifespan the person typed is sent; otherwise the server estimates it.
+      lifespanDays: lifespanTouched ? toNumber(lifespan) : undefined,
       notes,
       storage,
       leftover,
+      printedDate: printedUsable ? printedDate : undefined,
+      printedDateType: printedUsable ? printedDateType : undefined,
+      category: prefill?.category,
       // Blank means no price; when editing, blank clears a price that was set.
       price: price.trim() === '' ? (initial ? null : undefined) : Number(price),
     });
     const next: Errors = { ...found };
-    if (!next.lifespanDays && leftover && storage !== 'FREEZER' && Number(lifespan) > LEFTOVER_MAX_DAYS) {
+    if (
+      !next.lifespanDays &&
+      lifespanTouched &&
+      leftover &&
+      storage !== 'FREEZER' &&
+      Number(lifespan) > LEFTOVER_MAX_DAYS
+    ) {
       next.lifespanDays = MESSAGES.leftoverLifespan;
     }
     if (!next.addedDate && isValidDate(addedDate) && addedDate > today) {
@@ -209,10 +266,16 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
         setName('');
         setQuantity('1');
         setLifespan('');
+        setLifespanTouched(false);
+        setShowEstimate(false);
+        setStorage('FRIDGE');
+        setStorageTouched(false);
+        setPrintedDate('');
+        setPrintedDateType('UNKNOWN');
+        setShowPrinted(false);
         setNotes('');
         setPrice('');
         setShowNotes(false);
-        setSuggestedFrom(null);
         setLeftover(false);
         setErrors({});
         document.getElementById('food-name')?.focus();
@@ -240,7 +303,8 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
         value={name}
         onChange={(e) => {
           setName(e.target.value);
-          setSuggestedFrom(null);
+          // A food the catalog knows goes where it is usually kept, until you choose a place yourself.
+          if (!initial && !storageTouched && findReference(e.target.value)) setStorage(usualPlace(e.target.value));
           clearError('name');
         }}
         error={errors.name}
@@ -248,12 +312,10 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
       {suggestions.length > 0 && (
         <div role="group" aria-label="Suggestions" className="-mx-4 -mt-3 flex gap-2 overflow-x-auto px-4 pb-1">
           {suggestions.map((suggestion) => {
-            const { days } = suggestion;
             return (
               <Chip key={suggestion.name} onClick={() => pick(suggestion)}>
                 {suggestion.source === 'learned' && <Star aria-label="your usual" className="size-4 fill-current" />}
                 {suggestion.name}
-                {days !== null && <span className="ml-1 text-muted">· {days}d</span>}
               </Chip>
             );
           })}
@@ -411,48 +473,32 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
         </div>
       </div>
 
-      <div>
-        <Field
-          label="Lifespan (days)"
-          type="number"
-          inputMode="numeric"
-          min="0"
-          max="365"
-          step="1"
-          placeholder="How many days you expect it to last"
-          value={lifespan}
-          onChange={(e) => {
-            setLifespan(e.target.value);
-            setSuggestedFrom(null);
-            clearError('lifespanDays');
-          }}
-          error={errors.lifespanDays}
-          hint={
-            !current
-              ? screenCopy.form.lifespanHint
-              : current.source === 'learned'
-                ? referenceCopy.learned(current.days!, current.basedOn!)
-                : current.days === null
-                  ? referenceCopy.notUsuallyKept(storageLabel[storage])
-                  : `${referenceCopy.suggested(current.days)}. ${referenceCopy.hint}`
-          }
-        />
-        <div className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1">
-          {LIFESPAN_PICKS.map((d) => (
-            <Chip
-              key={d}
-              selected={lifespan === String(d)}
-              onClick={() => {
-                setLifespan(String(d));
-                setSuggestedFrom(null);
-                clearError('lifespanDays');
-              }}
-            >
-              {d} {d === 1 ? 'day' : 'days'}
-            </Chip>
-          ))}
+      {!showPrinted ? (
+        <button
+          type="button"
+          onClick={() => setShowPrinted(true)}
+          className="inline-flex min-h-12 items-center text-sm font-semibold text-brand underline-offset-2 hover:underline"
+        >
+          + {expiryCopy.addPrinted}
+        </button>
+      ) : (
+        <div className="space-y-2">
+          <Field
+            label={expiryCopy.printedLabel}
+            type="date"
+            value={printedDate}
+            onChange={(e) => setPrintedDate(e.target.value)}
+            hint={printedDate !== '' && !printedUsable ? expiryCopy.printedIgnored : expiryCopy.printedHint}
+          />
+          <div className="flex flex-wrap gap-2" role="group" aria-label={expiryCopy.printedTypeLabel}>
+            {PRINTED_DATE_TYPES.filter((type) => type !== 'UNKNOWN').map((type) => (
+              <Chip key={type} selected={printedDateType === type} onClick={() => setPrintedDateType(type)}>
+                {expiryCopy.printedTypes[type]}
+              </Chip>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {!showNotes ? (
         <button
@@ -493,9 +539,57 @@ export function FoodForm({ initial, prefill, submitLabel, onSubmit, allowAddAnot
           {expiryDate
             ? screenCopy.form.preview(formatDisplay(expiryDate), diffDays(today, expiryDate))
             : screenCopy.form.previewEmpty}
+          {shown && <span className="ml-2 text-sm font-normal text-muted">· {shown.label}</span>}
         </p>
+        {shown && <p className="text-sm leading-snug text-muted">{shown.explanation}</p>}
+        {!showEstimate && (
+          <button
+            type="button"
+            onClick={() => setShowEstimate(true)}
+            className="inline-flex min-h-12 items-center text-sm font-semibold text-brand underline-offset-2 hover:underline"
+          >
+            {expiryCopy.changeEstimate}
+          </button>
+        )}
         <EstimateNote />
       </div>
+
+      {showEstimate && (
+        <div>
+          <Field
+            label="Lifespan (days)"
+            type="number"
+            inputMode="numeric"
+            min="0"
+            max="365"
+            step="1"
+            placeholder="How many days you expect it to last"
+            value={lifespan}
+            onChange={(e) => {
+              setLifespan(e.target.value);
+              setLifespanTouched(true);
+              clearError('lifespanDays');
+            }}
+            error={errors.lifespanDays}
+            hint={screenCopy.form.lifespanHint}
+          />
+          <div className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1">
+            {LIFESPAN_PICKS.map((d) => (
+              <Chip
+                key={d}
+                selected={lifespanTouched && lifespan === String(d)}
+                onClick={() => {
+                  setLifespan(String(d));
+                  setLifespanTouched(true);
+                  clearError('lifespanDays');
+                }}
+              >
+                {d} {d === 1 ? 'day' : 'days'}
+              </Chip>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col gap-2 pt-1">
         <Button type="submit" disabled={busy}>

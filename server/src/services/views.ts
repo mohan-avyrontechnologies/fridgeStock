@@ -1,5 +1,6 @@
 import {
   diffDays,
+  USER_EXPLANATION,
   type Favourite,
   type AppNotification,
   type DateString,
@@ -51,6 +52,10 @@ export function toFoodView(doc: FoodItemDoc, today: DateString): FoodItem {
     addedDate: doc.addedDate,
     lifespanDays: doc.lifespanDays,
     expiryDate: doc.expiryDate,
+    expirySource: doc.expirySource ?? 'USER',
+    estimateExplanation: doc.estimateExplanation || USER_EXPLANATION,
+    printedDate: doc.printedDate ?? null,
+    printedDateType: doc.printedDateType ?? null,
     notes: doc.notes ?? null,
     storage: doc.storage ?? 'FRIDGE',
     openedDate: doc.openedDate ?? null,

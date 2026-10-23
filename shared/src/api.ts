@@ -3,6 +3,7 @@ import type {
   ActivityType,
   WarningSignType,
   Currency,
+  ExpirySource,
   FoodStatus,
   MealType,
   NotificationChannelId,
@@ -11,6 +12,7 @@ import type {
   SoundName,
   NotificationStatus,
   PreferenceKey,
+  PrintedDateType,
   PushPlatform,
   ReminderMode,
   ReminderType,
@@ -90,6 +92,13 @@ export interface FoodItem {
   lifespanDays: number;
   /** Always addedDate + lifespanDays, calculated by the server (never accepted from the client). */
   expiryDate: DateString;
+  /** Where the expected expiry came from. USER once the person has edited it. */
+  expirySource: ExpirySource;
+  /** One short sentence saying why the expected expiry is what it is. */
+  estimateExplanation: string;
+  /** A date read off the pack, if one was found, and what it was called. */
+  printedDate: DateString | null;
+  printedDateType: PrintedDateType | null;
   notes: string | null;
   storage: StorageLocation;
   openedDate: DateString | null;

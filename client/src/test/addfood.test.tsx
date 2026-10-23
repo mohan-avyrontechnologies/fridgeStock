@@ -145,7 +145,6 @@ describe('the quantity stepper', () => {
     renderSignedIn('/add', <AddFoodPage />);
     await reader.type(await screen.findByLabelText('Food'), 'Rice');
     await reader.click(screen.getByRole('button', { name: 'Increase quantity' }));
-    await reader.click(screen.getByRole('button', { name: '5 days' }));
     await reader.click(screen.getByRole('button', { name: 'Add food' }));
     await waitFor(() => expect(body.quantity).toBe(2));
   });
@@ -153,15 +152,20 @@ describe('the quantity stepper', () => {
 
 describe('number keyboards and lifespan quick picks', () => {
   it('quantity and price ask for a decimal keyboard and lifespan for a plain number one', async () => {
+    const reader = userEvent.setup();
     renderSignedIn('/add', <AddFoodPage />);
     expect(await screen.findByLabelText('Quantity')).toHaveAttribute('inputmode', 'decimal');
     expect(screen.getByLabelText(/^Price/)).toHaveAttribute('inputmode', 'decimal');
+    // The lifespan is not asked for; it appears behind "Change estimate".
+    expect(screen.queryByLabelText('Lifespan (days)')).not.toBeInTheDocument();
+    await reader.click(screen.getByRole('button', { name: 'Change estimate' }));
     expect(screen.getByLabelText('Lifespan (days)')).toHaveAttribute('inputmode', 'numeric');
   });
 
-  it('has quick-pick chips for the lifespan, and choosing one fills it in', async () => {
+  it('has quick-pick chips for the lifespan behind "Change estimate", and choosing one fills it in', async () => {
     const reader = userEvent.setup();
     renderSignedIn('/add', <AddFoodPage />);
+    await reader.click(screen.getByRole('button', { name: 'Change estimate' }));
     for (const label of ['1 day', '2 days', '3 days', '5 days', '7 days', '14 days']) {
       expect(await screen.findByRole('button', { name: label })).toBeInTheDocument();
     }
@@ -207,7 +211,7 @@ describe('recents', () => {
     expect(screen.getByLabelText('Food')).toHaveValue('Peas');
     expect(screen.getByLabelText('Quantity')).toHaveValue(500);
     expect(screen.getByLabelText('Unit')).toHaveValue('g');
-    expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(120);
+    expect(screen.queryByLabelText('Lifespan (days)')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Kept in')).toHaveValue('FREEZER');
   });
 

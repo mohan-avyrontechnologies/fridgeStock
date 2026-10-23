@@ -50,14 +50,10 @@ describe('"Opened" shortens the expected expiry', () => {
     expect(res.body).toMatchObject({ openedDate: '2026-09-25', expiryDate: '2026-09-28', urgency: 'OVERDUE' });
   });
 
-  it('asks for the days when the food has no reference value', async () => {
-    const { id } = await create({ name: 'Pickles' });
-    const res = await s.auth(api().post(`/api/foods/${id}/open`).send({})).expect(400);
-    expect(res.body.error).toEqual({
-      code: 'VALIDATION_ERROR',
-      field: 'daysLeft',
-      message: 'Enter how many days it lasts once opened.',
-    });
+  it('opens a food with no once-opened value without changing its expected expiry', async () => {
+    const { id, expiryDate } = await create({ name: 'Pickles' });
+    const res = await s.auth(api().post(`/api/foods/${id}/open`).send({})).expect(200);
+    expect(res.body).toMatchObject({ openedDate: '2026-09-29', expiryDate });
   });
 
   it('rejects a second "Opened", a future or pre-added date, and closed items', async () => {
@@ -85,11 +81,20 @@ describe('"Opened" shortens the expected expiry', () => {
 });
 
 describe('moving between fridge, freezer and pantry', () => {
-  it("moving chicken to the freezer uses the freezer's lifespan, counted from today", async () => {
+  it('moving chicken to the freezer without a number never extends the expected expiry', async () => {
     const { id } = await create({ name: 'Chicken', unit: 'g', addedDate: '2026-09-28', lifespanDays: 2 });
     const res = await s.auth(api().post(`/api/foods/${id}/move`).send({ storage: 'FREEZER' })).expect(200);
+    expect(res.body).toMatchObject({ storage: 'FREEZER', expiryDate: '2026-09-30', lifespanDays: 2 });
+  });
+
+  it('moving chicken to the freezer with days chosen counts from today (source USER)', async () => {
+    const { id } = await create({ name: 'Chicken', unit: 'g', addedDate: '2026-09-28', lifespanDays: 2 });
+    const res = await s
+      .auth(api().post(`/api/foods/${id}/move`).send({ storage: 'FREEZER', daysLeft: 270 }))
+      .expect(200);
     // 270 days from today (09-29) → 2027-06-26; lifespan counts from the added date (09-28).
     expect(res.body).toMatchObject({
+      expirySource: 'USER',
       storage: 'FREEZER',
       expiryDate: '2027-06-26',
       lifespanDays: 271,
@@ -101,7 +106,7 @@ describe('moving between fridge, freezer and pantry', () => {
 
   it('moving back to the fridge shortens it again', async () => {
     const { id } = await create({ name: 'Chicken', lifespanDays: 2 });
-    await s.auth(api().post(`/api/foods/${id}/move`).send({ storage: 'FREEZER' })).expect(200);
+    await s.auth(api().post(`/api/foods/${id}/move`).send({ storage: 'FREEZER', daysLeft: 270 })).expect(200);
     const res = await s.auth(api().post(`/api/foods/${id}/move`).send({ storage: 'FRIDGE' })).expect(200);
     expect(res.body).toMatchObject({ storage: 'FRIDGE', expiryDate: '2026-10-01', remainingDays: 2 });
   });
@@ -112,16 +117,18 @@ describe('moving between fridge, freezer and pantry', () => {
     expect(a.body).toMatchObject({ expiryDate: '2026-10-29', lifespanDays: 30 });
 
     const old = await create({ name: 'Broccoli', addedDate: '2026-06-01', lifespanDays: 200 });
-    const b = await s.auth(api().post(`/api/foods/${old.id}/move`).send({ storage: 'FREEZER' })).expect(200);
+    const b = await s
+      .auth(api().post(`/api/foods/${old.id}/move`).send({ storage: 'FREEZER', daysLeft: 365 }))
+      .expect(200);
     expect(b.body.lifespanDays).toBe(365);
     expect(b.body.expiryDate).toBe('2027-06-01');
   });
 
-  it('asks for the days when there is no suggestion, and rejects moving to the same place', async () => {
+  it('estimates without days when there is no suggestion, and rejects moving to the same place', async () => {
     const eggs = await create({ name: 'Eggs' }); // eggs have no freezer value
-    const res = await s.auth(api().post(`/api/foods/${eggs.id}/move`).send({ storage: 'FREEZER' })).expect(400);
-    expect(res.body.error).toMatchObject({ field: 'daysLeft', message: 'Enter how many days it lasts there.' });
-    const same = await s.auth(api().post(`/api/foods/${eggs.id}/move`).send({ storage: 'FRIDGE' })).expect(400);
+    const moved = await s.auth(api().post(`/api/foods/${eggs.id}/move`).send({ storage: 'FREEZER' })).expect(200);
+    expect(moved.body).toMatchObject({ storage: 'FREEZER', expiryDate: eggs.expiryDate });
+    const same = await s.auth(api().post(`/api/foods/${eggs.id}/move`).send({ storage: 'FREEZER' })).expect(400);
     expect(same.body.error).toMatchObject({ field: 'storage', message: 'It is already kept there.' });
     await s.auth(api().post(`/api/foods/${eggs.id}/move`).send({ storage: 'FREEZER', daysLeft: 400 })).expect(400);
   });

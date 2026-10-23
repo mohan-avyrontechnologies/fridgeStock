@@ -33,6 +33,11 @@ export const pushCopy = {
 };
 
 /** AI features (Phase 4): messages shown to the user. */
+/** Sentences stored with an expected expiry that the app changed because the person asked it to. */
+export const adjustedCopy = {
+  photoCheck: 'You brought the expected expiry forward to today after a Photo Check.',
+};
+
 export const aiCopy = {
   notEnabled: 'AI suggestions aren’t turned on for this app.',
   failed: 'Couldn’t get suggestions right now. Try again later.',

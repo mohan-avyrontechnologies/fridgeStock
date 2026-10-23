@@ -2,6 +2,7 @@ import { formatDisplay, type ActiveFoodItem } from '@cook-first/shared';
 import { Check } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Link } from 'react-router';
+import { expirySourceLabel } from '@cook-first/shared';
 import { cardExpiryLine, leftoverCopy, remainingText, swipeCopy, urgencyCopy } from '../copy';
 import { formatQuantity } from '../lib/format';
 import { prefersReducedMotion } from '../lib/motion';
@@ -89,7 +90,9 @@ export function FoodCard({ item }: { item: ActiveFoodItem }) {
                     </>
                   )}
                 </p>
-                <p className="text-sm text-muted">{cardExpiryLine(formatDisplay(item.expiryDate))}</p>
+                <p className="text-sm text-muted">
+                  {cardExpiryLine(formatDisplay(item.expiryDate), expirySourceLabel(item.expirySource))}
+                </p>
                 {item.notes && <p className="mt-0.5 break-words text-sm text-muted italic">{item.notes}</p>}
               </div>
             </Link>

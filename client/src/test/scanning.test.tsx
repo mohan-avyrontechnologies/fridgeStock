@@ -77,7 +77,7 @@ describe('scanning a receipt on Bulk add', () => {
     expect(screen.queryByRole('button', { name: 'Scan a receipt' })).not.toBeInTheDocument();
   });
 
-  it('fills the rows from the photo, suggests lifespans, sets the date, and saves nothing yet', async () => {
+  it('fills the rows from the photo, puts food where it is usually kept, sets the date, and saves nothing yet', async () => {
     const user = userEvent.setup();
     const bodies: unknown[] = [];
     receiptReturns(draft, bodies);
@@ -94,12 +94,13 @@ describe('scanning a receipt on Bulk add', () => {
     expect(screen.getByLabelText('Item 1 quantity')).toHaveValue(2);
     expect(screen.getByLabelText('Item 1 unit')).toHaveValue('l');
     expect(screen.getByLabelText('Item 1 price')).toHaveValue(2.4);
-    expect(screen.getByLabelText('Item 1 lifespan in days')).toHaveValue(5);
+    // Nothing asks for a lifespan: it is estimated when the rows are saved.
+    expect(screen.getByLabelText('Item 1 lifespan in days')).toHaveValue(null);
     expect(screen.getByLabelText('Item 1 kept in')).toHaveValue('FRIDGE');
-    // Potatoes aren't kept in the fridge, so its suggestion comes from the pantry.
+    // Potatoes aren't kept in the fridge, so they start in the pantry.
     expect(screen.getByLabelText('Item 2 name')).toHaveValue('Potatoes');
     expect(screen.getByLabelText('Item 2 kept in')).toHaveValue('PANTRY');
-    expect(screen.getByLabelText('Item 2 lifespan in days')).not.toHaveValue(null);
+    expect(screen.getByLabelText('Item 2 lifespan in days')).toHaveValue(null);
     // A food it doesn't know is left for the person to fill in.
     expect(screen.getByLabelText('Item 3 name')).toHaveValue('Zorblax');
     expect(screen.getByLabelText('Item 3 lifespan in days')).toHaveValue(null);
@@ -125,7 +126,8 @@ describe('scanning a receipt on Bulk add', () => {
     await waitFor(() => expect(screen.getByLabelText('Item 1 name')).toHaveValue('Milk'));
     await user.click(screen.getByRole('button', { name: 'Add 1 item' }));
     await waitFor(() => expect(saved).toBeDefined());
-    expect(saved!.items[0]).toMatchObject({ name: 'Milk', quantity: 2, unit: 'l', lifespanDays: 5, price: 2.4 });
+    expect(saved!.items[0]).toMatchObject({ name: 'Milk', quantity: 2, unit: 'l', price: 2.4 });
+    expect(saved!.items[0]).not.toHaveProperty('lifespanDays');
   });
 
   it('keeps rows already typed, and adds the receipt lines after them', async () => {

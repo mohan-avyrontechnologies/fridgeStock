@@ -52,7 +52,8 @@ export function remainingText(remainingDays: number): string {
 }
 
 /** Card line: "Expected expiry Tue, 29 Sep". */
-export const cardExpiryLine = (date: string) => `Expected expiry ${date}`;
+export const cardExpiryLine = (date: string, source?: string) =>
+  `Expected expiry ${date}${source ? ` · ${source}` : ''}`;
 
 export const expectedExpiryLabel = 'Expected expiry';
 
@@ -85,7 +86,7 @@ export const screenCopy = {
     /** "Expected expiry: Thu, 1 Oct (2 days left)". */
     preview: (date: string, remainingDays: number) =>
       `Expected expiry: ${date} (${remainingDays === 0 ? 'today' : remainingText(remainingDays)})`,
-    previewEmpty: 'Expected expiry: enter a lifespan to see it',
+    previewEmpty: 'Expected expiry: enter the food to see it',
     lifespanHint: 'Your own estimate, counted from the added date. 0 means it expires the same day.',
     addNote: 'Add note',
     priceHint: 'Optional. What it cost in total. Used only for the money figures on Insights.',
@@ -145,6 +146,19 @@ export const storageLabel: Record<StorageLocation, string> = {
   FRIDGE: 'Fridge',
   FREEZER: 'Freezer',
   PANTRY: 'Pantry',
+};
+
+/** The automatic expected expiry: where it came from, and the optional date from the pack. */
+export const expiryCopy = {
+  changeEstimate: 'Change estimate',
+  whyLabel: 'Why this expected expiry',
+  userExplanation: 'You set this expected expiry.',
+  addPrinted: 'Add the date from the pack',
+  printedLabel: 'Date on the pack',
+  printedHint: 'Optional. It is used when it comes sooner than the usual estimate.',
+  printedIgnored: 'That date is more than 2 years away or more than 30 days past, so it isn’t used.',
+  printedTypeLabel: 'What the date is called',
+  printedTypes: { USE_BY: 'Use by', BEST_BEFORE: 'Best before', EXPIRY: 'Expiry', UNKNOWN: 'Date' },
 };
 
 /** Suggested lifespans come from a clearly identified reference list, and are always editable. */

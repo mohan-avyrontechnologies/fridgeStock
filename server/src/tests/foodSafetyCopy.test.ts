@@ -10,7 +10,12 @@ import { describe, expect, it } from 'vitest';
  */
 const THIS_FILE = fileURLToPath(import.meta.url);
 const SRC_ROOTS = [path.resolve('src'), path.resolve('../client/src'), path.resolve('../shared/src')];
-const COPY_FILES = [path.resolve('src/copy.ts'), path.resolve('../client/src/copy.ts')];
+const COPY_FILES = [
+  path.resolve('src/copy.ts'),
+  path.resolve('../client/src/copy.ts'),
+  // The sentences estimateExpiry returns live in the shared package, in their own copy file.
+  path.resolve('../shared/src/estimateCopy.ts'),
+];
 
 /** The banned phrases are defined once, in shared/src/wording.ts (also used to check AI output). */
 const WORDING_FILE = path.resolve('../shared/src/wording.ts');
@@ -64,7 +69,7 @@ describe('food-safety wording', () => {
     }
   });
 
-  it('expiry wording lives only in the two copy files', () => {
+  it('expiry wording lives only in the copy files', () => {
     // "expiry", "expire(s|d)" or "expiring" as a word of text. Identifiers such
     // as expiryDate, OVERDUE or expiresIn don't match.
     const wording = /(?<![\w$.])expir(?:y|e|es|ed|ing)(?![\w$])/i;
@@ -72,6 +77,8 @@ describe('food-safety wording', () => {
     for (const file of sourceFiles) {
       if (COPY_FILES.includes(file) || /[\\/](tests?|mocks)[\\/]|\.test\.tsx?$/.test(file)) continue;
       stripComments(readFileSync(file, 'utf8'))
+        // 'EXPIRY' is the name of a kind of printed date (a value of PRINTED_DATE_TYPES), not wording.
+        .replaceAll("'EXPIRY'", "'EXPIRY_KIND'")
         .split('\n')
         .forEach((line, i) => {
           if (wording.test(line)) offenders.push(`${rel(file)}:${i + 1}: ${line.trim()}`);

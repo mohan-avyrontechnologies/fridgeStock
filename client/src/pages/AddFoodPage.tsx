@@ -47,7 +47,6 @@ export function AddFoodPage() {
   const inventory = useFoodStore((s) => s.inventory);
   // The foods you added most recently (one of each name), apart from your favourites, to fill the form in a tap.
   const recents = recentFoods(inventory?.items ?? [], favourites);
-  const learned = useSuggestionStore((s) => s.learned);
   const loadLearned = useSuggestionStore((s) => s.load);
 
   useEffect(() => {
@@ -70,7 +69,7 @@ export function AddFoodPage() {
     setCamera(false);
     if (items.length === 1) {
       const [item] = items as [ScannedItem];
-      setScanned((previous) => ({ key: (previous?.key ?? 0) + 1, fields: fieldsFor(item, learned) }));
+      setScanned((previous) => ({ key: (previous?.key ?? 0) + 1, fields: fieldsFor(item) }));
       setPhoto(item.photo ?? null);
       setSigns(item.signs ?? null);
       toast(cameraCopy.foundOne(item.name));
@@ -87,7 +86,6 @@ export function AddFoodPage() {
         name: recent.name,
         quantity: recent.quantity,
         unit: recent.unit,
-        lifespanDays: recent.lifespanDays,
         storage: recent.storage,
       },
     }));

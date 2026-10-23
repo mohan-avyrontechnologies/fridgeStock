@@ -1,10 +1,14 @@
 import {
+  EXPIRY_SOURCES,
   FOOD_STATUSES,
+  PRINTED_DATE_TYPES,
   isValidDate,
   STORAGE_LOCATIONS,
   UNITS,
   type DateString,
+  type ExpirySource,
   type FoodStatus,
+  type PrintedDateType,
   type StorageLocation,
   type Unit,
 } from '@cook-first/shared';
@@ -16,7 +20,8 @@ import { Schema, Types, model, type HydratedDocument } from 'mongoose';
  * stays ACTIVE while quantity remains (FRD FR-FOOD-05).
  *
  * Food dates are "YYYY-MM-DD" strings, never timestamps. expiryDate is always
- * addedDate + lifespanDays, calculated in services/foodService.ts. There is
+ * addedDate + lifespanDays, calculated in services/foodService.ts (lifespanDays is
+ * worked out from the estimated expiry, so nobody has to enter it). There is
  * deliberately no Mongoose hook for it: hooks don't run on update queries.
  */
 export interface FoodItem {
@@ -29,6 +34,16 @@ export interface FoodItem {
   addedDate: DateString;
   lifespanDays: number;
   expiryDate: DateString;
+  /** Where expiryDate came from (see estimateExpiry in the shared package). Items from before v2.23 count as USER. */
+  expirySource: ExpirySource;
+  /** One short sentence saying why the expected expiry is what it is. Empty for items from before v2.23. */
+  estimateExplanation: string;
+  /** A date read off the pack, if one was found, and what it was called. */
+  printedDate?: DateString | null;
+  printedDateType?: PrintedDateType | null;
+  /** The source and explanation before "Opened" changed them, so opening can be undone. */
+  sourceBeforeOpened?: ExpirySource | null;
+  explanationBeforeOpened?: string | null;
   notes?: string;
   storage: StorageLocation;
   /** When the item was opened, if it has been. */
@@ -48,6 +63,8 @@ export interface FoodItem {
   /** What the user chose when adding or editing (not changed by Move or Opened); used to learn their usual lifespans. */
   enteredLifespanDays: number;
   enteredStorage: StorageLocation;
+  /** False when the app estimated the lifespan: only lifespans the person typed in are learned from. Missing means true. */
+  enteredByUser?: boolean;
   status: FoodStatus;
   closedAt?: Date;
 }
@@ -78,6 +95,19 @@ const foodItemSchema = new Schema<FoodItem>(
       validate: { validator: Number.isInteger, message: 'Lifespan must be a whole number of days.' },
     },
     expiryDate: calendarDate,
+    expirySource: { type: String, enum: EXPIRY_SOURCES, default: 'USER', required: true },
+    estimateExplanation: { type: String, default: '', maxlength: 240 },
+    printedDate: {
+      type: String,
+      default: null,
+      validate: {
+        validator: (v: string | null) => v === null || isValidDate(v),
+        message: 'Must be a "YYYY-MM-DD" calendar date.',
+      },
+    },
+    printedDateType: { type: String, enum: [...PRINTED_DATE_TYPES, null], default: null },
+    sourceBeforeOpened: { type: String, enum: [...EXPIRY_SOURCES, null], default: null },
+    explanationBeforeOpened: { type: String, default: null },
     notes: { type: String, trim: true, maxlength: 200 },
     storage: { type: String, enum: STORAGE_LOCATIONS, default: 'FRIDGE', required: true },
     openedDate: {
@@ -96,6 +126,7 @@ const foodItemSchema = new Schema<FoodItem>(
     priceQuantity: { type: Number, default: null, min: 0 },
     enteredLifespanDays: { type: Number, required: true, min: 0, max: 365 },
     enteredStorage: { type: String, enum: STORAGE_LOCATIONS, required: true },
+    enteredByUser: { type: Boolean, default: true },
     status: { type: String, enum: FOOD_STATUSES, default: 'ACTIVE', required: true },
     closedAt: { type: Date },
   },

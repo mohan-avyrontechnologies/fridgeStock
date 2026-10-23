@@ -107,3 +107,26 @@ export const NOTIFICATION_CHANNELS = [
   'reminders-silent',
 ] as const;
 export type NotificationChannelId = (typeof NOTIFICATION_CHANNELS)[number];
+
+/** The kinds of food the catalog groups products into. Each has default lifespans (see foodReference.ts). */
+export const FOOD_CATEGORIES = [
+  'MEAT_FISH',
+  'DAIRY_EGGS',
+  'VEGETABLES',
+  'FRUIT',
+  'BAKERY',
+  'COOKED',
+  'CHILLED_PACKAGED',
+] as const;
+export type FoodCategory = (typeof FOOD_CATEGORIES)[number];
+
+/**
+ * Where an item's expected expiry came from. USER means the person typed it in; every other value is
+ * worked out by estimateExpiry (see expiry.ts).
+ */
+export const EXPIRY_SOURCES = ['PRINTED_DATE', 'LEARNED', 'CATALOG', 'CATEGORY_DEFAULT', 'FALLBACK', 'USER'] as const;
+export type ExpirySource = (typeof EXPIRY_SOURCES)[number];
+
+/** What a date printed on a pack is called. UNKNOWN when the wording was not readable. */
+export const PRINTED_DATE_TYPES = ['USE_BY', 'BEST_BEFORE', 'EXPIRY', 'UNKNOWN'] as const;
+export type PrintedDateType = (typeof PRINTED_DATE_TYPES)[number];

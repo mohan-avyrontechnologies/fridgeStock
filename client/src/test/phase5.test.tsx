@@ -139,7 +139,6 @@ describe('price on Add Food and Food Details', () => {
     );
     renderSignedIn('/add', <AddFoodPage />);
     await user.type(screen.getByLabelText('Food'), 'Peas');
-    await user.type(screen.getByLabelText('Lifespan (days)'), '5');
     await user.type(screen.getByLabelText('Price (USD, optional)'), '3.25');
     await user.click(screen.getByRole('button', { name: 'Add food' }));
     await waitFor(() => expect(bodies).toHaveLength(1));
@@ -150,7 +149,6 @@ describe('price on Add Food and Food Details', () => {
     const user = userEvent.setup();
     renderSignedIn('/add', <AddFoodPage />);
     await user.type(screen.getByLabelText('Food'), 'Peas');
-    await user.type(screen.getByLabelText('Lifespan (days)'), '5');
     await user.type(screen.getByLabelText('Price (USD, optional)'), '-2');
     await user.click(screen.getByRole('button', { name: 'Add food' }));
     expect(await screen.findByText('Price must be a number from 0 to 100,000.')).toBeInTheDocument();

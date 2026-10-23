@@ -11,7 +11,7 @@ import { renderSignedIn } from './render';
 
 /** Phase 2: realistic estimates. */
 
-const learned = [{ name: 'Chicken', storage: 'FRIDGE', unit: 'g', days: 3, basedOn: 4 }];
+const learned = [{ name: 'Chicken', storage: 'FRIDGE', unit: 'g', days: 1, basedOn: 4 }];
 
 function renderDetail(food = item({ id: 'm1', name: 'Milk', addedDate: '2026-01-01' })) {
   server.use(http.get(`${API_URL}/foods/m1`, () => HttpResponse.json(food)));
@@ -19,7 +19,7 @@ function renderDetail(food = item({ id: 'm1', name: 'Milk', addedDate: '2026-01-
 }
 
 describe('learned lifespans on Add Food', () => {
-  it('puts your usual lifespan first, marked with a star, and explains where it came from', async () => {
+  it('puts your usual food first, marked with a star, and uses your lifespan when it is shorter', async () => {
     const user = userEvent.setup();
     server.use(http.get(`${API_URL}/suggestions/lifespans`, () => HttpResponse.json({ items: learned })));
     renderSignedIn('/add', <AddFoodPage />);
@@ -28,13 +28,12 @@ describe('learned lifespans on Add Food', () => {
       name: /your usual.*Chicken/,
     });
     await user.click(chip);
-    expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(3);
-    expect(
-      screen.getByText('You usually set 3 days for this (from your last 4). Change it if you like.'),
-    ).toBeInTheDocument();
-    // Your usual is per location: the freezer falls back to the reference list.
+    // Your 1 day is shorter than the catalog's 2, so it is used.
+    expect(screen.getByText('· Your usual')).toBeInTheDocument();
+    expect(screen.getByText(/usually lasts 1 day in the fridge/)).toBeInTheDocument();
+    // Your usual is per location: the freezer falls back to the catalog.
     await user.selectOptions(screen.getByLabelText('Kept in'), 'FREEZER');
-    expect(screen.getByLabelText('Lifespan (days)')).toHaveValue(270);
+    expect(screen.getByText('· Catalog')).toBeInTheDocument();
   });
 });
 

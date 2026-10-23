@@ -21,7 +21,8 @@ function median(values: number[]): number {
  */
 export async function learnedLifespans(user: UserDoc): Promise<LearnedLifespan[]> {
   const items = await FoodItemModel.find(
-    { userId: user._id },
+    // Only lifespans the person typed in: estimates would just teach the app its own numbers back.
+    { userId: user._id, enteredByUser: { $ne: false } },
     { name: 1, unit: 1, enteredLifespanDays: 1, enteredStorage: 1, createdAt: 1 },
   ).sort({ createdAt: -1, _id: -1 });
 

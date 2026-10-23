@@ -1,3 +1,4 @@
+import { expirySourceLabel } from '@cook-first/shared';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { describeError } from '../lib/errors';
 import { useNavigate, useParams } from 'react-router';
@@ -16,6 +17,7 @@ import { Button, EmptyState, SkeletonList, Card } from '../components/ui';
 import {
   actionCopy,
   expectedExpiryLabel,
+  expiryCopy,
   favouriteCopy,
   leftoverCopy,
   moveCopy,
@@ -208,6 +210,13 @@ export function FoodDetailPage() {
                 storage: food.storage,
                 price: food.price,
                 leftover: food.leftover,
+                printedDate: food.printedDate,
+                printedDateType: food.printedDateType,
+              }}
+              current={{
+                expiryDate: food.expiryDate,
+                expirySource: food.expirySource,
+                estimateExplanation: food.estimateExplanation,
               }}
               onSubmit={async (input) => {
                 setFood(await update(food.id, input));
@@ -259,8 +268,19 @@ export function FoodDetailPage() {
                 {food.leftover && <Detail label="Type" value={leftoverCopy.tag} />}
                 {food.openedDate && <Detail label="Opened on" value={formatDisplay(food.openedDate)} />}
                 <Detail label={expectedExpiryLabel} value={formatDisplay(food.expiryDate)} />
+                <Detail label="Estimate source" value={expirySourceLabel(food.expirySource)} />
+                {food.printedDate && (
+                  <Detail
+                    label={expiryCopy.printedTypes[food.printedDateType ?? 'UNKNOWN']}
+                    value={`${formatDisplay(food.printedDate)} (printed on the pack)`}
+                  />
+                )}
                 <Detail label="Added on" value={formatDisplay(food.addedDate)} />
                 <Detail label="Lifespan" value={`${food.lifespanDays} ${food.lifespanDays === 1 ? 'day' : 'days'}`} />
+                <div className="col-span-2">
+                  <dt className="text-muted">{expiryCopy.whyLabel}</dt>
+                  <dd className="text-ink">{food.estimateExplanation}</dd>
+                </div>
                 {food.notes && (
                   <div className="col-span-2">
                     <dt className="text-muted">Notes</dt>
