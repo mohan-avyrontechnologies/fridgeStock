@@ -77,6 +77,8 @@ export default defineConfig({
         AUTH_RATE_LIMIT: 'off',
         // Never the real Claude API: the key is a dummy and the SDK is pointed at the local stand-in
         // (dotenv doesn't override variables that are already set, so server/.env can't change this).
+        // The provider is pinned too: left empty it would be Gemini in development, with no stand-in.
+        AI_PROVIDER: 'anthropic',
         ANTHROPIC_API_KEY: 'e2e-stand-in-key',
         ANTHROPIC_BASE_URL: `http://localhost:${AI_PORT}`,
         PHOTO_CHECK: 'on',

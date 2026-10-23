@@ -246,19 +246,24 @@ test('partial use keeps the item; throwing it away closes the rest', async ({ pa
 test('validation messages and the expected-expiry preview', async ({ page }) => {
   await register(page, 'Chen Wei');
   await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
-  await page.getByRole('button', { name: 'Add food', exact: true }).click();
+  // The sheet's own button: Home's "Add food" stays in the page behind it until the sheet has opened.
+  const submit = page.getByRole('dialog').getByRole('button', { name: 'Add food', exact: true });
+  await submit.click();
   await expect(page.getByText('Food name is required.')).toBeVisible();
-  await expect(page.getByText('Lifespan must be a whole number of days from 0 to 365.')).toBeVisible();
+  // The lifespan is estimated, so leaving it out is not an error.
+  await expect(page.getByText('Lifespan must be a whole number of days from 0 to 365.')).toHaveCount(0);
 
   await page.getByLabel('Food', { exact: true }).fill('Bread');
   await expect(page.getByText('Food name is required.')).toBeHidden();
   await page.getByLabel('Added on').fill('2099-01-01');
-  await page.getByRole('button', { name: 'Add food', exact: true }).click();
+  await submit.click();
   await expect(page.getByText("Added date must be a valid date that isn't in the future.")).toBeVisible();
   await page.getByRole('button', { name: 'Today' }).click();
+  // "Change estimate" is how a person sets their own lifespan; the preview follows it.
+  await page.getByRole('button', { name: 'Change estimate' }).click();
   await page.getByRole('button', { name: '3 days' }).click();
-  await expect(page.getByText('Lifespan must be a whole number of days from 0 to 365.')).toBeHidden();
   await expect(page.getByText('3 days left')).toBeVisible();
+  await expect(page.getByText('You set this expected expiry.')).toBeVisible();
   await expect(page.getByText(REQUIRED_LINE)).toBeVisible();
   await expectNoSafetyClaim(page);
   await shot(page, '07-add-food');
@@ -318,11 +323,12 @@ test('settings: reminder switches persist; sign out returns to login', async ({ 
 test('phase 1: bulk add a shopping haul, undo a waste, and re-add a favourite with one tap', async ({ page }) => {
   await register(page, 'Kai Tanaka');
 
-  // Bulk add: names from the reference list fill in unit and lifespan.
+  // Bulk add: names from the reference list fill in unit and place; the lifespan is left to the estimate.
   await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
   await page.getByRole('link', { name: /bulk add/ }).click();
   await page.getByLabel('Item 1 name').fill('Spinach');
-  await expect(page.getByLabel('Item 1 lifespan in days')).toHaveValue('4');
+  await expect(page.getByLabel('Item 1 unit')).toHaveValue('bunch');
+  await expect(page.getByLabel('Item 1 lifespan in days')).toHaveValue('');
   await page.getByLabel('Item 2 name').fill('Milk');
   await page.getByLabel('Item 3 name').fill('Peas');
   await page.getByLabel('Item 3 lifespan in days').fill('240');
@@ -400,10 +406,9 @@ test('phase 2: opening shortens the expected expiry, moving recalculates it, and
     .getByRole('group', { name: 'Suggestions' })
     .getByRole('button', { name: /your usual.*Milk/ })
     .click();
-  await expect(page.getByLabel('Lifespan (days)')).toHaveValue('7');
-  await expect(
-    page.getByText('You usually set 7 days for this (from your last 2). Change it if you like.'),
-  ).toBeVisible();
+  // Your usual 7 days is longer than the catalog's 5, so the estimate keeps the catalog figure: a learned
+  // lifespan is only used when it is shorter.
+  await expect(page.getByText('Catalog: milk lasts about 5 days in the fridge.')).toBeVisible();
   await expectNoSafetyClaim(page);
   await expectNoHorizontalScroll(page);
   await expectLargeTapTargets(page);
@@ -471,7 +476,7 @@ test('phase 4: leftovers, a shopping list that warns about food at home, and a w
   await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
   await page.getByLabel('Food', { exact: true }).fill('Leftover curry');
   await page.getByRole('checkbox', { name: /These are leftovers/ }).check();
-  await expect(page.getByLabel('Lifespan (days)')).toHaveValue('3');
+  await expect(page.getByText('3 days left')).toBeVisible();
   await page.getByRole('button', { name: 'Add food', exact: true }).click();
   await expect(page).toHaveURL('/');
   await expect(allFood(page).filter({ hasText: 'Leftover curry' }).getByText('Leftovers')).toBeVisible();
@@ -719,7 +724,7 @@ test('phase 6: scanning a barcode fills in the form, and a receipt photo becomes
   await expect(page.getByLabel('Item 1 quantity')).toHaveValue('2');
   await expect(page.getByLabel('Item 1 unit')).toHaveValue('l');
   await expect(page.getByLabel('Item 1 price')).toHaveValue('2.4');
-  await expect(page.getByLabel('Item 1 lifespan in days')).toHaveValue('5');
+  await expect(page.getByLabel('Item 1 lifespan in days')).toHaveValue(''); // estimated when saved
   await expect(page.getByLabel('Item 2 name')).toHaveValue('Potatoes');
   await expect(page.getByLabel('Item 2 kept in')).toHaveValue('PANTRY');
   await expect(page.getByText(/Read from a photo, so check each line/)).toBeVisible();
@@ -749,7 +754,7 @@ test('phase 7: Photo Check names food on Add Food, and warns on Food Details wit
   await expect(camera.getByText('Added Milk. Scan the next one, or finish below.')).toBeVisible();
   await camera.getByRole('button', { name: 'Fill in the form' }).click();
   await expect(page.getByLabel('Food', { exact: true })).toHaveValue('Milk');
-  await expect(page.getByLabel('Lifespan (days)')).toHaveValue('5');
+  await expect(page.getByText('Catalog: milk lasts about 5 days in the fridge.')).toBeVisible();
   await page.getByLabel('Food', { exact: true }).fill('Oat milk'); // the name stays editable
   await expect(page.getByLabel('Food', { exact: true })).toHaveValue('Oat milk');
   // No warning signs: nothing is said about condition.
@@ -840,7 +845,7 @@ test('phase 6: a photo is kept with the food, shown privately, removed on reques
   await nextPhoto('milk');
   await page.getByRole('link', { name: 'Add food', exact: true }).first().click();
   await takePhoto();
-  await expect(page.getByLabel('Lifespan (days)')).toHaveValue('5');
+  await expect(page.getByText('Catalog: milk lasts about 5 days in the fridge.')).toBeVisible();
   await page.getByRole('button', { name: 'Add food', exact: true }).click();
   await expect(page).toHaveURL('/');
 
@@ -1063,6 +1068,7 @@ test('stage 4: the first-run guide, then adding food from the sheet with the ste
   await expect(sheet.getByLabel('Food', { exact: true })).toHaveValue('Milk');
   await sheet.getByRole('button', { name: 'Increase quantity' }).click();
   await expect(sheet.getByLabel('Quantity', { exact: true })).toHaveValue('1.5');
+  await sheet.getByRole('button', { name: 'Change estimate' }).click();
   await sheet.getByRole('button', { name: '7 days' }).click();
   await expectLargeTapTargets(page);
   await sheet.getByRole('button', { name: 'Add food', exact: true }).click();
