@@ -509,7 +509,8 @@ describe('scanning several products in a row', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Add 2 items together' }));
 
     await waitFor(() => expect(screen.getByLabelText('Item 2 name')).toHaveValue('Zorblax Drink'));
-    expect(screen.getAllByRole('img', { name: /^Photo of/ })).toHaveLength(2);
+    // A photo not saved yet (BlobThumb) shows one render after its row, once its object URL is made.
+    await waitFor(() => expect(screen.getAllByRole('img', { name: /^Photo of/ })).toHaveLength(2));
     await user.type(screen.getByLabelText('Item 2 lifespan in days'), '3');
     await user.click(screen.getByRole('button', { name: 'Add 2 items' }));
     await waitFor(() => expect(order).toEqual(['bulk', 'photo:f1', 'photo:f2']));
@@ -541,7 +542,8 @@ describe('Take photo', () => {
     ).toBeInTheDocument();
     expect(bodies).toEqual([{ mediaType: 'image/jpeg', image: 'QUJD' }]); // no food id: it is not at home yet
     expect(within(dialog).getByText('drinks')).toBeInTheDocument();
-    expect(within(dialog).getByRole('img', { name: 'Photo of Zorblax Drink' })).toBeInTheDocument();
+    // The picture (BlobThumb) shows one render after the item, once its object URL is made, so wait for it.
+    expect(await within(dialog).findByRole('img', { name: 'Photo of Zorblax Drink' })).toBeInTheDocument();
   });
 
   it('asks you to try again when it is not sure enough (below 0.6), and adds nothing', async () => {
