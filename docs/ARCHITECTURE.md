@@ -25,7 +25,9 @@ routes → middleware (rate limit → JWT auth → zod validation) → controlle
 - **Models** are the only code that talks to MongoDB.
 - **Jobs** (`jobs/reminderJob.ts`) run the node-cron reminder sweep every 15 minutes.
 
-**How the `shared` package is loaded:** it exports a `source` condition that points at its TypeScript source, so `tsx`, Vite and Vitest use `shared/src` directly with no separate build in development or tests. Production (`node server/dist/index.js`) uses the compiled `shared/dist`, which `npm run build` creates first.
+**How the `shared` package is loaded:** it exports a `source` condition that points at its TypeScript source, so `tsx`, Vite and Vitest use `shared/src` directly with no separate build in development or tests. Production (`node server/dist/index.js`) uses the compiled `shared/dist` (`dist/src` and `dist/data`), which `npm run build` creates first.
+
+**Shared data:** the catalog, category defaults, banned phrases, each locale's day/month order and the server's wording are JSON files in `shared/data`, read by the TypeScript code and by the Python server that is being built (`server-py`, see [PYTHON_MIGRATION.md](PYTHON_MIGRATION.md)). `shared/test-cases` holds the cases both languages must pass.
 
 ---
 
@@ -326,7 +328,7 @@ Since v2.23.0 nobody has to type a lifespan. Every item gets an **expected expir
 - **Automatic changes only ever shorten.** Opening, moving and Photo Check's *Use today* call `recalculateExpiry`, which returns a new estimate only if it is *earlier* than the current one.
 - **The person's own number wins.** *Change estimate* sends a `lifespanDays`; the server stores it with source `USER`. Only `USER` lifespans (`enteredByUser`) are learned from, so estimates never teach the app its own numbers back.
 - **Undo restores the source.** "Opened" keeps `sourceBeforeOpened` and `explanationBeforeOpened`, so undoing it puts the earlier estimate and its explanation back.
-- **Wording.** Every explanation sentence lives in `shared/src/estimateCopy.ts`, which the wording guard scans like the two `copy.ts` files. Each one talks about an *expected expiry* and never about whether food is fit to eat.
+- **Wording.** Every explanation sentence lives in `shared/data/estimate-copy.json`, read by `shared/src/estimateCopy.ts`, which the wording guard scans like the two `copy.ts` files. Each one talks about an *expected expiry* and never about whether food is fit to eat.
 - **Older items** (created before v2.23.0) have no source stored and read as `USER` with "You set this expected expiry."
 
 ## AI model routing

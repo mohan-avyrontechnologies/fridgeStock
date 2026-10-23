@@ -1,0 +1,517 @@
+{
+  "description": "The server's response wording (server/src/copy.ts).",
+  "functions": {
+    "reminder.APPROACHING_EXPIRY": [
+      {
+        "args": [
+          "Milk",
+          1
+        ],
+        "expected": "Milk: expected expiry in 1 day. Consider using it soon."
+      },
+      {
+        "args": [
+          "Milk",
+          2
+        ],
+        "expected": "Milk: expected expiry in 2 days. Consider using it soon."
+      },
+      {
+        "args": [
+          "Chicken thighs",
+          3
+        ],
+        "expected": "Chicken thighs: expected expiry in 3 days. Consider using it soon."
+      }
+    ],
+    "reminder.DUE": [
+      {
+        "args": [
+          "Milk"
+        ],
+        "expected": "Milk: expected expiry is today."
+      },
+      {
+        "args": [
+          "{days} {name}"
+        ],
+        "expected": "{days} {name}: expected expiry is today."
+      },
+      {
+        "args": [
+          "$& $1 $$"
+        ],
+        "expected": "$& $1 $$: expected expiry is today."
+      },
+      {
+        "args": [
+          "é́"
+        ],
+        "expected": "é́: expected expiry is today."
+      }
+    ],
+    "reminder.OVERDUE": [
+      {
+        "args": [
+          "Milk"
+        ],
+        "expected": "Milk is past its expected expiry. Check it before using."
+      }
+    ],
+    "push.title": [
+      {
+        "args": [],
+        "expected": "Cook First"
+      }
+    ],
+    "push.digestTitle": [
+      {
+        "args": [
+          1
+        ],
+        "expected": "Cook First: 1 item to check"
+      },
+      {
+        "args": [
+          2
+        ],
+        "expected": "Cook First: 2 items to check"
+      },
+      {
+        "args": [
+          12
+        ],
+        "expected": "Cook First: 12 items to check"
+      }
+    ],
+    "push.digestLine": [
+      {
+        "args": [
+          "Milk",
+          3
+        ],
+        "expected": "Milk: expected expiry in 3 days"
+      },
+      {
+        "args": [
+          "Milk",
+          1
+        ],
+        "expected": "Milk: expected expiry in 1 day"
+      },
+      {
+        "args": [
+          "Milk",
+          0
+        ],
+        "expected": "Milk: expected expiry today"
+      },
+      {
+        "args": [
+          "Milk",
+          -1
+        ],
+        "expected": "Milk: past its expected expiry"
+      },
+      {
+        "args": [
+          "Milk",
+          -9
+        ],
+        "expected": "Milk: past its expected expiry"
+      }
+    ],
+    "push.digestMore": [
+      {
+        "args": [
+          1
+        ],
+        "expected": "and 1 more"
+      },
+      {
+        "args": [
+          4
+        ],
+        "expected": "and 4 more"
+      }
+    ],
+    "push.actions": [
+      {
+        "args": [],
+        "expected": {
+          "USED": "Used",
+          "SNOOZE": "Snooze"
+        }
+      }
+    ],
+    "adjusted.photoCheck": [
+      {
+        "args": [],
+        "expected": "You brought the expected expiry forward to today after a Photo Check."
+      }
+    ],
+    "ai.notEnabled": [
+      {
+        "args": [],
+        "expected": "AI suggestions aren’t turned on for this app."
+      }
+    ],
+    "ai.failed": [
+      {
+        "args": [],
+        "expected": "Couldn’t get suggestions right now. Try again later."
+      }
+    ],
+    "ai.busy": [
+      {
+        "args": [],
+        "expected": "AI is busy, try again later."
+      }
+    ],
+    "ai.limitReached": [
+      {
+        "args": [
+          20
+        ],
+        "expected": "You’ve used all 20 AI suggestions for today. Try again tomorrow."
+      },
+      {
+        "args": [
+          1
+        ],
+        "expected": "You’ve used all 1 AI suggestions for today. Try again tomorrow."
+      }
+    ],
+    "promptLine": [
+      {
+        "args": [
+          "F1",
+          "Chicken",
+          500,
+          "g",
+          0
+        ],
+        "expected": "F1: Chicken (500 g): expected expiry today"
+      },
+      {
+        "args": [
+          "F2",
+          "Milk",
+          1,
+          "l",
+          2
+        ],
+        "expected": "F2: Milk (1 l): expected expiry in 2 days"
+      },
+      {
+        "args": [
+          "F3",
+          "Eggs",
+          6,
+          "pcs",
+          -1
+        ],
+        "expected": "F3: Eggs (6 pcs): past its expected expiry"
+      }
+    ],
+    "aiPrompts.system": [
+      {
+        "args": [],
+        "expected": "You help a home cook plan meals that use up perishable food before its expected expiry.\nEvery date is a planning estimate, never a promise about the food.\nRules for everything you write:\n- Never say or suggest that any food is fit, okay or fine to eat, and never comment on the condition of food.\n- Refer to dates only as \"expected expiry\".\n- Never suggest eating something because of its date; the cook always checks their food first.\n- The lists you receive are already in priority order, most urgent first. Keep to that order and never re-rank items.\n- Refer to food only by the codes given (like F1).\n- Plain, friendly British English. Short sentences.\nReply only with JSON that matches the schema."
+      }
+    ],
+    "aiPrompts.receiptSystem": [
+      {
+        "args": [],
+        "expected": "You read grocery receipts for a home cook who wants to log what they bought.\nRules for everything you write:\n- Report only what is printed. Never guess at an unreadable line: leave it out.\n- Never say anything about the condition or freshness of food.\n- Plain, short names. British English.\nReply only with JSON that matches the schema."
+      }
+    ],
+    "aiPrompts.receipt": [
+      {
+        "args": [
+          [
+            "Milk",
+            "Eggs"
+          ],
+          "2026-10-23"
+        ],
+        "expected": "Today is 2026-10-23. This is a photo of a grocery receipt.\nList only the food and drink lines that would be kept in a fridge, freezer or cupboard.\nLeave out anything else: cleaning, toiletries, bags, totals, tax, discounts, loyalty and payment lines.\nFor each item give:\n- name: a short generic name without brand or size, like \"Milk\" or \"Chicken\". Use one of these exact names when it fits: Milk, Eggs.\n- quantity: how many, as a number. Use 1 if it is not printed. Use a weight or volume only when it is printed on that line.\n- unit: one of pcs, g, kg, ml, l, pack, bunch. Use pcs for single things and pack for packets.\n- price: that line's price as a number, or null if it is not printed.\nAlso give purchaseDate as YYYY-MM-DD if the shopping date is clearly printed, otherwise null."
+      },
+      {
+        "args": [
+          [],
+          "2026-10-23"
+        ],
+        "expected": "Today is 2026-10-23. This is a photo of a grocery receipt.\nList only the food and drink lines that would be kept in a fridge, freezer or cupboard.\nLeave out anything else: cleaning, toiletries, bags, totals, tax, discounts, loyalty and payment lines.\nFor each item give:\n- name: a short generic name without brand or size, like \"Milk\" or \"Chicken\". Use one of these exact names when it fits: .\n- quantity: how many, as a number. Use 1 if it is not printed. Use a weight or volume only when it is printed on that line.\n- unit: one of pcs, g, kg, ml, l, pack, bunch. Use pcs for single things and pack for packets.\n- price: that line's price as a number, or null if it is not printed.\nAlso give purchaseDate as YYYY-MM-DD if the shopping date is clearly printed, otherwise null."
+      }
+    ],
+    "aiPrompts.photoSystem": [
+      {
+        "args": [],
+        "expected": "You look at a photo of food for a home cook and report only what you can see.\nRules for everything you write:\n- Name the product, and say how sure you are of the name.\n- List visible warning signs only, each with one allowed type and a short, plain description of what is visible, like \"white fuzzy patches on the surface\".\n- If you see no warning signs, return an empty list. Never write anything about the food looking good, fresh, normal or fine.\n- Never say whether any food is fit, okay or fine to eat, keep or throw away.\n- Plain, short British English.\nReply only with JSON that matches the schema."
+      }
+    ],
+    "aiPrompts.photo": [
+      {
+        "args": [
+          [
+            "Milk",
+            "Eggs"
+          ]
+        ],
+        "expected": "This is a photo of one food item or its packaging.\nGive:\n- name: a short generic name without brand or size, like \"Milk\" or \"Chicken\". Use one of these exact names when it fits: Milk, Eggs.\n- category: one or two words, like \"dairy\" or \"vegetables\".\n- confidence: a number from 0 to 1 for how sure you are of the name.\n- warningSigns: a list of visible problems only. Each has a type (MOULD, DISCOLOURATION, WILTING, SLIME, BRUISING, DAMAGED_PACKAGING, SWOLLEN_PACKAGING or OTHER) and a short description of what you can see.\nA photo cannot show everything. Report only what is visible, and leave the list empty if you see nothing."
+      },
+      {
+        "args": [
+          []
+        ],
+        "expected": "This is a photo of one food item or its packaging.\nGive:\n- name: a short generic name without brand or size, like \"Milk\" or \"Chicken\". Use one of these exact names when it fits: .\n- category: one or two words, like \"dairy\" or \"vegetables\".\n- confidence: a number from 0 to 1 for how sure you are of the name.\n- warningSigns: a list of visible problems only. Each has a type (MOULD, DISCOLOURATION, WILTING, SLIME, BRUISING, DAMAGED_PACKAGING, SWOLLEN_PACKAGING or OTHER) and a short description of what you can see.\nA photo cannot show everything. Report only what is visible, and leave the list empty if you see nothing."
+      }
+    ],
+    "aiPrompts.dateSystem": [
+      {
+        "args": [],
+        "expected": "You read the date printed on a food package for a home cook.\nRules for everything you write:\n- Copy the date exactly as it is printed, such as \"05/11/26\" or \"5 NOV 2026\". Never convert, correct or guess it.\n- Say what the date is called on the pack: USE_BY for \"use by\", BEST_BEFORE for \"best before\" or \"BBE\", EXPIRY for \"exp\" or \"expiry\", or UNKNOWN if no label is readable.\n- Ignore batch codes, lot numbers, barcodes and prices. If there is no readable date, return null for the text.\n- Never say how long any food lasts and never say anything about the food itself.\nReply only with JSON that matches the schema."
+      }
+    ],
+    "aiPrompts.date": [
+      {
+        "args": [],
+        "expected": "This is a photo of the date printed on a food package. Copy that date and say what it is called."
+      }
+    ],
+    "aiPrompts.recipes": [
+      {
+        "args": [
+          [
+            "F1: Milk: expected expiry today"
+          ],
+          []
+        ],
+        "expected": "My Cook First list, most urgent first:\nF1: Milk: expected expiry today\n\nSuggest up to 3 simple home recipes.\nEach recipe must use at least one item from the Cook First list, and the most urgent items should be used first.\nOnly use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).\nFor each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
+      },
+      {
+        "args": [
+          [
+            "F1: Milk: expected expiry today"
+          ],
+          [
+            "F2: Rice: expected expiry in 9 days"
+          ]
+        ],
+        "expected": "My Cook First list, most urgent first:\nF1: Milk: expected expiry today\n\nOther food I have:\nF2: Rice: expected expiry in 9 days\n\nSuggest up to 3 simple home recipes.\nEach recipe must use at least one item from the Cook First list, and the most urgent items should be used first.\nOnly use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).\nFor each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
+      },
+      {
+        "args": [
+          [
+            "F1: Milk: expected expiry today"
+          ],
+          [],
+          "breakfast"
+        ],
+        "expected": "My Cook First list, most urgent first:\nF1: Milk: expected expiry today\n\nSuggest up to 3 simple home recipes.\nThey are for breakfast, so suggest dishes that suit breakfast.\nEach recipe must use at least one item from the Cook First list, and the most urgent items should be used first.\nOnly use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).\nFor each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
+      },
+      {
+        "args": [
+          [
+            "F1: Milk: expected expiry today"
+          ],
+          [
+            "F2: Rice"
+          ],
+          "dinner",
+          [
+            "Omelette",
+            "Soup"
+          ]
+        ],
+        "expected": "My Cook First list, most urgent first:\nF1: Milk: expected expiry today\n\nOther food I have:\nF2: Rice\n\nSuggest up to 3 simple home recipes.\nThey are for dinner, so suggest dishes that suit dinner.\nDo not suggest these, which are already chosen for other meals today: Omelette; Soup.\nEach recipe must use at least one item from the Cook First list, and the most urgent items should be used first.\nOnly use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).\nFor each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
+      },
+      {
+        "args": [
+          [],
+          [],
+          null,
+          [
+            "Omelette"
+          ]
+        ],
+        "expected": "My Cook First list, most urgent first:\n\nSuggest up to 3 simple home recipes.\nDo not suggest these, which are already chosen for other meals today: Omelette.\nEach recipe must use at least one item from the Cook First list, and the most urgent items should be used first.\nOnly use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).\nFor each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
+      }
+    ],
+    "aiPrompts.mealPlan": [
+      {
+        "args": [
+          [
+            "2026-10-24",
+            "2026-10-25"
+          ],
+          [
+            "F1: Milk: expected expiry today"
+          ]
+        ],
+        "expected": "Food I have, most urgent first:\nF1: Milk: expected expiry today\n\nPlan one simple dinner for each of these dates: 2026-10-24, 2026-10-25.\nUse the most urgent items on the earliest dates. A dinner may use no listed items.\nFor each date: the date exactly as given, a short meal title, and the codes of the items it uses."
+      },
+      {
+        "args": [
+          [],
+          []
+        ],
+        "expected": "Food I have, most urgent first:\n\nPlan one simple dinner for each of these dates: .\nUse the most urgent items on the earliest dates. A dinner may use no listed items.\nFor each date: the date exactly as given, a short meal title, and the codes of the items it uses."
+      }
+    ],
+    "aiPrompts.fixFormat": [
+      {
+        "args": [],
+        "expected": "Your previous answer did not match the required format. Follow the schema exactly."
+      }
+    ],
+    "aiPrompts.fixWording": [
+      {
+        "args": [],
+        "expected": "Your previous answer used wording that is not allowed. Do not describe any food as fit, okay or fine to eat, do not promise how long food lasts, and refer to dates only as \"expected expiry\"."
+      }
+    ],
+    "meal.title": [
+      {
+        "args": [],
+        "expected": {
+          "breakfast": "Time to cook breakfast",
+          "lunch": "Time to cook lunch",
+          "dinner": "Time to cook dinner"
+        }
+      }
+    ],
+    "meal.plan": [
+      {
+        "args": [
+          "Curry",
+          []
+        ],
+        "expected": "Planned: Curry."
+      },
+      {
+        "args": [
+          "Curry",
+          [
+            "Chicken"
+          ]
+        ],
+        "expected": "Planned: Curry. It uses Chicken."
+      },
+      {
+        "args": [
+          "Curry",
+          [
+            "Chicken",
+            "Rice"
+          ]
+        ],
+        "expected": "Planned: Curry. It uses Chicken and Rice."
+      },
+      {
+        "args": [
+          "Curry",
+          [
+            "A",
+            "B",
+            "C"
+          ]
+        ],
+        "expected": "Planned: Curry. It uses A, B and C."
+      }
+    ],
+    "meal.recipe": [
+      {
+        "args": [
+          "Omelette",
+          10,
+          [
+            "Eggs"
+          ]
+        ],
+        "expected": "Try Omelette (10 min). It uses Eggs."
+      },
+      {
+        "args": [
+          "Stir fry",
+          25,
+          [
+            "Chicken",
+            "Peppers",
+            "Rice"
+          ]
+        ],
+        "expected": "Try Stir fry (25 min). It uses Chicken, Peppers and Rice."
+      },
+      {
+        "args": [
+          "Toast",
+          5,
+          []
+        ],
+        "expected": "Try Toast (5 min). It uses ."
+      },
+      {
+        "args": [
+          "Soup",
+          7.5,
+          [
+            "Leek"
+          ]
+        ],
+        "expected": "Try Soup (7.5 min). It uses Leek."
+      },
+      {
+        "args": [
+          "Soup",
+          1e+21,
+          [
+            "Leek"
+          ]
+        ],
+        "expected": "Try Soup (1e+21 min). It uses Leek."
+      },
+      {
+        "args": [
+          "Soup",
+          1e-7,
+          []
+        ],
+        "expected": "Try Soup (1e-7 min). It uses ."
+      },
+      {
+        "args": [
+          "Soup",
+          0.30000000000000004,
+          []
+        ],
+        "expected": "Try Soup (0.30000000000000004 min). It uses ."
+      },
+      {
+        "args": [
+          "Soup",
+          123456789012,
+          []
+        ],
+        "expected": "Try Soup (123456789012 min). It uses ."
+      }
+    ],
+    "meal.itemsIntro": [
+      {
+        "args": [],
+        "expected": "Use these up first:"
+      }
+    ],
+    "meal.actions": [
+      {
+        "args": [],
+        "expected": {
+          "COOKED": "Cooked it",
+          "RECIPE": "Show recipe",
+          "SNOOZE_MEAL": "Snooze 30 min"
+        }
+      }
+    ]
+  }
+}

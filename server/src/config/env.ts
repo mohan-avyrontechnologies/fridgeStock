@@ -93,6 +93,19 @@ function fcm() {
   return projectId && clientEmail && privateKey ? { projectId, clientEmail, privateKey } : null;
 }
 
+/**
+ * Whether this server runs the scheduled jobs (the reminder sweep and photo clean-up). On by default. While a
+ * second server shares the database (the Python server, during its fallback period), exactly one of them has
+ * it on; see docs/PYTHON_MIGRATION.md. Anything other than an on/off word stops the server, so a typo can
+ * never silently leave reminders unsent.
+ */
+export function jobsEnabledFrom(value: string | undefined): boolean {
+  const wanted = (value ?? '').trim().toLowerCase();
+  if (['', 'true', '1', 'on', 'yes'].includes(wanted)) return true;
+  if (['false', '0', 'off', 'no'].includes(wanted)) return false;
+  throw new Error(`JOBS_ENABLED must be "true" or "false" (got "${value}").`);
+}
+
 /** Claude Sonnet 5.5; ID checked against Anthropic's models overview on 2026-09-30. */
 export const DEFAULT_AI_MODEL = 'claude-sonnet-5-5';
 
@@ -124,4 +137,6 @@ export const env = {
   photoCheck: process.env.PHOTO_CHECK === 'on',
   /** Open Food Facts by default; the end-to-end tests point it at a local stand-in. */
   productLookupUrl: process.env.PRODUCT_LOOKUP_URL || 'https://world.openfoodfacts.org',
+  /** Whether this server runs the scheduled jobs (JOBS_ENABLED, on by default). */
+  jobsEnabled: jobsEnabledFrom(process.env.JOBS_ENABLED),
 };

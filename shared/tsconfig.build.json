@@ -3,8 +3,10 @@
   "compilerOptions": {
     "noEmit": false,
     "declaration": true,
+    // The JSON in data/ is part of the build, so the output is dist/src and dist/data.
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "."
   },
-  "exclude": ["src/**/*.test.ts"]
+  "include": ["src", "data"],
+  "exclude": ["src/**/*.test.ts", "src/testCases.ts"]
 }

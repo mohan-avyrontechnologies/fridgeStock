@@ -1,0 +1,171 @@
+{
+  "description": "Product barcode checks (shared/src/barcode.ts).",
+  "functions": {
+    "isValidBarcode": [
+      {
+        "args": [
+          "4006381333931"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "4006381333932"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "96385074"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "96385075"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "036000291452"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "036000291453"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "10012345678902"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "10012345678903"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "5901234123457"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "0000000000000"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "400638133393"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "40063813339311"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "400638133393a"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          ""
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "4006 381333931"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "１２３４５６７８"
+        ],
+        "expected": false
+      }
+    ],
+    "cleanBarcode": [
+      {
+        "args": [
+          "4006 3813-33931"
+        ],
+        "expected": "4006381333931"
+      },
+      {
+        "args": [
+          " 96385074 "
+        ],
+        "expected": "96385074"
+      },
+      {
+        "args": [
+          "40\t06"
+        ],
+        "expected": "4006"
+      },
+      {
+        "args": [
+          "abc-123"
+        ],
+        "expected": "abc123"
+      },
+      {
+        "args": [
+          ""
+        ],
+        "expected": ""
+      },
+      {
+        "args": [
+          "4006 381333931"
+        ],
+        "expected": "4006381333931"
+      },
+      {
+        "args": [
+          "﻿96385074"
+        ],
+        "expected": "96385074"
+      },
+      {
+        "args": [
+          "9638–5074"
+        ],
+        "expected": "9638–5074"
+      },
+      {
+        "args": [
+          "9638\u001c5074"
+        ],
+        "expected": "9638\u001c5074"
+      },
+      {
+        "args": [
+          "9638　5074"
+        ],
+        "expected": "96385074"
+      },
+      {
+        "args": [
+          "96385074\n"
+        ],
+        "expected": "96385074"
+      }
+    ]
+  }
+}

@@ -13,6 +13,12 @@ test-results/
 .tmp/
 tmp/
 
+# The Python server (server-py): its virtual environment and tool caches
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
 # Environment files: only the *.example templates are committed
 .env
 .env.*

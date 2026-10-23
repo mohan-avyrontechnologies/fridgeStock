@@ -3,6 +3,21 @@
 Status: **approved on 2026-10-23**, with the five recommended answers in §11 and two additions: `JOBS_ENABLED`
 (§6, §10) and a persistent local database with a separate empty one for tests (§8).
 
+## Progress
+
+| Phase | State |
+|---|---|
+| 0. Shared data | **Done** (see the notes below). |
+| 1–8 | Not started. |
+
+**What Phase 0 found and changed, compared with the plan:**
+- **The day/month order of a printed date was machine-dependent.** For a language with no locale data (`xx`), Node used the computer's own locale. Node, Python's Babel and browsers also disagree on 16 of 920 locales (for example `en-CA`), because they carry different CLDR versions. So no locale library is used. Both languages look the tag up in `shared/data/date-order.json` (recorded from CLDR 48), and Babel isn't a dependency.
+- **The server's wording module is `server_py/messages.py`, not `copy.py`**, because `copy` is a Python standard-library module.
+- **Writes could be lost on Windows.** Stopping the embedded database there ends `mongod` at once, which lost writes made just before. `dev-mongo.mjs` now flushes them first (`fsync`), and a test restarts it and reads the data back.
+- **JavaScript text rules are copied explicitly** (`server_py/shared/js.py`): `trim()` and `\s` whitespace, ASCII-only `\d` and `\b`, `$` never matching before a final newline, and how numbers are written. The shared cases include each difference.
+- **`npm run dev:server-py`** arrives with the app in Phase 1. Phase 0 has `npm run db:py`, `db:py:empty`, `test:py` and `lint:py`.
+- **Validation cases:** `server_py/schemas/__init__.py` lists the schemas not yet ported (`PENDING`). A test fails if a schema is in neither list. Each phase moves its routes' schemas over.
+
 Goal: replace the TypeScript API in `server/` with a Python one in `server-py/`. To every client, the change must be
 invisible. The web app, the Android app and the iOS app stay in TypeScript, Java and Swift, and their code doesn't
 change. Existing databases and existing logins keep working without any data migration.
@@ -57,7 +72,7 @@ server-py/
     middleware/           errors, auth, rate limits, request log, body limits
     jobs/                 reminder sweep, photo clean-up, job lock
     shared/               Python port of shared/src: enums, dates, estimate, priority, wording, reference
-    copy.py               loads shared/data/messages.json
+    messages.py           loads shared/data/messages.json (server/src/copy.ts)
   scripts/                seed.py, ai_eval.py, vapid_keys.py
   tests/                  pytest, one file per server/src/tests file, plus contract/
 shared/data/              JSON read by both languages

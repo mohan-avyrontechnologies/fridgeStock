@@ -4,6 +4,12 @@ package-lock.json
 **/.data
 .tmp
 .test-db-*
+# The Python server's environment and caches, and the shared test cases (written by scripts, read by both languages)
+server-py/.venv
+**/__pycache__
+.pytest_cache
+.ruff_cache
+shared/test-cases
 e2e/.results
 e2e/screenshots
 docs

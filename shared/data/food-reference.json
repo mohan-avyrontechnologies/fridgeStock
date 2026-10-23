@@ -1,0 +1,480 @@
+{
+  "description": "The Cook First reference list: common foods with suggested lifespans in days for each storage location (null = not usually kept there), and openedDays once opened (null when opening makes no difference). Rough planning estimates only; they say nothing about whether food is fit to eat. Read by shared/src/foodReference.ts and the Python server.",
+  "source": "Cook First reference list",
+  "usuallyPantry": ["bread", "tortillas", "tomatoes", "avocado", "oranges"],
+  "foods": [
+    {
+      "name": "Chicken",
+      "unit": "g",
+      "category": "MEAT_FISH",
+      "lifespanDays": {
+        "FRIDGE": 2,
+        "FREEZER": 270,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Beef mince",
+      "unit": "g",
+      "category": "MEAT_FISH",
+      "lifespanDays": {
+        "FRIDGE": 2,
+        "FREEZER": 120,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Steak",
+      "unit": "g",
+      "category": "MEAT_FISH",
+      "lifespanDays": {
+        "FRIDGE": 3,
+        "FREEZER": 180,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Fish fillets",
+      "unit": "g",
+      "category": "MEAT_FISH",
+      "lifespanDays": {
+        "FRIDGE": 2,
+        "FREEZER": 180,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Prawns",
+      "unit": "g",
+      "category": "MEAT_FISH",
+      "lifespanDays": {
+        "FRIDGE": 2,
+        "FREEZER": 180,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Bacon",
+      "unit": "pack",
+      "category": "MEAT_FISH",
+      "lifespanDays": {
+        "FRIDGE": 7,
+        "FREEZER": 30,
+        "PANTRY": null
+      },
+      "openedDays": 5
+    },
+    {
+      "name": "Sausages",
+      "unit": "pack",
+      "category": "MEAT_FISH",
+      "lifespanDays": {
+        "FRIDGE": 3,
+        "FREEZER": 60,
+        "PANTRY": null
+      },
+      "openedDays": 2
+    },
+    {
+      "name": "Sliced ham",
+      "unit": "pack",
+      "category": "MEAT_FISH",
+      "lifespanDays": {
+        "FRIDGE": 4,
+        "FREEZER": 60,
+        "PANTRY": null
+      },
+      "openedDays": 3
+    },
+    {
+      "name": "Milk",
+      "unit": "l",
+      "category": "DAIRY_EGGS",
+      "lifespanDays": {
+        "FRIDGE": 5,
+        "FREEZER": 90,
+        "PANTRY": null
+      },
+      "openedDays": 4
+    },
+    {
+      "name": "Yoghurt",
+      "unit": "g",
+      "category": "DAIRY_EGGS",
+      "lifespanDays": {
+        "FRIDGE": 7,
+        "FREEZER": 60,
+        "PANTRY": null
+      },
+      "openedDays": 5
+    },
+    {
+      "name": "Hard cheese",
+      "unit": "g",
+      "category": "DAIRY_EGGS",
+      "lifespanDays": {
+        "FRIDGE": 21,
+        "FREEZER": 180,
+        "PANTRY": null
+      },
+      "openedDays": 21
+    },
+    {
+      "name": "Soft cheese",
+      "unit": "g",
+      "category": "DAIRY_EGGS",
+      "lifespanDays": {
+        "FRIDGE": 7,
+        "FREEZER": null,
+        "PANTRY": null
+      },
+      "openedDays": 5
+    },
+    {
+      "name": "Butter",
+      "unit": "g",
+      "category": "DAIRY_EGGS",
+      "lifespanDays": {
+        "FRIDGE": 30,
+        "FREEZER": 180,
+        "PANTRY": null
+      },
+      "openedDays": 30
+    },
+    {
+      "name": "Cream",
+      "unit": "ml",
+      "category": "DAIRY_EGGS",
+      "lifespanDays": {
+        "FRIDGE": 5,
+        "FREEZER": null,
+        "PANTRY": null
+      },
+      "openedDays": 3
+    },
+    {
+      "name": "Eggs",
+      "unit": "pcs",
+      "category": "DAIRY_EGGS",
+      "lifespanDays": {
+        "FRIDGE": 21,
+        "FREEZER": null,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Paneer",
+      "unit": "g",
+      "category": "DAIRY_EGGS",
+      "lifespanDays": {
+        "FRIDGE": 5,
+        "FREEZER": 90,
+        "PANTRY": null
+      },
+      "openedDays": 3
+    },
+    {
+      "name": "Tofu",
+      "unit": "pack",
+      "category": "DAIRY_EGGS",
+      "lifespanDays": {
+        "FRIDGE": 5,
+        "FREEZER": 90,
+        "PANTRY": null
+      },
+      "openedDays": 3
+    },
+    {
+      "name": "Spinach",
+      "unit": "bunch",
+      "category": "VEGETABLES",
+      "lifespanDays": {
+        "FRIDGE": 4,
+        "FREEZER": 240,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Lettuce",
+      "unit": "pcs",
+      "category": "VEGETABLES",
+      "lifespanDays": {
+        "FRIDGE": 5,
+        "FREEZER": null,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Coriander",
+      "unit": "bunch",
+      "category": "VEGETABLES",
+      "lifespanDays": {
+        "FRIDGE": 5,
+        "FREEZER": null,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Broccoli",
+      "unit": "pcs",
+      "category": "VEGETABLES",
+      "lifespanDays": {
+        "FRIDGE": 5,
+        "FREEZER": 300,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Carrots",
+      "unit": "kg",
+      "category": "VEGETABLES",
+      "lifespanDays": {
+        "FRIDGE": 21,
+        "FREEZER": 300,
+        "PANTRY": 7
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Tomatoes",
+      "unit": "pcs",
+      "category": "VEGETABLES",
+      "lifespanDays": {
+        "FRIDGE": 7,
+        "FREEZER": 60,
+        "PANTRY": 4
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Cucumber",
+      "unit": "pcs",
+      "category": "VEGETABLES",
+      "lifespanDays": {
+        "FRIDGE": 7,
+        "FREEZER": null,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Bell pepper",
+      "unit": "pcs",
+      "category": "VEGETABLES",
+      "lifespanDays": {
+        "FRIDGE": 7,
+        "FREEZER": 240,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Mushrooms",
+      "unit": "g",
+      "category": "VEGETABLES",
+      "lifespanDays": {
+        "FRIDGE": 5,
+        "FREEZER": 240,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Potatoes",
+      "unit": "kg",
+      "category": "VEGETABLES",
+      "lifespanDays": {
+        "FRIDGE": null,
+        "FREEZER": null,
+        "PANTRY": 21
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Onions",
+      "unit": "kg",
+      "category": "VEGETABLES",
+      "lifespanDays": {
+        "FRIDGE": null,
+        "FREEZER": null,
+        "PANTRY": 30
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Garlic",
+      "unit": "pcs",
+      "category": "VEGETABLES",
+      "lifespanDays": {
+        "FRIDGE": null,
+        "FREEZER": null,
+        "PANTRY": 60
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Apples",
+      "unit": "pcs",
+      "category": "FRUIT",
+      "lifespanDays": {
+        "FRIDGE": 28,
+        "FREEZER": null,
+        "PANTRY": 7
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Bananas",
+      "unit": "pcs",
+      "category": "FRUIT",
+      "lifespanDays": {
+        "FRIDGE": null,
+        "FREEZER": 60,
+        "PANTRY": 5
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Berries",
+      "unit": "pack",
+      "category": "FRUIT",
+      "lifespanDays": {
+        "FRIDGE": 4,
+        "FREEZER": 240,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Grapes",
+      "unit": "pack",
+      "category": "FRUIT",
+      "lifespanDays": {
+        "FRIDGE": 7,
+        "FREEZER": 300,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Oranges",
+      "unit": "pcs",
+      "category": "FRUIT",
+      "lifespanDays": {
+        "FRIDGE": 21,
+        "FREEZER": null,
+        "PANTRY": 7
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Avocado",
+      "unit": "pcs",
+      "category": "FRUIT",
+      "lifespanDays": {
+        "FRIDGE": 4,
+        "FREEZER": null,
+        "PANTRY": 3
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Bread",
+      "unit": "pack",
+      "category": "BAKERY",
+      "lifespanDays": {
+        "FRIDGE": 7,
+        "FREEZER": 90,
+        "PANTRY": 4
+      },
+      "openedDays": 5
+    },
+    {
+      "name": "Tortillas",
+      "unit": "pack",
+      "category": "BAKERY",
+      "lifespanDays": {
+        "FRIDGE": 21,
+        "FREEZER": 180,
+        "PANTRY": 7
+      },
+      "openedDays": 7
+    },
+    {
+      "name": "Fresh pasta",
+      "unit": "pack",
+      "category": "CHILLED_PACKAGED",
+      "lifespanDays": {
+        "FRIDGE": 3,
+        "FREEZER": 60,
+        "PANTRY": null
+      },
+      "openedDays": 2
+    },
+    {
+      "name": "Cooked rice",
+      "unit": "g",
+      "category": "COOKED",
+      "lifespanDays": {
+        "FRIDGE": 3,
+        "FREEZER": 30,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Leftovers",
+      "unit": "pcs",
+      "category": "COOKED",
+      "lifespanDays": {
+        "FRIDGE": 3,
+        "FREEZER": 60,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Homemade soup",
+      "unit": "ml",
+      "category": "COOKED",
+      "lifespanDays": {
+        "FRIDGE": 3,
+        "FREEZER": 90,
+        "PANTRY": null
+      },
+      "openedDays": null
+    },
+    {
+      "name": "Hummus",
+      "unit": "g",
+      "category": "CHILLED_PACKAGED",
+      "lifespanDays": {
+        "FRIDGE": 5,
+        "FREEZER": null,
+        "PANTRY": null
+      },
+      "openedDays": 4
+    },
+    {
+      "name": "Juice",
+      "unit": "l",
+      "category": "CHILLED_PACKAGED",
+      "lifespanDays": {
+        "FRIDGE": 7,
+        "FREEZER": 240,
+        "PANTRY": null
+      },
+      "openedDays": 5
+    }
+  ]
+}

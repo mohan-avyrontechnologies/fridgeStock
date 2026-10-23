@@ -145,11 +145,13 @@ describe('iOS', () => {
     const server = read('server/src/services/fcmProvider.ts', REPO);
     const serverCategory = server.match(/IOS_ACTION_CATEGORY = '([^']+)'/)![1];
     expect(delegate).toContain(`reminderCategory = "${serverCategory}"`);
-    // The same action ids as the web app and the server, and the same button titles as the server's copy.
-    const titles = read('server/src/copy.ts', REPO).match(/actions: \{ USED: '([^']+)', SNOOZE: '([^']+)' \}/)!;
+    // The same action ids as the web app and the server, and the same button titles as the server's wording
+    // (shared/data/messages.json, which both servers read).
+    const titles = JSON.parse(read('shared/data/messages.json', REPO)).push.actions;
     expect(PUSH_ACTIONS).toEqual(['USED', 'SNOOZE']);
-    expect(delegate).toContain(`identifier: "USED", title: "${titles[1]}"`);
-    expect(delegate).toContain(`identifier: "SNOOZE", title: "${titles[2]}"`);
+    expect(Object.keys(titles)).toEqual(['USED', 'SNOOZE']);
+    expect(delegate).toContain(`identifier: "USED", title: "${titles.USED}"`);
+    expect(delegate).toContain(`identifier: "SNOOZE", title: "${titles.SNOOZE}"`);
     expect(delegate).toContain('UNUserNotificationCenter.current().setNotificationCategories');
   });
 

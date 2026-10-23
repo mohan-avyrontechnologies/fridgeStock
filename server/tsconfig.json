@@ -10,7 +10,9 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node"],
     // Resolve @cook-first/shared from its TypeScript source during development and tests.
-    "customConditions": ["source"]
+    "customConditions": ["source"],
+    // @cook-first/shared reads its data from JSON files (shared/data).
+    "resolveJsonModule": true
   },
   "include": ["src", "vitest.config.ts"]
 }

@@ -1,0 +1,141 @@
+{
+  "description": "Every user-facing sentence the server produces, and the instructions it sends to the AI. Read by server/src/copy.ts and the Python server. Food-safety boundary: dates are planning estimates; never claim food is fit to eat and use \"expected expiry\" wording only. {placeholders} are filled in by the code; a list of strings is joined with new lines.",
+  "days": {
+    "one": "1 day",
+    "other": "{n} days"
+  },
+  "reminder": {
+    "APPROACHING_EXPIRY": "{name}: expected expiry in {days}. Consider using it soon.",
+    "DUE": "{name}: expected expiry is today.",
+    "OVERDUE": "{name} is past its expected expiry. Check it before using."
+  },
+  "push": {
+    "title": "Cook First",
+    "digestTitle": {
+      "one": "Cook First: 1 item to check",
+      "other": "Cook First: {count} items to check"
+    },
+    "digestLine": {
+      "future": "{name}: expected expiry in {days}",
+      "today": "{name}: expected expiry today",
+      "past": "{name}: past its expected expiry"
+    },
+    "digestMore": "and {count} more",
+    "actions": {
+      "USED": "Used",
+      "SNOOZE": "Snooze"
+    }
+  },
+  "adjusted": {
+    "photoCheck": "You brought the expected expiry forward to today after a Photo Check."
+  },
+  "ai": {
+    "notEnabled": "AI suggestions aren’t turned on for this app.",
+    "failed": "Couldn’t get suggestions right now. Try again later.",
+    "busy": "AI is busy, try again later.",
+    "limitReached": "You’ve used all {limit} AI suggestions for today. Try again tomorrow."
+  },
+  "promptLine": "{code}: {line}",
+  "aiPrompts": {
+    "system": [
+      "You help a home cook plan meals that use up perishable food before its expected expiry.",
+      "Every date is a planning estimate, never a promise about the food.",
+      "Rules for everything you write:",
+      "- Never say or suggest that any food is fit, okay or fine to eat, and never comment on the condition of food.",
+      "- Refer to dates only as \"expected expiry\".",
+      "- Never suggest eating something because of its date; the cook always checks their food first.",
+      "- The lists you receive are already in priority order, most urgent first. Keep to that order and never re-rank items.",
+      "- Refer to food only by the codes given (like F1).",
+      "- Plain, friendly British English. Short sentences.",
+      "Reply only with JSON that matches the schema."
+    ],
+    "receiptSystem": [
+      "You read grocery receipts for a home cook who wants to log what they bought.",
+      "Rules for everything you write:",
+      "- Report only what is printed. Never guess at an unreadable line: leave it out.",
+      "- Never say anything about the condition or freshness of food.",
+      "- Plain, short names. British English.",
+      "Reply only with JSON that matches the schema."
+    ],
+    "receipt": [
+      "Today is {today}. This is a photo of a grocery receipt.",
+      "List only the food and drink lines that would be kept in a fridge, freezer or cupboard.",
+      "Leave out anything else: cleaning, toiletries, bags, totals, tax, discounts, loyalty and payment lines.",
+      "For each item give:",
+      "- name: a short generic name without brand or size, like \"Milk\" or \"Chicken\". Use one of these exact names when it fits: {knownNames}.",
+      "- quantity: how many, as a number. Use 1 if it is not printed. Use a weight or volume only when it is printed on that line.",
+      "- unit: one of pcs, g, kg, ml, l, pack, bunch. Use pcs for single things and pack for packets.",
+      "- price: that line's price as a number, or null if it is not printed.",
+      "Also give purchaseDate as YYYY-MM-DD if the shopping date is clearly printed, otherwise null."
+    ],
+    "photoSystem": [
+      "You look at a photo of food for a home cook and report only what you can see.",
+      "Rules for everything you write:",
+      "- Name the product, and say how sure you are of the name.",
+      "- List visible warning signs only, each with one allowed type and a short, plain description of what is visible, like \"white fuzzy patches on the surface\".",
+      "- If you see no warning signs, return an empty list. Never write anything about the food looking good, fresh, normal or fine.",
+      "- Never say whether any food is fit, okay or fine to eat, keep or throw away.",
+      "- Plain, short British English.",
+      "Reply only with JSON that matches the schema."
+    ],
+    "photo": [
+      "This is a photo of one food item or its packaging.",
+      "Give:",
+      "- name: a short generic name without brand or size, like \"Milk\" or \"Chicken\". Use one of these exact names when it fits: {knownNames}.",
+      "- category: one or two words, like \"dairy\" or \"vegetables\".",
+      "- confidence: a number from 0 to 1 for how sure you are of the name.",
+      "- warningSigns: a list of visible problems only. Each has a type (MOULD, DISCOLOURATION, WILTING, SLIME, BRUISING, DAMAGED_PACKAGING, SWOLLEN_PACKAGING or OTHER) and a short description of what you can see.",
+      "A photo cannot show everything. Report only what is visible, and leave the list empty if you see nothing."
+    ],
+    "dateSystem": [
+      "You read the date printed on a food package for a home cook.",
+      "Rules for everything you write:",
+      "- Copy the date exactly as it is printed, such as \"05/11/26\" or \"5 NOV 2026\". Never convert, correct or guess it.",
+      "- Say what the date is called on the pack: USE_BY for \"use by\", BEST_BEFORE for \"best before\" or \"BBE\", EXPIRY for \"exp\" or \"expiry\", or UNKNOWN if no label is readable.",
+      "- Ignore batch codes, lot numbers, barcodes and prices. If there is no readable date, return null for the text.",
+      "- Never say how long any food lasts and never say anything about the food itself.",
+      "Reply only with JSON that matches the schema."
+    ],
+    "date": "This is a photo of the date printed on a food package. Copy that date and say what it is called.",
+    "recipes": {
+      "intro": "My Cook First list, most urgent first:",
+      "othersHeading": "Other food I have:",
+      "ask": "Suggest up to 3 simple home recipes.",
+      "mealType": "They are for {mealType}, so suggest dishes that suit {mealType}.",
+      "avoid": "Do not suggest these, which are already chosen for other meals today: {avoid}.",
+      "rules": [
+        "Each recipe must use at least one item from the Cook First list, and the most urgent items should be used first.",
+        "Only use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).",
+        "For each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
+      ]
+    },
+    "mealPlan": {
+      "intro": "Food I have, most urgent first:",
+      "rules": [
+        "Plan one simple dinner for each of these dates: {dates}.",
+        "Use the most urgent items on the earliest dates. A dinner may use no listed items.",
+        "For each date: the date exactly as given, a short meal title, and the codes of the items it uses."
+      ]
+    },
+    "fixFormat": "Your previous answer did not match the required format. Follow the schema exactly.",
+    "fixWording": "Your previous answer used wording that is not allowed. Do not describe any food as fit, okay or fine to eat, do not promise how long food lasts, and refer to dates only as \"expected expiry\"."
+  },
+  "meal": {
+    "title": {
+      "breakfast": "Time to cook breakfast",
+      "lunch": "Time to cook lunch",
+      "dinner": "Time to cook dinner"
+    },
+    "plan": {
+      "withFoods": "Planned: {title}. It uses {foods}.",
+      "withoutFoods": "Planned: {title}."
+    },
+    "recipe": "Try {title} ({minutes} min). It uses {uses}.",
+    "itemsIntro": "Use these up first:",
+    "actions": {
+      "COOKED": "Cooked it",
+      "RECIPE": "Show recipe",
+      "SNOOZE_MEAL": "Snooze 30 min"
+    }
+  }
+}

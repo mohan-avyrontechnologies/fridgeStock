@@ -3,6 +3,15 @@
 All notable changes to this project are listed here, newest first. Versions follow [Semantic Versioning](https://semver.org/).
 
 ### [Unreleased]
+**Added**
+- **Python server, Phase 0** (`server-py/`, branch `python-backend`; plan in [docs/PYTHON_MIGRATION.md](docs/PYTHON_MIGRATION.md)). No routes yet: the Python port of the shared logic (dates, alerts, barcodes, wording, the catalog, `estimateExpiry`, the priority engine and the server's wording), uv with ruff, pyright (strict) and pytest, a CI job on Python 3.12 and 3.13, and a local embedded MongoDB (`npm run db:py` keeps its data in `server-py/.data`; `npm run db:py:empty` starts an empty one for tests).
+- **Shared data** (`shared/data/*.json`): the catalog, category defaults, banned phrases, each locale's day/month order and all of the server's wording (`messages.json`, from `server/src/copy.ts`) are now JSON that the TypeScript code and the Python server both read. The TypeScript exports are unchanged; the server reads its wording through `@cook-first/shared/server-messages`, so the AI prompts never ship in the web app.
+- **Shared test cases** (`shared/test-cases/*.json`): about 2,050 inputs with expected outputs that the Vitest suites (`shared/src/testCases.test.ts`, `server/src/tests/sharedCases.test.ts`) and pytest (`tests/test_shared_cases.py`) must both pass. `validation.json` records what every request schema answers (the first problem's exact message and field, or the parsed value) for about 1,300 inputs, written by `npm run cases:validation -w shared`; Vitest fails if a schema or a zod upgrade changes an answer.
+- **`JOBS_ENABLED`** on the server (on by default): `false` starts no scheduled jobs, so exactly one server runs them while two share a database. Anything other than an on/off word stops the server.
+
+**Fixed**
+- **A printed date's day/month order no longer depends on the machine.** For a language the runtime had no data for (such as `xx`), Node quietly used the computer's own locale (`en-IN` on one PC, usually `en-US` on a server), and different Node and browser versions disagreed on some locales (`en-CA` is year-month-day in CLDR 48 and day-first in older data). `dayMonthOrder` now looks the tag up in `shared/data/date-order.json` (recorded from CLDR 48), the same everywhere, and an unknown language has no order, so the earlier reading is used.
+
 **Security**
 - **Notification button tokens** (`POST /push/actions`) now work for 24 hours instead of 7 days, carry out one action once (a second tap, or the other button on the same notification, is a 401 "This notification button has already been used."), and are unique to each notification. Buttons on notifications sent before this change stop working and open Food Details instead.
 
@@ -12,6 +21,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 - The account export no longer includes the push service's own delivery errors on reminders.
 
 **Changed**
+- The shared package's build now writes `dist/src` and `dist/data` (exports updated); the client and server `tsconfig.json` set `resolveJsonModule`. The wording guard also scans `shared/data`, with `messages.json` and `estimate-copy.json` as copy files.
 - Path and query values are checked with shared zod schemas: `:meal` (`mealParamSchema`), `:date` (`mealDateParamSchema`, so `DELETE /meal-plan/:date` with a date that isn't real is now a 400), `?meal` (`mealQuerySchema`) and `:code` (`inviteCodeParamSchema`).
 - `docs/API.md` lists all 68 routes in router order, with the public routes, every rate limit and the `AI_UNAVAILABLE` code; a test keeps it in step with the router.
 - A root `.env.example` points to the package's own example files.

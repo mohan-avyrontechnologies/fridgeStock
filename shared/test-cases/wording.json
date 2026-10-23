@@ -1,0 +1,177 @@
+{
+  "description": "The food-safety wording check (shared/src/wording.ts).",
+  "functions": {
+    "hasBannedWording": [
+      {
+        "args": [
+          "Expected expiry in 2 days."
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "Safe until Friday"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "SAFE TO EAT"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "safe to consume"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "Fresh until tomorrow"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "good until then"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "Still good"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "Guaranteed fresh"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "It is safe."
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "Eat safely"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "food safety"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "unsafe"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "safekeeping"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "safes"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "A safe-ish bet"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "Not safe!"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          ""
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "Use it soon."
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "ésafe"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "safeé"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "naïve safe"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "SAFE"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "safe_word"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "safe1"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "ＳＡＦＥ"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "İs safe"
+        ],
+        "expected": true
+      }
+    ],
+    "BANNED_PHRASES": [
+      {
+        "args": [],
+        "expected": [
+          "safe until",
+          "safe to eat",
+          "safe to consume",
+          "fresh until",
+          "good until",
+          "still good",
+          "guaranteed"
+        ]
+      }
+    ]
+  }
+}

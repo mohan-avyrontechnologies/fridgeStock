@@ -311,13 +311,14 @@ describe('iOS notification sounds and meal buttons', () => {
   it('registers a meal category whose buttons match what the server sends', () => {
     const delegate = read('ios/App/App/AppDelegate.swift');
     const fcm = read('server/src/services/fcmProvider.ts', REPO);
-    const copy = read('server/src/copy.ts', REPO);
+    // The button titles come from the server's wording (shared/data/messages.json, which both servers read).
+    const titles = JSON.parse(read('shared/data/messages.json', REPO)).meal.actions;
     const category = fcm.match(/IOS_MEAL_CATEGORY = '([^']+)'/)![1];
     expect(delegate).toContain(`mealCategory = "${category}"`);
-    const titles = copy.match(/actions: \{ COOKED: '([^']+)', RECIPE: '([^']+)', SNOOZE_MEAL: '([^']+)' \}/)!;
-    expect(delegate).toContain(`identifier: "COOKED", title: "${titles[1]}"`);
-    expect(delegate).toContain(`identifier: "RECIPE", title: "${titles[2]}"`);
-    expect(delegate).toContain(`identifier: "SNOOZE_MEAL", title: "${titles[3]}"`);
+    expect(Object.keys(titles)).toEqual(['COOKED', 'RECIPE', 'SNOOZE_MEAL']);
+    expect(delegate).toContain(`identifier: "COOKED", title: "${titles.COOKED}"`);
+    expect(delegate).toContain(`identifier: "RECIPE", title: "${titles.RECIPE}"`);
+    expect(delegate).toContain(`identifier: "SNOOZE_MEAL", title: "${titles.SNOOZE_MEAL}"`);
     expect(delegate).toMatch(/setNotificationCategories\(\[category, meal\]\)/);
   });
 

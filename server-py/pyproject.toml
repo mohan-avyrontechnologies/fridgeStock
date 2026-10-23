@@ -1,0 +1,39 @@
+[project]
+name = "cook-first-server"
+version = "2.23.0"
+description = "The Cook First API in Python: a drop-in replacement for server/ (see docs/PYTHON_MIGRATION.md)."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "tzdata>=2026.5",
+]
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.414",
+    "pytest>=9.1.1",
+    "ruff>=0.17.2",
+]
+
+[tool.uv]
+# An application, not a library: run from this folder (uvicorn server_py.main:app), never installed.
+package = false
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "SIM", "RUF", "PT", "ASYNC"]
+
+[tool.pyright]
+include = ["server_py", "tests", "scripts"]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+venvPath = "."
+venv = ".venv"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra --strict-markers"

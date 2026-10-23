@@ -1,0 +1,5 @@
+{
+  "description": "The food-safety boundary as data: phrases that may never appear in anything the app shows, including AI-generated text. Text is checked in lower case; safeWordPattern (a regular expression that works the same in JavaScript and Python) also catches the word \"safe\" on its own.",
+  "phrases": ["safe until", "safe to eat", "safe to consume", "fresh until", "good until", "still good", "guaranteed"],
+  "safeWordPattern": "\\bsafe(ly|ty)?\\b"
+}

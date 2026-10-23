@@ -10,15 +10,20 @@ import { describe, expect, it } from 'vitest';
  */
 const THIS_FILE = fileURLToPath(import.meta.url);
 const SRC_ROOTS = [path.resolve('src'), path.resolve('../client/src'), path.resolve('../shared/src')];
+/** The wording and data the shared package and the Python server read (shared/data/*.json). */
+const DATA_DIR = path.resolve('../shared/data');
 const COPY_FILES = [
   path.resolve('src/copy.ts'),
   path.resolve('../client/src/copy.ts'),
   // The sentences estimateExpiry returns live in the shared package, in their own copy file.
   path.resolve('../shared/src/estimateCopy.ts'),
+  // The sentences themselves, read by the copy files above and by the Python server.
+  path.resolve('../shared/data/messages.json'),
+  path.resolve('../shared/data/estimate-copy.json'),
 ];
 
-/** The banned phrases are defined once, in shared/src/wording.ts (also used to check AI output). */
-const WORDING_FILE = path.resolve('../shared/src/wording.ts');
+/** The banned phrases are defined once, in shared/data/banned-phrases.json (read by shared/src/wording.ts). */
+const WORDING_FILES = [path.resolve('../shared/src/wording.ts'), path.resolve('../shared/data/banned-phrases.json')];
 
 function files(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {
@@ -27,8 +32,9 @@ function files(dir: string): string[] {
   });
 }
 
-const sourceFiles = SRC_ROOTS.flatMap(files).filter(
-  (file) => /\.(ts|tsx)$/.test(file) && path.resolve(file) !== THIS_FILE && path.resolve(file) !== WORDING_FILE,
+const sourceFiles = [...SRC_ROOTS.flatMap(files), ...files(DATA_DIR)].filter(
+  (file) =>
+    /\.(ts|tsx|json)$/.test(file) && path.resolve(file) !== THIS_FILE && !WORDING_FILES.includes(path.resolve(file)),
 );
 
 const rel = (file: string) => path.relative(path.resolve('..'), file).replaceAll('\\', '/');
@@ -41,9 +47,17 @@ describe('food-safety wording', () => {
   it('scans a real set of source files', () => {
     expect(sourceFiles.length).toBeGreaterThan(50);
     for (const copy of COPY_FILES) expect(sourceFiles).toContain(copy);
+    // Every data file except the banned list itself, including the catalog.
+    expect(sourceFiles.filter((file) => file.startsWith(DATA_DIR)).map((file) => path.basename(file))).toEqual([
+      'category-defaults.json',
+      'date-order.json',
+      'estimate-copy.json',
+      'food-reference.json',
+      'messages.json',
+    ]);
   });
 
-  it('no .ts/.tsx file in client/src or server/src contains a banned phrase', () => {
+  it('no source or data file contains a banned phrase', () => {
     const offenders: string[] = [];
     for (const file of sourceFiles) {
       const text = readFileSync(file, 'utf8').toLowerCase();

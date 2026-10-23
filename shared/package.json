@@ -3,18 +3,24 @@
   "version": "2.23.0",
   "private": true,
   "type": "module",
-  "description": "Enums, API types, zod schemas and date utilities used by both client and server.",
+  "description": "Enums, API types, zod schemas and date utilities used by both client and server. shared/data holds the JSON the Python server reads too.",
   "exports": {
     ".": {
       "source": "./src/index.ts",
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./server-messages": {
+      "source": "./src/serverMessages.ts",
+      "types": "./dist/src/serverMessages.d.ts",
+      "default": "./dist/src/serverMessages.js"
     }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "cases:validation": "tsx scripts/generate-validation-cases.ts"
   },
   "devDependencies": {
     "@types/node": "^26.6.3",

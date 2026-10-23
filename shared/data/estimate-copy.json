@@ -1,0 +1,20 @@
+{
+  "description": "The sentences estimateExpiry returns. Every one says \"expected expiry\" and none says whether food is fit to eat. {name} is the lower-cased product name, {days} is \"1 day\" or \"N days\", {storage} is the lower-cased location and {printed} is the printed-date wording.",
+  "userExplanation": "You set this expected expiry.",
+  "days": {
+    "one": "{n} day",
+    "other": "{n} days"
+  },
+  "printedWords": {
+    "USE_BY": "a use-by date",
+    "BEST_BEFORE": "a best-before date",
+    "EXPIRY": "an expiry date",
+    "UNKNOWN": "a date"
+  },
+  "printed": "The expected expiry is the date printed on the pack ({printed}).",
+  "learned": "Your {name} usually lasts {days} in the {storage}, so that is the expected expiry.",
+  "catalog": "Catalog: {name} lasts about {days} in the {storage}.",
+  "catalogOpened": "Catalog: {name} lasts about {days} once opened.",
+  "category": "No exact match, so the expected expiry uses the usual {days} for this kind of food in the {storage}.",
+  "fallback": "Rough estimate: no matching information, so the expected expiry is {days} after adding."
+}

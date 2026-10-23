@@ -1,0 +1,1997 @@
+{
+  "description": "Reminder sounds, channels and quiet hours (shared/src/alerts.ts). `now` arguments are ISO instants.",
+  "functions": {
+    "clockMinutes": [
+      {
+        "args": [
+          "00:00"
+        ],
+        "expected": 0
+      },
+      {
+        "args": [
+          "07:30"
+        ],
+        "expected": 450
+      },
+      {
+        "args": [
+          "23:59"
+        ],
+        "expected": 1439
+      },
+      {
+        "args": [
+          "24:00"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "7:30"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "07:60"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "12:5"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          ""
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "ab:cd"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "19:30 "
+        ],
+        "expected": null
+      }
+    ],
+    "minutesInTz": [
+      {
+        "args": [
+          "UTC",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 1109
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 1110
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 59
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 60
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 539
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 540
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 1439
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 0
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 1169
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 1170
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 59
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 120
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 539
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 540
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 1439
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 0
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 1439
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 0
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 389
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 390
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 869
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 870
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 329
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 330
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 689
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 690
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 1079
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 1080
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 119
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 60
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 959
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 960
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 509
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 510
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 899
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 900
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 1379
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 1380
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 839
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 840
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 449
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 450
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 839
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 840
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 1319
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 1320
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 779
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 780
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 329
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 330
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 719
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 720
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 1199
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 1200
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 659
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 660
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 14
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 15
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 404
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 405
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 884
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 885
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 344
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 345
+      }
+    ],
+    "isQuietHours": [
+      {
+        "args": [
+          "Europe/London",
+          "2026-10-23T21:59:00Z",
+          {
+            "enabled": true,
+            "start": "22:00",
+            "end": "07:00"
+          }
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-10-23T21:00:00Z",
+          {
+            "enabled": true,
+            "start": "22:00",
+            "end": "07:00"
+          }
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-10-23T06:00:00Z",
+          {
+            "enabled": true,
+            "start": "22:00",
+            "end": "07:00"
+          }
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-12-23T06:59:00Z",
+          {
+            "enabled": true,
+            "start": "22:00",
+            "end": "07:00"
+          }
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-12-23T07:00:00Z",
+          {
+            "enabled": true,
+            "start": "22:00",
+            "end": "07:00"
+          }
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-10-23T16:30:00Z",
+          {
+            "enabled": true,
+            "start": "22:00",
+            "end": "07:00"
+          }
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-10-23T16:29:00Z",
+          {
+            "enabled": true,
+            "start": "22:00",
+            "end": "07:00"
+          }
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-10-23T13:00:00Z",
+          {
+            "enabled": true,
+            "start": "13:00",
+            "end": "15:00"
+          }
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-10-23T15:00:00Z",
+          {
+            "enabled": true,
+            "start": "13:00",
+            "end": "15:00"
+          }
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-10-23T23:00:00Z",
+          {
+            "enabled": false,
+            "start": "22:00",
+            "end": "07:00"
+          }
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-10-23T23:00:00Z",
+          {
+            "enabled": true,
+            "start": "22:00",
+            "end": "22:00"
+          }
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-10-23T23:00:00Z",
+          {
+            "enabled": true,
+            "start": "25:00",
+            "end": "07:00"
+          }
+        ],
+        "expected": false
+      }
+    ],
+    "kindOfReminder": [
+      {
+        "args": [
+          "APPROACHING_EXPIRY"
+        ],
+        "expected": "APPROACHING_EXPIRY"
+      },
+      {
+        "args": [
+          "DUE"
+        ],
+        "expected": "DUE"
+      },
+      {
+        "args": [
+          "OVERDUE"
+        ],
+        "expected": "OVERDUE"
+      }
+    ],
+    "isUrgent": [
+      {
+        "args": [
+          "APPROACHING_EXPIRY"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "DIGEST"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "DUE"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "OVERDUE"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "MEAL"
+        ],
+        "expected": false
+      }
+    ],
+    "soundFor": [
+      {
+        "args": [
+          "APPROACHING_EXPIRY"
+        ],
+        "expected": "gentle"
+      },
+      {
+        "args": [
+          "DIGEST"
+        ],
+        "expected": "gentle"
+      },
+      {
+        "args": [
+          "DUE"
+        ],
+        "expected": "strong"
+      },
+      {
+        "args": [
+          "OVERDUE"
+        ],
+        "expected": "strong"
+      },
+      {
+        "args": [
+          "MEAL"
+        ],
+        "expected": "meal"
+      }
+    ],
+    "vibrationFor": [
+      {
+        "args": [
+          "APPROACHING_EXPIRY"
+        ],
+        "expected": [
+          120
+        ]
+      },
+      {
+        "args": [
+          "DIGEST"
+        ],
+        "expected": [
+          120
+        ]
+      },
+      {
+        "args": [
+          "DUE"
+        ],
+        "expected": [
+          300,
+          120,
+          300,
+          120,
+          300
+        ]
+      },
+      {
+        "args": [
+          "OVERDUE"
+        ],
+        "expected": [
+          300,
+          120,
+          300,
+          120,
+          300
+        ]
+      },
+      {
+        "args": [
+          "MEAL"
+        ],
+        "expected": [
+          160,
+          80,
+          160
+        ]
+      }
+    ],
+    "channelFor": [
+      {
+        "args": [
+          "APPROACHING_EXPIRY",
+          true,
+          true
+        ],
+        "expected": "food-soon"
+      },
+      {
+        "args": [
+          "APPROACHING_EXPIRY",
+          true,
+          false
+        ],
+        "expected": "food-soon"
+      },
+      {
+        "args": [
+          "APPROACHING_EXPIRY",
+          false,
+          true
+        ],
+        "expected": "reminders-silent"
+      },
+      {
+        "args": [
+          "APPROACHING_EXPIRY",
+          false,
+          false
+        ],
+        "expected": "reminders-silent"
+      },
+      {
+        "args": [
+          "DIGEST",
+          true,
+          true
+        ],
+        "expected": "food-soon"
+      },
+      {
+        "args": [
+          "DIGEST",
+          true,
+          false
+        ],
+        "expected": "food-soon"
+      },
+      {
+        "args": [
+          "DIGEST",
+          false,
+          true
+        ],
+        "expected": "reminders-silent"
+      },
+      {
+        "args": [
+          "DIGEST",
+          false,
+          false
+        ],
+        "expected": "reminders-silent"
+      },
+      {
+        "args": [
+          "DUE",
+          true,
+          true
+        ],
+        "expected": "food-urgent"
+      },
+      {
+        "args": [
+          "DUE",
+          true,
+          false
+        ],
+        "expected": "food-urgent-sound"
+      },
+      {
+        "args": [
+          "DUE",
+          false,
+          true
+        ],
+        "expected": "reminders-vibrate"
+      },
+      {
+        "args": [
+          "DUE",
+          false,
+          false
+        ],
+        "expected": "reminders-silent"
+      },
+      {
+        "args": [
+          "OVERDUE",
+          true,
+          true
+        ],
+        "expected": "food-urgent"
+      },
+      {
+        "args": [
+          "OVERDUE",
+          true,
+          false
+        ],
+        "expected": "food-urgent-sound"
+      },
+      {
+        "args": [
+          "OVERDUE",
+          false,
+          true
+        ],
+        "expected": "reminders-vibrate"
+      },
+      {
+        "args": [
+          "OVERDUE",
+          false,
+          false
+        ],
+        "expected": "reminders-silent"
+      },
+      {
+        "args": [
+          "MEAL",
+          true,
+          true
+        ],
+        "expected": "meal-reminders"
+      },
+      {
+        "args": [
+          "MEAL",
+          true,
+          false
+        ],
+        "expected": "meal-reminders"
+      },
+      {
+        "args": [
+          "MEAL",
+          false,
+          true
+        ],
+        "expected": "reminders-silent"
+      },
+      {
+        "args": [
+          "MEAL",
+          false,
+          false
+        ],
+        "expected": "reminders-silent"
+      }
+    ],
+    "alertFor": [
+      {
+        "args": [
+          "APPROACHING_EXPIRY",
+          {
+            "sound": true,
+            "vibration": true,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "APPROACHING_EXPIRY",
+          {
+            "sound": true,
+            "vibration": true,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "food-soon",
+          "sound": "gentle",
+          "vibrate": [
+            120
+          ],
+          "requireInteraction": false,
+          "silent": false
+        }
+      },
+      {
+        "args": [
+          "APPROACHING_EXPIRY",
+          {
+            "sound": true,
+            "vibration": false,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "APPROACHING_EXPIRY",
+          {
+            "sound": true,
+            "vibration": false,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "food-soon",
+          "sound": "gentle",
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": false
+        }
+      },
+      {
+        "args": [
+          "APPROACHING_EXPIRY",
+          {
+            "sound": false,
+            "vibration": true,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "APPROACHING_EXPIRY",
+          {
+            "sound": false,
+            "vibration": true,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [
+            120
+          ],
+          "requireInteraction": false,
+          "silent": false
+        }
+      },
+      {
+        "args": [
+          "APPROACHING_EXPIRY",
+          {
+            "sound": false,
+            "vibration": false,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "APPROACHING_EXPIRY",
+          {
+            "sound": false,
+            "vibration": false,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "DIGEST",
+          {
+            "sound": true,
+            "vibration": true,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "DIGEST",
+          {
+            "sound": true,
+            "vibration": true,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "food-soon",
+          "sound": "gentle",
+          "vibrate": [
+            120
+          ],
+          "requireInteraction": false,
+          "silent": false
+        }
+      },
+      {
+        "args": [
+          "DIGEST",
+          {
+            "sound": true,
+            "vibration": false,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "DIGEST",
+          {
+            "sound": true,
+            "vibration": false,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "food-soon",
+          "sound": "gentle",
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": false
+        }
+      },
+      {
+        "args": [
+          "DIGEST",
+          {
+            "sound": false,
+            "vibration": true,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "DIGEST",
+          {
+            "sound": false,
+            "vibration": true,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [
+            120
+          ],
+          "requireInteraction": false,
+          "silent": false
+        }
+      },
+      {
+        "args": [
+          "DIGEST",
+          {
+            "sound": false,
+            "vibration": false,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "DIGEST",
+          {
+            "sound": false,
+            "vibration": false,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "DUE",
+          {
+            "sound": true,
+            "vibration": true,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": true,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "DUE",
+          {
+            "sound": true,
+            "vibration": true,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "food-urgent",
+          "sound": "strong",
+          "vibrate": [
+            300,
+            120,
+            300,
+            120,
+            300
+          ],
+          "requireInteraction": true,
+          "silent": false
+        }
+      },
+      {
+        "args": [
+          "DUE",
+          {
+            "sound": true,
+            "vibration": false,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": true,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "DUE",
+          {
+            "sound": true,
+            "vibration": false,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "food-urgent-sound",
+          "sound": "strong",
+          "vibrate": [],
+          "requireInteraction": true,
+          "silent": false
+        }
+      },
+      {
+        "args": [
+          "DUE",
+          {
+            "sound": false,
+            "vibration": true,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": true,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "DUE",
+          {
+            "sound": false,
+            "vibration": true,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "reminders-vibrate",
+          "sound": null,
+          "vibrate": [
+            300,
+            120,
+            300,
+            120,
+            300
+          ],
+          "requireInteraction": true,
+          "silent": false
+        }
+      },
+      {
+        "args": [
+          "DUE",
+          {
+            "sound": false,
+            "vibration": false,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": true,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "DUE",
+          {
+            "sound": false,
+            "vibration": false,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": true,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "OVERDUE",
+          {
+            "sound": true,
+            "vibration": true,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": true,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "OVERDUE",
+          {
+            "sound": true,
+            "vibration": true,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "food-urgent",
+          "sound": "strong",
+          "vibrate": [
+            300,
+            120,
+            300,
+            120,
+            300
+          ],
+          "requireInteraction": true,
+          "silent": false
+        }
+      },
+      {
+        "args": [
+          "OVERDUE",
+          {
+            "sound": true,
+            "vibration": false,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": true,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "OVERDUE",
+          {
+            "sound": true,
+            "vibration": false,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "food-urgent-sound",
+          "sound": "strong",
+          "vibrate": [],
+          "requireInteraction": true,
+          "silent": false
+        }
+      },
+      {
+        "args": [
+          "OVERDUE",
+          {
+            "sound": false,
+            "vibration": true,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": true,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "OVERDUE",
+          {
+            "sound": false,
+            "vibration": true,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "reminders-vibrate",
+          "sound": null,
+          "vibrate": [
+            300,
+            120,
+            300,
+            120,
+            300
+          ],
+          "requireInteraction": true,
+          "silent": false
+        }
+      },
+      {
+        "args": [
+          "OVERDUE",
+          {
+            "sound": false,
+            "vibration": false,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": true,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "OVERDUE",
+          {
+            "sound": false,
+            "vibration": false,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": true,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "MEAL",
+          {
+            "sound": true,
+            "vibration": true,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "MEAL",
+          {
+            "sound": true,
+            "vibration": true,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "meal-reminders",
+          "sound": "meal",
+          "vibrate": [
+            160,
+            80,
+            160
+          ],
+          "requireInteraction": false,
+          "silent": false
+        }
+      },
+      {
+        "args": [
+          "MEAL",
+          {
+            "sound": true,
+            "vibration": false,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "MEAL",
+          {
+            "sound": true,
+            "vibration": false,
+            "quietHours": {
+              "enabled": true,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "meal-reminders",
+          "sound": "meal",
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": false
+        }
+      },
+      {
+        "args": [
+          "MEAL",
+          {
+            "sound": false,
+            "vibration": true,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "MEAL",
+          {
+            "sound": false,
+            "vibration": true,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [
+            160,
+            80,
+            160
+          ],
+          "requireInteraction": false,
+          "silent": false
+        }
+      },
+      {
+        "args": [
+          "MEAL",
+          {
+            "sound": false,
+            "vibration": false,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          true
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": true
+        }
+      },
+      {
+        "args": [
+          "MEAL",
+          {
+            "sound": false,
+            "vibration": false,
+            "quietHours": {
+              "enabled": false,
+              "start": "22:00",
+              "end": "07:00"
+            }
+          },
+          false
+        ],
+        "expected": {
+          "channel": "reminders-silent",
+          "sound": null,
+          "vibrate": [],
+          "requireInteraction": false,
+          "silent": true
+        }
+      }
+    ],
+    "mergesWithDigest": [
+      {
+        "args": [
+          "07:30",
+          7
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "07:30",
+          8
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "08:00",
+          7
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "08:01",
+          7
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "06:30",
+          7
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "06:29",
+          7
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "00:10",
+          0
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "bad",
+          7
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "23:40",
+          0
+        ],
+        "expected": false
+      }
+    ],
+    "DEFAULT_ALERTS": [
+      {
+        "args": [],
+        "expected": {
+          "sound": true,
+          "vibration": true,
+          "quietHours": {
+            "enabled": true,
+            "start": "22:00",
+            "end": "07:00"
+          }
+        }
+      }
+    ],
+    "DEFAULT_MEAL_REMINDERS": [
+      {
+        "args": [],
+        "expected": {
+          "breakfast": {
+            "enabled": false,
+            "time": "07:30"
+          },
+          "lunch": {
+            "enabled": false,
+            "time": "12:30"
+          },
+          "dinner": {
+            "enabled": false,
+            "time": "19:30"
+          }
+        }
+      }
+    ],
+    "DIGEST_MERGE_MINUTES": [
+      {
+        "args": [],
+        "expected": 30
+      }
+    ],
+    "MEAL_LABELS": [
+      {
+        "args": [],
+        "expected": {
+          "breakfast": "Breakfast",
+          "lunch": "Lunch",
+          "dinner": "Dinner"
+        }
+      }
+    ]
+  }
+}

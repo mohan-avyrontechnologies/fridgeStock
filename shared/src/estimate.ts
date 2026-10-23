@@ -1,3 +1,4 @@
+import dateOrder from '../data/date-order.json' with { type: 'json' };
 import { addDays, diffDays, isValidDate, type DateString } from './dates.js';
 import type { ExpirySource, FoodCategory, PrintedDateType, StorageLocation } from './enums.js';
 import { CATEGORY_DEFAULTS, categoryFromText, findReference, type ReferenceFood } from './foodReference.js';
@@ -185,21 +186,28 @@ const MONTH_NAMES = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'se
 
 type DayMonthOrder = 'DMY' | 'MDY';
 
-/** Whether a locale writes the day before the month ("en-GB": DMY) or after it ("en-US": MDY); null when unknown. */
+/** shared/data/date-order.json by lower-case tag. */
+const DATE_ORDERS = new Map<string, DayMonthOrder>([
+  ...dateOrder.DMY.map((tag) => [tag.toLowerCase(), 'DMY'] as const),
+  ...dateOrder.MDY.map((tag) => [tag.toLowerCase(), 'MDY'] as const),
+]);
+
+/**
+ * Whether a locale writes the day before the month ("en-GB": DMY) or after it ("en-US": MDY); null when unknown.
+ *
+ * It looks the tag up in shared/data/date-order.json rather than asking Intl: Intl's data differs between
+ * Node and browser versions, and for a language it has no data for it quietly uses the machine's own locale.
+ * The table gives the same answer everywhere, and the Python server uses it too. A tag that isn't listed is
+ * tried without its last part (en-GB-oxendict, then en-GB, then en).
+ */
 export function dayMonthOrder(locale: string | null | undefined): DayMonthOrder | null {
-  if (!locale) return null;
-  try {
-    const parts = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'numeric', year: 'numeric' }).formatToParts(
-      new Date(Date.UTC(2001, 10, 22)),
-    );
-    const types = parts.map((p) => p.type);
-    const day = types.indexOf('day');
-    const month = types.indexOf('month');
-    if (day < 0 || month < 0) return null;
-    return day < month ? 'DMY' : 'MDY';
-  } catch {
-    return null;
+  const parts = (locale ?? '').toLowerCase().split('-');
+  while (parts.length && parts[0]) {
+    const order = DATE_ORDERS.get(parts.join('-'));
+    if (order) return order;
+    parts.pop();
   }
+  return null;
 }
 
 const pad = (n: number) => String(n).padStart(2, '0');

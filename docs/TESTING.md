@@ -2,6 +2,8 @@
 
 Run everything with `npm run lint && npm run typecheck && npm test && npm run test:e2e` (see the [README](../README.md#running-the-tests)).
 
+**Shared test cases (both languages).** `shared/test-cases/*.json` holds inputs and expected outputs for the shared logic: dates, alerts, barcodes, wording, the catalog, `estimateExpiry` and printed dates, the priority engine, the server's wording and every request schema (`validation.json`). The TypeScript suites (`shared/src/testCases.test.ts`, `server/src/tests/sharedCases.test.ts`) and the Python server's pytest (`server-py/tests/test_shared_cases.py`) run every case, so the two languages can never disagree. Add a case once and both languages check it. `validation.json` is written from the zod schemas (`npm run cases:validation -w shared`); run it again on purpose after changing a schema. The Python server's own commands are in [server-py/README.md](../server-py/README.md) (`npm run test:py`, `npm run lint:py`).
+
 **Totals at v2.23.0:** shared 83, server 545, client 439 (**1,067**), plus the Playwright end-to-end suite. The per-suite counts in the table were recorded at v2.22; the v2.23 suites are listed first.
 
 | Suite (v2.23) | Tools | What it covers |

@@ -1,0 +1,1323 @@
+{
+  "description": "Calendar-date helpers (shared/src/dates.ts). `now` arguments are ISO instants.",
+  "functions": {
+    "isValidDate": [
+      {
+        "args": [
+          "2026-02-28"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "2026-02-29"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "2024-02-29"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "2100-02-29"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "2000-02-29"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "2026-04-31"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "2026-13-01"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "2026-00-10"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "2026-01-00"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "2026-1-01"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "2026-01-1"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          " 2026-01-01"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "2026-01-01 "
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "2026/01/01"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "0050-01-01"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "0099-12-31"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "0100-01-01"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "1970-01-01"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "9999-12-31"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          ""
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          20260101
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          null
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "２０２６-01-01"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "2026-01-01\n"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "2026-٠1-01"
+        ],
+        "expected": false
+      }
+    ],
+    "todayInTz": [
+      {
+        "args": [
+          "UTC",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": "2026-10-23"
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": "2026-10-23"
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": "2026-03-29"
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": "2026-03-29"
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": "2026-11-01"
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": "2026-11-01"
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": "2026-12-31"
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": "2026-01-01"
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": "2026-10-23"
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": "2026-10-23"
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": "2026-03-29"
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": "2026-03-29"
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": "2026-11-01"
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": "2026-11-01"
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": "2026-12-31"
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": "2026-01-01"
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": "2026-10-23"
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": "2026-10-24"
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": "2026-03-29"
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": "2026-03-29"
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": "2026-11-01"
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": "2026-11-01"
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": "2027-01-01"
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": "2026-01-01"
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": "2026-10-23"
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": "2026-10-23"
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": "2026-03-28"
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": "2026-03-28"
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": "2026-11-01"
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": "2026-11-01"
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": "2026-12-31"
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": "2025-12-31"
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": "2026-10-24"
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": "2026-10-24"
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": "2026-03-29"
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": "2026-03-29"
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": "2026-11-01"
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": "2026-11-01"
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": "2027-01-01"
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": "2026-01-01"
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": "2026-10-23"
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": "2026-10-23"
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": "2026-03-28"
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": "2026-03-28"
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": "2026-10-31"
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": "2026-10-31"
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": "2026-12-31"
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": "2025-12-31"
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": "2026-10-24"
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": "2026-10-24"
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": "2026-03-29"
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": "2026-03-29"
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": "2026-11-01"
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": "2026-11-01"
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": "2027-01-01"
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": "2026-01-01"
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": "2026-10-24"
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": "2026-10-24"
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": "2026-03-29"
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": "2026-03-29"
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": "2026-11-01"
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": "2026-11-01"
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": "2027-01-01"
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": "2026-01-01"
+      },
+      {
+        "args": [
+          "Not/AZone",
+          "2026-10-23T00:00:00Z"
+        ],
+        "throws": "RangeError"
+      },
+      {
+        "args": [
+          "europe/london",
+          "2026-10-23T23:30:00Z"
+        ],
+        "expected": "2026-10-24"
+      },
+      {
+        "args": [
+          "Asia/Calcutta",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": "2026-10-24"
+      },
+      {
+        "args": [
+          "US/Pacific",
+          "2026-10-24T06:59:00Z"
+        ],
+        "expected": "2026-10-23"
+      },
+      {
+        "args": [
+          "utc",
+          "2026-10-23T23:59:00Z"
+        ],
+        "expected": "2026-10-23"
+      },
+      {
+        "args": [
+          "Etc/GMT+5",
+          "2026-10-24T04:59:00Z"
+        ],
+        "expected": "2026-10-23"
+      },
+      {
+        "args": [
+          "GMT",
+          "2026-10-23T23:59:00Z"
+        ],
+        "expected": "2026-10-23"
+      },
+      {
+        "args": [
+          "",
+          "2026-10-23T00:00:00Z"
+        ],
+        "throws": "RangeError"
+      }
+    ],
+    "hourInTz": [
+      {
+        "args": [
+          "UTC",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 18
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 18
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 0
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 1
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 8
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 9
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 23
+      },
+      {
+        "args": [
+          "UTC",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 0
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 19
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 19
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 0
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 2
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 8
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 9
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 23
+      },
+      {
+        "args": [
+          "Europe/London",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 0
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 23
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 0
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 6
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 6
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 14
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 14
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 5
+      },
+      {
+        "args": [
+          "Asia/Kolkata",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 5
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 11
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 11
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 17
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 18
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 1
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 1
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 15
+      },
+      {
+        "args": [
+          "America/Los_Angeles",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 16
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 8
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 8
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 14
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 15
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 22
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 23
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 13
+      },
+      {
+        "args": [
+          "Pacific/Kiritimati",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 14
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 7
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 7
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 13
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 14
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 21
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 22
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 12
+      },
+      {
+        "args": [
+          "Pacific/Pago_Pago",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 13
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 5
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 5
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 11
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 12
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 19
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 20
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 10
+      },
+      {
+        "args": [
+          "Australia/Lord_Howe",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 11
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-10-23T18:29:59Z"
+        ],
+        "expected": 0
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-10-23T18:30:00Z"
+        ],
+        "expected": 0
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-03-29T00:59:59Z"
+        ],
+        "expected": 6
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-03-29T01:00:00Z"
+        ],
+        "expected": 6
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-11-01T08:59:59Z"
+        ],
+        "expected": 14
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-11-01T09:00:00Z"
+        ],
+        "expected": 14
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-12-31T23:59:59.999Z"
+        ],
+        "expected": 5
+      },
+      {
+        "args": [
+          "Asia/Kathmandu",
+          "2026-01-01T00:00:00Z"
+        ],
+        "expected": 5
+      },
+      {
+        "args": [
+          "Not/AZone",
+          "2026-10-23T00:00:00Z"
+        ],
+        "throws": "RangeError"
+      }
+    ],
+    "addDays": [
+      {
+        "args": [
+          "2026-01-31",
+          1
+        ],
+        "expected": "2026-02-01"
+      },
+      {
+        "args": [
+          "2026-02-28",
+          1
+        ],
+        "expected": "2026-03-01"
+      },
+      {
+        "args": [
+          "2024-02-28",
+          1
+        ],
+        "expected": "2024-02-29"
+      },
+      {
+        "args": [
+          "2026-03-01",
+          -1
+        ],
+        "expected": "2026-02-28"
+      },
+      {
+        "args": [
+          "2024-03-01",
+          -1
+        ],
+        "expected": "2024-02-29"
+      },
+      {
+        "args": [
+          "2026-12-31",
+          1
+        ],
+        "expected": "2027-01-01"
+      },
+      {
+        "args": [
+          "2026-01-01",
+          -1
+        ],
+        "expected": "2025-12-31"
+      },
+      {
+        "args": [
+          "2026-03-28",
+          1
+        ],
+        "expected": "2026-03-29"
+      },
+      {
+        "args": [
+          "2026-10-24",
+          1
+        ],
+        "expected": "2026-10-25"
+      },
+      {
+        "args": [
+          "2026-10-23",
+          0
+        ],
+        "expected": "2026-10-23"
+      },
+      {
+        "args": [
+          "2026-10-23",
+          365
+        ],
+        "expected": "2027-10-23"
+      },
+      {
+        "args": [
+          "2026-10-23",
+          -400
+        ],
+        "expected": "2025-09-18"
+      },
+      {
+        "args": [
+          "2026-10-23",
+          3650
+        ],
+        "expected": "2036-10-20"
+      },
+      {
+        "args": [
+          "2026-02-30",
+          1
+        ],
+        "throws": "RangeError"
+      },
+      {
+        "args": [
+          "bad",
+          1
+        ],
+        "throws": "RangeError"
+      }
+    ],
+    "diffDays": [
+      {
+        "args": [
+          "2026-10-23",
+          "2026-10-23"
+        ],
+        "expected": 0
+      },
+      {
+        "args": [
+          "2026-10-23",
+          "2026-10-26"
+        ],
+        "expected": 3
+      },
+      {
+        "args": [
+          "2026-10-26",
+          "2026-10-23"
+        ],
+        "expected": -3
+      },
+      {
+        "args": [
+          "2026-03-28",
+          "2026-03-30"
+        ],
+        "expected": 2
+      },
+      {
+        "args": [
+          "2026-10-24",
+          "2026-10-26"
+        ],
+        "expected": 2
+      },
+      {
+        "args": [
+          "2024-02-28",
+          "2024-03-01"
+        ],
+        "expected": 2
+      },
+      {
+        "args": [
+          "2025-12-31",
+          "2027-01-01"
+        ],
+        "expected": 366
+      },
+      {
+        "args": [
+          "2026-02-30",
+          "2026-03-01"
+        ],
+        "throws": "RangeError"
+      }
+    ],
+    "formatDisplay": [
+      {
+        "args": [
+          "2026-10-01"
+        ],
+        "expected": "Thu, 1 Oct"
+      },
+      {
+        "args": [
+          "2026-10-23"
+        ],
+        "expected": "Fri, 23 Oct"
+      },
+      {
+        "args": [
+          "2024-02-29"
+        ],
+        "expected": "Thu, 29 Feb"
+      },
+      {
+        "args": [
+          "2026-12-31"
+        ],
+        "expected": "Thu, 31 Dec"
+      },
+      {
+        "args": [
+          "2027-01-03"
+        ],
+        "expected": "Sun, 3 Jan"
+      },
+      {
+        "args": [
+          "2026-13-01"
+        ],
+        "throws": "RangeError"
+      }
+    ]
+  }
+}

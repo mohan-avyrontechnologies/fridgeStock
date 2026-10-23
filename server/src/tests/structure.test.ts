@@ -155,7 +155,9 @@ describe('scheduled jobs', () => {
   it('the reminder sweep is a node-cron job in jobs/, running every 5 minutes', () => {
     expect(imports(path.join(SRC, 'jobs/reminderJob.ts'))).toContain('node-cron');
     expect(REMINDER_SCHEDULE).toBe('*/5 * * * *');
-    expect(source(path.join(SRC, 'index.ts'))).toContain('startReminderJob');
+    // Started through the scheduler, which JOBS_ENABLED can switch off (jobs.test.ts).
+    expect(source(path.join(SRC, 'index.ts'))).toContain('startScheduledJobs(env.jobsEnabled)');
+    expect(source(path.join(SRC, 'jobs/scheduler.ts'))).toContain('startReminderJob()');
     for (const file of appFiles) expect(source(file), rel(file)).not.toMatch(/setInterval\(/);
   });
 });

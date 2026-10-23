@@ -1,0 +1,1605 @@
+{
+  "description": "Automatic expected expiry and reading printed dates (shared/src/estimate.ts).",
+  "functions": {
+    "estimateExpiry": [
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            }
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-28",
+          "source": "CATALOG",
+          "explanation": "Catalog: milk lasts about 5 days in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "milk"
+            },
+            "usageHistory": [
+              {
+                "name": "Milk",
+                "storage": "FRIDGE",
+                "days": 3,
+                "samples": 4
+              },
+              {
+                "name": "Chicken",
+                "storage": "FRIDGE",
+                "days": 5,
+                "samples": 2
+              },
+              {
+                "name": "Mystery jam",
+                "storage": "PANTRY",
+                "days": 40,
+                "samples": 3
+              }
+            ]
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-26",
+          "source": "LEARNED",
+          "explanation": "Your milk usually lasts 3 days in the fridge, so that is the expected expiry."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Chicken"
+            },
+            "usageHistory": [
+              {
+                "name": "Milk",
+                "storage": "FRIDGE",
+                "days": 3,
+                "samples": 4
+              },
+              {
+                "name": "Chicken",
+                "storage": "FRIDGE",
+                "days": 5,
+                "samples": 2
+              },
+              {
+                "name": "Mystery jam",
+                "storage": "PANTRY",
+                "days": 40,
+                "samples": 3
+              }
+            ]
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-25",
+          "source": "CATALOG",
+          "explanation": "Catalog: chicken lasts about 2 days in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "printedDate": "2026-10-25",
+            "printedDateType": "USE_BY"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-25",
+          "source": "PRINTED_DATE",
+          "explanation": "The expected expiry is the date printed on the pack (a use-by date)."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "printedDate": "2026-11-25",
+            "printedDateType": "BEST_BEFORE"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-28",
+          "source": "CATALOG",
+          "explanation": "Catalog: milk lasts about 5 days in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "printedDate": "2026-10-28"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-28",
+          "source": "PRINTED_DATE",
+          "explanation": "The expected expiry is the date printed on the pack (a date)."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "printedDate": "2026-10-28",
+            "printedDateType": "EXPIRY"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-28",
+          "source": "PRINTED_DATE",
+          "explanation": "The expected expiry is the date printed on the pack (an expiry date)."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "printedDate": "2026-10-25",
+            "printedDateType": "UNKNOWN"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-25",
+          "source": "PRINTED_DATE",
+          "explanation": "The expected expiry is the date printed on the pack (a date)."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "printedDate": "2030-01-01",
+            "printedDateType": "USE_BY"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-28",
+          "source": "CATALOG",
+          "explanation": "Catalog: milk lasts about 5 days in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "printedDate": "2026-09-01",
+            "printedDateType": "USE_BY"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-28",
+          "source": "CATALOG",
+          "explanation": "Catalog: milk lasts about 5 days in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "printedDate": "2026-09-23",
+            "printedDateType": "USE_BY"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-09-23",
+          "source": "PRINTED_DATE",
+          "explanation": "The expected expiry is the date printed on the pack (a use-by date)."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "printedDate": "2026-09-22",
+            "printedDateType": "USE_BY"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-28",
+          "source": "CATALOG",
+          "explanation": "Catalog: milk lasts about 5 days in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "printedDate": "2026-02-30",
+            "printedDateType": "USE_BY"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-28",
+          "source": "CATALOG",
+          "explanation": "Catalog: milk lasts about 5 days in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "printedDate": "2026-10-28",
+            "today": "2026-11-30"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-28",
+          "source": "CATALOG",
+          "explanation": "Catalog: milk lasts about 5 days in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "printedDate": "2026-10-28",
+            "printedDateType": "USE_BY"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-28",
+          "source": "PRINTED_DATE",
+          "explanation": "The expected expiry is the date printed on the pack (a use-by date)."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "openedDate": "2026-10-24"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-28",
+          "source": "CATALOG",
+          "explanation": "Catalog: milk lasts about 5 days in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "openedDate": "2026-10-23"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-27",
+          "source": "CATALOG",
+          "explanation": "Catalog: milk lasts about 4 days once opened."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Hard cheese"
+            },
+            "openedDate": "2026-10-30"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-11-13",
+          "source": "CATALOG",
+          "explanation": "Catalog: hard cheese lasts about 21 days in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Eggs"
+            },
+            "openedDate": "2026-10-24"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-11-13",
+          "source": "CATALOG",
+          "explanation": "Catalog: eggs lasts about 21 days in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FREEZER",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Chicken"
+            }
+          }
+        ],
+        "expected": {
+          "expiryDate": "2027-07-20",
+          "source": "CATALOG",
+          "explanation": "Catalog: chicken lasts about 270 days in the freezer."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "PANTRY",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Chicken"
+            }
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-26",
+          "source": "FALLBACK",
+          "explanation": "Rough estimate: no matching information, so the expected expiry is 3 days after adding."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "PANTRY",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Potatoes"
+            }
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-11-13",
+          "source": "CATALOG",
+          "explanation": "Catalog: potatoes lasts about 21 days in the pantry."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Potatoes"
+            }
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-30",
+          "source": "CATEGORY_DEFAULT",
+          "explanation": "No exact match, so the expected expiry uses the usual 7 days for this kind of food in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Kimchi"
+            }
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-26",
+          "source": "FALLBACK",
+          "explanation": "Rough estimate: no matching information, so the expected expiry is 3 days after adding."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Kimchi"
+            },
+            "category": "DAIRY_EGGS"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-30",
+          "source": "CATEGORY_DEFAULT",
+          "explanation": "No exact match, so the expected expiry uses the usual 7 days for this kind of food in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Kimchi"
+            },
+            "category": "fermented vegetables"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-30",
+          "source": "CATEGORY_DEFAULT",
+          "explanation": "No exact match, so the expected expiry uses the usual 7 days for this kind of food in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Kimchi"
+            },
+            "category": "pickles"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-26",
+          "source": "FALLBACK",
+          "explanation": "Rough estimate: no matching information, so the expected expiry is 3 days after adding."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "PANTRY",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Steak pie"
+            },
+            "category": "MEAT_FISH"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-26",
+          "source": "FALLBACK",
+          "explanation": "Rough estimate: no matching information, so the expected expiry is 3 days after adding."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Kimchi"
+            },
+            "category": null
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-26",
+          "source": "FALLBACK",
+          "explanation": "Rough estimate: no matching information, so the expected expiry is 3 days after adding."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Kimchi"
+            },
+            "category": ""
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-26",
+          "source": "FALLBACK",
+          "explanation": "Rough estimate: no matching information, so the expected expiry is 3 days after adding."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "PANTRY",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Mystery jam"
+            },
+            "usageHistory": [
+              {
+                "name": "Milk",
+                "storage": "FRIDGE",
+                "days": 3,
+                "samples": 4
+              },
+              {
+                "name": "Chicken",
+                "storage": "FRIDGE",
+                "days": 5,
+                "samples": 2
+              },
+              {
+                "name": "Mystery jam",
+                "storage": "PANTRY",
+                "days": 40,
+                "samples": 3
+              }
+            ]
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-12-02",
+          "source": "LEARNED",
+          "explanation": "Your mystery jam usually lasts 40 days in the pantry, so that is the expected expiry."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "catalogMatch": null
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-26",
+          "source": "FALLBACK",
+          "explanation": "Rough estimate: no matching information, so the expected expiry is 3 days after adding."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "catalogMatch": null,
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-30",
+          "source": "CATEGORY_DEFAULT",
+          "explanation": "No exact match, so the expected expiry uses the usual 7 days for this kind of food in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Mystery"
+            },
+            "catalogMatch": {
+              "name": "Butter",
+              "unit": "g",
+              "category": "DAIRY_EGGS",
+              "lifespanDays": {
+                "FRIDGE": 30,
+                "FREEZER": 180,
+                "PANTRY": null
+              },
+              "openedDays": 30
+            }
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-11-22",
+          "source": "CATALOG",
+          "explanation": "Catalog: mystery lasts about 30 days in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FREEZER",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Chicken"
+            },
+            "printedDate": "2028-10-01"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2027-07-20",
+          "source": "CATALOG",
+          "explanation": "Catalog: chicken lasts about 270 days in the freezer."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FREEZER",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Butter"
+            },
+            "printedDate": "2027-12-31",
+            "today": "2026-10-23"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2027-04-21",
+          "source": "CATALOG",
+          "explanation": "Catalog: butter lasts about 180 days in the freezer."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "usageHistory": [
+              {
+                "name": "Milk",
+                "storage": "FRIDGE",
+                "days": 5,
+                "samples": 2
+              }
+            ]
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-28",
+          "source": "CATALOG",
+          "explanation": "Catalog: milk lasts about 5 days in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "usageHistory": [
+              {
+                "name": "Milk",
+                "storage": "FREEZER",
+                "days": 1,
+                "samples": 2
+              }
+            ]
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-28",
+          "source": "CATALOG",
+          "explanation": "Catalog: milk lasts about 5 days in the fridge."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "printedDate": "2026-10-26",
+            "printedDateType": "USE_BY",
+            "usageHistory": [
+              {
+                "name": "Milk",
+                "storage": "FRIDGE",
+                "days": 3,
+                "samples": 2
+              }
+            ]
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-26",
+          "source": "PRINTED_DATE",
+          "explanation": "The expected expiry is the date printed on the pack (a use-by date)."
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "PANTRY",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Bread"
+            },
+            "openedDate": "2026-10-23"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-27",
+          "source": "CATALOG",
+          "explanation": "Catalog: bread lasts about 4 days in the pantry."
+        }
+      }
+    ],
+    "recalculateExpiry": [
+      {
+        "args": [
+          "2026-10-28",
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            }
+          }
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "2026-10-27",
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            }
+          }
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "2026-10-29",
+          {
+            "storage": "FRIDGE",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            },
+            "openedDate": "2026-10-23"
+          }
+        ],
+        "expected": {
+          "expiryDate": "2026-10-27",
+          "source": "CATALOG",
+          "explanation": "Catalog: milk lasts about 4 days once opened."
+        }
+      },
+      {
+        "args": [
+          "2026-11-20",
+          {
+            "storage": "FREEZER",
+            "addedDate": "2026-10-23",
+            "product": {
+              "name": "Milk"
+            }
+          }
+        ],
+        "expected": null
+      }
+    ],
+    "lifespanFor": [
+      {
+        "args": [
+          "2026-10-23",
+          "2026-10-28"
+        ],
+        "expected": 5
+      },
+      {
+        "args": [
+          "2026-10-23",
+          "2026-10-20"
+        ],
+        "expected": 0
+      },
+      {
+        "args": [
+          "2026-10-23",
+          "2026-10-23"
+        ],
+        "expected": 0
+      },
+      {
+        "args": [
+          "2026-10-23",
+          "2028-10-23"
+        ],
+        "expected": 365
+      }
+    ],
+    "isUsablePrintedDate": [
+      {
+        "args": [
+          "2026-10-23",
+          "2026-10-23"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "2028-10-22",
+          "2026-10-23"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "2028-10-23",
+          "2026-10-23"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "2028-10-24",
+          "2026-10-23"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "2026-09-23",
+          "2026-10-23"
+        ],
+        "expected": true
+      },
+      {
+        "args": [
+          "2026-09-22",
+          "2026-10-23"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "2026-02-30",
+          "2026-10-23"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          null,
+          "2026-10-23"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          "2026-10-23",
+          "bad"
+        ],
+        "expected": false
+      },
+      {
+        "args": [
+          20261023,
+          "2026-10-23"
+        ],
+        "expected": false
+      }
+    ],
+    "parsePrintedDate": [
+      {
+        "args": [
+          "2026-11-05"
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          "2026/11/5"
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          "2026.11.05"
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          "2026-02-30"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "5 NOV 2026"
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          "05-nov-26"
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          "5nov26"
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          "5 November 2026"
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          "5 Sept 2026"
+        ],
+        "expected": "2026-09-05"
+      },
+      {
+        "args": [
+          "5 Sep. 2026"
+        ],
+        "expected": "2026-09-05"
+      },
+      {
+        "args": [
+          "5 Novem 2026"
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          "5 Nov 26"
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          "31 feb 2026"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "nov 5 2026"
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          "November 5, 2026"
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          "Nov 5th 2026"
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          "nov 2026"
+        ],
+        "expected": "2026-11-30"
+      },
+      {
+        "args": [
+          "NOV 26"
+        ],
+        "expected": "2026-11-30"
+      },
+      {
+        "args": [
+          "feb 2024"
+        ],
+        "expected": "2024-02-29"
+      },
+      {
+        "args": [
+          "abc 2026"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "11/2026"
+        ],
+        "expected": "2026-11-30"
+      },
+      {
+        "args": [
+          "13/2026"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "02/2024"
+        ],
+        "expected": "2024-02-29"
+      },
+      {
+        "args": [
+          "12/11/26",
+          "en-GB"
+        ],
+        "expected": "2026-11-12"
+      },
+      {
+        "args": [
+          "12/11/26",
+          "en-US"
+        ],
+        "expected": "2026-12-11"
+      },
+      {
+        "args": [
+          "12/11/26"
+        ],
+        "expected": "2026-11-12"
+      },
+      {
+        "args": [
+          "12/11/26",
+          "xx"
+        ],
+        "expected": "2026-11-12"
+      },
+      {
+        "args": [
+          "13/05/26"
+        ],
+        "expected": "2026-05-13"
+      },
+      {
+        "args": [
+          "13/05/26",
+          "en-US"
+        ],
+        "expected": "2026-05-13"
+      },
+      {
+        "args": [
+          "05/13/26",
+          "en-GB"
+        ],
+        "expected": "2026-05-13"
+      },
+      {
+        "args": [
+          "05.11.2026",
+          "de-DE"
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          "05-11-26",
+          "en-US"
+        ],
+        "expected": "2026-05-11"
+      },
+      {
+        "args": [
+          "11/11/26"
+        ],
+        "expected": "2026-11-11"
+      },
+      {
+        "args": [
+          "31/02/26"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "1/2/2026",
+          "en-CA"
+        ],
+        "expected": "2026-01-02"
+      },
+      {
+        "args": [
+          "1/2/2026",
+          "ja-JP"
+        ],
+        "expected": "2026-01-02"
+      },
+      {
+        "args": [
+          "1/2/2026",
+          "fr-FR"
+        ],
+        "expected": "2026-02-01"
+      },
+      {
+        "args": [
+          "1/2/2026",
+          "en-IN"
+        ],
+        "expected": "2026-02-01"
+      },
+      {
+        "args": [
+          "  2026-11-05  "
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          ""
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          null
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "use by 5 nov 2026"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "05/11"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "2026"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "5/11/2026",
+          "not a locale!"
+        ],
+        "expected": "2026-05-11"
+      },
+      {
+        "args": [
+          "2026-11-05\n"
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          " 5 nov 2026 "
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          "５ nov 2026"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "5 ｎov 2026"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "5 nov 2026"
+        ],
+        "expected": "2026-11-05"
+      },
+      {
+        "args": [
+          "12/11/26",
+          "EN-us"
+        ],
+        "expected": "2026-12-11"
+      },
+      {
+        "args": [
+          "12/11/26",
+          "en_GB"
+        ],
+        "expected": "2026-11-12"
+      },
+      {
+        "args": [
+          "3/4/2026",
+          "en-CA"
+        ],
+        "expected": "2026-03-04"
+      },
+      {
+        "args": [
+          "3/4/2026",
+          "sv-FI"
+        ],
+        "expected": "2026-04-03"
+      },
+      {
+        "args": [
+          "3/4/2026",
+          "zh-TW"
+        ],
+        "expected": "2026-03-04"
+      }
+    ],
+    "dayMonthOrder": [
+      {
+        "args": [
+          "en-GB"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "en-US"
+        ],
+        "expected": "MDY"
+      },
+      {
+        "args": [
+          "en-IN"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "en-CA"
+        ],
+        "expected": "MDY"
+      },
+      {
+        "args": [
+          "en-AU"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "fr-FR"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "de-DE"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "ja-JP"
+        ],
+        "expected": "MDY"
+      },
+      {
+        "args": [
+          "zh-CN"
+        ],
+        "expected": "MDY"
+      },
+      {
+        "args": [
+          "ko-KR"
+        ],
+        "expected": "MDY"
+      },
+      {
+        "args": [
+          "hu-HU"
+        ],
+        "expected": "MDY"
+      },
+      {
+        "args": [
+          "nl-NL"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "es-MX"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "en"
+        ],
+        "expected": "MDY"
+      },
+      {
+        "args": [
+          "fr"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          ""
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          null
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "not a locale!"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "en-GB-oxendict"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "xx"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "zz-ZZ"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "en-XX"
+        ],
+        "expected": "MDY"
+      },
+      {
+        "args": [
+          "fr-XX"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "sr-Latn-RS"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "ar-EG"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "fa-IR"
+        ],
+        "expected": "MDY"
+      },
+      {
+        "args": [
+          "en-150"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "es-419"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "i-klingon"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "EN-gb"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "zh-TW"
+        ],
+        "expected": "MDY"
+      },
+      {
+        "args": [
+          "sr-RS"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "en-US-u-ca-buddhist"
+        ],
+        "expected": "MDY"
+      },
+      {
+        "args": [
+          "sv-FI"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "pt-BR"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "en-NZ"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "es-US"
+        ],
+        "expected": "DMY"
+      },
+      {
+        "args": [
+          "-en"
+        ],
+        "expected": null
+      },
+      {
+        "args": [
+          "en-"
+        ],
+        "expected": "MDY"
+      },
+      {
+        "args": [
+          "EN"
+        ],
+        "expected": "MDY"
+      }
+    ],
+    "expirySourceLabel": [
+      {
+        "args": [
+          "PRINTED_DATE"
+        ],
+        "expected": "Printed date"
+      },
+      {
+        "args": [
+          "LEARNED"
+        ],
+        "expected": "Your usual"
+      },
+      {
+        "args": [
+          "CATALOG"
+        ],
+        "expected": "Catalog"
+      },
+      {
+        "args": [
+          "CATEGORY_DEFAULT"
+        ],
+        "expected": "Category"
+      },
+      {
+        "args": [
+          "FALLBACK"
+        ],
+        "expected": "Rough estimate"
+      },
+      {
+        "args": [
+          "USER"
+        ],
+        "expected": "You set this"
+      }
+    ],
+    "EXPIRY_SOURCE_LABELS": [
+      {
+        "args": [],
+        "expected": {
+          "PRINTED_DATE": "Printed date",
+          "LEARNED": "Your usual",
+          "CATALOG": "Catalog",
+          "CATEGORY_DEFAULT": "Category",
+          "FALLBACK": "Rough estimate",
+          "USER": "You set this"
+        }
+      }
+    ],
+    "FALLBACK_LIFESPAN_DAYS": [
+      {
+        "args": [],
+        "expected": 3
+      }
+    ],
+    "MAX_LIFESPAN_DAYS": [
+      {
+        "args": [],
+        "expected": 365
+      }
+    ],
+    "USER_EXPLANATION": [
+      {
+        "args": [],
+        "expected": "You set this expected expiry."
+      }
+    ]
+  }
+}

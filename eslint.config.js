@@ -11,6 +11,7 @@ export default tseslint.config(
       'e2e/.results/**',
       '**/.data/**',
       '**/.test-db-*/**',
+      '**/.venv/**',
       '.tmp/**',
       'client/android/**',
       'client/ios/**',
@@ -26,7 +27,14 @@ export default tseslint.config(
     },
   },
   {
-    files: ['server/**/*.ts', 'shared/**/*.ts', 'e2e/**/*.ts', '*.config.{js,ts}', '*/*.config.ts'],
+    files: [
+      'server/**/*.ts',
+      'shared/**/*.ts',
+      'e2e/**/*.ts',
+      'server-py/scripts/*.mjs',
+      '*.config.{js,ts}',
+      '*/*.config.ts',
+    ],
     languageOptions: { globals: globals.node },
   },
   {

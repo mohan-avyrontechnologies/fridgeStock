@@ -12,7 +12,9 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "types": ["vite/client", "node", "@testing-library/jest-dom"],
-    "customConditions": ["source"]
+    "customConditions": ["source"],
+    // @cook-first/shared reads its data from JSON files (shared/data).
+    "resolveJsonModule": true
   },
   "include": ["src", "vite.config.ts"]
 }

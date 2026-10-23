@@ -1,0 +1,369 @@
+{
+  "description": "The priority engine (server/src/services/priorityEngine.ts). APPROACHING_EXPIRY_DAYS is 3.",
+  "functions": {
+    "classifyUrgency": [
+      {
+        "args": [
+          -30
+        ],
+        "expected": "OVERDUE"
+      },
+      {
+        "args": [
+          -1
+        ],
+        "expected": "OVERDUE"
+      },
+      {
+        "args": [
+          0
+        ],
+        "expected": "DUE"
+      },
+      {
+        "args": [
+          1
+        ],
+        "expected": "APPROACHING_EXPIRY"
+      },
+      {
+        "args": [
+          2
+        ],
+        "expected": "APPROACHING_EXPIRY"
+      },
+      {
+        "args": [
+          3
+        ],
+        "expected": "APPROACHING_EXPIRY"
+      },
+      {
+        "args": [
+          4
+        ],
+        "expected": "NOT_URGENT"
+      },
+      {
+        "args": [
+          365
+        ],
+        "expected": "NOT_URGENT"
+      }
+    ],
+    "prioritise": [
+      {
+        "args": [
+          [],
+          "2026-10-23"
+        ],
+        "expected": {
+          "items": [],
+          "cookFirst": [],
+          "summary": {
+            "NOT_URGENT": 0,
+            "APPROACHING_EXPIRY": 0,
+            "DUE": 0,
+            "OVERDUE": 0,
+            "total": 0
+          }
+        }
+      },
+      {
+        "args": [
+          [
+            {
+              "id": "c",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-30"
+            },
+            {
+              "id": "a",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-23"
+            },
+            {
+              "id": "b",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-22"
+            },
+            {
+              "id": "d",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-26"
+            },
+            {
+              "id": "e",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-27"
+            },
+            {
+              "id": "f",
+              "status": "USED",
+              "addedDate": "2026-10-01",
+              "expiryDate": "2026-10-20"
+            },
+            {
+              "id": "g",
+              "status": "WASTED",
+              "addedDate": "2026-10-01",
+              "expiryDate": "2026-10-24"
+            },
+            {
+              "id": "h",
+              "status": "REMOVED",
+              "addedDate": "2026-10-01",
+              "expiryDate": "2026-10-24"
+            }
+          ],
+          "2026-10-23"
+        ],
+        "expected": {
+          "items": [
+            {
+              "id": "b",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-22",
+              "remainingDays": -1,
+              "urgency": "OVERDUE"
+            },
+            {
+              "id": "a",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-23",
+              "remainingDays": 0,
+              "urgency": "DUE"
+            },
+            {
+              "id": "d",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-26",
+              "remainingDays": 3,
+              "urgency": "APPROACHING_EXPIRY"
+            },
+            {
+              "id": "e",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-27",
+              "remainingDays": 4,
+              "urgency": "NOT_URGENT"
+            },
+            {
+              "id": "c",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-30",
+              "remainingDays": 7,
+              "urgency": "NOT_URGENT"
+            }
+          ],
+          "cookFirst": [
+            {
+              "id": "b",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-22",
+              "remainingDays": -1,
+              "urgency": "OVERDUE"
+            },
+            {
+              "id": "a",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-23",
+              "remainingDays": 0,
+              "urgency": "DUE"
+            },
+            {
+              "id": "d",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-26",
+              "remainingDays": 3,
+              "urgency": "APPROACHING_EXPIRY"
+            }
+          ],
+          "summary": {
+            "NOT_URGENT": 2,
+            "APPROACHING_EXPIRY": 1,
+            "DUE": 1,
+            "OVERDUE": 1,
+            "total": 5
+          }
+        }
+      },
+      {
+        "args": [
+          [
+            {
+              "id": "z",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-21",
+              "expiryDate": "2026-10-25"
+            },
+            {
+              "id": "y",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-25"
+            },
+            {
+              "id": "x",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-25"
+            },
+            {
+              "id": "B",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-25"
+            },
+            {
+              "id": "a",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-25"
+            }
+          ],
+          "2026-10-23"
+        ],
+        "expected": {
+          "items": [
+            {
+              "id": "B",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-25",
+              "remainingDays": 2,
+              "urgency": "APPROACHING_EXPIRY"
+            },
+            {
+              "id": "a",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-25",
+              "remainingDays": 2,
+              "urgency": "APPROACHING_EXPIRY"
+            },
+            {
+              "id": "x",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-25",
+              "remainingDays": 2,
+              "urgency": "APPROACHING_EXPIRY"
+            },
+            {
+              "id": "y",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-25",
+              "remainingDays": 2,
+              "urgency": "APPROACHING_EXPIRY"
+            },
+            {
+              "id": "z",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-21",
+              "expiryDate": "2026-10-25",
+              "remainingDays": 2,
+              "urgency": "APPROACHING_EXPIRY"
+            }
+          ],
+          "cookFirst": [
+            {
+              "id": "B",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-25",
+              "remainingDays": 2,
+              "urgency": "APPROACHING_EXPIRY"
+            },
+            {
+              "id": "a",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-25",
+              "remainingDays": 2,
+              "urgency": "APPROACHING_EXPIRY"
+            },
+            {
+              "id": "x",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-25",
+              "remainingDays": 2,
+              "urgency": "APPROACHING_EXPIRY"
+            },
+            {
+              "id": "y",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2026-10-25",
+              "remainingDays": 2,
+              "urgency": "APPROACHING_EXPIRY"
+            },
+            {
+              "id": "z",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-21",
+              "expiryDate": "2026-10-25",
+              "remainingDays": 2,
+              "urgency": "APPROACHING_EXPIRY"
+            }
+          ],
+          "summary": {
+            "NOT_URGENT": 0,
+            "APPROACHING_EXPIRY": 5,
+            "DUE": 0,
+            "OVERDUE": 0,
+            "total": 5
+          }
+        }
+      },
+      {
+        "args": [
+          [
+            {
+              "id": "p",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2027-02-01"
+            }
+          ],
+          "2026-12-31"
+        ],
+        "expected": {
+          "items": [
+            {
+              "id": "p",
+              "status": "ACTIVE",
+              "addedDate": "2026-10-20",
+              "expiryDate": "2027-02-01",
+              "remainingDays": 32,
+              "urgency": "NOT_URGENT"
+            }
+          ],
+          "cookFirst": [],
+          "summary": {
+            "NOT_URGENT": 1,
+            "APPROACHING_EXPIRY": 0,
+            "DUE": 0,
+            "OVERDUE": 0,
+            "total": 1
+          }
+        }
+      }
+    ]
+  }
+}

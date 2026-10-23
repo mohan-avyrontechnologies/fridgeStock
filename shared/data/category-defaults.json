@@ -1,0 +1,70 @@
+{
+  "description": "Default lifespans in days for a whole category of food, per storage location (null = not usually kept there), used only for a product the catalog has no entry of its own for. categoryWords (lower case) tell a free-text category which category it means; the first category with a matching word wins.",
+  "defaults": {
+    "MEAT_FISH": {
+      "FRIDGE": 2,
+      "FREEZER": 180,
+      "PANTRY": null
+    },
+    "DAIRY_EGGS": {
+      "FRIDGE": 7,
+      "FREEZER": 90,
+      "PANTRY": null
+    },
+    "VEGETABLES": {
+      "FRIDGE": 7,
+      "FREEZER": 240,
+      "PANTRY": 5
+    },
+    "FRUIT": {
+      "FRIDGE": 7,
+      "FREEZER": 240,
+      "PANTRY": 5
+    },
+    "BAKERY": {
+      "FRIDGE": 7,
+      "FREEZER": 90,
+      "PANTRY": 4
+    },
+    "COOKED": {
+      "FRIDGE": 3,
+      "FREEZER": 60,
+      "PANTRY": null
+    },
+    "CHILLED_PACKAGED": {
+      "FRIDGE": 5,
+      "FREEZER": 90,
+      "PANTRY": null
+    }
+  },
+  "categoryWords": [
+    {
+      "category": "COOKED",
+      "words": ["cooked", "leftover", "ready meal", "soup", "curry", "prepared"]
+    },
+    {
+      "category": "MEAT_FISH",
+      "words": ["meat", "fish", "poultry", "seafood", "chicken", "beef", "pork", "lamb", "shellfish"]
+    },
+    {
+      "category": "DAIRY_EGGS",
+      "words": ["dairy", "egg", "milk", "cheese", "yoghurt", "yogurt", "butter", "cream", "tofu"]
+    },
+    {
+      "category": "VEGETABLES",
+      "words": ["vegetable", "veg", "salad", "herb", "greens"]
+    },
+    {
+      "category": "FRUIT",
+      "words": ["fruit", "berry", "berries"]
+    },
+    {
+      "category": "BAKERY",
+      "words": ["bread", "bakery", "baked", "grain", "tortilla", "wrap"]
+    },
+    {
+      "category": "CHILLED_PACKAGED",
+      "words": ["chilled", "packaged", "drink", "juice", "dip", "sauce", "deli"]
+    }
+  ]
+}

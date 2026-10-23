@@ -23,6 +23,10 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
+      # Runs the reminder sweep and photo clean-up. Exactly one server sharing the database may have it on
+      # (docs/PYTHON_MIGRATION.md says which, at each stage of the switch to the Python server).
+      - key: JOBS_ENABLED
+        value: 'true'
       - key: MONGO_URI
         sync: false
       - key: CLIENT_ORIGIN

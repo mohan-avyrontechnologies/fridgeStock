@@ -1,15 +1,13 @@
 import { createApp } from './app.js';
 import { connectDatabase } from './config/db.js';
 import { aiStartupWarnings, env } from './config/env.js';
-import { startPhotoJob } from './jobs/photoJob.js';
-import { startReminderJob } from './jobs/reminderJob.js';
+import { startScheduledJobs } from './jobs/scheduler.js';
 
 async function main() {
   for (const warning of aiStartupWarnings(env.ai, env.isProduction)) console.warn(`WARNING: ${warning}`);
   await connectDatabase();
   createApp().listen(env.port, () => console.log(`API listening on http://localhost:${env.port}/api`));
-  startReminderJob();
-  startPhotoJob();
+  startScheduledJobs(env.jobsEnabled);
 }
 
 main().catch((err) => {
