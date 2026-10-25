@@ -8,16 +8,35 @@ shared/test-cases/validation.json records. Each phase adds the schemas its route
 from collections.abc import Callable
 from typing import Any
 
+from server_py.schemas.auth import LoginInput, RegisterInput, UpdateAccountInput
+from server_py.schemas.base import RequestModel
+from server_py.schemas.zod import ZodIssue
+
 ValidationAnswer = dict[str, Any]
 """{"valid": True, "data": ...} or {"valid": False, "message": ..., "field": ...}."""
 
-SCHEMAS: dict[str, Callable[[Any], ValidationAnswer]] = {}
+
+def answer(model: type[RequestModel]) -> Callable[[Any], ValidationAnswer]:
+    def check(value: Any) -> ValidationAnswer:
+        try:
+            return {"valid": True, "data": model.parse_input(value).data()}
+        except ZodIssue as issue:
+            return {"valid": False, "message": issue.message, "field": issue.field}
+
+    return check
+
+
+SCHEMAS: dict[str, Callable[[Any], ValidationAnswer]] = {
+    "registerSchema": answer(RegisterInput),
+    "loginSchema": answer(LoginInput),
+    "updateAccountSchema": answer(UpdateAccountInput),
+}
 
 # Not ported yet. A phase may not finish while one of its routes' schemas is still listed here.
 PENDING: frozenset[str] = frozenset(
     {
-        "registerSchema", "loginSchema", "deleteAccountSchema", "joinHouseholdSchema", "inviteCodeParamSchema",
-        "updateAccountSchema", "createFoodSchema", "updateFoodSchema", "receiptSchema", "barcodeSchema",
+        "deleteAccountSchema", "joinHouseholdSchema", "inviteCodeParamSchema",
+        "createFoodSchema", "updateFoodSchema", "receiptSchema", "barcodeSchema",
         "bulkCreateSchema", "favouriteSchema", "openFoodSchema", "moveFoodSchema", "useFoodSchema",
         "wasteFoodSchema", "preferencesSchema", "deliverySchema", "pushSubscriptionSchema", "pushUnsubscribeSchema",
         "pushActionSchema", "alertSettingsSchema", "mealRemindersSchema", "recipesRequestSchema", "mealParamSchema",

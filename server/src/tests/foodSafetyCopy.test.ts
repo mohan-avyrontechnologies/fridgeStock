@@ -20,6 +20,7 @@ const COPY_FILES = [
   // The sentences themselves, read by the copy files above and by the Python server.
   path.resolve('../shared/data/messages.json'),
   path.resolve('../shared/data/estimate-copy.json'),
+  path.resolve('../shared/data/validation-messages.json'),
 ];
 
 /** The banned phrases are defined once, in shared/data/banned-phrases.json (read by shared/src/wording.ts). */
@@ -54,6 +55,7 @@ describe('food-safety wording', () => {
       'estimate-copy.json',
       'food-reference.json',
       'messages.json',
+      'validation-messages.json',
     ]);
   });
 

@@ -5,13 +5,21 @@ description = "The Cook First API in Python: a drop-in replacement for server/ (
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "bcrypt>=5.0.0",
+    "brotli>=1.2.1",
+    "fastapi>=0.162.0",
+    "pymongo>=4.19.0",
+    "python-dotenv>=1.2.4",
     "tzdata>=2026.5",
+    "uvicorn>=0.54.0",
 ]
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "pyright>=1.1.414",
     "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
     "ruff>=0.17.2",
 ]
 
@@ -37,3 +45,11 @@ venv = ".venv"
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-ra --strict-markers"
+asyncio_mode = "auto"
+# One event loop for the whole run: the database connection belongs to the loop it was opened on.
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
+# One group per migration phase, so a PC short of memory can run one at a time (pytest -m phase1).
+markers = [
+    "phase1: config, database, HTTP behaviour, auth and the config routes",
+]

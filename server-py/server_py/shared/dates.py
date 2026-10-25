@@ -5,9 +5,9 @@ daylight-saving changes and the host machine's time zone can never shift a day.
 """
 
 import re
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta, timezone, tzinfo
 from functools import cache
-from zoneinfo import ZoneInfo, ZoneInfoNotFoundError, available_timezones
+from zoneinfo import ZoneInfo, available_timezones
 
 DateString = str
 """A calendar date in "YYYY-MM-DD" form."""
@@ -47,21 +47,28 @@ def is_valid_date(value: object) -> bool:
     return isinstance(value, str) and _parse(value) is not None
 
 
+# A UTC offset such as "+05:30", "+0530" or "+05", which Intl also takes as a time zone (and so the TypeScript
+# server stores, if that is what a device reports). The minus may be U+2212 as well as a hyphen.
+_OFFSET = re.compile("([+" + chr(0x2212) + "-])([01][0-9]|2[0-3])(?::?([0-5][0-9]))?")
+
+
 @cache
 def _zones_by_lower_name() -> dict[str, str]:
-    return {name.lower(): name for name in available_timezones()}
+    # "Factory" is in the tz database but Intl refuses it.
+    return {name.lower(): name for name in available_timezones() if name != "Factory"}
 
 
 @cache
-def zone(time_zone: str) -> ZoneInfo:
-    """An IANA time zone, matched without regard to case as Intl does. RangeError if there is none."""
-    try:
-        return ZoneInfo(time_zone)
-    except (ZoneInfoNotFoundError, ValueError):
-        name = _zones_by_lower_name().get(time_zone.lower())
-        if name is None:
-            raise RangeError(f"Invalid time zone specified: {time_zone}") from None
-        return ZoneInfo(name)
+def zone(time_zone: str) -> tzinfo:
+    """An IANA time zone or a UTC offset, matched without regard to case as Intl does. RangeError if Intl would
+    refuse it."""
+    if offset := _OFFSET.fullmatch(time_zone):
+        sign = 1 if offset[1] == "+" else -1
+        return timezone(sign * timedelta(hours=int(offset[2]), minutes=int(offset[3] or 0)))
+    name = _zones_by_lower_name().get(time_zone.lower())
+    if name is None:
+        raise RangeError(f"Invalid time zone specified: {time_zone}")
+    return ZoneInfo(name)
 
 
 def _local(time_zone: str, now: datetime | None) -> datetime:

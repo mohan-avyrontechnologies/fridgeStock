@@ -192,6 +192,59 @@
       {
         "args": [
           {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "email": "Sam@Example.com",
+            "password": "password1",
+            "timeZone": "Europe/London"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "email": "sam@example.com",
+            "password": "password1",
+            "timeZone": "Europe/London"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "email": "Sam@Example.com",
+            "password": "password1",
+            "timeZone": "Europe/London"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "email": "sam@example.com",
+            "password": "password1",
+            "timeZone": "Europe/London"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "email": "Sam@Example.com",
+            "password": "password1",
+            "timeZone": "Europe/London"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Name must be at most 50 characters.",
+          "field": "name"
+        }
+      },
+      {
+        "args": [
+          {
             "name": " Sam ",
             "email": "Sam@Example.com",
             "password": "password1",
@@ -362,6 +415,51 @@
           {
             "name": "Sam",
             "email": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "password": "password1",
+            "timeZone": "Europe/London"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Enter a valid email address.",
+          "field": "email"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Sam",
+            "email": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "password": "password1",
+            "timeZone": "Europe/London"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Enter a valid email address.",
+          "field": "email"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Sam",
+            "email": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "password": "password1",
+            "timeZone": "Europe/London"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Enter a valid email address.",
+          "field": "email"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Sam",
+            "email": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
             "password": "password1",
             "timeZone": "Europe/London"
           }
@@ -565,6 +663,63 @@
           "valid": false,
           "message": "Password must be at most 128 characters.",
           "field": "password"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Sam",
+            "email": "Sam@Example.com",
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "Europe/London"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "Sam",
+            "email": "sam@example.com",
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "Europe/London"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Sam",
+            "email": "Sam@Example.com",
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "Europe/London"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "Sam",
+            "email": "sam@example.com",
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "Europe/London"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Sam",
+            "email": "Sam@Example.com",
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "Europe/London"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "Sam",
+            "email": "sam@example.com",
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "Europe/London"
+          }
         }
       },
       {
@@ -782,6 +937,63 @@
             "email": "sam@example.com",
             "password": "password1",
             "timeZone": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Sam",
+            "email": "Sam@Example.com",
+            "password": "password1",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "Sam",
+            "email": "sam@example.com",
+            "password": "password1",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Sam",
+            "email": "Sam@Example.com",
+            "password": "password1",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "Sam",
+            "email": "sam@example.com",
+            "password": "password1",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Sam",
+            "email": "Sam@Example.com",
+            "password": "password1",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "Sam",
+            "email": "sam@example.com",
+            "password": "password1",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
           }
         }
       },
@@ -1227,6 +1439,48 @@
       {
         "args": [
           {
+            "email": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "password": "x",
+            "timeZone": "UTC"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Enter a valid email address.",
+          "field": "email"
+        }
+      },
+      {
+        "args": [
+          {
+            "email": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "password": "x",
+            "timeZone": "UTC"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Enter a valid email address.",
+          "field": "email"
+        }
+      },
+      {
+        "args": [
+          {
+            "email": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "password": "x",
+            "timeZone": "UTC"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Enter a valid email address.",
+          "field": "email"
+        }
+      },
+      {
+        "args": [
+          {
             "email": " sam@example.com ",
             "password": "x",
             "timeZone": "UTC"
@@ -1411,6 +1665,57 @@
           "data": {
             "email": "sam@example.com",
             "password": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "timeZone": "UTC"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "email": "sam@example.com",
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "UTC"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "email": "sam@example.com",
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "UTC"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "email": "sam@example.com",
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "UTC"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "email": "sam@example.com",
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "UTC"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "email": "sam@example.com",
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "UTC"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "email": "sam@example.com",
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
             "timeZone": "UTC"
           }
         }
@@ -1608,6 +1913,57 @@
             "email": "sam@example.com",
             "password": "x",
             "timeZone": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "email": "sam@example.com",
+            "password": "x",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "email": "sam@example.com",
+            "password": "x",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "email": "sam@example.com",
+            "password": "x",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "email": "sam@example.com",
+            "password": "x",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "email": "sam@example.com",
+            "password": "x",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "email": "sam@example.com",
+            "password": "x",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
           }
         }
       },
@@ -1871,6 +2227,45 @@
       {
         "args": [
           {
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "password": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        }
+      },
+      {
+        "args": [
+          {
             "password": " x "
           }
         ],
@@ -2086,6 +2481,42 @@
         "args": [
           {
             "code": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "That invite code isn’t valid, or it is out of date.",
+          "field": "code"
+        }
+      },
+      {
+        "args": [
+          {
+            "code": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "That invite code isn’t valid, or it is out of date.",
+          "field": "code"
+        }
+      },
+      {
+        "args": [
+          {
+            "code": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "That invite code isn’t valid, or it is out of date.",
+          "field": "code"
+        }
+      },
+      {
+        "args": [
+          {
+            "code": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
           }
         ],
         "expected": {
@@ -2386,6 +2817,42 @@
       {
         "args": [
           {
+            "code": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "That invite code isn’t valid, or it is out of date.",
+          "field": "code"
+        }
+      },
+      {
+        "args": [
+          {
+            "code": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "That invite code isn’t valid, or it is out of date.",
+          "field": "code"
+        }
+      },
+      {
+        "args": [
+          {
+            "code": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "That invite code isn’t valid, or it is out of date.",
+          "field": "code"
+        }
+      },
+      {
+        "args": [
+          {
             "code": " AB12CD34 "
           }
         ],
@@ -2674,6 +3141,64 @@
       {
         "args": [
           {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "UTC",
+            "currency": "GBP",
+            "savePhotos": true,
+            "firstRunDone": false
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "UTC",
+            "currency": "GBP",
+            "savePhotos": true,
+            "firstRunDone": false
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "UTC",
+            "currency": "GBP",
+            "savePhotos": true,
+            "firstRunDone": false
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "UTC",
+            "currency": "GBP",
+            "savePhotos": true,
+            "firstRunDone": false
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "timeZone": "UTC",
+            "currency": "GBP",
+            "savePhotos": true,
+            "firstRunDone": false
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Name must be at most 50 characters.",
+          "field": "name"
+        }
+      },
+      {
+        "args": [
+          {
             "name": " Sam ",
             "timeZone": "UTC",
             "currency": "GBP",
@@ -2915,6 +3440,69 @@
         "args": [
           {
             "name": "Sam",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "currency": "GBP",
+            "savePhotos": true,
+            "firstRunDone": false
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "Sam",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "currency": "GBP",
+            "savePhotos": true,
+            "firstRunDone": false
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Sam",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "currency": "GBP",
+            "savePhotos": true,
+            "firstRunDone": false
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "Sam",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "currency": "GBP",
+            "savePhotos": true,
+            "firstRunDone": false
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Sam",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "currency": "GBP",
+            "savePhotos": true,
+            "firstRunDone": false
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "Sam",
+            "timeZone": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "currency": "GBP",
+            "savePhotos": true,
+            "firstRunDone": false
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Sam",
             "timeZone": " UTC ",
             "currency": "GBP",
             "savePhotos": true,
@@ -3101,6 +3689,54 @@
             "name": "Sam",
             "timeZone": "UTC",
             "currency": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "savePhotos": true,
+            "firstRunDone": false
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose one of the listed currencies.",
+          "field": "currency"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Sam",
+            "timeZone": "UTC",
+            "currency": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "savePhotos": true,
+            "firstRunDone": false
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose one of the listed currencies.",
+          "field": "currency"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Sam",
+            "timeZone": "UTC",
+            "currency": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "savePhotos": true,
+            "firstRunDone": false
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose one of the listed currencies.",
+          "field": "currency"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Sam",
+            "timeZone": "UTC",
+            "currency": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
             "savePhotos": true,
             "firstRunDone": false
           }
@@ -3711,6 +4347,104 @@
       {
         "args": [
           {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Food name must be at most 60 characters.",
+          "field": "name"
+        }
+      },
+      {
+        "args": [
+          {
             "name": " Milk ",
             "quantity": 1,
             "unit": "l",
@@ -4254,6 +4988,78 @@
           {
             "name": "Milk",
             "quantity": 1,
+            "unit": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a unit from the list.",
+          "field": "unit"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a unit from the list.",
+          "field": "unit"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a unit from the list.",
+          "field": "unit"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
             "unit": " l ",
             "addedDate": "2026-10-23",
             "lifespanDays": 5,
@@ -4531,6 +5337,78 @@
             "quantity": 1,
             "unit": "l",
             "addedDate": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Added date must be a valid date that isn't in the future.",
+          "field": "addedDate"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Added date must be a valid date that isn't in the future.",
+          "field": "addedDate"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Added date must be a valid date that isn't in the future.",
+          "field": "addedDate"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
             "lifespanDays": 5,
             "notes": "Top shelf",
             "storage": "FRIDGE",
@@ -5173,6 +6051,117 @@
             "unit": "l",
             "addedDate": "2026-10-23",
             "lifespanDays": 5,
+            "notes": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
             "notes": " Top shelf ",
             "storage": "FRIDGE",
             "openedDate": null,
@@ -5463,6 +6452,78 @@
             "lifespanDays": 5,
             "notes": "Top shelf",
             "storage": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose where it is kept: fridge, freezer or pantry.",
+          "field": "storage"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose where it is kept: fridge, freezer or pantry.",
+          "field": "storage"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose where it is kept: fridge, freezer or pantry.",
+          "field": "storage"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
             "openedDate": null,
             "leftover": false,
             "price": 2.5,
@@ -6223,6 +7284,78 @@
             "openedDate": null,
             "leftover": false,
             "price": 2.5,
+            "printedDate": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Printed date must be a valid date.",
+          "field": "printedDate"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Printed date must be a valid date.",
+          "field": "printedDate"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "printedDateType": "USE_BY",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Printed date must be a valid date.",
+          "field": "printedDate"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
             "printedDate": " 2026-10-30 ",
             "printedDateType": "USE_BY",
             "category": "dairy"
@@ -6513,6 +7646,78 @@
             "price": 2.5,
             "printedDate": "2026-10-30",
             "printedDateType": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a label for the date from the list.",
+          "field": "printedDateType"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a label for the date from the list.",
+          "field": "printedDateType"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "category": "dairy"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a label for the date from the list.",
+          "field": "printedDateType"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
             "category": "dairy"
           }
         ],
@@ -6839,6 +8044,91 @@
             "printedDate": "2026-10-30",
             "printedDateType": "USE_BY",
             "category": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Too big: expected string to have <=40 characters",
+          "field": "category"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Too big: expected string to have <=40 characters",
+          "field": "category"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 1,
+            "unit": "l",
+            "addedDate": "2026-10-23",
+            "lifespanDays": 5,
+            "notes": "Top shelf",
+            "storage": "FRIDGE",
+            "openedDate": null,
+            "leftover": false,
+            "price": 2.5,
+            "printedDate": "2026-10-30",
+            "printedDateType": "USE_BY",
+            "category": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
           }
         ],
         "expected": {
@@ -7633,6 +8923,49 @@
       {
         "args": [
           {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 2
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 2
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 2
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 2
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 2
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Food name must be at most 60 characters.",
+          "field": "name"
+        }
+      },
+      {
+        "args": [
+          {
             "name": " Milk ",
             "quantity": 2
           }
@@ -8062,6 +9395,45 @@
       {
         "args": [
           {
+            "mediaType": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "image": "aGVsbG8gd29ybGQ="
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "mediaType"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "image": "aGVsbG8gd29ybGQ="
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "mediaType"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "image": "aGVsbG8gd29ybGQ="
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "mediaType"
+        }
+      },
+      {
+        "args": [
+          {
             "mediaType": " image/jpeg ",
             "image": "aGVsbG8gd29ybGQ="
           }
@@ -8224,6 +9596,45 @@
             "mediaType": "image/jpeg",
             "image": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
           }
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "image"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "image"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "image"
         }
       },
       {
@@ -8511,6 +9922,42 @@
         "args": [
           {
             "code": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Enter the 8 to 14 digits printed under the barcode.",
+          "field": "code"
+        }
+      },
+      {
+        "args": [
+          {
+            "code": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Enter the 8 to 14 digits printed under the barcode.",
+          "field": "code"
+        }
+      },
+      {
+        "args": [
+          {
+            "code": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Enter the 8 to 14 digits printed under the barcode.",
+          "field": "code"
+        }
+      },
+      {
+        "args": [
+          {
+            "code": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
           }
         ],
         "expected": {
@@ -8903,6 +10350,66 @@
       {
         "args": [
           {
+            "addedDate": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "storage": "FRIDGE",
+            "items": [
+              {
+                "name": "Milk",
+                "quantity": 1,
+                "unit": "l"
+              }
+            ]
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Added date must be a valid date that isn't in the future.",
+          "field": "addedDate"
+        }
+      },
+      {
+        "args": [
+          {
+            "addedDate": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "storage": "FRIDGE",
+            "items": [
+              {
+                "name": "Milk",
+                "quantity": 1,
+                "unit": "l"
+              }
+            ]
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Added date must be a valid date that isn't in the future.",
+          "field": "addedDate"
+        }
+      },
+      {
+        "args": [
+          {
+            "addedDate": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "storage": "FRIDGE",
+            "items": [
+              {
+                "name": "Milk",
+                "quantity": 1,
+                "unit": "l"
+              }
+            ]
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Added date must be a valid date that isn't in the future.",
+          "field": "addedDate"
+        }
+      },
+      {
+        "args": [
+          {
             "addedDate": " 2026-10-23 ",
             "storage": "FRIDGE",
             "items": [
@@ -9132,6 +10639,66 @@
           {
             "addedDate": "2026-10-23",
             "storage": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "items": [
+              {
+                "name": "Milk",
+                "quantity": 1,
+                "unit": "l"
+              }
+            ]
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose where it is kept: fridge, freezer or pantry.",
+          "field": "storage"
+        }
+      },
+      {
+        "args": [
+          {
+            "addedDate": "2026-10-23",
+            "storage": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "items": [
+              {
+                "name": "Milk",
+                "quantity": 1,
+                "unit": "l"
+              }
+            ]
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose where it is kept: fridge, freezer or pantry.",
+          "field": "storage"
+        }
+      },
+      {
+        "args": [
+          {
+            "addedDate": "2026-10-23",
+            "storage": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "items": [
+              {
+                "name": "Milk",
+                "quantity": 1,
+                "unit": "l"
+              }
+            ]
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose where it is kept: fridge, freezer or pantry.",
+          "field": "storage"
+        }
+      },
+      {
+        "args": [
+          {
+            "addedDate": "2026-10-23",
+            "storage": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
             "items": [
               {
                 "name": "Milk",
@@ -10426,6 +11993,64 @@
       {
         "args": [
           {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 6,
+            "unit": "pcs",
+            "lifespanDays": 14,
+            "storage": "PANTRY"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 6,
+            "unit": "pcs",
+            "lifespanDays": 14,
+            "storage": "PANTRY"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 6,
+            "unit": "pcs",
+            "lifespanDays": 14,
+            "storage": "PANTRY"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 6,
+            "unit": "pcs",
+            "lifespanDays": 14,
+            "storage": "PANTRY"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 6,
+            "unit": "pcs",
+            "lifespanDays": 14,
+            "storage": "PANTRY"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Food name must be at most 60 characters.",
+          "field": "name"
+        }
+      },
+      {
+        "args": [
+          {
             "name": " Eggs ",
             "quantity": 6,
             "unit": "pcs",
@@ -10762,6 +12387,54 @@
             "name": "Eggs",
             "quantity": 6,
             "unit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "lifespanDays": 14,
+            "storage": "PANTRY"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a unit from the list.",
+          "field": "unit"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Eggs",
+            "quantity": 6,
+            "unit": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "lifespanDays": 14,
+            "storage": "PANTRY"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a unit from the list.",
+          "field": "unit"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Eggs",
+            "quantity": 6,
+            "unit": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "lifespanDays": 14,
+            "storage": "PANTRY"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a unit from the list.",
+          "field": "unit"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Eggs",
+            "quantity": 6,
+            "unit": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
             "lifespanDays": 14,
             "storage": "PANTRY"
           }
@@ -11123,6 +12796,54 @@
             "quantity": 6,
             "unit": "pcs",
             "lifespanDays": 14,
+            "storage": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose where it is kept: fridge, freezer or pantry.",
+          "field": "storage"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Eggs",
+            "quantity": 6,
+            "unit": "pcs",
+            "lifespanDays": 14,
+            "storage": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose where it is kept: fridge, freezer or pantry.",
+          "field": "storage"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Eggs",
+            "quantity": 6,
+            "unit": "pcs",
+            "lifespanDays": 14,
+            "storage": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose where it is kept: fridge, freezer or pantry.",
+          "field": "storage"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Eggs",
+            "quantity": 6,
+            "unit": "pcs",
+            "lifespanDays": 14,
             "storage": " PANTRY "
           }
         ],
@@ -11381,6 +13102,45 @@
         "args": [
           {
             "openedDate": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "daysLeft": 3
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Opened date must be a valid date that isn't in the future or before the added date.",
+          "field": "openedDate"
+        }
+      },
+      {
+        "args": [
+          {
+            "openedDate": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "daysLeft": 3
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Opened date must be a valid date that isn't in the future or before the added date.",
+          "field": "openedDate"
+        }
+      },
+      {
+        "args": [
+          {
+            "openedDate": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "daysLeft": 3
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Opened date must be a valid date that isn't in the future or before the added date.",
+          "field": "openedDate"
+        }
+      },
+      {
+        "args": [
+          {
+            "openedDate": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
             "daysLeft": 3
           }
         ],
@@ -11778,6 +13538,45 @@
         "args": [
           {
             "storage": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "daysLeft": 30
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose where it is kept: fridge, freezer or pantry.",
+          "field": "storage"
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "daysLeft": 30
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose where it is kept: fridge, freezer or pantry.",
+          "field": "storage"
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "daysLeft": 30
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose where it is kept: fridge, freezer or pantry.",
+          "field": "storage"
+        }
+      },
+      {
+        "args": [
+          {
+            "storage": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
             "daysLeft": 30
           }
         ],
@@ -12725,6 +14524,45 @@
       {
         "args": [
           {
+            "mode": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "hour": 8
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a daily summary or one reminder per item.",
+          "field": "mode"
+        }
+      },
+      {
+        "args": [
+          {
+            "mode": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "hour": 8
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a daily summary or one reminder per item.",
+          "field": "mode"
+        }
+      },
+      {
+        "args": [
+          {
+            "mode": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "hour": 8
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a daily summary or one reminder per item.",
+          "field": "mode"
+        }
+      },
+      {
+        "args": [
+          {
             "mode": " DIGEST ",
             "hour": 8
           }
@@ -13184,6 +15022,57 @@
       {
         "args": [
           {
+            "endpoint": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "keys": {
+              "p256dh": "p256",
+              "auth": "auth"
+            },
+            "browser": "Chrome"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "That push subscription isn’t valid.",
+          "field": "endpoint"
+        }
+      },
+      {
+        "args": [
+          {
+            "endpoint": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "keys": {
+              "p256dh": "p256",
+              "auth": "auth"
+            },
+            "browser": "Chrome"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "That push subscription isn’t valid.",
+          "field": "endpoint"
+        }
+      },
+      {
+        "args": [
+          {
+            "endpoint": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "keys": {
+              "p256dh": "p256",
+              "auth": "auth"
+            },
+            "browser": "Chrome"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "That push subscription isn’t valid.",
+          "field": "endpoint"
+        }
+      },
+      {
+        "args": [
+          {
             "endpoint": " https://push.example.com/send/abc ",
             "keys": {
               "p256dh": "p256",
@@ -13484,6 +15373,63 @@
               "p256dh": "p256",
               "auth": "auth"
             },
+            "browser": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "endpoint": "https://push.example.com/send/abc",
+            "keys": {
+              "p256dh": "p256",
+              "auth": "auth"
+            },
+            "browser": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "endpoint": "https://push.example.com/send/abc",
+            "keys": {
+              "p256dh": "p256",
+              "auth": "auth"
+            },
+            "browser": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Too big: expected string to have <=40 characters",
+          "field": "browser"
+        }
+      },
+      {
+        "args": [
+          {
+            "endpoint": "https://push.example.com/send/abc",
+            "keys": {
+              "p256dh": "p256",
+              "auth": "auth"
+            },
+            "browser": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Too big: expected string to have <=40 characters",
+          "field": "browser"
+        }
+      },
+      {
+        "args": [
+          {
+            "endpoint": "https://push.example.com/send/abc",
+            "keys": {
+              "p256dh": "p256",
+              "auth": "auth"
+            },
             "browser": " Chrome "
           }
         ],
@@ -13749,6 +15695,48 @@
       {
         "args": [
           {
+            "platform": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "token": "ffffffffffffffffffffffffffffff",
+            "browser": "Cook First app on Android"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "That push subscription isn’t valid.",
+          "field": null
+        }
+      },
+      {
+        "args": [
+          {
+            "platform": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "token": "ffffffffffffffffffffffffffffff",
+            "browser": "Cook First app on Android"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "That push subscription isn’t valid.",
+          "field": null
+        }
+      },
+      {
+        "args": [
+          {
+            "platform": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "token": "ffffffffffffffffffffffffffffff",
+            "browser": "Cook First app on Android"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "That push subscription isn’t valid.",
+          "field": null
+        }
+      },
+      {
+        "args": [
+          {
             "platform": " android ",
             "token": "ffffffffffffffffffffffffffffff",
             "browser": "Cook First app on Android"
@@ -13935,6 +15923,57 @@
         "args": [
           {
             "platform": "android",
+            "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "browser": "Cook First app on Android"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "platform": "android",
+            "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "browser": "Cook First app on Android"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "platform": "android",
+            "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "browser": "Cook First app on Android"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "platform": "android",
+            "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "browser": "Cook First app on Android"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "platform": "android",
+            "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "browser": "Cook First app on Android"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "platform": "android",
+            "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "browser": "Cook First app on Android"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "platform": "android",
             "token": " ffffffffffffffffffffffffffffff ",
             "browser": "Cook First app on Android"
           }
@@ -14098,6 +16137,51 @@
             "platform": "android",
             "token": "ffffffffffffffffffffffffffffff",
             "browser": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Too big: expected string to have <=40 characters",
+          "field": "browser"
+        }
+      },
+      {
+        "args": [
+          {
+            "platform": "android",
+            "token": "ffffffffffffffffffffffffffffff",
+            "browser": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "platform": "android",
+            "token": "ffffffffffffffffffffffffffffff",
+            "browser": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "platform": "android",
+            "token": "ffffffffffffffffffffffffffffff",
+            "browser": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Too big: expected string to have <=40 characters",
+          "field": "browser"
+        }
+      },
+      {
+        "args": [
+          {
+            "platform": "android",
+            "token": "ffffffffffffffffffffffffffffff",
+            "browser": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
           }
         ],
         "expected": {
@@ -14469,6 +16553,42 @@
       {
         "args": [
           {
+            "endpoint": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "That push subscription isn’t valid.",
+          "field": "endpoint"
+        }
+      },
+      {
+        "args": [
+          {
+            "endpoint": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "That push subscription isn’t valid.",
+          "field": "endpoint"
+        }
+      },
+      {
+        "args": [
+          {
+            "endpoint": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "That push subscription isn’t valid.",
+          "field": "endpoint"
+        }
+      },
+      {
+        "args": [
+          {
             "endpoint": " https://push.example.com/send/abc "
           }
         ],
@@ -14760,6 +16880,51 @@
       {
         "args": [
           {
+            "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "action": "USED"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "action": "USED"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "action": "USED"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "action": "USED"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "action": "USED"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "action": "USED"
+          }
+        }
+      },
+      {
+        "args": [
+          {
             "token": " a.b.c ",
             "action": "USED"
           }
@@ -14906,6 +17071,45 @@
           {
             "token": "a.b.c",
             "action": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Unknown notification action.",
+          "field": "action"
+        }
+      },
+      {
+        "args": [
+          {
+            "token": "a.b.c",
+            "action": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Unknown notification action.",
+          "field": "action"
+        }
+      },
+      {
+        "args": [
+          {
+            "token": "a.b.c",
+            "action": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Unknown notification action.",
+          "field": "action"
+        }
+      },
+      {
+        "args": [
+          {
+            "token": "a.b.c",
+            "action": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
           }
         ],
         "expected": {
@@ -16081,6 +18285,42 @@
       {
         "args": [
           {
+            "mealType": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose breakfast, lunch or dinner.",
+          "field": "mealType"
+        }
+      },
+      {
+        "args": [
+          {
+            "mealType": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose breakfast, lunch or dinner.",
+          "field": "mealType"
+        }
+      },
+      {
+        "args": [
+          {
+            "mealType": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose breakfast, lunch or dinner.",
+          "field": "mealType"
+        }
+      },
+      {
+        "args": [
+          {
             "mealType": " lunch "
           }
         ],
@@ -16306,6 +18546,42 @@
         "args": [
           {
             "meal": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose breakfast, lunch or dinner.",
+          "field": "meal"
+        }
+      },
+      {
+        "args": [
+          {
+            "meal": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose breakfast, lunch or dinner.",
+          "field": "meal"
+        }
+      },
+      {
+        "args": [
+          {
+            "meal": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose breakfast, lunch or dinner.",
+          "field": "meal"
+        }
+      },
+      {
+        "args": [
+          {
+            "meal": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
           }
         ],
         "expected": {
@@ -16543,6 +18819,42 @@
         "args": [
           {
             "date": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a day from today to six days ahead.",
+          "field": "date"
+        }
+      },
+      {
+        "args": [
+          {
+            "date": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a day from today to six days ahead.",
+          "field": "date"
+        }
+      },
+      {
+        "args": [
+          {
+            "date": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a day from today to six days ahead.",
+          "field": "date"
+        }
+      },
+      {
+        "args": [
+          {
+            "date": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
           }
         ],
         "expected": {
@@ -16793,6 +19105,42 @@
         "args": [
           {
             "meal": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose breakfast, lunch or dinner.",
+          "field": "meal"
+        }
+      },
+      {
+        "args": [
+          {
+            "meal": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose breakfast, lunch or dinner.",
+          "field": "meal"
+        }
+      },
+      {
+        "args": [
+          {
+            "meal": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose breakfast, lunch or dinner.",
+          "field": "meal"
+        }
+      },
+      {
+        "args": [
+          {
+            "meal": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
           }
         ],
         "expected": {
@@ -17059,6 +19407,54 @@
         "args": [
           {
             "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "quantity": 2,
+            "unit": "l"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Keep it to 60 characters or fewer.",
+          "field": "name"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 2,
+            "unit": "l"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 2,
+            "unit": "l"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 2,
+            "unit": "l"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "quantity": 2,
+            "unit": "l"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
             "quantity": 2,
             "unit": "l"
           }
@@ -17385,6 +19781,48 @@
           {
             "name": "Milk",
             "quantity": 2,
+            "unit": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a unit from the list.",
+          "field": "unit"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 2,
+            "unit": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a unit from the list.",
+          "field": "unit"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 2,
+            "unit": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a unit from the list.",
+          "field": "unit"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "Milk",
+            "quantity": 2,
             "unit": " l "
           }
         ],
@@ -17688,6 +20126,49 @@
         "args": [
           {
             "name": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "checked": true
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Keep it to 60 characters or fewer.",
+          "field": "name"
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "checked": true
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "checked": true
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "checked": true
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "checked": true
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "name": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
             "checked": true
           }
         ],
@@ -18076,6 +20557,54 @@
       {
         "args": [
           {
+            "meal": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "title": "Curry",
+            "foodIds": [
+              "0123456789abcdef01234567"
+            ]
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose breakfast, lunch or dinner.",
+          "field": "meal"
+        }
+      },
+      {
+        "args": [
+          {
+            "meal": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "title": "Curry",
+            "foodIds": [
+              "0123456789abcdef01234567"
+            ]
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose breakfast, lunch or dinner.",
+          "field": "meal"
+        }
+      },
+      {
+        "args": [
+          {
+            "meal": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "title": "Curry",
+            "foodIds": [
+              "0123456789abcdef01234567"
+            ]
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose breakfast, lunch or dinner.",
+          "field": "meal"
+        }
+      },
+      {
+        "args": [
+          {
             "meal": " dinner ",
             "title": "Curry",
             "foodIds": [
@@ -18272,6 +20801,69 @@
           "valid": false,
           "message": "Enter a meal of up to 80 characters.",
           "field": "title"
+        }
+      },
+      {
+        "args": [
+          {
+            "meal": "dinner",
+            "title": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "foodIds": [
+              "0123456789abcdef01234567"
+            ]
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "meal": "dinner",
+            "title": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "foodIds": [
+              "0123456789abcdef01234567"
+            ]
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "meal": "dinner",
+            "title": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "foodIds": [
+              "0123456789abcdef01234567"
+            ]
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "meal": "dinner",
+            "title": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "foodIds": [
+              "0123456789abcdef01234567"
+            ]
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "meal": "dinner",
+            "title": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "foodIds": [
+              "0123456789abcdef01234567"
+            ]
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "meal": "dinner",
+            "title": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "foodIds": [
+              "0123456789abcdef01234567"
+            ]
+          }
         }
       },
       {
@@ -18766,6 +21358,45 @@
       {
         "args": [
           {
+            "limit": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "offset": "5"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Invalid input: expected number, received NaN",
+          "field": "limit"
+        }
+      },
+      {
+        "args": [
+          {
+            "limit": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "offset": "5"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Invalid input: expected number, received NaN",
+          "field": "limit"
+        }
+      },
+      {
+        "args": [
+          {
+            "limit": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "offset": "5"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Invalid input: expected number, received NaN",
+          "field": "limit"
+        }
+      },
+      {
+        "args": [
+          {
             "limit": " 10 ",
             "offset": "5"
           }
@@ -18922,6 +21553,45 @@
           {
             "limit": "10",
             "offset": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Invalid input: expected number, received NaN",
+          "field": "offset"
+        }
+      },
+      {
+        "args": [
+          {
+            "limit": "10",
+            "offset": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Invalid input: expected number, received NaN",
+          "field": "offset"
+        }
+      },
+      {
+        "args": [
+          {
+            "limit": "10",
+            "offset": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Invalid input: expected number, received NaN",
+          "field": "offset"
+        }
+      },
+      {
+        "args": [
+          {
+            "limit": "10",
+            "offset": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
           }
         ],
         "expected": {
@@ -19338,6 +22008,45 @@
       {
         "args": [
           {
+            "limit": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "offset": "0"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Invalid input: expected number, received NaN",
+          "field": "limit"
+        }
+      },
+      {
+        "args": [
+          {
+            "limit": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "offset": "0"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Invalid input: expected number, received NaN",
+          "field": "limit"
+        }
+      },
+      {
+        "args": [
+          {
+            "limit": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "offset": "0"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Invalid input: expected number, received NaN",
+          "field": "limit"
+        }
+      },
+      {
+        "args": [
+          {
             "limit": " 50 ",
             "offset": "0"
           }
@@ -19494,6 +22203,45 @@
           {
             "limit": "50",
             "offset": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Invalid input: expected number, received NaN",
+          "field": "offset"
+        }
+      },
+      {
+        "args": [
+          {
+            "limit": "50",
+            "offset": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Invalid input: expected number, received NaN",
+          "field": "offset"
+        }
+      },
+      {
+        "args": [
+          {
+            "limit": "50",
+            "offset": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Invalid input: expected number, received NaN",
+          "field": "offset"
+        }
+      },
+      {
+        "args": [
+          {
+            "limit": "50",
+            "offset": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
           }
         ],
         "expected": {
@@ -19791,6 +22539,48 @@
       {
         "args": [
           {
+            "mediaType": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "image": "aGVsbG8gd29ybGQ=",
+            "foodId": "0123456789abcdef01234567"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "mediaType"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "image": "aGVsbG8gd29ybGQ=",
+            "foodId": "0123456789abcdef01234567"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "mediaType"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "image": "aGVsbG8gd29ybGQ=",
+            "foodId": "0123456789abcdef01234567"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "mediaType"
+        }
+      },
+      {
+        "args": [
+          {
             "mediaType": " image/jpeg ",
             "image": "aGVsbG8gd29ybGQ=",
             "foodId": "0123456789abcdef01234567"
@@ -19977,6 +22767,48 @@
         "args": [
           {
             "mediaType": "image/jpeg",
+            "image": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "foodId": "0123456789abcdef01234567"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "image"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "foodId": "0123456789abcdef01234567"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "image"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "foodId": "0123456789abcdef01234567"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "image"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
             "image": " aGVsbG8gd29ybGQ= ",
             "foodId": "0123456789abcdef01234567"
           }
@@ -20134,6 +22966,48 @@
             "mediaType": "image/jpeg",
             "image": "aGVsbG8gd29ybGQ=",
             "foodId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose one of your own food items.",
+          "field": "foodId"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "aGVsbG8gd29ybGQ=",
+            "foodId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose one of your own food items.",
+          "field": "foodId"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "aGVsbG8gd29ybGQ=",
+            "foodId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose one of your own food items.",
+          "field": "foodId"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "aGVsbG8gd29ybGQ=",
+            "foodId": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
           }
         ],
         "expected": {
@@ -20433,6 +23307,48 @@
       {
         "args": [
           {
+            "mediaType": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "image": "aGVsbG8gd29ybGQ=",
+            "locale": "en-GB"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "mediaType"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "image": "aGVsbG8gd29ybGQ=",
+            "locale": "en-GB"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "mediaType"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "image": "aGVsbG8gd29ybGQ=",
+            "locale": "en-GB"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "mediaType"
+        }
+      },
+      {
+        "args": [
+          {
             "mediaType": " image/jpeg ",
             "image": "aGVsbG8gd29ybGQ=",
             "locale": "en-GB"
@@ -20619,6 +23535,48 @@
         "args": [
           {
             "mediaType": "image/jpeg",
+            "image": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "locale": "en-GB"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "image"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "locale": "en-GB"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "image"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "locale": "en-GB"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a photo of your receipt (JPEG, PNG or WebP).",
+          "field": "image"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
             "image": " aGVsbG8gd29ybGQ= ",
             "locale": "en-GB"
           }
@@ -20776,6 +23734,48 @@
             "mediaType": "image/jpeg",
             "image": "aGVsbG8gd29ybGQ=",
             "locale": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Locale must be a language tag such as en-GB.",
+          "field": "locale"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "aGVsbG8gd29ybGQ=",
+            "locale": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Locale must be a language tag such as en-GB.",
+          "field": "locale"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "aGVsbG8gd29ybGQ=",
+            "locale": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Locale must be a language tag such as en-GB.",
+          "field": "locale"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "aGVsbG8gd29ybGQ=",
+            "locale": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
           }
         ],
         "expected": {
@@ -21160,6 +24160,45 @@
       {
         "args": [
           {
+            "size": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "v": "2026-10-23T10:00:00.000Z"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a thumbnail or the full photo.",
+          "field": "size"
+        }
+      },
+      {
+        "args": [
+          {
+            "size": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "v": "2026-10-23T10:00:00.000Z"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a thumbnail or the full photo.",
+          "field": "size"
+        }
+      },
+      {
+        "args": [
+          {
+            "size": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+            "v": "2026-10-23T10:00:00.000Z"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose a thumbnail or the full photo.",
+          "field": "size"
+        }
+      },
+      {
+        "args": [
+          {
             "size": " thumb ",
             "v": "2026-10-23T10:00:00.000Z"
           }
@@ -21309,6 +24348,47 @@
           {
             "size": "thumb",
             "v": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Too big: expected string to have <=40 characters",
+          "field": "v"
+        }
+      },
+      {
+        "args": [
+          {
+            "size": "thumb",
+            "v": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "size": "thumb",
+            "v": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "size": "thumb",
+            "v": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Too big: expected string to have <=40 characters",
+          "field": "v"
+        }
+      },
+      {
+        "args": [
+          {
+            "size": "thumb",
+            "v": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
           }
         ],
         "expected": {

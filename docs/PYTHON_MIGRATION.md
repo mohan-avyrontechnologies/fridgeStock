@@ -8,7 +8,8 @@ Status: **approved on 2026-10-23**, with the five recommended answers in §11 an
 | Phase | State |
 |---|---|
 | 0. Shared data | **Done** (see the notes below). |
-| 1–8 | Not started. |
+| 1. Foundation | **Done** (see the notes below). |
+| 2–8 | Not started. |
 
 **What Phase 0 found and changed, compared with the plan:**
 - **The day/month order of a printed date was machine-dependent.** For a language with no locale data (`xx`), Node used the computer's own locale. Node, Python's Babel and browsers also disagree on 16 of 920 locales (for example `en-CA`), because they carry different CLDR versions. So no locale library is used. Both languages look the tag up in `shared/data/date-order.json` (recorded from CLDR 48), and Babel isn't a dependency.
@@ -17,6 +18,22 @@ Status: **approved on 2026-10-23**, with the five recommended answers in §11 an
 - **JavaScript text rules are copied explicitly** (`server_py/shared/js.py`): `trim()` and `\s` whitespace, ASCII-only `\d` and `\b`, `$` never matching before a final newline, and how numbers are written. The shared cases include each difference.
 - **`npm run dev:server-py`** arrives with the app in Phase 1. Phase 0 has `npm run db:py`, `db:py:empty`, `test:py` and `lint:py`.
 - **Validation cases:** `server_py/schemas/__init__.py` lists the schemas not yet ported (`PENDING`). A test fails if a schema is in neither list. Each phase moves its routes' schemas over.
+
+**What Phase 1 found and changed, compared with the plan:**
+- **Every Phase 1 answer was checked against the Node server itself.** The same 38 raw HTTP requests (health, unknown paths, wrong methods, CORS and preflights, every kind of bad body, compressed bodies, rate limits, bad tokens) were sent to both servers, and all 38 answers were identical: status, body, ETag, Vary, CORS, helmet and `RateLimit` headers. The expected values in `tests/test_http.py` were recorded from Node.
+- **zod 4.6 counts string lengths in code points; Mongoose counts UTF-16 units.** So a name of 26 emoji passes `registerSchema` (26 characters) and is then refused by the User model's `maxlength: 50` (52 units), with Mongoose's own message ("Path \`name\` (\`…\`, length 52) is longer than the maximum allowed length (50)."). The Python server does both checks the same way (`models/user.py`, `models/base.py: check_length`). `validation.json` had no such input, which is how Phase 0 missed it: the case generator now adds emoji strings to every text field (1,494 cases).
+- **No PyJWT.** Tokens are signed and checked with the standard library's `hmac`, as `jsonwebtoken` does it, and are byte-for-byte the tokens Node signs (a test signs one with `jsonwebtoken` and compares). PyJWT also refuses tokens Node accepts, such as one with a fractional `exp`. `JWT_EXPIRES_IN` is read as the `ms` package reads it (a bare `3600` is milliseconds).
+- **No slowapi.** The limiter is express-rate-limit's memory store ported directly: a fixed window per client that starts with its first request, one count shared by all the routes using the same limiter, and the draft-8 `RateLimit`/`RateLimit-Policy` headers with the same partition key (`pk`). The client is the last `X-Forwarded-For` entry (`trust proxy` = 1), with IPv6 counted per /56.
+- **Routing is Express's, not FastAPI's** (`routes/router.py`). Paths match without regard to case and with one optional trailing slash, against the path as sent (`/api/heal%74h` is not `/api/health`); HEAD runs GET; every OPTIONS request is a preflight. As `router.use(requireAuth)` does, an unknown path or wrong method under `/api` is a 401 without a login and a 404 with one. FastAPI still hosts the app and describes every route in its OpenAPI document (`app.openapi()`, for the drift check), but serves no `/docs` or `/openapi.json`, which are 404s on Node.
+- **Request validation never produces a 422.** Each request model is Pydantic, but its fields hand their values to `schemas/zod.py`, a small port of the zod pieces the schemas use, so messages, order and the first issue are zod's.
+- **Responses are written as `JSON.stringify` writes them** (`5`, not `5.0`; lone surrogates escaped) with Express's weak ETag, 304 for a matching `If-None-Match`, and no body for HEAD. `number_text` (Phase 0) was also wrong for whole numbers past 2^53; JavaScript writes 2^60 as `1152921504606847000`.
+- **Time zones:** Intl accepts UTC offsets (`+05:30`, `+0530`, `+05`) as well as IANA names in any case, and Node stores whatever the device reports, so `dates.zone` (Phase 0) now reads offsets too. Intl refuses `Factory`.
+- **Mongoose's `save()` also writes missing defaults.** Saving an account that predates a field writes that field's default (as dotted `$set` paths, which MongoDB applies in name order) without changing `updatedAt`; a `null` default is never written. `models/base.py` does the same, and a test compares the stored document with the one Mongoose leaves.
+- **bcrypt:** Node's bcrypt reads only the first 72 bytes of a password and Python's refuses longer ones, so the bytes are cut the same way. Hashes from Node are checked in a test, and Node checks a Python hash.
+- **Bodies compressed with `br` are read too** (body-parser 2 accepts them), so the `brotli` package is a dependency.
+- **`MESSAGES` moved to `shared/data/validation-messages.json`**, which `schemas.ts` reads, so the Python schemas use the same file. The wording guard scans it.
+- **The start command is `python -m server_py`**, not `uvicorn ... --proxy-headers`: uvicorn's proxy handling and `Server` header are off, because the app reads `X-Forwarded-For` itself, as Express does. `npm run dev:server-py` adds `--reload`.
+- **Tests ported:** `auth` (all 13, plus 3 on the name length), and the parts of `api`, `phase1`, `security` and `structure` that need only Phase 1 routes: the error format, the 500, unreadable bodies, the user's fields, removed routes, the migration backfill, the route walk (every route but the public ones is a 401), `docs/API.md` order (checked as an ordered superset until Phase 6), and the layer rules. Their food, favourite and isolation tests need the food routes and move to Phase 2, as does the database validation test for food items. New files cover what the TypeScript server got from its packages: `test_http.py`, `test_tokens.py`, `test_models.py` (indexes and documents recorded from Mongoose), `test_env.py` and `test_config_routes.py`. `pytest -m phase1` runs them.
 
 Goal: replace the TypeScript API in `server/` with a Python one in `server-py/`. To every client, the change must be
 invisible. The web app, the Android app and the iOS app stay in TypeScript, Java and Swift, and their code doesn't
@@ -46,8 +63,8 @@ Work happens on the `python-backend` branch. `server/` stays untouched until the
 | Web | FastAPI on Uvicorn. |
 | Validation | Pydantic v2. |
 | Database | PyMongo's async client (`AsyncMongoClient`) with its async GridFS (`AsyncGridFSBucket`). There is no ODM; a small model layer in `server_py/models/` plays Mongoose's part (see §4). |
-| Auth | PyJWT (HS256) and `bcrypt`. |
-| Rate limits | slowapi (fixed window, in memory, like `express-rate-limit` today). |
+| Auth | HS256 tokens with the standard library's `hmac` (not PyJWT; see Phase 1's notes) and `bcrypt`. |
+| Rate limits | A port of express-rate-limit's memory store (fixed window per client, in memory), not slowapi; see Phase 1's notes. |
 | Jobs | APScheduler (`AsyncIOScheduler`, cron triggers). |
 | Photos | Pillow, re-encoding to WebP without EXIF or GPS. |
 | Push | pywebpush (web) and firebase-admin (FCM for Android and iOS). Both block, so they run in a thread pool. |
@@ -101,7 +118,7 @@ ported to pytest.
   - Auth: 20 per 15 minutes on register, login, `/household/join` and `DELETE /account`, with the `AUTH_RATE_LIMIT` override.
   - 60 per 15 minutes each on push actions, scanning and photo upload.
   - AI: 20 per person per day, stored in `aiusages`, with reserve and refund.
-  - **Response headers:** today the responses carry the IETF draft-8 `RateLimit` and `RateLimit-Policy` headers. slowapi doesn't write those, so a small hook does.
+  - **Response headers:** the IETF draft-8 `RateLimit` and `RateLimit-Policy` headers, with the same partition key.
 - **Request log:** method, route, status and time only, never bodies or headers, as now.
 
 ### Data (Mongoose compatibility)
@@ -116,7 +133,7 @@ The Python server writes documents that Mongoose reads without any change, and r
 - **GridFS:** the same bucket name (`foodPhotos`), file names (`<foodId>-full`/`-thumb`) and metadata (`householdId`, `foodId`, `uploadedBy`, `size`).
 
 ### Logins and tokens
-- **Login tokens:** PyJWT HS256 with the same `JWT_SECRET`, `sub` = user id, and an expiry from `JWT_EXPIRES_IN`. The value is parsed in the same `ms` format as now (`7d`, `12h`), including `exp`/`iat`.
+- **Login tokens:** HS256 with the same `JWT_SECRET`, `sub` = user id, and an expiry from `JWT_EXPIRES_IN`. The value is parsed in the same `ms` format as now (`7d`, `12h`), including `exp`/`iat`.
   - Tokens with an `aud` claim are refused as logins, as now.
   - Tokens issued by Node work on Python, and the other way round. A test checks both directions.
 - **Notification action tokens:** the same audiences, `jti`, 24-hour life and single use through `usedactiontokens`.
@@ -231,7 +248,7 @@ normalisation. The cassettes are committed. Re-recording is a deliberate step wh
   - A new `cook-first-api-py` service: Python runtime with `rootDir: server-py`, `PYTHON_VERSION`, and `uv sync --frozen --no-dev` to build.
   - **Render supports uv directly** (checked 2026-10-23, [render.com/docs/uv-version](https://render.com/docs/uv-version)): it adds uv to a Python service automatically when the service's root folder has a `uv.lock`, so no `requirements.txt` is needed. New services get uv 0.12.24 by default and this PC has 0.13.5, so `UV_VERSION` is pinned to the version that wrote the lock file.
   - The server reads `../shared/data` at run time. The first deploy checks that a `rootDir` service still sees the rest of the repository; if it doesn't, the JSON files are copied into the package at build time. `buildFilter` includes `shared/data/**` so data changes redeploy.
-  - Start command: `uvicorn server_py.main:app --host 0.0.0.0 --port $PORT --proxy-headers --workers 1`. One worker fits the free plan's 512 MB, and the job lock covers more.
+  - Start command: `python -m server_py` (uvicorn on `PORT`, every address, one worker, no proxy rewriting and no `Server` header). One worker fits the free plan's 512 MB, and the job lock covers more.
   - The same environment variables, plus the same `JWT_SECRET`, which must be copied, not generated.
   - Deployment switches by pointing `PUBLIC_API_URL` and the client's `VITE_API_URL` at the service, or by swapping it into the existing service name so URLs don't change. The swap is preferred, because the native apps keep working with no rebuild.
 - **Docs:** README (running and deploying), `docs/ARCHITECTURE.md` (Python layers, `joblocks`), `docs/TESTING.md` (pytest groups, shared cases, contracts), `docs/DEPLOYMENT.md`, `server-py/README.md`, `CHANGELOG.md`, and `.env.example` files.

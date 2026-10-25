@@ -10,6 +10,7 @@
   "scripts": {
     "dev:server": "npm run dev -w server",
     "dev:client": "npm run dev -w client",
+    "dev:server-py": "cd server-py && uv run python -m server_py --reload",
     "db:py": "node server-py/scripts/dev-mongo.mjs",
     "db:py:empty": "node server-py/scripts/dev-mongo.mjs --empty",
     "lint:py": "cd server-py && uv run ruff check . && uv run ruff format --check . && uv run pyright",

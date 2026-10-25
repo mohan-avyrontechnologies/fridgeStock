@@ -27,7 +27,7 @@ routes → middleware (rate limit → JWT auth → zod validation) → controlle
 
 **How the `shared` package is loaded:** it exports a `source` condition that points at its TypeScript source, so `tsx`, Vite and Vitest use `shared/src` directly with no separate build in development or tests. Production (`node server/dist/index.js`) uses the compiled `shared/dist` (`dist/src` and `dist/data`), which `npm run build` creates first.
 
-**Shared data:** the catalog, category defaults, banned phrases, each locale's day/month order and the server's wording are JSON files in `shared/data`, read by the TypeScript code and by the Python server that is being built (`server-py`, see [PYTHON_MIGRATION.md](PYTHON_MIGRATION.md)). `shared/test-cases` holds the cases both languages must pass.
+**Shared data:** the catalog, category defaults, banned phrases, each locale's day/month order, the server's wording and the validation messages are JSON files in `shared/data`, read by the TypeScript code and by the Python server that is being built (`server-py`, see [PYTHON_MIGRATION.md](PYTHON_MIGRATION.md)). `shared/test-cases` holds the cases both languages must pass.
 
 ---
 

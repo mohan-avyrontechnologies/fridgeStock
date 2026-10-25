@@ -21,6 +21,7 @@ type Input = unknown;
 const OUT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../test-cases/validation.json');
 const ID = '0123456789abcdef01234567';
 const long = (n: number) => 'a'.repeat(n);
+const emoji = (n: number) => String.fromCodePoint(0x1f600).repeat(n);
 
 /** Changes every field of `base` in the usual ways, one at a time. */
 function mutations(base: Record<string, unknown>): Input[] {
@@ -32,6 +33,8 @@ function mutations(base: Record<string, unknown>): Input[] {
     if (typeof value === 'string') {
       out.push({ ...base, [key]: 123 }, { ...base, [key]: '' }, { ...base, [key]: '   ' });
       for (const n of [41, 61, 81, 129, 201, 1001]) out.push({ ...base, [key]: long(n) });
+      // zod counts code points and text.length counts UTF-16 units: an emoji is one and two.
+      for (const n of [26, 41, 61]) out.push({ ...base, [key]: emoji(n) });
       out.push({ ...base, [key]: ` ${value} ` });
     } else if (typeof value === 'number') {
       out.push({ ...base, [key]: String(value) }, { ...base, [key]: 0 }, { ...base, [key]: -1 });
