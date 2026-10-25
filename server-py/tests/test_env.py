@@ -119,7 +119,7 @@ ACCEPTED = [
 ]  # fmt: skip
 REFUSED = [
     "Z", "Mars/Olympus", "", "  UTC", "UTC ", "Factory", "localtime", "Etc/Unknown", "+24:00", "+12:60", "+1:00",
-    "+05:30:00", "+053", "+5", "posixrules",
+    "+05:30:00", "+053", "+5", "posixrules", "posix/Europe/London", "right/UTC", "zone.tab", "tzdata.zi",
 ]  # fmt: skip
 
 

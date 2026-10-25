@@ -7,7 +7,8 @@ daylight-saving changes and the host machine's time zone can never shift a day.
 import re
 from datetime import UTC, date, datetime, timedelta, timezone, tzinfo
 from functools import cache
-from zoneinfo import ZoneInfo, available_timezones
+from importlib import resources
+from zoneinfo import ZoneInfo
 
 DateString = str
 """A calendar date in "YYYY-MM-DD" form."""
@@ -54,8 +55,18 @@ _OFFSET = re.compile("([+" + chr(0x2212) + "-])([01][0-9]|2[0-3])(?::?([0-5][0-9
 
 @cache
 def _zones_by_lower_name() -> dict[str, str]:
-    # "Factory" is in the tz database but Intl refuses it.
-    return {name.lower(): name for name in available_timezones() if name != "Factory"}
+    """The zones in the tzdata package, the same on every machine. (`available_timezones()` would also list a
+    Linux system's own files, such as "localtime" and "posix/...", which Intl refuses.) "Factory" is in the tz
+    database but Intl refuses it too."""
+    names = resources.files("tzdata").joinpath("zones").read_text(encoding="utf-8").split()
+    return {name.lower(): name for name in names if name != "Factory"}
+
+
+@cache
+def _bundled_zone(name: str) -> ZoneInfo:
+    """A zone read from the tzdata package rather than the system's files, so every machine uses the same rules."""
+    with resources.files("tzdata.zoneinfo").joinpath(*name.split("/")).open("rb") as file:
+        return ZoneInfo.from_file(file, key=name)
 
 
 @cache
@@ -68,7 +79,7 @@ def zone(time_zone: str) -> tzinfo:
     name = _zones_by_lower_name().get(time_zone.lower())
     if name is None:
         raise RangeError(f"Invalid time zone specified: {time_zone}")
-    return ZoneInfo(name)
+    return _bundled_zone(name)
 
 
 def _local(time_zone: str, now: datetime | None) -> datetime:
