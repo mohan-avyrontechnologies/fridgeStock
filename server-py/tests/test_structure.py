@@ -39,16 +39,55 @@ def test_every_registered_route_is_documented_in_the_same_order() -> None:
     assert positions == sorted(positions)
 
 
-def test_the_phase_1_routes_are_registered() -> None:
+def test_the_routes_ported_so_far_are_registered() -> None:
     assert router.registered() == [
         ("GET", "/health"),
         ("POST", "/auth/register"),
         ("POST", "/auth/login"),
         ("GET", "/auth/me"),
         ("PUT", "/auth/me"),
+        ("GET", "/foods"),
+        ("POST", "/foods"),
+        ("POST", "/foods/bulk"),
+        ("GET", "/foods/cook-first"),
+        ("GET", "/foods/:id"),
+        ("PUT", "/foods/:id"),
+        ("DELETE", "/foods/:id"),
+        ("POST", "/foods/:id/use"),
+        ("POST", "/foods/:id/waste"),
+        ("POST", "/foods/:id/undo"),
+        ("POST", "/foods/:id/use-today"),
+        ("POST", "/foods/:id/open"),
+        ("DELETE", "/foods/:id/open"),
+        ("POST", "/foods/:id/move"),
+        ("GET", "/suggestions/lifespans"),
+        ("GET", "/favourites"),
+        ("POST", "/favourites"),
+        ("DELETE", "/favourites/:id"),
+        ("POST", "/favourites/:id/add"),
+        ("GET", "/usage"),
         ("GET", "/push/config"),
         ("GET", "/ai/status"),
     ]
+
+
+def test_every_path_value_but_id_is_checked_by_a_schema_and_controllers_read_only_the_id() -> None:
+    source = (SRC / "routes" / "index.py").read_text(encoding="utf-8")
+    for url, rest in re.findall(r'router\.\w+\("([^"]+)",(.*)\)', source):
+        params = [name for name in re.findall(r":(\w+)", url) if name != "id"]
+        if params:
+            assert re.search(r'validate\(\w+, "params"\)', rest), url
+    for file in _python_files("controllers"):
+        code = file.read_text(encoding="utf-8")
+        assert "params" not in code.replace("path_id", ""), file.name
+
+
+def test_the_expiry_date_is_worked_out_in_the_food_service_not_the_model() -> None:
+    model = (SRC / "models" / "food_item.py").read_text(encoding="utf-8")
+    assert "add_days" not in model
+    service = (SRC / "services" / "food_service.py").read_text(encoding="utf-8")
+    assert '"expiryDate": _expiry_for(added_date, lifespan_days)' in service
+    assert 'food["expiryDate"] = _expiry_for(' in service
 
 
 @pytest.mark.parametrize(("method", "path"), [r for r in router.registered() if r not in PUBLIC])

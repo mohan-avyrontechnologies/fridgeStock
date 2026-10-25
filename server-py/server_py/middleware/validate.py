@@ -50,3 +50,8 @@ def validated[M: RequestModel](request: Request, model: type[M], source: Source 
     parsed = request.scope.get("state", {}).get(f"valid_{source}")
     assert isinstance(parsed, model)
     return parsed
+
+
+def path_id(request: Request) -> str:
+    """The route's :id, decoded (`String(req.params.id)`). Other path values are checked with a schema."""
+    return str(request.scope.get("state", {}).get("params", {}).get("id", ""))

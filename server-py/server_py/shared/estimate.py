@@ -13,7 +13,7 @@ from typing import Final, Literal, NotRequired, TypedDict, cast
 from server_py.shared import estimate_copy
 from server_py.shared.data import load
 from server_py.shared.dates import DateString, add_days, diff_days, is_valid_date
-from server_py.shared.enums import ExpirySource, FoodCategory, PrintedDateType, StorageLocation
+from server_py.shared.enums import ExpirySource, FoodCategory, PrintedDateType, StorageLocation, Unit
 from server_py.shared.js import SPACE, trim
 from server_py.shared.reference import CATEGORY_DEFAULTS, ReferenceFood, category_from_text, find_reference
 
@@ -42,10 +42,15 @@ EstimatedSource = Literal["PRINTED_DATE", "LEARNED", "CATALOG", "CATEGORY_DEFAUL
 
 
 class LearnedLifespan(TypedDict):
+    """A lifespan learned from what a person usually enters (LearnedLifespan in shared/src/api.ts)."""
+
     name: str
     storage: StorageLocation
+    unit: Unit
     days: int
-    samples: int
+    """Median of the lifespans they entered, in days."""
+    basedOn: int
+    """How many of their items this is based on (at least 2)."""
 
 
 class Product(TypedDict):

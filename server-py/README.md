@@ -4,11 +4,13 @@ The Python rewrite of the API in `server/`, built in phases on the `python-backe
 switch is meant to be invisible: same routes, same bodies, same data. The full plan, and which phase is done, is
 in [docs/PYTHON_MIGRATION.md](../docs/PYTHON_MIGRATION.md).
 
-**Status: Phase 1.** The server runs, with the foundation every later route stands on: settings, the MongoDB
+**Status: Phase 2.** The server runs, with the foundation every later route stands on: settings, the MongoDB
 connection and start-up migrations, Express's HTTP behaviour (helmet headers, CORS, body limits and encodings,
 ETags, the error format), logins (JWT and bcrypt, interchangeable with the Node server's), the auth rate limit,
 and these routes: `GET /health`, `POST /auth/register`, `POST /auth/login`, `GET` and `PUT /auth/me`,
-`GET /push/config` and `GET /ai/status`. Everything else under `/api` is a 401 without a login and a 404 with
+`GET /push/config`, `GET /ai/status`, and food: every `/foods` route except photos, `/foods/bulk`,
+`/foods/cook-first`, `/favourites`, `/usage` and `/suggestions/lifespans` (with reminders scheduled and
+delivered in the app). Everything else under `/api` is a 401 without a login and a 404 with
 one, until its phase.
 
 ## Set up
@@ -31,6 +33,7 @@ From the repository root:
 |---|---|
 | `npm run dev:server-py` | Starts the API on `PORT` (4000 unless set; use 4001 to run it next to the Node server), reloading on changes. With no `MONGO_URI` it starts its own MongoDB, which keeps its data in `server-py/.data`. |
 | `npm run test:py` | Runs pytest. |
+| `npm run compare:py` | Runs one journey on the Node server and on the Python server and reports any difference in a response or a stored document. |
 | `npm run lint:py` | ruff (lint and format check) and pyright (strict). |
 | `npm run db:py` | Starts the local MongoDB on its own, which **keeps its data** in `server-py/.data` (gitignored) on port 27028. |
 | `npm run db:py:empty` | Starts an **empty** throwaway MongoDB for tests, deleted when it stops. |

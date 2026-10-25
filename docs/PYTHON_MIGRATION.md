@@ -9,7 +9,8 @@ Status: **approved on 2026-10-23**, with the five recommended answers in §11 an
 |---|---|
 | 0. Shared data | **Done** (see the notes below). |
 | 1. Foundation | **Done** (see the notes below). |
-| 2–8 | Not started. |
+| 2. Foods | **Done** (see the notes below). |
+| 3–8 | Not started. |
 
 **What Phase 0 found and changed, compared with the plan:**
 - **The day/month order of a printed date was machine-dependent.** For a language with no locale data (`xx`), Node used the computer's own locale. Node, Python's Babel and browsers also disagree on 16 of 920 locales (for example `en-CA`), because they carry different CLDR versions. So no locale library is used. Both languages look the tag up in `shared/data/date-order.json` (recorded from CLDR 48), and Babel isn't a dependency.
@@ -34,6 +35,16 @@ Status: **approved on 2026-10-23**, with the five recommended answers in §11 an
 - **`MESSAGES` moved to `shared/data/validation-messages.json`**, which `schemas.ts` reads, so the Python schemas use the same file. The wording guard scans it.
 - **The start command is `python -m server_py`**, not `uvicorn ... --proxy-headers`: uvicorn's proxy handling and `Server` header are off, because the app reads `X-Forwarded-For` itself, as Express does. `npm run dev:server-py` adds `--reload`.
 - **Tests ported:** `auth` (all 13, plus 3 on the name length), and the parts of `api`, `phase1`, `security` and `structure` that need only Phase 1 routes: the error format, the 500, unreadable bodies, the user's fields, removed routes, the migration backfill, the route walk (every route but the public ones is a 401), `docs/API.md` order (checked as an ordered superset until Phase 6), and the layer rules. Their food, favourite and isolation tests need the food routes and move to Phase 2, as does the database validation test for food items. New files cover what the TypeScript server got from its packages: `test_http.py`, `test_tokens.py`, `test_models.py` (indexes and documents recorded from Mongoose), `test_env.py` and `test_config_routes.py`. `pytest -m phase1` runs them.
+
+**What Phase 2 found and changed, compared with the plan:**
+- **Every Phase 2 route was run on both servers and compared** (`npm run compare:py`, `server-py/scripts/compare-servers.mjs`). It runs one journey on the Node server and on the Python server, each with its own empty database, and compares every response and every document left in MongoDB, with ids, times and tokens numbered in order of appearance. All 84 checks were identical: the responses, plus 21 food items, 58 reminders, the usage records and the favourites, field for field and in Mongoose's field order. Each later phase adds its routes to the journey.
+- **Reminder scheduling and in-app delivery came forward from Phase 4.** Adding, editing, closing and undoing food schedule or cancel its reminders, and `GET /foods` delivers the due ones first, so `schedule_for_household`, `cancel_for_food` and `dispatch_due` are ported now (`services/notification_service.py`). The feed, settings and push stay in Phase 4.
+- **Mongoose's model validators are ported too** (`models/base.py: validate`, rules per model). The request schemas count text in code points and Mongoose in UTF-16 units, so 31 emoji pass the 60-character name check and fail the model's `maxlength`. Every answer, message and field matches Node's, including a whole bulk add refused for one such row.
+- **Saving writes what Mongoose writes:** `$unset` for a field set to undefined (undo removes `closedAt`), the shard key (`userId`) in the filter of every save, the app's clock for usage records' timestamps, and `__v` before the timestamps for `insertMany`.
+- **Sorting with `localeCompare`:** learned lifespans are sorted with ICU's root collation, which Python doesn't have. `shared/js.py: locale_compare_key` copies what matters for food names (base letters first, then accents, then lower case before upper case; ß, æ, œ and ø sort as ss, ae, oe and o; marks before digits before letters), and a test checks it against Node's order for 41 tricky names.
+- **`Math.round` and `Number()`:** halves round up in JavaScript and to even in Python, so prices and quantities use `math_round`. Query values are read with JavaScript's `Number()` rules (`"0x3"` is 3, `""` is 0, a repeated key is NaN).
+- **Time zones come only from the tzdata package.** On Linux, `available_timezones()` also lists the system's own files (`localtime`, `posix/...`), which Intl refuses; that failed Phase 1's CI. Zone names and rules are now read from the bundled package, the same on every machine.
+- **Tests ported:** `foods` (all 26), `phase2` (all 17), `priorityEngine` (all 12), the rest of `api` and `phase1`, the food, history and favourite parts of `security`, and from `rules` everything but the full journey, which covers the Phase 1 and 2 routes (database commands are recorded with PyMongo's command monitoring). Still to come: `security`'s reminder-feed and meal-plan checks (Phases 4 and 6). `pytest -m phase2` runs this phase's tests.
 
 Goal: replace the TypeScript API in `server/` with a Python one in `server-py/`. To every client, the change must be
 invisible. The web app, the Android app and the iOS app stay in TypeScript, Java and Swift, and their code doesn't

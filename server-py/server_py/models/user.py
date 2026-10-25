@@ -178,6 +178,11 @@ async def find_by_id(user_id: str | ObjectId) -> UserDoc | None:
     return UserDoc(stored) if stored else None
 
 
+async def find_in_household(household_id: ObjectId) -> list[UserDoc]:
+    """Everyone in a household (one person, until households are shared)."""
+    return [UserDoc(stored) async for stored in USER.collection().find({"householdId": household_id})]
+
+
 async def save_user(user: UserDoc) -> None:
     # Mongoose checks the paths that changed.
     if user.data.get("name") != user.stored.get("name"):

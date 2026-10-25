@@ -13,9 +13,9 @@ import enum
 import math
 import re
 from collections.abc import Callable, Sequence
-from typing import Any, Final, Self
+from typing import Any, Final, Self, cast
 
-from server_py.shared.js import json_stringify, trim
+from server_py.shared.js import json_stringify, number_text, trim
 
 
 class Missing(enum.Enum):
@@ -313,3 +313,142 @@ class Object(Schema):
 
 def object_of(shape: dict[str, Schema], error: Message = None) -> Object:
     return Object(shape, error)
+
+
+NumberCheck = Callable[[float, Path], None]
+
+
+def _number_text(value: float) -> str:
+    return number_text(value)
+
+
+class Number(Schema):
+    """z.number(): a finite number (not a boolean), with its checks in the order they were written. With
+    `coerce`, z.coerce.number(): the value is first converted as JavaScript's Number() converts it."""
+
+    def __init__(self, error: Message = None, checks: Sequence[NumberCheck] = (), coerce: bool = False) -> None:
+        self.error = error
+        self.checks = tuple(checks)
+        self.coerce = coerce
+
+    def _with(self, check: NumberCheck) -> Self:
+        return type(self)(self.error, (*self.checks, check), self.coerce)
+
+    def parse(self, value: Any, path: Path = ()) -> Any:
+        if self.coerce:
+            value = js_number(value)
+        is_number = isinstance(value, int | float) and not isinstance(value, bool)
+        if not is_number or not math.isfinite(value):
+            raise ZodIssue(self.error or _invalid_type("number", value), path)
+        for check in self.checks:
+            check(value, path)
+        return value
+
+    def int(self, message: Message = None) -> Self:
+        def check(value: float, path: Path) -> None:
+            if not float(value).is_integer() or abs(value) > 2**53 - 1:
+                raise ZodIssue(message or "Invalid input: expected int, received number", path)
+
+        return self._with(check)
+
+    def _bound(self, limit: float, inclusive: bool, above: bool, message: Message) -> Self:
+        def check(value: float, path: Path) -> None:
+            fits = (
+                (value >= limit if inclusive else value > limit)
+                if above
+                else (value <= limit if inclusive else value < limit)
+            )
+            if not fits:
+                sign = (">=" if inclusive else ">") if above else ("<=" if inclusive else "<")
+                default = f"{'Too small' if above else 'Too big'}: expected number to be {sign}{_number_text(limit)}"
+                raise ZodIssue(message or default, path)
+
+        return self._with(check)
+
+    def min(self, limit: float, message: Message = None) -> Self:
+        return self._bound(limit, inclusive=True, above=True, message=message)
+
+    def max(self, limit: float, message: Message = None) -> Self:
+        return self._bound(limit, inclusive=True, above=False, message=message)
+
+    def positive(self, message: Message = None) -> Self:
+        return self._bound(0, inclusive=False, above=True, message=message)
+
+
+def number(error: Message = None) -> Number:
+    return Number(error)
+
+
+def coerce_number(error: Message = None) -> Number:
+    return Number(error, coerce=True)
+
+
+_JS_NUMBER: Final = re.compile(r"[+-]?(?:Infinity|(?:[0-9]+\.?[0-9]*|\.[0-9]+)(?:[eE][+-]?[0-9]+)?)")
+_JS_RADIX: Final = re.compile(r"0([xXoObB])([0-9a-fA-F]+)")
+
+
+def js_number(value: object) -> float | int:
+    """JavaScript's Number(value), for the values a JSON body or a query string can hold."""
+    if value is MISSING:
+        return math.nan
+    if value is None or value is False:
+        return 0
+    if value is True:
+        return 1
+    if isinstance(value, int | float):
+        return value
+    if isinstance(value, list):
+        # Number([x]) is Number(String([x])): "1,2" for two items, "" for none.
+        items = cast(list[object], value)
+        return (
+            js_number(",".join("" if item is None else str(item) for item in items))
+            if len(items) != 1
+            else js_number(items[0] if isinstance(items[0], str) else str(items[0]))
+        )
+    if not isinstance(value, str):
+        return math.nan
+    text = trim(value)
+    if text == "":
+        return 0
+    if radix := _JS_RADIX.fullmatch(text):
+        base = {"x": 16, "o": 8, "b": 2}[radix[1].lower()]
+        try:
+            return int(radix[2], base)
+        except ValueError:
+            return math.nan
+    if not _JS_NUMBER.fullmatch(text):
+        return math.nan
+    parsed = float(text.replace("Infinity", "inf"))
+    return int(parsed) if parsed.is_integer() and abs(parsed) <= 2**53 else parsed
+
+
+class Array(Schema):
+    """z.array(item): every element parsed (path: its index), then the length checks."""
+
+    def __init__(self, item: Schema, error: Message = None, minimum: tuple[int, Message] | None = None,
+                 maximum: tuple[int, Message] | None = None) -> None:  # fmt: skip
+        self.item = item
+        self.error = error
+        self.minimum = minimum
+        self.maximum = maximum
+
+    def parse(self, value: Any, path: Path = ()) -> Any:
+        if not isinstance(value, list):
+            raise ZodIssue(self.error or _invalid_type("array", value), path)
+        items = cast(list[Any], value)
+        parsed = [self.item.parse(item, (*path, index)) for index, item in enumerate(items)]
+        if self.minimum and len(items) < self.minimum[0]:
+            raise ZodIssue(self.minimum[1] or f"Too small: expected array to have >={self.minimum[0]} items", path)
+        if self.maximum and len(items) > self.maximum[0]:
+            raise ZodIssue(self.maximum[1] or f"Too big: expected array to have <={self.maximum[0]} items", path)
+        return parsed
+
+    def min(self, length: int, message: Message = None) -> "Array":
+        return Array(self.item, self.error, (length, message), self.maximum)
+
+    def max(self, length: int, message: Message = None) -> "Array":
+        return Array(self.item, self.error, self.minimum, (length, message))
+
+
+def array_of(item: Schema, error: Message = None) -> Array:
+    return Array(item, error)

@@ -6,12 +6,12 @@ written in the zod shape's order, which is the order zod checks them in.
 """
 
 from collections.abc import Callable
-from typing import Any, ClassVar, Self
+from typing import Any, ClassVar, Self, cast
 
 from pydantic import BaseModel, ConfigDict, Field, PlainValidator, ValidationError
 from pydantic_core import PydanticCustomError
 
-from server_py.schemas.zod import MISSING, Object, Schema, ZodIssue, parsed_type
+from server_py.schemas.zod import MISSING, Object, Path, Schema, ZodIssue
 
 
 def _validator(schema: Schema) -> Callable[[Any], Any]:
@@ -38,21 +38,32 @@ class RequestModel(BaseModel):
 
     # The model's own error (z.object's `{error}`), for a value that isn't an object at all.
     object_error: ClassVar[str | None] = None
+    # `.refine(check, message)` on the whole object: checked on the parsed data once every field is fine.
+    refinements: ClassVar[tuple[tuple[Callable[[dict[str, Any]], bool], str], ...]] = ()
 
     @classmethod
-    def parse_input(cls, value: object) -> Self:
-        """The parsed model, or ZodIssue for the first problem."""
-        if value is None or value is MISSING:
+    def parse_input(cls, value: object, path: Path = (), *, root: bool = True) -> Self:
+        """The parsed model, or ZodIssue for the first problem. At the root a missing value counts as an empty
+        object (validate.ts parses `req[source] ?? {}`); a nested one doesn't."""
+        if root and (value is None or value is MISSING):
             value = {}
         if not isinstance(value, dict):
-            Object({}, cls.object_error).parse(value)
-            raise ZodIssue(f"Invalid input: expected object, received {parsed_type(value)}")
+            Object({}, cls.object_error).parse(value, path)
         try:
-            return cls.model_validate(value)
+            parsed = cls.model_validate(value)
         except ValidationError as error:
             first = error.errors()[0]
             context = first.get("ctx") or {}
-            raise ZodIssue(context.get("message", first["msg"]), (*first["loc"], *context.get("path", ()))) from None
+            # An absent key is reported under the field's Python name; the API uses the JSON one.
+            field, *rest = first["loc"]
+            info = cls.model_fields.get(str(field))
+            name = info.alias if info and info.alias else field
+            location = (*path, name, *rest, *context.get("path", ()))
+            raise ZodIssue(context.get("message", first["msg"]), location) from None
+        for check, message in cls.refinements:
+            if not check(parsed.data()):
+                raise ZodIssue(message, path)
+        return parsed
 
     def data(self) -> dict[str, Any]:
         """What zod's parse returns: every field that has a value, under its JSON name, in the shape's order."""
@@ -60,5 +71,27 @@ class RequestModel(BaseModel):
         for name, info in type(self).model_fields.items():
             value = getattr(self, name)
             if value is not MISSING:
-                values[info.alias or name] = value
+                values[info.alias or name] = _plain(value)
         return values
+
+    def given(self, name: str) -> bool:
+        """Whether the request had this field (zod's `!== undefined`)."""
+        return getattr(self, name) is not MISSING
+
+
+def _plain(value: Any) -> Any:
+    if isinstance(value, RequestModel):
+        return value.data()
+    if isinstance(value, list):
+        return [_plain(item) for item in cast(list[Any], value)]
+    return value
+
+
+class ModelSchema(Schema):
+    """A nested object checked by its own request model (one row of a bulk add, say)."""
+
+    def __init__(self, model: type[RequestModel]) -> None:
+        self.model = model
+
+    def parse(self, value: Any, path: Path = ()) -> Any:
+        return self.model.parse_input(value, path, root=False)

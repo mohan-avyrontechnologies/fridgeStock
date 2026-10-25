@@ -15,6 +15,7 @@
     "db:py:empty": "node server-py/scripts/dev-mongo.mjs --empty",
     "lint:py": "cd server-py && uv run ruff check . && uv run ruff format --check . && uv run pyright",
     "test:py": "cd server-py && uv run pytest",
+    "compare:py": "node server-py/scripts/compare-servers.mjs",
     "build": "npm run build -w shared && npm run build -w server && npm run build -w client",
     "lint": "eslint .",
     "typecheck": "npm run typecheck --workspaces",

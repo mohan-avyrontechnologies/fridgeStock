@@ -10,6 +10,17 @@ from typing import Any
 
 from server_py.schemas.auth import LoginInput, RegisterInput, UpdateAccountInput
 from server_py.schemas.base import RequestModel
+from server_py.schemas.food import (
+    BulkCreateInput,
+    CreateFoodInput,
+    FavouriteInput,
+    MoveFoodInput,
+    OpenFoodInput,
+    PaginationInput,
+    UpdateFoodInput,
+    UseFoodInput,
+    WasteFoodInput,
+)
 from server_py.schemas.zod import ZodIssue
 
 ValidationAnswer = dict[str, Any]
@@ -30,18 +41,24 @@ SCHEMAS: dict[str, Callable[[Any], ValidationAnswer]] = {
     "registerSchema": answer(RegisterInput),
     "loginSchema": answer(LoginInput),
     "updateAccountSchema": answer(UpdateAccountInput),
+    "createFoodSchema": answer(CreateFoodInput),
+    "updateFoodSchema": answer(UpdateFoodInput),
+    "bulkCreateSchema": answer(BulkCreateInput),
+    "favouriteSchema": answer(FavouriteInput),
+    "openFoodSchema": answer(OpenFoodInput),
+    "moveFoodSchema": answer(MoveFoodInput),
+    "useFoodSchema": answer(UseFoodInput),
+    "wasteFoodSchema": answer(WasteFoodInput),
+    "paginationSchema": answer(PaginationInput),
 }
 
 # Not ported yet. A phase may not finish while one of its routes' schemas is still listed here.
 PENDING: frozenset[str] = frozenset(
     {
-        "deleteAccountSchema", "joinHouseholdSchema", "inviteCodeParamSchema",
-        "createFoodSchema", "updateFoodSchema", "receiptSchema", "barcodeSchema",
-        "bulkCreateSchema", "favouriteSchema", "openFoodSchema", "moveFoodSchema", "useFoodSchema",
-        "wasteFoodSchema", "preferencesSchema", "deliverySchema", "pushSubscriptionSchema", "pushUnsubscribeSchema",
+        "deleteAccountSchema", "joinHouseholdSchema", "inviteCodeParamSchema", "receiptSchema", "barcodeSchema",
+        "preferencesSchema", "deliverySchema", "pushSubscriptionSchema", "pushUnsubscribeSchema",
         "pushActionSchema", "alertSettingsSchema", "mealRemindersSchema", "recipesRequestSchema", "mealParamSchema",
         "mealDateParamSchema", "mealQuerySchema", "shoppingItemSchema", "shoppingUpdateSchema",
-        "mealPlanEntrySchema", "paginationSchema", "notificationPageSchema", "photoCheckSchema",
-        "printedDateSchema", "photoSizeSchema",
+        "mealPlanEntrySchema", "notificationPageSchema", "photoCheckSchema", "printedDateSchema", "photoSizeSchema",
     }
 )  # fmt: skip

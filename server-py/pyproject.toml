@@ -52,4 +52,5 @@ asyncio_default_test_loop_scope = "session"
 # One group per migration phase, so a PC short of memory can run one at a time (pytest -m phase1).
 markers = [
     "phase1: config, database, HTTP behaviour, auth and the config routes",
+    "phase2: foods, the priority engine, usage history, favourites and learned lifespans",
 ]

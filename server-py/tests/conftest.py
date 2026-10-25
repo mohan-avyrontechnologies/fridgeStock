@@ -23,6 +23,7 @@ from typing import Any
 
 import httpx
 import pytest
+from pymongo import monitoring
 from pymongo.asynchronous.database import AsyncDatabase
 
 from server_py import db
@@ -34,6 +35,29 @@ from server_py.routes.index import auth_limiter
 from server_py.services import clock
 
 __all__ = ["DEV_MONGO", "SERVER_PY", "EmbeddedMongo"]
+
+
+class CommandLog(monitoring.CommandListener):
+    """Every command the app sends to MongoDB while `recording` (rules tests read it, as rules.test.ts reads
+    Mongoose's debug log). Registered before the connection is opened, so it sees the app's client."""
+
+    def __init__(self) -> None:
+        self.recording = False
+        self.commands: list[dict[str, Any]] = []
+
+    def started(self, event: monitoring.CommandStartedEvent) -> None:
+        if self.recording:
+            self.commands.append(dict(event.command))
+
+    def succeeded(self, event: monitoring.CommandSucceededEvent) -> None:
+        return None
+
+    def failed(self, event: monitoring.CommandFailedEvent) -> None:
+        return None
+
+
+COMMANDS = CommandLog()
+monitoring.register(COMMANDS)
 
 
 @pytest.fixture(scope="session")
@@ -104,6 +128,16 @@ async def register_user(api: httpx.AsyncClient, **overrides: Any) -> Account:
     res = await api.post("/api/auth/register", json=body)
     assert res.status_code == 201, res.text
     return Account(res.json()["token"], res.json()["user"], body["password"])
+
+
+UNDEFINED: Any = object()
+"""In `food(...)`: leave the field out, as `undefined` does in helpers.ts."""
+
+
+def food(**overrides: Any) -> dict[str, Any]:
+    """A food item body, as helpers.ts's `food()` gives one."""
+    body = {"name": "Milk", "quantity": 1, "unit": "l", "addedDate": "2026-09-29", "lifespanDays": 4, **overrides}
+    return {key: value for key, value in body.items() if value is not UNDEFINED}
 
 
 def set_today(date_key: str) -> None:

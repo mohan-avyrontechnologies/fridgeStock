@@ -9,13 +9,32 @@ from typing import Final
 from starlette.requests import Request
 from starlette.responses import Response
 
-from server_py.controllers import ai_controller, auth_controller, push_controller
+from server_py.controllers import (
+    ai_controller,
+    auth_controller,
+    favourite_controller,
+    food_controller,
+    push_controller,
+    suggestion_controller,
+    usage_controller,
+)
 from server_py.middleware.auth import require_auth
 from server_py.middleware.http import json_response
 from server_py.middleware.rate_limit import RateLimit
 from server_py.middleware.validate import validate
 from server_py.routes.router import Router
 from server_py.schemas.auth import LoginInput, RegisterInput, UpdateAccountInput
+from server_py.schemas.food import (
+    BulkCreateInput,
+    CreateFoodInput,
+    FavouriteInput,
+    MoveFoodInput,
+    OpenFoodInput,
+    PaginationInput,
+    UpdateFoodInput,
+    UseFoodInput,
+    WasteFoodInput,
+)
 
 _FIFTEEN_MINUTES: Final = 15 * 60 * 1000
 _TOO_MANY_ATTEMPTS: Final = "Too many attempts. Try again later."
@@ -41,6 +60,31 @@ router.use(require_auth)
 
 router.get("/auth/me", auth_controller.me)
 router.put("/auth/me", validate(UpdateAccountInput), auth_controller.update_me)
+
+router.get("/foods", food_controller.list_foods)
+router.post("/foods", validate(CreateFoodInput), food_controller.create)
+router.post("/foods/bulk", validate(BulkCreateInput), food_controller.bulk_create)
+# /foods/cook-first must come before /foods/:id, or "cook-first" would be taken as an id.
+router.get("/foods/cook-first", food_controller.cook_first)
+router.get("/foods/:id", food_controller.get)
+router.put("/foods/:id", validate(UpdateFoodInput), food_controller.update)
+router.delete("/foods/:id", food_controller.remove)
+router.post("/foods/:id/use", validate(UseFoodInput), food_controller.use)
+router.post("/foods/:id/waste", validate(WasteFoodInput), food_controller.waste)
+router.post("/foods/:id/undo", food_controller.undo)
+router.post("/foods/:id/use-today", food_controller.use_today)
+router.post("/foods/:id/open", validate(OpenFoodInput), food_controller.open_food)
+router.delete("/foods/:id/open", food_controller.undo_open)
+router.post("/foods/:id/move", validate(MoveFoodInput), food_controller.move)
+
+router.get("/suggestions/lifespans", suggestion_controller.lifespans)
+
+router.get("/favourites", favourite_controller.list_favourites)
+router.post("/favourites", validate(FavouriteInput), favourite_controller.create)
+router.delete("/favourites/:id", favourite_controller.remove)
+router.post("/favourites/:id/add", favourite_controller.add)
+
+router.get("/usage", validate(PaginationInput, "query"), usage_controller.list_history)
 
 router.get("/push/config", push_controller.config)
 

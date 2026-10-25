@@ -11,9 +11,10 @@
 import json
 import math
 import re
+import unicodedata
 from datetime import UTC, datetime
 from decimal import Decimal
-from typing import cast
+from typing import Final, cast
 
 # The characters JavaScript's trim() removes and \s matches (WhiteSpace and LineTerminator in ECMA-262),
 # written as code points because most of them are invisible.
@@ -134,3 +135,54 @@ def iso_string(moment: datetime) -> str:
     """`date.toISOString()`: UTC, always with milliseconds, like 2026-09-29T12:00:00.000Z."""
     utc = moment.astimezone(UTC) if moment.tzinfo else moment.replace(tzinfo=UTC)
     return utc.strftime("%Y-%m-%dT%H:%M:%S.") + f"{utc.microsecond // 1000:03d}Z"
+
+
+def math_round(value: float) -> int | float:
+    """`Math.round(value)`: halves go up (2.5 is 3, -2.5 is -2), where Python's round() goes to even."""
+    if not math.isfinite(value):
+        return value
+    floor = math.floor(value)
+    return floor + 1 if value - floor >= 0.5 else floor
+
+
+# The order ICU's root collation (String.prototype.localeCompare) gives the ASCII marks, before digits and
+# letters. Recorded from Node.
+_MARKS: Final = " _-,;:!?.'\"()[]{}@*/\\&#%`^+<=>|~$"
+# Letters that sort as others with an accent-level difference (o with a stroke as o), or as two
+# letters (the joined ae as ae).
+_FOLDED: Final = {"\u00df": "ss", "\u00e6": "ae", "\u0153": "oe", "\u00f8": "o", "\u0111": "d", "\u0142": "l"}
+
+
+def _collation_parts(char: str) -> tuple[str, bool]:
+    """The base letters a character sorts as, and whether it carries an accent (a secondary difference)."""
+    lower = char.lower()
+    if lower in _FOLDED:
+        return _FOLDED[lower], True
+    decomposed = unicodedata.normalize("NFKD", lower)
+    base = "".join(c for c in decomposed if not unicodedata.combining(c))
+    return base or lower, base != lower
+
+
+def _primary(char: str) -> tuple[int, int]:
+    if char in _MARKS:
+        return (0, _MARKS.index(char))
+    if char.isdigit() and char.isascii():
+        return (1, ord(char))
+    if char.isalpha():
+        return (2, ord(char))
+    return (0, len(_MARKS) + ord(char))
+
+
+def locale_compare_key(text: str) -> tuple[tuple[tuple[int, int], ...], tuple[bool, ...], tuple[bool, ...]]:
+    """A sort key that orders text as `a.localeCompare(b)` does for the names people type: letters by their base
+    letter first (case and accents ignored), then accents, then lower case before upper case. Marks come before
+    digits, digits before letters."""
+    primary: list[tuple[int, int]] = []
+    secondary: list[bool] = []
+    tertiary: list[bool] = []
+    for char in text:
+        base, accented = _collation_parts(char)
+        primary.extend(_primary(c) for c in base)
+        secondary.append(accented)
+        tertiary.append(char != char.lower())
+    return tuple(primary), tuple(secondary), tuple(tertiary)

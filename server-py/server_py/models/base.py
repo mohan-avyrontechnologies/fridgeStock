@@ -14,6 +14,7 @@ Only models (and the connection in db.py) talk to MongoDB directly.
 import copy
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any, cast
 
 from bson import ObjectId
@@ -21,7 +22,7 @@ from pymongo.asynchronous.collection import AsyncCollection
 
 from server_py import db
 from server_py.services import clock
-from server_py.shared.js import utf16_length, utf16_slice
+from server_py.shared.js import number_text, utf16_length, utf16_slice
 
 
 @dataclass(frozen=True)
@@ -68,6 +69,8 @@ class Model:
     name: str
     collection_name: str
     indexes: tuple[Index, ...] = ()
+    # Mongoose's shardKey option: these fields of the document are added to the filter of every save.
+    shard_key: tuple[str, ...] = ()
 
     def collection(self) -> AsyncCollection[dict[str, Any]]:
         return db.database()[self.collection_name]
@@ -191,6 +194,23 @@ class Document:
             parent = parent.setdefault(part, {})
         parent[leaf] = value
 
+    def unset(self, path: str) -> None:
+        """Setting a path to undefined in Mongoose: the next save removes it ($unset)."""
+        parent: dict[str, Any] = self.data
+        *parents, leaf = path.split(".")
+        for part in parents:
+            child = parent.get(part)
+            if not isinstance(child, dict):
+                return
+            parent = cast(dict[str, Any], child)
+        parent.pop(leaf, None)
+
+    def __getitem__(self, path: str) -> Any:
+        return self.get(path)
+
+    def __setitem__(self, path: str, value: object) -> None:
+        self.set(path, value)
+
 
 def _leaves(document: Mapping[str, Any], prefix: str = "") -> dict[str, Any]:
     """Every value that isn't itself a sub-document, by dotted path."""
@@ -204,13 +224,25 @@ def _leaves(document: Mapping[str, Any], prefix: str = "") -> dict[str, Any]:
     return leaves
 
 
-async def save(model: Model, document: Document, *, timestamps: bool = True) -> None:
-    """`doc.save()` on a document that was read: $set what differs from what is stored. Nothing is written when
-    nothing differs."""
+def modified_paths(document: Document) -> set[str]:
+    """The paths a save would change because they were set (not defaults filled in when reading)."""
     before = _leaves(document.stored)
+    after = _leaves(document.data)
+    changed = {path for path, value in after.items() if path not in before or before[path] != value}
+    removed = {path for path in before if path not in after}
+    filled = document.defaulted | document.null_defaults
+    return {path for path in changed | removed if path not in filled}
+
+
+async def save(model: Model, document: Document, *, now: Callable[[], datetime] = clock.system_now) -> None:
+    """`doc.save()` on a document that was read: $set what differs from what is stored, $unset what was removed,
+    and bump updatedAt when anything was really changed. Nothing is written when nothing differs. `now` is the
+    model's timestamp clock (the computer's, unless the model says otherwise)."""
+    before = _leaves(document.stored)
+    after = _leaves(document.data)
     changes: dict[str, Any] = {}
     modified = False
-    for path, value in _leaves(document.data).items():
+    for path, value in after.items():
         if path in before and before[path] == value:
             continue
         if value is None and path in document.null_defaults:
@@ -219,14 +251,125 @@ async def save(model: Model, document: Document, *, timestamps: bool = True) -> 
         changes[path] = value
         if path not in document.defaulted:
             modified = True
-    if not changes:
+    removed = {path: "" for path in before if path not in after}
+    if not changes and not removed:
         return
-    if modified and timestamps:
-        changes["updatedAt"] = clock.system_now()
+    if modified or removed:
+        changes["updatedAt"] = now()
         document.data["updatedAt"] = changes["updatedAt"]
-    result = await model.collection().update_one({"_id": document.id}, {"$set": changes})
+    update: dict[str, Any] = {"$set": changes}
+    if removed:
+        update["$unset"] = removed
+    query = {"_id": document.id, **{key: document.stored.get(key) for key in model.shard_key}}
+    result = await model.collection().update_one(query, update)
     if result.matched_count == 0:
-        raise LookupError(f'No document found for query "{{ _id: \'{document.id}\' }}" on model "{model.name}"')
+        raise LookupError(f"No document found for _id {document.id} on model {model.name}")
     document.stored = copy.deepcopy(document.data)
     document.defaulted = set()
     document.null_defaults = set()
+
+
+class _NoDefault:
+    def __repr__(self) -> str:
+        return "NoDefault"
+
+
+NoDefault: Any = _NoDefault()
+"""In a schema list: the field has no default, so it is left out when no value is given."""
+
+Schema = tuple[tuple[str, Any], ...]
+"""A model's top-level fields in the order Mongoose writes them, each with its default (or NoDefault)."""
+
+
+def new_document(
+    schema: Schema, values: Mapping[str, Any], *, now: datetime, insert_many: bool = False
+) -> dict[str, Any]:
+    """A new document laid out as `Model.create` writes it: _id, every schema field that has a value or a
+    default, then the timestamps and __v (insertMany writes __v before the timestamps)."""
+    document: dict[str, Any] = {"_id": new_id()}
+    for name, default in schema:
+        if name in values:
+            document[name] = values[name]
+        elif default is not NoDefault:
+            document[name] = _value(default)
+    if insert_many:
+        document.update({"__v": 0, "createdAt": now, "updatedAt": now})
+    else:
+        document.update({"createdAt": now, "updatedAt": now, "__v": 0})
+    return document
+
+
+Rule = Callable[[str, Any], str | None]
+"""One Mongoose validator for one path: the message when the value breaks it, else None."""
+
+
+def required() -> Rule:
+    # An empty string counts as missing for a required string, as in Mongoose.
+    return lambda path, value: f"Path `{path}` is required." if value is None or value == "" else None
+
+
+def length(minimum: int, maximum: int) -> Rule:
+    return lambda path, value: check_length(path, value, minimum, maximum) if isinstance(value, str) else None
+
+
+def _is_number(value: Any) -> bool:
+    return isinstance(value, int | float) and not isinstance(value, bool)
+
+
+def at_least(limit: float) -> Rule:
+    def rule(path: str, value: Any) -> str | None:
+        if _is_number(value) and value < limit:
+            return f"Path `{path}` ({number_text(value)}) is less than minimum allowed value ({number_text(limit)})."
+        return None
+
+    return rule
+
+
+def at_most(limit: float) -> Rule:
+    def rule(path: str, value: Any) -> str | None:
+        if _is_number(value) and value > limit:
+            return f"Path `{path}` ({number_text(value)}) is more than maximum allowed value ({number_text(limit)})."
+        return None
+
+    return rule
+
+
+def one_of(values: tuple[Any, ...]) -> Rule:
+    def rule(path: str, value: Any) -> str | None:
+        if value is not None and value not in values:
+            return f"`{value}` is not a valid enum value for path `{path}`."
+        return None
+
+    return rule
+
+
+def check(test: Callable[[Any], bool], message: str | None = None) -> Rule:
+    """A custom validator; without a message, Mongoose's general one."""
+
+    def rule(path: str, value: Any) -> str | None:
+        if value is None or test(value):
+            return None
+        shown = number_text(value) if _is_number(value) else value
+        return message or f"Validator failed for path `{path}` with value `{shown}`"
+
+    return rule
+
+
+Rules = Mapping[str, tuple[Rule, ...]]
+"""Each path's validators, in the schema's path order and each path's option order."""
+
+
+def validate(rules: Rules, document: Mapping[str, Any], paths: set[str] | None = None) -> None:
+    """Mongoose's validation: every path (on create) or the modified ones (on save). DocumentValidationError
+    with each failing path's first message, in path order."""
+    errors: dict[str, str] = {}
+    for path, path_rules in rules.items():
+        if paths is not None and path not in paths:
+            continue
+        value = document.get(path)
+        for rule in path_rules:
+            if problem := rule(path, value):
+                errors[path] = problem
+                break
+    if errors:
+        raise DocumentValidationError(errors)
