@@ -11,7 +11,7 @@ import {
   type PrintedDateType,
   type StorageLocation,
   type Unit,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { Schema, Types, model, type HydratedDocument } from 'mongoose';
 
 /**

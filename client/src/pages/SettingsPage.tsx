@@ -3,7 +3,7 @@ import { describeError } from '../lib/errors';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { api } from '../api/client';
-import { CURRENCIES, type Currency, type NotificationPreferences } from '@cook-first/shared';
+import { CURRENCIES, type Currency, type NotificationPreferences } from '@fridgestock/shared';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { AlertSettings } from '../components/AlertSettings';
 import { PushReminders } from '../components/PushReminders';
@@ -195,7 +195,7 @@ export function SettingsPage() {
           to="/welcome"
           className="flex min-h-14 items-center justify-between rounded-card border border-line bg-card px-4 font-medium hover:bg-paper"
         >
-          How Cook First works
+          How FridgeStock works
           <ChevronRight aria-hidden className="size-5 text-muted" />
         </Link>
 

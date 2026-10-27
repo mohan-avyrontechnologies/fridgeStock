@@ -8,7 +8,7 @@ import { PULL_THRESHOLD } from '../components/PullToRefresh';
 import { SWIPE_THRESHOLD } from '../components/SwipeActions';
 import { item } from '../mocks/handlers';
 import { server } from '../mocks/server';
-import { CookFirstPage } from '../pages/CookFirstPage';
+import { FridgeStockPage } from '../pages/FridgeStockPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { platform } from '../platform';
 import { useFoodStore } from '../stores/foodStore';
@@ -45,7 +45,7 @@ function api(items = [spinach, milk]) {
         items: list,
       }),
     ),
-    http.get(`${API_URL}/foods/cook-first`, () =>
+    http.get(`${API_URL}/foods/fridgestock`, () =>
       HttpResponse.json({ today: '2026-09-29', items: list.filter((i) => i.urgency !== 'NOT_URGENT') }),
     ),
     http.post(`${API_URL}/foods/:id/use`, ({ params }) => {
@@ -90,7 +90,7 @@ afterEach(() => {
 describe('what a food card shows', () => {
   it('has a large name, the quantity, the days left in words and the urgency badge', async () => {
     api();
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     const card = within(
       await screen.findByRole('heading', { level: 3, name: 'Spinach' }).then((h) => h.closest('li')!),
     );
@@ -130,7 +130,7 @@ describe('what a food card shows', () => {
 describe('swiping', () => {
   it('right marks the item as used, left as wasted, each with an Undo toast', async () => {
     const calls = api();
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     swipe(await screen.findByRole('heading', { level: 3, name: 'Spinach' }), 20, 20 + SWIPE_THRESHOLD + 10);
     expect(await screen.findByText('Marked as used: Spinach')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Undo' })).toBeInTheDocument();
@@ -139,7 +139,7 @@ describe('swiping', () => {
 
   it('left marks it as wasted', async () => {
     const calls = api();
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     swipe(await screen.findByRole('heading', { level: 3, name: 'Spinach' }), 300, 300 - SWIPE_THRESHOLD - 10);
     expect(await screen.findByText('Marked as wasted: Spinach')).toBeInTheDocument();
     expect(calls).toEqual(['waste s']);
@@ -148,7 +148,7 @@ describe('swiping', () => {
   it('Undo brings the item back', async () => {
     const user = userEvent.setup();
     const calls = api();
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     swipe(await screen.findByRole('heading', { level: 3, name: 'Spinach' }), 20, 200);
     await user.click(await screen.findByRole('button', { name: 'Undo' }));
     expect(await screen.findByRole('heading', { level: 3, name: 'Spinach' })).toBeInTheDocument();
@@ -157,7 +157,7 @@ describe('swiping', () => {
 
   it('a short swipe does nothing, and the card stays', async () => {
     const calls = api();
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     swipe(await screen.findByRole('heading', { level: 3, name: 'Spinach' }), 20, 20 + SWIPE_THRESHOLD - 30);
     await new Promise((resolve) => setTimeout(resolve, 30));
     expect(calls).toEqual([]);
@@ -166,7 +166,7 @@ describe('swiping', () => {
 
   it('a mostly vertical drag is a scroll, not a swipe', async () => {
     const calls = api();
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     swipe(await screen.findByRole('heading', { level: 3, name: 'Spinach' }), 20, 20 + SWIPE_THRESHOLD + 40, 400);
     await new Promise((resolve) => setTimeout(resolve, 30));
     expect(calls).toEqual([]);
@@ -175,7 +175,7 @@ describe('swiping', () => {
   it('the visible buttons are still there, so swiping is never required', async () => {
     const user = userEvent.setup();
     const calls = api();
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     await user.click(await screen.findByRole('button', { name: 'Mark as wasted: Spinach' }));
     expect(await screen.findByText('Marked as wasted: Spinach')).toBeInTheDocument();
     expect(calls).toEqual(['waste s']);
@@ -193,7 +193,7 @@ describe('optimistic updates', () => {
         return HttpResponse.json({ error: { code: 'SERVER', message: 'Something went wrong.' } }, { status: 500 });
       }),
     );
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     await user.click(await screen.findByRole('button', { name: 'Mark as wasted: Spinach' }));
     // The server hasn't replied yet, and the card has already left.
     expect(screen.queryByRole('heading', { level: 3, name: 'Spinach' })).not.toBeInTheDocument();
@@ -221,7 +221,7 @@ describe('optimistic updates', () => {
         return HttpResponse.json({});
       }),
     );
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     await user.click(await screen.findByRole('button', { name: 'Mark as used: Flour' }));
     await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /Mark some as used/ }));
     await user.type(screen.getByLabelText(/How much did you use/), '200');
@@ -308,7 +308,7 @@ describe('pull to refresh', () => {
         });
       }),
     );
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     await user.click(await screen.findByRole('button', { name: 'Mark as used: Spinach' }));
     await new Promise((resolve) => setTimeout(resolve, 100)); // let the first loads finish
     const before = loads;
@@ -326,7 +326,7 @@ describe('haptics', () => {
     const success = vi.spyOn(platform.haptics, 'success');
     const warning = vi.spyOn(platform.haptics, 'warning');
     api();
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     await user.click(await screen.findByRole('button', { name: 'Mark as wasted: Spinach' }));
     await waitFor(() => expect(warning).toHaveBeenCalledTimes(1));
     expect(success).not.toHaveBeenCalled();
@@ -335,7 +335,7 @@ describe('haptics', () => {
   it('a used item gives a success tap', async () => {
     const success = vi.spyOn(platform.haptics, 'success');
     api();
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     swipe(await screen.findByRole('heading', { level: 3, name: 'Spinach' }), 20, 200);
     await waitFor(() => expect(success).toHaveBeenCalledTimes(1));
   });
@@ -354,7 +354,7 @@ describe('the "used" animation', () => {
   it('shows a short check mark, then closes the card up before marking it as used', async () => {
     motionAllowed();
     const calls = api();
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     const heading = await screen.findByRole('heading', { level: 3, name: 'Spinach' });
     vi.useFakeTimers({ toFake: ['setTimeout'] });
     swipe(heading, 20, 200);
@@ -377,7 +377,7 @@ describe('the "used" animation', () => {
       removeEventListener() {},
     }));
     const calls = api();
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     const heading = await screen.findByRole('heading', { level: 3, name: 'Spinach' });
     swipe(heading, 20, 200);
     expect(heading.closest('li')!.className).not.toContain('card-collapse');
@@ -393,7 +393,7 @@ describe('the "used" animation', () => {
         HttpResponse.json({ error: { code: 'SERVER', message: 'No.' } }, { status: 500 }),
       ),
     );
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     const heading = await screen.findByRole('heading', { level: 3, name: 'Spinach' });
     swipe(heading, 20, 200);
     expect(await screen.findByText(/Couldn’t mark Spinach as used/, undefined, { timeout: 3000 })).toBeInTheDocument();

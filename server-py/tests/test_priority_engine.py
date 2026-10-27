@@ -52,7 +52,7 @@ def test_excludes_used_wasted_and_removed_items() -> None:
         TODAY,
     )
     assert ids(result["items"]) == ["active"]
-    assert ids(result["cookFirst"]) == ["active"]
+    assert ids(result["fridgeStock"]) == ["active"]
     assert result["summary"]["total"] == 1
 
 
@@ -76,7 +76,7 @@ def test_a_zero_day_lifespan_is_due_on_the_day_it_is_added() -> None:
     result = prioritise([item("yoghurt", TODAY, 0)], TODAY)
     first = result["items"][0]
     assert (first["expiryDate"], first["remainingDays"], first["urgency"]) == (TODAY, 0, "DUE")
-    assert ids(result["cookFirst"]) == ["yoghurt"]
+    assert ids(result["fridgeStock"]) == ["yoghurt"]
 
 
 def test_gives_identical_output_when_run_twice() -> None:
@@ -103,15 +103,15 @@ def test_chicken_spinach_milk_eggs() -> None:
         [item("eggs", TODAY, 8), item("milk", TODAY, 4), item("chicken", TODAY, 1), item("spinach", TODAY, 2)], TODAY
     )
     assert ids(result["items"]) == ["chicken", "spinach", "milk", "eggs"]
-    assert ids(result["cookFirst"]) == ["chicken", "spinach"]
+    assert ids(result["fridgeStock"]) == ["chicken", "spinach"]
     assert result["summary"] == {"NOT_URGENT": 2, "APPROACHING_EXPIRY": 2, "DUE": 0, "OVERDUE": 0, "total": 4}
 
 
-def test_cook_first_keeps_the_full_lists_order_with_a_summary() -> None:
+def test_fridge_stock_keeps_the_full_lists_order_with_a_summary() -> None:
     result = prioritise(
         [item("later", TODAY, 7), item("soon", TODAY, 3), item("due", TODAY, 0), item("overdue", "2026-09-20", 2)],
         TODAY,
     )
     assert ids(result["items"]) == ["overdue", "due", "soon", "later"]
-    assert ids(result["cookFirst"]) == ["overdue", "due", "soon"]
+    assert ids(result["fridgeStock"]) == ["overdue", "due", "soon"]
     assert result["summary"] == {"NOT_URGENT": 1, "APPROACHING_EXPIRY": 1, "DUE": 1, "OVERDUE": 1, "total": 4}

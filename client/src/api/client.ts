@@ -9,7 +9,7 @@ import type {
   BulkCreateResult,
   Favourite,
   FavouriteInput,
-  CookFirstList,
+  FridgeStockList,
   DeliveryInput,
   FoodInput,
   FoodItem,
@@ -54,7 +54,7 @@ import type {
   UsageHistory,
   UsageResult,
   User,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 
 /** Base URL of the API. Set VITE_API_URL for other environments. */
 export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api';
@@ -150,8 +150,8 @@ export const api = {
 
   // GET /foods
   listFoods: () => request<FoodList>('GET', '/foods'),
-  // GET /foods/cook-first
-  cookFirst: () => request<CookFirstList>('GET', '/foods/cook-first'),
+  // GET /foods/fridgestock
+  fridgeStock: () => request<FridgeStockList>('GET', '/foods/fridgestock'),
   // POST /foods/bulk
   bulkCreate: (body: BulkCreateInput) => request<BulkCreateResult>('POST', '/foods/bulk', body),
   // POST /foods/:id/undo

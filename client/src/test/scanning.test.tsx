@@ -2,7 +2,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ReceiptDraft } from '@cook-first/shared';
+import type { ReceiptDraft } from '@fridgestock/shared';
 import { API_URL } from '../api/client';
 import { scaledSize } from '../lib/image';
 import { server } from '../mocks/server';

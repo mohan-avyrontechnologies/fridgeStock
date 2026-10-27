@@ -48,7 +48,7 @@ async def _not_found(_request: Request, _error: Exception) -> Response:
 def create_app(*, connect: bool = True) -> FastAPI:
     """The app; `connect=False` leaves the database to the caller (the tests connect once for all of them)."""
     app = FastAPI(
-        title="Cook First API",
+        title="FridgeStock API",
         lifespan=lifespan if connect else None,
         docs_url=None,
         redoc_url=None,

@@ -1,4 +1,4 @@
-import { registerSchema } from '@cook-first/shared';
+import { registerSchema } from '@fridgestock/shared';
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { AuthLayout, authErrorsFrom, type AuthErrors } from '../components/AuthLayout';

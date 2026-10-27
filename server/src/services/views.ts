@@ -7,7 +7,7 @@ import {
   type FoodItem,
   type UsageRecord,
   type User,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import type { FavouriteDoc } from '../models/Favourite.js';
 import type { FoodItemDoc } from '../models/FoodItem.js';
 import type { NotificationDoc } from '../models/Notification.js';
@@ -16,7 +16,7 @@ import type { UserDoc } from '../models/User.js';
 import { classifyUrgency } from './priorityEngine.js';
 import { alertsOf, mealRemindersOf } from './userSettings.js';
 
-/** Map documents to the API response shapes in @cook-first/shared. Never exposes passwordHash. */
+/** Map documents to the API response shapes in @fridgestock/shared. Never exposes passwordHash. */
 
 export function toUserView(user: UserDoc): User {
   const prefs = user.notificationPreferences;

@@ -10,4 +10,4 @@ export const AI_ATTEMPTS = 3;
 export const RECEIPT_BODY_LIMIT = '4.5mb';
 
 /** Shared with the client, which checks it before saving. */
-export { LEFTOVER_MAX_DAYS } from '@cook-first/shared';
+export { LEFTOVER_MAX_DAYS } from '@fridgestock/shared';

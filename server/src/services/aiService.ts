@@ -1,4 +1,4 @@
-import { hasBannedWording, type AiStatus } from '@cook-first/shared';
+import { hasBannedWording, type AiStatus } from '@fridgestock/shared';
 import type { z } from 'zod';
 import { AI_ATTEMPTS, AI_DAILY_LIMIT } from '../config/ai.js';
 import { aiCopy, aiPrompts } from '../copy.js';
@@ -52,7 +52,7 @@ export interface AiTask<T> {
   /** Every piece of text in the result that a user might see. */
   texts: (result: T) => string[];
   maxTokens: number;
-  /** Replaces the default system prompt (the receipt reader is not about Cook First codes). */
+  /** Replaces the default system prompt (the receipt reader is not about FridgeStock codes). */
   system?: string;
   /** Which of the provider's models to use (see AiTier). Defaults to "fast". */
   tier?: AiTier;

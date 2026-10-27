@@ -7,23 +7,23 @@ import { emptyCopy, homeCopy, screenCopy } from '../copy';
 import { useNavigate } from 'react-router';
 import { useFoodStore } from '../stores/foodStore';
 
-export function CookFirstPage() {
-  const cookFirst = useFoodStore((s) => s.cookFirst);
+export function FridgeStockPage() {
+  const fridgeStock = useFoodStore((s) => s.fridgeStock);
   const error = useFoodStore((s) => s.error);
   const refresh = useFoodStore((s) => s.refresh);
   const navigate = useNavigate();
 
   return (
     <>
-      <PageHeader title="Cook First" subtitle={screenCopy.cookFirst.subtitle} />
+      <PageHeader title="FridgeStock" subtitle={screenCopy.fridgeStock.subtitle} />
       <PageBody>
-        {!cookFirst && !error && <SkeletonList />}
-        {error && !cookFirst && (
-          <LoadError title={screenCopy.cookFirst.loadError} detail={error} onRetry={() => void refresh()} />
+        {!fridgeStock && !error && <SkeletonList />}
+        {error && !fridgeStock && (
+          <LoadError title={screenCopy.fridgeStock.loadError} detail={error} onRetry={() => void refresh()} />
         )}
-        {cookFirst && cookFirst.length === 0 && (
+        {fridgeStock && fridgeStock.length === 0 && (
           <EmptyState
-            title={emptyCopy.cookFirst.title}
+            title={emptyCopy.fridgeStock.title}
             action={
               <>
                 <Button variant="secondary" onClick={() => navigate('/plan')}>
@@ -33,13 +33,13 @@ export function CookFirstPage() {
               </>
             }
           >
-            {emptyCopy.cookFirst.body}
+            {emptyCopy.fridgeStock.body}
           </EmptyState>
         )}
-        {cookFirst && cookFirst.length > 0 && (
+        {fridgeStock && fridgeStock.length > 0 && (
           <>
-            <p className="text-sm text-muted">{screenCopy.cookFirst.intro(cookFirst.length)}</p>
-            <FoodList items={cookFirst} columns={2} />
+            <p className="text-sm text-muted">{screenCopy.fridgeStock.intro(fridgeStock.length)}</p>
+            <FoodList items={fridgeStock} columns={2} />
             <RecipeIdeas />
           </>
         )}

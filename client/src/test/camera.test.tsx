@@ -4,7 +4,7 @@ import { http, HttpResponse } from 'msw';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { PhotoCheck, ProductLookup } from '@cook-first/shared';
+import type { PhotoCheck, ProductLookup } from '@fridgestock/shared';
 import { API_URL } from '../api/client';
 import { AppShell } from '../components/AppShell';
 import { FoodList } from '../components/FoodCard';

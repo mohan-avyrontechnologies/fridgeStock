@@ -11,13 +11,13 @@ from server_py.config.urgency import APPROACHING_EXPIRY_DAYS
 from server_py.shared.dates import DateString, diff_days
 from server_py.shared.enums import Urgency
 
-_COOK_FIRST: frozenset[Urgency] = frozenset({"APPROACHING_EXPIRY", "DUE", "OVERDUE"})
+_FRIDGE_STOCK: frozenset[Urgency] = frozenset({"APPROACHING_EXPIRY", "DUE", "OVERDUE"})
 
 
 class Prioritisation(TypedDict):
     items: list[dict[str, Any]]
     """Every ACTIVE item, most urgent first, each with remainingDays and urgency added."""
-    cookFirst: list[dict[str, Any]]
+    fridgeStock: list[dict[str, Any]]
     """The items that are APPROACHING_EXPIRY, DUE or OVERDUE, in the same order."""
     summary: dict[str, int]
     """How many items are in each urgency state, plus the total."""
@@ -51,5 +51,5 @@ def prioritise(items: Sequence[Mapping[str, Any]], today: DateString) -> Priorit
     summary = {"NOT_URGENT": 0, "APPROACHING_EXPIRY": 0, "DUE": 0, "OVERDUE": 0, "total": len(ranked)}
     for item in ranked:
         summary[item["urgency"]] += 1
-    cook_first = [item for item in ranked if item["urgency"] in _COOK_FIRST]
-    return {"items": ranked, "cookFirst": cook_first, "summary": summary}
+    fridge_stock = [item for item in ranked if item["urgency"] in _FRIDGE_STOCK]
+    return {"items": ranked, "fridgeStock": fridge_stock, "summary": summary}

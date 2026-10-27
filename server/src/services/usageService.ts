@@ -1,4 +1,4 @@
-import { USAGE_ACTIONS, type Pagination, type UsageAction, type UsageHistory } from '@cook-first/shared';
+import { USAGE_ACTIONS, type Pagination, type UsageAction, type UsageHistory } from '@fridgestock/shared';
 import type { Types } from 'mongoose';
 import type { FoodItemDoc } from '../models/FoodItem.js';
 import { UsageRecordModel, type UsageRecordDoc } from '../models/UsageRecord.js';

@@ -4,7 +4,7 @@ import {
   PHOTO_RETENTION_DAYS,
   PHOTO_THUMB_PIXELS,
   type FoodItem,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { isValidObjectId, type Types } from 'mongoose';
 import sharp from 'sharp';
 import { FoodItemModel, type FoodItemDoc } from '../models/FoodItem.js';

@@ -1,4 +1,4 @@
-import { findReference, usualStorage, type PrintedDateType, type StorageLocation, type Unit } from '@cook-first/shared';
+import { findReference, usualStorage, type PrintedDateType, type StorageLocation, type Unit } from '@fridgestock/shared';
 
 /** One product the camera found, waiting to be put away. */
 export interface ScannedItem {

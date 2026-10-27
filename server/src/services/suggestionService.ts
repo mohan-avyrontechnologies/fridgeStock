@@ -1,4 +1,4 @@
-import type { LearnedLifespan, StorageLocation, Unit } from '@cook-first/shared';
+import type { LearnedLifespan, StorageLocation, Unit } from '@fridgestock/shared';
 import { FoodItemModel } from '../models/FoodItem.js';
 import type { UserDoc } from '../models/User.js';
 

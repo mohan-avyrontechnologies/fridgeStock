@@ -128,7 +128,7 @@ async function shot(page: Page, name: string) {
   });
 }
 
-test('spec journey: chicken (1 day) and eggs (8 days); only chicken in Cook First; used chicken disappears', async ({
+test('spec journey: chicken (1 day) and eggs (8 days); only chicken in FridgeStock; used chicken disappears', async ({
   page,
 }) => {
   await register(page, 'Sam Patel');
@@ -136,10 +136,10 @@ test('spec journey: chicken (1 day) and eggs (8 days); only chicken in Cook Firs
   await addFood(page, 'Eggs', '8');
 
   const nav = page.getByRole('navigation', { name: 'Main' });
-  await nav.getByRole('link', { name: /Cook First/ }).click();
-  const cookFirst = page.getByRole('main').getByRole('listitem');
-  await expect(cookFirst).toHaveCount(1);
-  await expect(cookFirst.first()).toContainText('Chicken');
+  await nav.getByRole('link', { name: /FridgeStock/ }).click();
+  const fridgeStock = page.getByRole('main').getByRole('listitem');
+  await expect(fridgeStock).toHaveCount(1);
+  await expect(fridgeStock.first()).toContainText('Chicken');
   await expect(page.getByRole('main')).not.toContainText('Eggs');
 
   await page.getByRole('button', { name: 'Mark as used: Chicken' }).click();
@@ -158,7 +158,7 @@ test('spec journey: chicken (1 day) and eggs (8 days); only chicken in Cook Firs
   await expect(page.getByText('Nothing needs cooking first')).toBeVisible();
 });
 
-test('register → add food → Cook First → mark used → history', async ({ page }) => {
+test('register → add food → FridgeStock → mark used → history', async ({ page }) => {
   await register(page);
   await expect(page.getByText('Your fridge is empty. Add your first item.')).toBeVisible();
   await shot(page, '01-empty-dashboard');
@@ -181,18 +181,18 @@ test('register → add food → Cook First → mark used → history', async ({ 
   await expectNoSafetyClaim(page);
   await shot(page, '02-dashboard');
 
-  // Cook First: everything except "Not urgent".
+  // FridgeStock: everything except "Not urgent".
   await page
     .getByRole('navigation', { name: 'Main' })
-    .getByRole('link', { name: /Cook First/ })
+    .getByRole('link', { name: /FridgeStock/ })
     .click();
-  await expect(page.getByRole('heading', { name: 'Cook First', level: 1 })).toBeVisible();
-  const cookFirst = page.getByRole('main').getByRole('listitem');
-  await expect(cookFirst).toHaveCount(3);
+  await expect(page.getByRole('heading', { name: 'FridgeStock', level: 1 })).toBeVisible();
+  const fridgeStock = page.getByRole('main').getByRole('listitem');
+  await expect(fridgeStock).toHaveCount(3);
   await expect(page.getByRole('main')).not.toContainText('Eggs');
   await expect(page.getByText(REQUIRED_LINE)).toBeVisible();
   await expectNoSafetyClaim(page);
-  await shot(page, '03-cook-first');
+  await shot(page, '03-fridgestock');
 
   // Used → Used all: acts at once, with Undo in the toast.
   await page.getByRole('button', { name: 'Mark as used: Chicken' }).click();
@@ -204,7 +204,7 @@ test('register → add food → Cook First → mark used → history', async ({ 
     .click();
   await expect(page.getByText('Marked as used: Chicken')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Undo' })).toBeVisible();
-  await expect(cookFirst).toHaveCount(2);
+  await expect(fridgeStock).toHaveCount(2);
   await expect(page.getByRole('main')).not.toContainText('Chicken');
 
   // History records it.
@@ -422,7 +422,7 @@ test('phase 3: installable app; push reminders ask for permission only after "Tu
 
   // Installable: a manifest with real icons, and the service worker is running.
   const manifest = await (await page.request.get('/manifest.webmanifest')).json();
-  expect(manifest).toMatchObject({ name: 'Cook First', display: 'standalone', start_url: '/' });
+  expect(manifest).toMatchObject({ name: 'FridgeStock', display: 'standalone', start_url: '/' });
   for (const icon of manifest.icons) expect((await page.request.get(icon.src)).ok()).toBe(true);
   const worker = await page.evaluate(async () => (await navigator.serviceWorker.ready).active?.scriptURL ?? '');
   expect(worker).toContain('/sw.js?api=');
@@ -484,10 +484,10 @@ test('phase 4: leftovers, a shopping list that warns about food at home, and a w
   // AI is on in the tests (a local stand-in answers), so the AI buttons appear.
   await page
     .getByRole('navigation', { name: 'Main' })
-    .getByRole('link', { name: /^Cook First/ })
+    .getByRole('link', { name: /^FridgeStock/ })
     .click();
-  await expect(page).toHaveURL('/cook-first');
-  await expect(page.getByRole('heading', { name: 'Cook First', level: 1 })).toBeVisible();
+  await expect(page).toHaveURL('/fridgestock');
+  await expect(page.getByRole('heading', { name: 'FridgeStock', level: 1 })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Suggest recipes' })).toBeVisible();
 
   // Shopping list: a warning when it's already at home.
@@ -591,7 +591,7 @@ test('phase 6: dark mode, downloading your data, and deleting the account', asyn
   const download = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download my data' }).click();
   const file = await download;
-  expect(file.suggestedFilename()).toMatch(/^cook-first-data-\d{4}-\d{2}-\d{2}\.json$/);
+  expect(file.suggestedFilename()).toMatch(/^fridgestock-data-\d{4}-\d{2}-\d{2}\.json$/);
   const saved = JSON.parse(await (await import('node:fs/promises')).readFile((await file.path())!, 'utf8'));
   expect(saved.account.email).toBe(email);
   expect(saved.foods.map((f: { name: string }) => f.name)).toEqual(['Milk']);
@@ -1028,7 +1028,7 @@ test('stage 4: the first-run guide, then adding food from the sheet with the ste
   await page.getByRole('button', { name: 'Create account' }).click();
 
   // Step 1: what expected expiry means, with the disclaimer.
-  await expect(page.getByRole('heading', { level: 1, name: 'Welcome to Cook First' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Welcome to FridgeStock' })).toBeVisible();
   await expect(page.getByText('Step 1 of 3')).toBeVisible();
   await expect(page.getByRole('note', { name: 'Please remember' })).toContainText(REQUIRED_LINE);
   await expectNoHorizontalScroll(page);
@@ -1052,7 +1052,7 @@ test('stage 4: the first-run guide, then adding food from the sheet with the ste
   await expect(page.getByText('Your phone asks for permission only when you tap the button below.')).toBeVisible();
   expect(await page.evaluate(() => Notification.permission)).toBe('default');
   await expectLargeTapTargets(page);
-  await page.getByRole('button', { name: 'Start using Cook First' }).click();
+  await page.getByRole('button', { name: 'Start using FridgeStock' }).click();
 
   // Home has the food just added, and the guide does not come back.
   await expect(page.getByRole('heading', { name: 'Hi, Priya Nair' })).toBeVisible();
@@ -1085,7 +1085,7 @@ test('stage 5: everything can be done with the keyboard alone, and each screen h
   // Every screen has one level-1 heading and one main landmark.
   for (const path of [
     '/',
-    '/cook-first',
+    '/fridgestock',
     '/shopping',
     '/plan',
     '/notifications',

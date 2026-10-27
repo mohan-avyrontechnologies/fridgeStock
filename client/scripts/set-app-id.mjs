@@ -1,10 +1,10 @@
 /* global process, console */
 // Changes the app ID (Android applicationId / iOS bundle identifier) everywhere it is set.
 //
-//   npm run native:set-app-id -w client -- com.yourcompany.cookfirst
+//   npm run native:set-app-id -w client -- com.yourcompany.fridgestock
 //   npm run native:set-app-id -w client -- --check        (shows where it is set, and whether they agree)
 //
-// "com.example.cookfirst" is only a placeholder. Choose the real ID before the first release: once an app is
+// "com.example.fridgestock" is only a placeholder. Choose the real ID before the first release: once an app is
 // published to the Play Store or the App Store its ID can't be changed.
 //
 // The Android *namespace* (the folder the Java files live in) is deliberately left alone: it only has to be
@@ -66,13 +66,13 @@ if (check || !id) {
     process.exit(0);
   }
   console.log(all.size === 0 ? '\nNothing found.' : `\nThe places DISAGREE: ${[...all].join(', ')}`);
-  if (!check && !id) console.log('\nUsage: npm run native:set-app-id -w client -- com.yourcompany.cookfirst');
+  if (!check && !id) console.log('\nUsage: npm run native:set-app-id -w client -- com.yourcompany.fridgestock');
   process.exit(check ? 1 : 2);
 }
 
 if (!VALID.test(id)) {
   console.error(
-    `"${id}" is not a valid app ID. Use lower-case parts separated by dots, like com.yourcompany.cookfirst.`,
+    `"${id}" is not a valid app ID. Use lower-case parts separated by dots, like com.yourcompany.fridgestock.`,
   );
   process.exit(2);
 }

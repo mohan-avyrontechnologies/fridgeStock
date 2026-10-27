@@ -1,4 +1,4 @@
-/* Cook First service worker: shows push reminders and handles their buttons.
+/* FridgeStock service worker: shows push reminders and handles their buttons.
  *
  * Every word shown comes from the server in the push payload, so this file
  * holds no wording of its own. The API address comes from the registration URL
@@ -32,7 +32,7 @@ async function show(data) {
   // An open page plays its own chime (after the person has touched it), so the notification stays quiet then.
   const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
   const visible = windows.filter((client) => client.visibilityState === 'visible');
-  for (const client of visible) client.postMessage({ type: 'cook-first:reminder', kind: data.kind || null });
+  for (const client of visible) client.postMessage({ type: 'fridgestock:reminder', kind: data.kind || null });
 
   const silent = data.silent === true || visible.length > 0;
   const buttons = Array.isArray(data.actions) ? data.actions : [];

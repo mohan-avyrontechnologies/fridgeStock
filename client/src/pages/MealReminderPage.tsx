@@ -1,4 +1,4 @@
-import { MEAL_TYPES, type MealContent, type MealReminderView, type MealType } from '@cook-first/shared';
+import { MEAL_TYPES, type MealContent, type MealReminderView, type MealType } from '@fridgestock/shared';
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { api } from '../api/client';
@@ -12,8 +12,8 @@ const cookedFrom = (content: MealContent) =>
 
 /**
  * What today's cooking reminder for one meal showed: the planned meal, the recipe with its steps, or the
- * Cook First items to use up. Opened by "Show recipe" on the reminder. Reading only: nothing here changes the
- * Cook First order.
+ * FridgeStock items to use up. Opened by "Show recipe" on the reminder. Reading only: nothing here changes the
+ * FridgeStock order.
  */
 export function MealReminderPage() {
   const { meal } = useParams();
@@ -44,8 +44,8 @@ export function MealReminderPage() {
         {!view && !missing && <SkeletonList />}
         {missing && (
           <EmptyState title={copy.none}>
-            <Link to="/cook-first" className="text-brand underline-offset-2 hover:underline">
-              {copy.openCookFirst}
+            <Link to="/fridgestock" className="text-brand underline-offset-2 hover:underline">
+              {copy.openFridgeStock}
             </Link>
           </EmptyState>
         )}

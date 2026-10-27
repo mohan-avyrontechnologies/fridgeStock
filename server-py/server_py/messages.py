@@ -56,7 +56,7 @@ def digest_title(count: int) -> str:
 
 
 def digest_line(name: str, remaining_days: int) -> str:
-    """One line of the daily summary, in Cook First order."""
+    """One line of the daily summary, in FridgeStock order."""
     lines = _COPY["push"]["digestLine"]
     if remaining_days > 0:
         return fill_template(lines["future"], {"name": name, "days": _days(remaining_days)})
@@ -107,10 +107,10 @@ def prompt_photo(known_names: Sequence[str]) -> str:
 
 
 def prompt_recipes(
-    cook_first: Sequence[str], others: Sequence[str], meal_type: str | None = None, avoid: Sequence[str] | None = None
+    fridge_stock: Sequence[str], others: Sequence[str], meal_type: str | None = None, avoid: Sequence[str] | None = None
 ) -> str:
     recipes = _PROMPTS["recipes"]
-    lines = [recipes["intro"], *cook_first]
+    lines = [recipes["intro"], *fridge_stock]
     if others:
         lines += ["", recipes["othersHeading"], *others]
     lines += ["", recipes["ask"]]

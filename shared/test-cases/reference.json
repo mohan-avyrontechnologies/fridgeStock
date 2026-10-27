@@ -526,7 +526,7 @@
     "REFERENCE_SOURCE": [
       {
         "args": [],
-        "expected": "Cook First reference list"
+        "expected": "FridgeStock reference list"
       }
     ],
     "findReference": [

@@ -37,7 +37,7 @@ const ALL = Object.entries(copy).flatMap(([name, value]) => strings(value, name)
 
 /** Names that are always capitalised, wherever they come in a sentence. */
 const NAMES = [
-  'Cook First',
+  'FridgeStock',
   'Home Screen',
   'Share',
   'Open Food Facts',
@@ -153,7 +153,7 @@ describe('error messages', () => {
     expect(new Set(messages.slice(0, 3)).size).toBe(3);
     expect(messages[0]).toMatch(/no connection/);
     expect(messages[1]).toMatch(/signed out/);
-    expect(messages[2]).toMatch(/Cook First had a problem/);
+    expect(messages[2]).toMatch(/FridgeStock had a problem/);
   });
 
   it('show the server’s own reason when it explains a mistake (such as a wrong password), and not for a session that ended', () => {

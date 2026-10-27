@@ -1,4 +1,4 @@
-import type { MealPlan, User } from '@cook-first/shared';
+import type { MealPlan, User } from '@fridgestock/shared';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';

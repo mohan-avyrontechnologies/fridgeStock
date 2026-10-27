@@ -68,7 +68,7 @@ describe('every data query is scoped to the signed-in user or their household', 
       )
     ).body;
     await s.auth(api().get('/api/foods'));
-    await s.auth(api().get('/api/foods/cook-first'));
+    await s.auth(api().get('/api/foods/fridgestock'));
     await s.auth(api().get(`/api/foods/${a.id}`));
     await s.auth(api().put(`/api/foods/${a.id}`).send({ lifespanDays: 1 }));
     await s.auth(api().post(`/api/foods/${a.id}/use`).send({ quantity: 1 }));

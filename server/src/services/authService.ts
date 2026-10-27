@@ -5,7 +5,7 @@ import {
   type RegisterInput,
   type UpdateAccountInput,
   type User,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { UserModel, type UserDoc } from '../models/User.js';
 import { AppError, conflict } from './errors.js';
 import { passwordHashService } from './passwordHash.js';

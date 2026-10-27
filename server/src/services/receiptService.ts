@@ -1,4 +1,4 @@
-import { FOOD_REFERENCE, isValidDate, type ReceiptDraft, type ReceiptInput } from '@cook-first/shared';
+import { FOOD_REFERENCE, isValidDate, type ReceiptDraft, type ReceiptInput } from '@fridgestock/shared';
 import { aiPrompts } from '../copy.js';
 import type { UserDoc } from '../models/User.js';
 import * as aiService from './aiService.js';

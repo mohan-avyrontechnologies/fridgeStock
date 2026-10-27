@@ -1,4 +1,4 @@
-import type { FoodItem } from '@cook-first/shared';
+import type { FoodItem } from '@fridgestock/shared';
 import { useEffect, useRef, useState } from 'react';
 import { api, ApiError } from '../api/client';
 import { photoCopy } from '../copy';

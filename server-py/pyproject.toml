@@ -1,7 +1,7 @@
 [project]
-name = "cook-first-server"
+name = "fridgestock-server"
 version = "2.23.0"
-description = "The Cook First API in Python: a drop-in replacement for server/ (see docs/PYTHON_MIGRATION.md)."
+description = "The FridgeStock API in Python: a drop-in replacement for server/ (see docs/PYTHON_MIGRATION.md)."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

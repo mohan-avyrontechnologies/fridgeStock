@@ -121,8 +121,8 @@ describe('expiry date is always calculated by the server', () => {
   });
 });
 
-describe('listing and Cook First', () => {
-  it('sorts by expected expiry with urgency counts, and Cook First excludes "Not urgent"', async () => {
+describe('listing and FridgeStock', () => {
+  it('sorts by expected expiry with urgency counts, and FridgeStock excludes "Not urgent"', async () => {
     await create({ name: 'Eggs', lifespanDays: 8 });
     await create({ name: 'Milk', lifespanDays: 4 });
     await create({ name: 'Chicken', lifespanDays: 1 });
@@ -142,7 +142,7 @@ describe('listing and Cook First', () => {
     ]);
     expect(list.body.summary).toEqual({ NOT_URGENT: 2, APPROACHING_EXPIRY: 2, DUE: 1, OVERDUE: 1, total: 6 });
 
-    const cf = await s.auth(api().get('/api/foods/cook-first')).expect(200);
+    const cf = await s.auth(api().get('/api/foods/fridgestock')).expect(200);
     expect(cf.body.items.map((i: { name: string }) => i.name)).toEqual(['Bread', 'Yoghurt', 'Chicken', 'Spinach']);
   });
 
@@ -206,19 +206,19 @@ describe('usage actions', () => {
     expect(res.body.usageRecord).toMatchObject({ action: 'USED', quantityUsed: 2, unit: 'l', date: '2026-09-29' });
 
     expect((await s.auth(api().get('/api/foods')).expect(200)).body.items).toHaveLength(0);
-    expect((await s.auth(api().get('/api/foods/cook-first')).expect(200)).body.items).toHaveLength(0);
+    expect((await s.auth(api().get('/api/foods/fridgestock')).expect(200)).body.items).toHaveLength(0);
   });
 
   it.each([
     ['used', (id: string) => api().post(`/api/foods/${id}/use`).send({})],
     ['wasted', (id: string) => api().post(`/api/foods/${id}/waste`).send({})],
     ['removed', (id: string) => api().delete(`/api/foods/${id}`)],
-  ])('a %s item disappears from the inventory and Cook First', async (_label, close) => {
+  ])('a %s item disappears from the inventory and FridgeStock', async (_label, close) => {
     const kept = await create({ name: 'Kept', lifespanDays: 1 });
     const gone = await create({ name: 'Gone', lifespanDays: 1 });
     await s.auth(close(gone.id));
     const list = (await s.auth(api().get('/api/foods')).expect(200)).body;
-    const cf = (await s.auth(api().get('/api/foods/cook-first')).expect(200)).body;
+    const cf = (await s.auth(api().get('/api/foods/fridgestock')).expect(200)).body;
     expect(list.items.map((i: { id: string }) => i.id)).toEqual([kept.id]);
     expect(cf.items.map((i: { id: string }) => i.id)).toEqual([kept.id]);
     expect(list.summary.total).toBe(1);

@@ -25,7 +25,7 @@ export const useThemeStore = create<ThemeState>()(
       },
     }),
     {
-      name: 'cook-first-theme',
+      name: 'fridgestock-theme',
       onRehydrateStorage: () => (state) => {
         if (state) applyTheme(state.theme);
       },

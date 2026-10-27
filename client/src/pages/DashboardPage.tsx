@@ -1,10 +1,10 @@
-import { formatDisplay, STORAGE_LOCATIONS, type MealPlan, type StorageLocation } from '@cook-first/shared';
+import { formatDisplay, STORAGE_LOCATIONS, type MealPlan, type StorageLocation } from '@fridgestock/shared';
 import { ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { api } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
-import { CookFirstToday } from '../components/CookFirstToday';
+import { FridgeStockToday } from '../components/FridgeStockToday';
 import { FoodList } from '../components/FoodCard';
 import { Button, Chip, EmptyState, LoadError, SectionTitle, SkeletonList } from '../components/ui';
 import { EstimateNote } from '../components/Urgency';
@@ -18,7 +18,7 @@ type Filter = 'ALL' | StorageLocation;
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const navigate = useNavigate();
-  const { inventory, cookFirst, error, refresh } = useFoodStore();
+  const { inventory, fridgeStock, error, refresh } = useFoodStore();
   const [filter, setFilter] = useState<Filter>('ALL');
   const [plan, setPlan] = useState<MealPlan | null>(null);
 
@@ -53,7 +53,7 @@ export function DashboardPage() {
 
         {inventory && (
           <>
-            <CookFirstToday items={cookFirst ?? []} meal={meal} plan={plan} />
+            <FridgeStockToday items={fridgeStock ?? []} meal={meal} plan={plan} />
 
             <section aria-labelledby="all-food-heading" className="space-y-3">
               <div

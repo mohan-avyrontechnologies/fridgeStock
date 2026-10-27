@@ -3,12 +3,12 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { describe, expect, it } from 'vitest';
-import type { MealPlan, ShoppingItem } from '@cook-first/shared';
+import type { MealPlan, ShoppingItem } from '@fridgestock/shared';
 import { API_URL } from '../api/client';
 import { item } from '../mocks/handlers';
 import { server } from '../mocks/server';
 import { AddFoodPage } from '../pages/AddFoodPage';
-import { CookFirstPage } from '../pages/CookFirstPage';
+import { FridgeStockPage } from '../pages/FridgeStockPage';
 import { FoodDetailPage } from '../pages/FoodDetailPage';
 import { PlanPage } from '../pages/PlanPage';
 import { ShoppingPage } from '../pages/ShoppingPage';
@@ -39,27 +39,27 @@ const ideas = {
   ],
 };
 
-describe('recipe ideas on Cook First', () => {
+describe('recipe ideas on FridgeStock', () => {
   it('are hidden when AI is off', async () => {
     useAiStore.setState({ status: null });
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     expect(await screen.findByText('Spinach')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Suggest recipes' })).not.toBeInTheDocument();
   });
 
-  it('show ideas built from the Cook First list, with the AI note and the allowance left', async () => {
+  it('show ideas built from the FridgeStock list, with the AI note and the allowance left', async () => {
     const user = userEvent.setup();
     useAiStore.setState({ status: null });
     aiOn();
     server.use(http.post(`${API_URL}/ai/recipes`, () => HttpResponse.json(ideas)));
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     expect(await screen.findByText('18 of 20 AI suggestions left today')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Suggest recipes' }));
     const card = (await screen.findByRole('heading', { name: 'Spinach and yoghurt dip' })).closest('li')!;
     expect(within(card).getByText('About 10 min')).toBeInTheDocument();
     expect(within(card).getByRole('link', { name: 'Yoghurt' })).toHaveAttribute('href', '/food/b');
     expect(within(card).getByText('Wilt the spinach.')).toBeInTheDocument();
-    expect(screen.getByText(/These are AI suggestions built from your Cook First list/)).toBeInTheDocument();
+    expect(screen.getByText(/These are AI suggestions built from your FridgeStock list/)).toBeInTheDocument();
   });
 
   it('show the server’s message when today’s allowance is used up', async () => {
@@ -79,7 +79,7 @@ describe('recipe ideas on Cook First', () => {
         ),
       ),
     );
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     await user.click(await screen.findByRole('button', { name: 'Suggest recipes' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('You’ve used all 20 AI suggestions for today.');
   });

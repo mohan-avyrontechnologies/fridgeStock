@@ -49,7 +49,7 @@ def test_the_routes_ported_so_far_are_registered() -> None:
         ("GET", "/foods"),
         ("POST", "/foods"),
         ("POST", "/foods/bulk"),
-        ("GET", "/foods/cook-first"),
+        ("GET", "/foods/fridgestock"),
         ("GET", "/foods/:id"),
         ("PUT", "/foods/:id"),
         ("DELETE", "/foods/:id"),

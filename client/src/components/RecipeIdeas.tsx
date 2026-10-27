@@ -1,4 +1,4 @@
-import type { RecipeIdeas as Ideas } from '@cook-first/shared';
+import type { RecipeIdeas as Ideas } from '@fridgestock/shared';
 import { describeError } from '../lib/errors';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
@@ -8,8 +8,8 @@ import { useAiStore } from '../stores/aiStore';
 import { Button, Card } from './ui';
 
 /**
- * AI recipe ideas built from the Cook First list. Shown only when AI is on.
- * The ideas read the Cook First order; nothing here changes it.
+ * AI recipe ideas built from the FridgeStock list. Shown only when AI is on.
+ * The ideas read the FridgeStock order; nothing here changes it.
  */
 export function RecipeIdeas() {
   const status = useAiStore((s) => s.status);

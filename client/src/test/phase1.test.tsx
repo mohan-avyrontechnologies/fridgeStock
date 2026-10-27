@@ -7,7 +7,7 @@ import { item } from '../mocks/handlers';
 import { server } from '../mocks/server';
 import { AddFoodPage } from '../pages/AddFoodPage';
 import { BulkAddPage } from '../pages/BulkAddPage';
-import { CookFirstPage } from '../pages/CookFirstPage';
+import { FridgeStockPage } from '../pages/FridgeStockPage';
 import { renderSignedIn } from './render';
 
 /** Phase 1: faster entry. */
@@ -95,7 +95,7 @@ describe('Undo instead of confirmation dialogs', () => {
         return HttpResponse.json(item({ id: 'c' }));
       }),
     );
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     await user.click(await screen.findByRole('button', { name: 'Mark as wasted: Spinach' }));
     await waitFor(() => expect(wasted).toBe(true));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -114,7 +114,7 @@ describe('Undo instead of confirmation dialogs', () => {
         return HttpResponse.json({ food: item({ id: 'c', status: 'USED' }), usageRecord: {} });
       }),
     );
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     await user.click(await screen.findByRole('button', { name: 'Mark as used: Spinach' }));
     await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: /Mark all as used/ }));
     await waitFor(() => expect(used).toBe(true));

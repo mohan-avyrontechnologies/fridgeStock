@@ -1,4 +1,4 @@
-import type { PushPayload } from '@cook-first/shared';
+import type { PushPayload } from '@fridgestock/shared';
 import webpush from 'web-push';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FoodItemModel } from '../models/FoodItem.js';
@@ -186,7 +186,7 @@ describe('daily digest', () => {
     return { s, eggs, bread, chicken };
   }
 
-  it('sends nothing before the chosen hour, then one summary of the Cook First list in its order', async () => {
+  it('sends nothing before the chosen hour, then one summary of the FridgeStock list in its order', async () => {
     const sent = fakePush();
     await kitchen();
     at('2026-09-29', 7, 59);
@@ -197,10 +197,10 @@ describe('daily digest', () => {
     await sweep();
     expect(sent).toHaveLength(1);
     expect(sent[0]!.payload).toEqual({
-      title: 'Cook First: 2 items to check',
+      title: 'FridgeStock: 2 items to check',
       body: 'Bread: expected expiry today\nChicken: expected expiry in 1 day',
       tag: 'digest',
-      url: '/cook-first',
+      url: '/fridgestock',
       actions: [],
       kind: 'DIGEST',
       channel: 'food-soon',
@@ -233,7 +233,7 @@ describe('daily digest', () => {
     at('2026-09-29', 8);
     await sweep();
     expect(sent[0]!.payload).toMatchObject({
-      title: 'Cook First: 1 item to check',
+      title: 'FridgeStock: 1 item to check',
       body: 'Chicken: expected expiry in 1 day',
       url: `/food/${chicken.id}`,
       actions: [
@@ -260,7 +260,7 @@ describe('daily digest', () => {
     }
     at('2026-09-29', 8);
     await sweep();
-    expect(sent[0]!.payload.title).toBe('Cook First: 6 items to check');
+    expect(sent[0]!.payload.title).toBe('FridgeStock: 6 items to check');
     expect(sent[0]!.payload.body.split('\n')).toEqual([
       'D: expected expiry today',
       'C: expected expiry in 1 day',
@@ -293,13 +293,13 @@ describe('daily digest', () => {
     expect(sent).toHaveLength(1);
   });
 
-  it('never changes the Cook First order', async () => {
+  it('never changes the FridgeStock order', async () => {
     fakePush();
     const { s } = await kitchen();
-    const before = (await s.auth(api().get('/api/foods/cook-first'))).body.items.map((i: { name: string }) => i.name);
+    const before = (await s.auth(api().get('/api/foods/fridgestock'))).body.items.map((i: { name: string }) => i.name);
     at('2026-09-29', 8);
     await sweep();
-    const after = (await s.auth(api().get('/api/foods/cook-first'))).body.items.map((i: { name: string }) => i.name);
+    const after = (await s.auth(api().get('/api/foods/fridgestock'))).body.items.map((i: { name: string }) => i.name);
     expect(after).toEqual(before);
     expect(after).toEqual(['Bread', 'Chicken']);
   });
@@ -323,7 +323,7 @@ describe('one push per item', () => {
       'Chicken: expected expiry in 1 day. Consider using it soon.',
     ]);
     const breadPush = sent.find((p) => p.payload.url === `/food/${bread.id}`)!.payload;
-    expect(breadPush).toMatchObject({ title: 'Cook First', tag: `food-${bread.id}`, actionToken: expect.any(String) });
+    expect(breadPush).toMatchObject({ title: 'FridgeStock', tag: `food-${bread.id}`, actionToken: expect.any(String) });
     expect(breadPush.actions.map((a) => a.action)).toEqual(['USED', 'SNOOZE']);
     expect(sent.some((p) => p.payload.url === `/food/${chicken.id}`)).toBe(true);
   });
@@ -436,8 +436,8 @@ describe('notification buttons', () => {
     expect(sent[1]!.payload.body).toBe('Bread: past its expected expiry\nChicken: expected expiry today');
     expect((await FoodItemModel.findById(chicken.id))!.snoozedUntil).toBeNull();
     // Snoozing never hides it from the app.
-    const cookFirst = await s.auth(api().get('/api/foods/cook-first'));
-    expect(cookFirst.body.items.map((i: { name: string }) => i.name)).toContain('Chicken');
+    const fridgeStock = await s.auth(api().get('/api/foods/fridgestock'));
+    expect(fridgeStock.body.items.map((i: { name: string }) => i.name)).toContain('Chicken');
   });
 
   it('"Snooze" in one-per-item mode reminds about it again the next day', async () => {

@@ -1,4 +1,4 @@
-package com.example.cookfirst;
+package com.example.fridgestock;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -9,7 +9,7 @@ import android.os.Build;
 
 /**
  * The notification channels for reminders. Android fixes a notification's sound and vibration by its channel,
- * so each choice a person can make in Cook First (sounds on or off, vibration on or off, quiet hours) has one,
+ * so each choice a person can make in FridgeStock (sounds on or off, vibration on or off, quiet hours) has one,
  * and the server names the right one in every push (`channelId`).
  *
  * The app creates the four with sounds when it starts, with @capacitor/push-notifications
@@ -27,8 +27,8 @@ final class ReminderChannels {
         { "food-soon", "Food coming up", "A gentle sound for food coming up to use, and the daily summary.", 3, "reminder_gentle", false },
         { "food-urgent", "Food due or overdue", "A stronger sound and vibration for food that is due or overdue.", 4, "reminder_strong", true },
         { "meal-reminders", "Meal reminders", "Cooking reminders at breakfast, lunch and dinner time.", 3, "reminder_meal", false },
-        { "food-urgent-sound", "Food due or overdue (sound only)", "Used when vibration is switched off in Cook First.", 4, "reminder_strong", false },
-        { "reminders-vibrate", "Vibration only", "Used when sounds are switched off in Cook First.", 3, null, true },
+        { "food-urgent-sound", "Food due or overdue (sound only)", "Used when vibration is switched off in FridgeStock.", 4, "reminder_strong", false },
+        { "reminders-vibrate", "Vibration only", "Used when sounds are switched off in FridgeStock.", 3, null, true },
         { "reminders-silent", "Silent reminders", "Used during quiet hours, or when sound and vibration are both off.", 2, null, false },
     };
 

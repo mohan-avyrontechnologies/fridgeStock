@@ -1,4 +1,4 @@
-import { STORAGE_LOCATIONS, UNITS, type StorageLocation, type Unit } from '@cook-first/shared';
+import { STORAGE_LOCATIONS, UNITS, type StorageLocation, type Unit } from '@fridgestock/shared';
 import { Schema, Types, model, type HydratedDocument } from 'mongoose';
 
 /** A food the user re-adds often; one tap creates a new item from it. */

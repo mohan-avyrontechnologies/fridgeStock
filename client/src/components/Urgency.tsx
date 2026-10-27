@@ -1,4 +1,4 @@
-import type { Urgency } from '@cook-first/shared';
+import type { Urgency } from '@fridgestock/shared';
 import { CircleCheck, Clock, Info, OctagonAlert, TriangleAlert, type LucideIcon } from 'lucide-react';
 import { estimateNote, urgencyCopy } from '../copy';
 

@@ -1,4 +1,4 @@
-import type { LearnedLifespan } from '@cook-first/shared';
+import type { LearnedLifespan } from '@fridgestock/shared';
 import { create } from 'zustand';
 import { api } from '../api/client';
 import { useAuthStore } from './authStore';

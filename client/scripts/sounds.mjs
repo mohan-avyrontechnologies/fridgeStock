@@ -223,7 +223,7 @@ function generate() {
 }
 
 const idFor = (name, kind) =>
-  createHash('md5').update(`cook-first-sound-${name}-${kind}`).digest('hex').slice(0, 24).toUpperCase();
+  createHash('md5').update(`fridgestock-sound-${name}-${kind}`).digest('hex').slice(0, 24).toUpperCase();
 
 /** Adds the .caf files to the Xcode project's App group and its Resources step. Safe to run again. */
 function registerInXcode() {

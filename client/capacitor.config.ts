@@ -3,13 +3,13 @@ import type { CapacitorConfig } from '@capacitor/cli';
 /**
  * Capacitor wraps the built web app (client/dist) in native Android and iOS apps.
  *
- * APP ID: "com.example.cookfirst" is a PLACEHOLDER. Choose the real one (for example com.yourcompany.cookfirst)
+ * APP ID: "com.example.fridgestock" is a PLACEHOLDER. Choose the real one (for example com.yourcompany.fridgestock)
  * before publishing, then run `npm run native:set-app-id -w client -- <the id>`, which changes it here, in the
  * Android project and in the iOS project. It can't be changed in the stores once an app is published.
  */
 const config: CapacitorConfig = {
-  appId: 'com.example.cookfirst',
-  appName: 'Cook First',
+  appId: 'com.example.fridgestock',
+  appName: 'FridgeStock',
   webDir: 'dist',
   server: {
     // The app is served from https://localhost on Android and capacitor://localhost on iOS. The API allows

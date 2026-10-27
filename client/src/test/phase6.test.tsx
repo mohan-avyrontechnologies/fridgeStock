@@ -36,7 +36,7 @@ describe('appearance', () => {
     const user = userEvent.setup();
     renderSettings();
     await user.click(screen.getByRole('button', { name: 'Dark' }));
-    expect(JSON.parse(localStorage.getItem('cook-first-theme')!).state.theme).toBe('dark');
+    expect(JSON.parse(localStorage.getItem('fridgestock-theme')!).state.theme).toBe('dark');
   });
 });
 

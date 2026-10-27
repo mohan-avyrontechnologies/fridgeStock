@@ -1,4 +1,4 @@
-import { hourInTz, type MealType } from '@cook-first/shared';
+import { hourInTz, type MealType } from '@fridgestock/shared';
 
 /**
  * Which meal it is now: breakfast until 11:00, lunch until 16:00, dinner after that (and through the night,

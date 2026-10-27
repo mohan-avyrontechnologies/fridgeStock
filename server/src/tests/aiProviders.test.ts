@@ -1,4 +1,4 @@
-import { BANNED_PHRASES } from '@cook-first/shared';
+import { BANNED_PHRASES } from '@fridgestock/shared';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   aiProviderFrom,

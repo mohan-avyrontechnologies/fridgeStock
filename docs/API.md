@@ -29,7 +29,7 @@ The table lists **every route the server registers (68)**, in the order of `serv
 | GET | `/foods` | | `{today, summary, items}`: active items in priority order; `summary` has a count for each urgency state plus `total` | 401 |
 | POST | `/foods` | `{name, quantity, unit, addedDate?, lifespanDays?, printedDate?, printedDateType?, category?, notes?, storage?, openedDate?, leftover?, price?}`. Without `lifespanDays` the expected expiry is **estimated** (see [Architecture](ARCHITECTURE.md#automatic-expiry-pipeline)); with it, the source is `USER`. `addedDate` defaults to today. | `201 FoodItem`, with reminders scheduled | 400 |
 | POST | `/foods/bulk` | `{addedDate, storage?, items: [{name, quantity, unit, lifespanDays?, storage?, notes?, price?, printedDate?, printedDateType?, category?}]}` (1–50); rows without `lifespanDays` are estimated | `201 {items}`. All or nothing; errors name the row, e.g. `items.2.name` | 400 |
-| GET | `/foods/cook-first` | | `{today, items}`: urgent items only. Registered before `/foods/:id`. | 401 |
+| GET | `/foods/fridgestock` | | `{today, items}`: urgent items only. Registered before `/foods/:id`. | 401 |
 | GET | `/foods/:id` | | `FoodItem`, active or closed | 404 if missing or another household's |
 | PUT | `/foods/:id` | any food fields | `FoodItem`. Changing `addedDate` or `lifespanDays` recalculates `expiryDate` and reschedules reminders. | 400, 404, 409 |
 | DELETE | `/foods/:id` | | `204`: soft-deleted as `REMOVED` | 404, 409 |
@@ -65,7 +65,7 @@ The table lists **every route the server registers (68)**, in the order of `serv
 | POST | `/push/subscriptions` | A browser: `{endpoint (https), keys: {p256dh, auth}, browser?, platform?: 'web'}`. An app: `{platform: 'android' \| 'ios', token (the Firebase device token), browser?}` | `201 {id, platform, browser, createdAt, lastUsedAt}`. An app's token moves to whoever is signed in on that phone. | 400 |
 | DELETE | `/push/subscriptions` | `{endpoint}` for a browser, `{token}` for an app | `204` (only your own) | 400 |
 | GET | `/ai/status` | | `{enabled, photoCheck, dailyLimit, usedToday}` (`photoCheck` is true only when the flag and AI are both on) | 401 |
-| POST | `/ai/recipes` | `{mealType?: "breakfast" \| "lunch" \| "dinner"}` (kept for the day for that meal's reminder) | `{basedOn, recipes: [{title, minutes, uses: [{id, name}], steps}]}`. Empty without asking the AI when Cook First is empty. | 429 daily limit, 503 AI off or no valid answer after 3 attempts |
+| POST | `/ai/recipes` | `{mealType?: "breakfast" \| "lunch" \| "dinner"}` (kept for the day for that meal's reminder) | `{basedOn, recipes: [{title, minutes, uses: [{id, name}], steps}]}`. Empty without asking the AI when FridgeStock is empty. | 429 daily limit, 503 AI off or no valid answer after 3 attempts |
 | POST | `/ai/meal-plan` | | `{days: [{date, title, foods}]}` for empty days only. Not saved. | 429, 503 |
 | GET | `/products/barcode` | `?code=` (8, 12, 13 or 14 digits with a correct check digit; spaces and dashes are dropped) | `{found, barcode, name, brand, quantity, unit}`; `found: false` when it isn't in the database | 400, 429, 503 look-up unavailable |
 | POST | `/parse/receipt` | `{mediaType: image/jpeg\|png\|webp, image: base64}` (up to about 3 MB; with `/parse/photo`, the only routes that accept a large body) | `{purchaseDate, items: [{name, quantity, unit, price}]}`: a draft, nothing saved | 400, 429, 503 AI off or no usable answer |

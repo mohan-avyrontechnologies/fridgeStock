@@ -1,4 +1,4 @@
-import { hasBannedWording } from '@cook-first/shared';
+import { hasBannedWording } from '@fridgestock/shared';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { api, food, registerUser, setToday } from './helpers.js';
 

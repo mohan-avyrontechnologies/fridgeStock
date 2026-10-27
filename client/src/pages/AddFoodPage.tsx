@@ -1,6 +1,6 @@
 import { Star } from 'lucide-react';
 import { describeError } from '../lib/errors';
-import type { ActiveFoodItem, Favourite } from '@cook-first/shared';
+import type { ActiveFoodItem, Favourite } from '@fridgestock/shared';
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { api } from '../api/client';

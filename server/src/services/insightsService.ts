@@ -6,7 +6,7 @@ import {
   type InsightsTip,
   type InsightsWastedFood,
   type InsightsWeek,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { FoodItemModel } from '../models/FoodItem.js';
 import { UsageRecordModel, type UsageRecord } from '../models/UsageRecord.js';
 import type { UserDoc } from '../models/User.js';
@@ -61,7 +61,7 @@ function topWasted(entries: Entry[]): InsightsWastedFood[] {
 /**
  * Plain-language tips from the numbers. They talk about habits and amounts
  * bought, never about whether any food can be eaten, and they never suggest a
- * different Cook First order.
+ * different FridgeStock order.
  */
 function tipsFor(
   thisWeek: InsightsPeriod,
@@ -81,16 +81,16 @@ function tipsFor(
   if (thisWeek.wasted > lastWeek.wasted) {
     tips.push({
       id: 'waste-up',
-      text: `You wasted ${thisWeek.wasted} ${thisWeek.wasted === 1 ? 'item' : 'items'} this week, up from ${lastWeek.wasted} the week before. Look at Cook First each morning to plan what to use.`,
+      text: `You wasted ${thisWeek.wasted} ${thisWeek.wasted === 1 ? 'item' : 'items'} this week, up from ${lastWeek.wasted} the week before. Look at FridgeStock each morning to plan what to use.`,
     });
   }
   if (thisWeek.wasted === 0 && thisWeek.used >= REPEAT_WASTE) {
-    tips.push({ id: 'no-waste', text: 'Nothing was wasted this week. Keep checking Cook First each day.' });
+    tips.push({ id: 'no-waste', text: 'Nothing was wasted this week. Keep checking FridgeStock each day.' });
   }
   if (overdueNow > 0) {
     tips.push({
       id: 'overdue-now',
-      text: `${overdueNow} ${overdueNow === 1 ? 'item is' : 'items are'} overdue on Cook First. Check ${overdueNow === 1 ? 'it' : 'them'} yourself, then mark what you used or wasted.`,
+      text: `${overdueNow} ${overdueNow === 1 ? 'item is' : 'items are'} overdue on FridgeStock. Check ${overdueNow === 1 ? 'it' : 'them'} yourself, then mark what you used or wasted.`,
     });
   }
   if (month.used + month.wasted > 0 && month.pricedEntries === 0) {

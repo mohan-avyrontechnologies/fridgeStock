@@ -1,6 +1,6 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
-import { PRODUCT_PHOTO_MAX_BYTES } from '@cook-first/shared';
+import { PRODUCT_PHOTO_MAX_BYTES } from '@fridgestock/shared';
 import mongoose from 'mongoose';
 import sharp from 'sharp';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';

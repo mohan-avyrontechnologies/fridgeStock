@@ -60,7 +60,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <!--
-        CAMERA: to scan barcodes and to take photos, so Cook First can identify food. A photo is saved privately to
+        CAMERA: to scan barcodes and to take photos, so FridgeStock can identify food. A photo is saved privately to
         the person's household and is never shared. (Android shows its own permission box; the wording that
         explains this is in strings.xml as camera_permission_message and in the README.)
         The camera is not required: the app also works on a device without one, by typing.

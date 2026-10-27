@@ -138,8 +138,8 @@ class TestExpiryDateIsAlwaysCalculatedByTheServer:
         assert (res.json()["name"], res.json()["expiryDate"]) == ("Oat milk", "2026-10-01")
 
 
-class TestListingAndCookFirst:
-    async def test_sorts_by_expected_expiry_and_cook_first_excludes_not_urgent(
+class TestListingAndFridgeStock:
+    async def test_sorts_by_expected_expiry_and_fridge_stock_excludes_not_urgent(
         self, api: httpx.AsyncClient, s: Account, create: Any
     ) -> None:
         await create(name="Eggs", lifespanDays=8)
@@ -152,8 +152,8 @@ class TestListingAndCookFirst:
         assert listed["today"] == "2026-09-29"
         assert [i["name"] for i in listed["items"]] == ["Bread", "Yoghurt", "Chicken", "Spinach", "Milk", "Eggs"]
         assert listed["summary"] == {"NOT_URGENT": 2, "APPROACHING_EXPIRY": 2, "DUE": 1, "OVERDUE": 1, "total": 6}
-        cook_first = (await api.get("/api/foods/cook-first", headers=s.headers)).json()
-        assert [i["name"] for i in cook_first["items"]] == ["Bread", "Yoghurt", "Chicken", "Spinach"]
+        fridge_stock = (await api.get("/api/foods/fridgestock", headers=s.headers)).json()
+        assert [i["name"] for i in fridge_stock["items"]] == ["Bread", "Yoghurt", "Chicken", "Spinach"]
 
     async def test_recalculates_remaining_days_as_the_date_moves_on(
         self, api: httpx.AsyncClient, s: Account, create: Any
@@ -220,14 +220,14 @@ class TestUsageActions:
             "2026-09-29",
         )
         assert (await api.get("/api/foods", headers=s.headers)).json()["items"] == []
-        assert (await api.get("/api/foods/cook-first", headers=s.headers)).json()["items"] == []
+        assert (await api.get("/api/foods/fridgestock", headers=s.headers)).json()["items"] == []
 
     @pytest.mark.parametrize(
         ("method", "suffix"),
         [("POST", "/use"), ("POST", "/waste"), ("DELETE", "")],
         ids=["used", "wasted", "removed"],
     )
-    async def test_a_closed_item_disappears_from_the_inventory_and_cook_first(
+    async def test_a_closed_item_disappears_from_the_inventory_and_fridge_stock(
         self, api: httpx.AsyncClient, s: Account, create: Any, method: str, suffix: str
     ) -> None:
         kept = await create(name="Kept", lifespanDays=1)
@@ -235,9 +235,9 @@ class TestUsageActions:
         body: dict[str, Any] | None = {} if method == "POST" else None
         await api.request(method, f"/api/foods/{gone['id']}{suffix}", headers=s.headers, json=body)
         listed = (await api.get("/api/foods", headers=s.headers)).json()
-        cook_first = (await api.get("/api/foods/cook-first", headers=s.headers)).json()
+        fridge_stock = (await api.get("/api/foods/fridgestock", headers=s.headers)).json()
         assert [i["id"] for i in listed["items"]] == [kept["id"]]
-        assert [i["id"] for i in cook_first["items"]] == [kept["id"]]
+        assert [i["id"] for i in fridge_stock["items"]] == [kept["id"]]
         assert listed["summary"]["total"] == 1
 
     async def test_use_with_the_whole_quantity_also_closes_the_item(

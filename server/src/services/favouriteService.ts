@@ -1,4 +1,4 @@
-import { MESSAGES, type Favourite, type FavouriteInput, type FoodItem } from '@cook-first/shared';
+import { MESSAGES, type Favourite, type FavouriteInput, type FoodItem } from '@fridgestock/shared';
 import { isValidObjectId } from 'mongoose';
 import { FavouriteModel, type FavouriteDoc } from '../models/Favourite.js';
 import type { UserDoc } from '../models/User.js';

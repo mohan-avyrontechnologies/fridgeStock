@@ -1,4 +1,4 @@
-import type { AiStatus } from '@cook-first/shared';
+import type { AiStatus } from '@fridgestock/shared';
 import { create } from 'zustand';
 import { api } from '../api/client';
 import { useAuthStore } from './authStore';

@@ -6,7 +6,7 @@ import { remainingText, urgencyCopy } from '../copy';
 import { URGENCY_STYLE } from '../components/Urgency';
 import { AddFoodPage } from '../pages/AddFoodPage';
 import { NotificationsPage } from '../pages/NotificationsPage';
-import { CookFirstPage } from '../pages/CookFirstPage';
+import { FridgeStockPage } from '../pages/FridgeStockPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { useAuthStore } from '../stores/authStore';
 import { renderSignedIn } from './render';
@@ -46,7 +46,7 @@ describe('Dashboard', () => {
           items: [],
         }),
       ),
-      http.get(`${API_URL}/foods/cook-first`, () => HttpResponse.json({ today: '2026-09-29', items: [] })),
+      http.get(`${API_URL}/foods/fridgestock`, () => HttpResponse.json({ today: '2026-09-29', items: [] })),
     );
     renderSignedIn('/', <DashboardPage />);
     expect(await screen.findByText('Your fridge is empty. Add your first item.')).toBeInTheDocument();
@@ -66,9 +66,9 @@ describe('Dashboard', () => {
   });
 });
 
-describe('Cook First', () => {
+describe('FridgeStock', () => {
   it('lists only items that are not "Not urgent"', async () => {
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     await screen.findByText('3 items are at or near expected expiry', { exact: false });
     expect(screen.queryByText('Eggs')).not.toBeInTheDocument();
     for (const name of ['Bread', 'Yoghurt', 'Spinach']) expect(screen.getByText(name)).toBeInTheDocument();
@@ -83,7 +83,7 @@ describe('Cook First', () => {
         return HttpResponse.json({ food: item({ id: 'c', quantity: 0.5 }), usageRecord: {} });
       }),
     );
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     await user.click(await screen.findByRole('button', { name: 'Mark as used: Spinach' }));
     const dialog = screen.getByRole('dialog', { name: 'Spinach' });
     await user.click(within(dialog).getByRole('button', { name: /Mark some as used/ }));
@@ -155,8 +155,8 @@ describe('required estimate line', () => {
     expect(screen.getByText(REQUIRED_LINE)).toBeInTheDocument();
   });
 
-  it('is shown on Cook First, with or without items', async () => {
-    renderSignedIn('/cook-first', <CookFirstPage />);
+  it('is shown on FridgeStock, with or without items', async () => {
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     await screen.findByText('3 items are at or near expected expiry', { exact: false });
     expect(screen.getByText(REQUIRED_LINE)).toBeInTheDocument();
   });
@@ -268,9 +268,9 @@ describe('Reminders screen', () => {
 });
 
 describe('dashboard layout', () => {
-  it('has the name, a bell with the unread count, a settings icon, and a Cook first today row with "See all"', async () => {
+  it('has the name, a bell with the unread count, a settings icon, and a FridgeStock today row with "See all"', async () => {
     server.use(
-      http.get(`${API_URL}/foods/cook-first`, () =>
+      http.get(`${API_URL}/foods/fridgestock`, () =>
         HttpResponse.json({
           today: '2026-09-29',
           items: ['a', 'b', 'c', 'e'].map((id) =>
@@ -283,9 +283,9 @@ describe('dashboard layout', () => {
     expect(await screen.findByRole('heading', { name: 'Hi, Asha Rao' })).toBeInTheDocument();
     expect((await screen.findAllByRole('link', { name: 'Reminders, 2 unread' })).length).toBeGreaterThan(0);
     expect(screen.getByRole('link', { name: 'Open settings' })).toHaveAttribute('href', '/settings');
-    const section = screen.getByRole('region', { name: 'Cook first today' });
+    const section = screen.getByRole('region', { name: 'FridgeStock today' });
     expect(within(section).getAllByRole('listitem')).toHaveLength(4);
-    expect(within(section).getByRole('link', { name: 'See all' })).toHaveAttribute('href', '/cook-first');
+    expect(within(section).getByRole('link', { name: 'See all' })).toHaveAttribute('href', '/fridgestock');
     expect(screen.getAllByRole('link', { name: /Add food/ }).length).toBeGreaterThan(0);
   });
 });
@@ -326,10 +326,10 @@ describe('Add food form', () => {
   });
 });
 
-describe('Cook First', () => {
+describe('FridgeStock', () => {
   it('explains that nothing needs cooking first, with a way forward, when nothing is urgent', async () => {
-    server.use(http.get(`${API_URL}/foods/cook-first`, () => HttpResponse.json({ today: '2026-09-29', items: [] })));
-    renderSignedIn('/cook-first', <CookFirstPage />);
+    server.use(http.get(`${API_URL}/foods/fridgestock`, () => HttpResponse.json({ today: '2026-09-29', items: [] })));
+    renderSignedIn('/fridgestock', <FridgeStockPage />);
     expect(await screen.findByText('Nothing needs cooking first')).toBeInTheDocument();
   });
 });

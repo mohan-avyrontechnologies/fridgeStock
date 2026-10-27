@@ -59,7 +59,7 @@
         ],
         "expected": {
           "items": [],
-          "cookFirst": [],
+          "fridgeStock": [],
           "summary": {
             "NOT_URGENT": 0,
             "APPROACHING_EXPIRY": 0,
@@ -166,7 +166,7 @@
               "urgency": "NOT_URGENT"
             }
           ],
-          "cookFirst": [
+          "fridgeStock": [
             {
               "id": "b",
               "status": "ACTIVE",
@@ -280,7 +280,7 @@
               "urgency": "APPROACHING_EXPIRY"
             }
           ],
-          "cookFirst": [
+          "fridgeStock": [
             {
               "id": "B",
               "status": "ACTIVE",
@@ -354,7 +354,7 @@
               "urgency": "NOT_URGENT"
             }
           ],
-          "cookFirst": [],
+          "fridgeStock": [],
           "summary": {
             "NOT_URGENT": 1,
             "APPROACHING_EXPIRY": 0,

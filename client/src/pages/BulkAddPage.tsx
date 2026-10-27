@@ -15,7 +15,7 @@ import {
   type ReceiptItem,
   type StorageLocation,
   type Unit,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { api, ApiError } from '../api/client';

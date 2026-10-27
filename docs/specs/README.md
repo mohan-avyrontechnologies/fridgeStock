@@ -1,6 +1,6 @@
 # Specifications
 
-Cook First was built from four internal documents (the PFCP specification set):
+FridgeStock was built from four internal documents (the PFCP specification set):
 
 | Document | Version | What it covers | File |
 |---|---|---|---|

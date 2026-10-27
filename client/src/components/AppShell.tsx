@@ -153,7 +153,7 @@ function UnreadDot({ count, className = '' }: { count: number; className?: strin
 function Sidebar() {
   const user = useAuthStore((s) => s.user);
   const unread = useNotificationStore((s) => s.unread);
-  const cookFirstCount = useFoodStore((s) => s.cookFirst?.length ?? 0);
+  const fridgeStockCount = useFoodStore((s) => s.fridgeStock?.length ?? 0);
 
   const item = ({ isActive }: { isActive: boolean }) =>
     `flex min-h-12 items-center gap-3 rounded-button px-3 text-base font-medium transition-colors ${
@@ -164,7 +164,7 @@ function Sidebar() {
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-line bg-card px-4 py-6 lg:flex">
       <Link to="/" className="flex min-h-12 items-center gap-2.5 px-2">
         <img src="/icon.svg" alt="" className="size-9" />
-        <span className="font-display text-lg font-bold tracking-tight">Cook First</span>
+        <span className="font-display text-lg font-bold tracking-tight">FridgeStock</span>
       </Link>
 
       <Link
@@ -183,11 +183,11 @@ function Sidebar() {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/cook-first" className={item}>
-              <CookingPot {...iconProps} /> <span className="flex-1">Cook First</span>
-              {cookFirstCount > 0 && (
+            <NavLink to="/fridgestock" className={item}>
+              <CookingPot {...iconProps} /> <span className="flex-1">FridgeStock</span>
+              {fridgeStockCount > 0 && (
                 <span className="grid min-w-6 place-items-center rounded-full bg-past-bar px-1.5 text-xs font-bold text-on-brand">
-                  {cookFirstCount}
+                  {fridgeStockCount}
                 </span>
               )}
             </NavLink>
@@ -246,7 +246,7 @@ function Sidebar() {
 }
 
 function BottomNav() {
-  const cookFirstCount = useFoodStore((s) => s.cookFirst?.length ?? 0);
+  const fridgeStockCount = useFoodStore((s) => s.fridgeStock?.length ?? 0);
   return (
     <nav
       aria-label="Main"
@@ -254,7 +254,7 @@ function BottomNav() {
     >
       <ul className="mx-auto grid max-w-xl grid-cols-5 items-end px-1">
         <NavItem to="/" label="Home" icon={<House {...iconProps} />} end />
-        <NavItem to="/cook-first" label="Cook First" icon={<CookingPot {...iconProps} />} badge={cookFirstCount} />
+        <NavItem to="/fridgestock" label="FridgeStock" icon={<CookingPot {...iconProps} />} badge={fridgeStockCount} />
         <li className="flex justify-center">
           <Link
             to="/add"

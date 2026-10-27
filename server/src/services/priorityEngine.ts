@@ -1,4 +1,4 @@
-import { diffDays, type DateString, type FoodStatus, type Urgency, type UrgencySummary } from '@cook-first/shared';
+import { diffDays, type DateString, type FoodStatus, type Urgency, type UrgencySummary } from '@fridgestock/shared';
 import { APPROACHING_EXPIRY_DAYS } from '../config/urgency.js';
 
 /**
@@ -19,12 +19,12 @@ export interface Prioritisation<T> {
   /** Every ACTIVE item, most urgent first. */
   items: Prioritised<T>[];
   /** The items that are APPROACHING_EXPIRY, DUE or OVERDUE, in the same order. */
-  cookFirst: Prioritised<T>[];
+  fridgeStock: Prioritised<T>[];
   /** How many items are in each urgency state, plus the total. */
   summary: UrgencySummary;
 }
 
-const COOK_FIRST = new Set<Urgency>(['APPROACHING_EXPIRY', 'DUE', 'OVERDUE']);
+const FRIDGE_STOCK = new Set<Urgency>(['APPROACHING_EXPIRY', 'DUE', 'OVERDUE']);
 
 /** remainingDays = expiry date − today. */
 export function classifyUrgency(remainingDays: number): Urgency {
@@ -55,5 +55,5 @@ export function prioritise<T extends PrioritisableItem>(items: readonly T[], tod
   const summary: UrgencySummary = { NOT_URGENT: 0, APPROACHING_EXPIRY: 0, DUE: 0, OVERDUE: 0, total: sorted.length };
   for (const item of sorted) summary[item.urgency] += 1;
 
-  return { items: sorted, cookFirst: sorted.filter((item) => COOK_FIRST.has(item.urgency)), summary };
+  return { items: sorted, fridgeStock: sorted.filter((item) => FRIDGE_STOCK.has(item.urgency)), summary };
 }

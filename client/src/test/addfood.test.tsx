@@ -1,4 +1,4 @@
-import type { Favourite } from '@cook-first/shared';
+import type { Favourite } from '@fridgestock/shared';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';

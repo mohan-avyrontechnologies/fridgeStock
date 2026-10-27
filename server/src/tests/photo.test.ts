@@ -1,4 +1,4 @@
-import { BANNED_PHRASES, WARNING_SIGN_TYPES } from '@cook-first/shared';
+import { BANNED_PHRASES, WARNING_SIGN_TYPES } from '@fridgestock/shared';
 import mongoose from 'mongoose';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AI_DAILY_LIMIT } from '../config/ai.js';
@@ -268,7 +268,7 @@ describe('POST /api/foods/:id/use-today (the expected expiry only ever moves ear
     const milk = await add(s, { name: 'Milk', addedDate: '2026-09-27', lifespanDays: 6 }); // due 10-03
     const res = await s.auth(api().post(`/api/foods/${milk.id}/use-today`)).expect(200);
     expect(res.body).toMatchObject({ expiryDate: '2026-09-29', lifespanDays: 2, remainingDays: 0, urgency: 'DUE' });
-    const list = (await s.auth(api().get('/api/foods/cook-first')).expect(200)).body.items;
+    const list = (await s.auth(api().get('/api/foods/fridgestock')).expect(200)).body.items;
     expect(list.map((i: { name: string }) => i.name)).toEqual(['Milk']);
   });
 

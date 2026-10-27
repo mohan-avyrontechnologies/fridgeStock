@@ -14,14 +14,14 @@ import {
   type LearnedLifespan,
   type PrintedDateType,
   type StorageLocation,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import type {
   ActiveFoodItem,
   BulkCreateInput,
   BulkCreateResult,
   MoveFoodInput,
   OpenFoodInput,
-  CookFirstList,
+  FridgeStockList,
   DateString,
   FoodInput,
   FoodItem,
@@ -29,7 +29,7 @@ import type {
   FoodUpdateInput,
   UsageResult,
   UseFoodInput,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { isValidObjectId } from 'mongoose';
 import { LEFTOVER_MAX_DAYS } from '../config/ai.js';
 import { FoodItemModel, type FoodItemDoc } from '../models/FoodItem.js';
@@ -81,7 +81,7 @@ async function prioritisedFor(user: UserDoc) {
     today,
   );
   const view = (list: typeof result.items) => list.map(({ doc }) => toFoodView(doc, today) as ActiveFoodItem);
-  return { today, items: view(result.items), cookFirst: view(result.cookFirst), summary: result.summary };
+  return { today, items: view(result.items), fridgeStock: view(result.fridgeStock), summary: result.summary };
 }
 
 /** An opened date can't be in the future or before the item was added. */
@@ -140,9 +140,9 @@ export async function listFoods(user: UserDoc): Promise<FoodList> {
   return { today, summary, items };
 }
 
-export async function listCookFirst(user: UserDoc): Promise<CookFirstList> {
-  const { today, cookFirst } = await prioritisedFor(user);
-  return { today, items: cookFirst };
+export async function listFridgeStock(user: UserDoc): Promise<FridgeStockList> {
+  const { today, fridgeStock } = await prioritisedFor(user);
+  return { today, items: fridgeStock };
 }
 
 /** Any item the user owns, active or closed. */
@@ -510,7 +510,7 @@ export const SNOOZE_DAYS = 1;
 
 /**
  * Leaves an item out of push reminders until tomorrow, when it is reminded
- * about again. It stays in the Cook First list and in-app reminders as usual.
+ * about again. It stays in the FridgeStock list and in-app reminders as usual.
  */
 export async function snoozeFood(user: UserDoc, id: string): Promise<FoodItem> {
   const today = clock.today(user.timeZone);

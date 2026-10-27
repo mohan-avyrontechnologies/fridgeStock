@@ -8,7 +8,7 @@ import {
   type MealType,
   type PushKind,
   type PushPayload,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { mealCopy, pushCopy } from '../copy.js';
 import type { FoodItemDoc } from '../models/FoodItem.js';
 import type { UserDoc } from '../models/User.js';
@@ -46,17 +46,17 @@ export function itemPush(user: UserDoc, food: FoodItemDoc, title: string, body: 
 }
 
 export interface DigestSummary {
-  /** How many items are in Cook First. */
+  /** How many items are in FridgeStock. */
   count: number;
-  /** One line each, in Cook First order, then "and N more". */
+  /** One line each, in FridgeStock order, then "and N more". */
   lines: string[];
   /** The item, when there is exactly one. */
   only: FoodItemDoc | null;
 }
 
-/** The Cook First list, in Cook First order (read, never changed), as lines. Null when there is nothing in it. */
+/** The FridgeStock list, in FridgeStock order (read, never changed), as lines. Null when there is nothing in it. */
 export function digestSummary(foods: FoodItemDoc[], today: DateString): DigestSummary | null {
-  const { cookFirst } = prioritise(
+  const { fridgeStock } = prioritise(
     foods.map((doc) => ({
       doc,
       id: doc._id.toString(),
@@ -66,15 +66,15 @@ export function digestSummary(foods: FoodItemDoc[], today: DateString): DigestSu
     })),
     today,
   );
-  if (cookFirst.length === 0) return null;
-  const lines = cookFirst.slice(0, DIGEST_LINES).map((item) => pushCopy.digestLine(item.doc.name, item.remainingDays));
-  if (cookFirst.length > DIGEST_LINES) lines.push(pushCopy.digestMore(cookFirst.length - DIGEST_LINES));
-  return { count: cookFirst.length, lines, only: cookFirst.length === 1 ? cookFirst[0]!.doc : null };
+  if (fridgeStock.length === 0) return null;
+  const lines = fridgeStock.slice(0, DIGEST_LINES).map((item) => pushCopy.digestLine(item.doc.name, item.remainingDays));
+  if (fridgeStock.length > DIGEST_LINES) lines.push(pushCopy.digestMore(fridgeStock.length - DIGEST_LINES));
+  return { count: fridgeStock.length, lines, only: fridgeStock.length === 1 ? fridgeStock[0]!.doc : null };
 }
 
 /**
- * The daily summary: the Cook First list. With one item it has that item's buttons; with more it opens the
- * Cook First screen.
+ * The daily summary: the FridgeStock list. With one item it has that item's buttons; with more it opens the
+ * FridgeStock screen.
  */
 export function digestPush(user: UserDoc, foods: FoodItemDoc[], today: DateString): PushPayload | null {
   const summary = digestSummary(foods, today);
@@ -85,7 +85,7 @@ export function digestPush(user: UserDoc, foods: FoodItemDoc[], today: DateStrin
     title,
     body: summary.lines.join('\n'),
     tag: 'digest',
-    url: '/cook-first',
+    url: '/fridgestock',
     actions: [],
     kind: 'DIGEST',
     ...alertFields(user, 'DIGEST'),

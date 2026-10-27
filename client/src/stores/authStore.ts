@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { api, configureApi } from '../api/client';
 import { platform } from '../platform';
-import type { User } from '@cook-first/shared';
+import type { User } from '@fridgestock/shared';
 
 interface AuthState {
   token: string | null;
@@ -39,7 +39,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     // localStorage in a browser; the Keychain or Keystore in the apps (see platform/native/storage.ts).
-    { name: 'cook-first-auth', storage: createJSONStorage(() => platform.storage) },
+    { name: 'fridgestock-auth', storage: createJSONStorage(() => platform.storage) },
   ),
 );
 

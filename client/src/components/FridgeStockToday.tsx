@@ -1,4 +1,4 @@
-import { formatDisplay, type ActiveFoodItem, type MealPlan, type MealType } from '@cook-first/shared';
+import { formatDisplay, type ActiveFoodItem, type MealPlan, type MealType } from '@fridgestock/shared';
 import { Utensils } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import { homeCopy, mealPageCopy, remainingText, urgencyCopy } from '../copy';
@@ -46,9 +46,9 @@ function TodayCard({ item }: { item: ActiveFoodItem }) {
 /**
  * The top of Home: the most urgent food as large cards in a row you can scroll sideways, what to cook for the
  * current meal, and a "Cooked something" button. With nothing urgent it is a calm message with two ways forward.
- * Everything here only reads the Cook First order.
+ * Everything here only reads the FridgeStock order.
  */
-export function CookFirstToday({
+export function FridgeStockToday({
   items,
   meal,
   plan,
@@ -60,12 +60,12 @@ export function CookFirstToday({
   const navigate = useNavigate();
   const text = suggestion(meal, plan, items);
   return (
-    <section aria-labelledby="cook-first-today" className="space-y-3">
+    <section aria-labelledby="fridgestock-today" className="space-y-3">
       <SectionTitle
-        id="cook-first-today"
+        id="fridgestock-today"
         action={
           items.length > 0 && (
-            <Link to="/cook-first" className="inline-flex min-h-12 items-center text-sm font-semibold text-brand">
+            <Link to="/fridgestock" className="inline-flex min-h-12 items-center text-sm font-semibold text-brand">
               {homeCopy.seeAll}
             </Link>
           )

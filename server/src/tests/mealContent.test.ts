@@ -1,4 +1,4 @@
-import type { MealRecipe } from '@cook-first/shared';
+import type { MealRecipe } from '@fridgestock/shared';
 import { describe, expect, it } from 'vitest';
 import { chooseMealContent, MEAL_ITEMS, recipeKey, type MealContentInput } from '../services/mealContent.js';
 
@@ -16,7 +16,7 @@ const base: MealContentInput = {
   plan: null,
   ideas: [],
   usedRecipeTitles: [],
-  cookFirst: [item('Bread', 0), item('Chicken', 1)],
+  fridgeStock: [item('Bread', 0), item('Chicken', 1)],
 };
 
 describe('chooseMealContent', () => {
@@ -25,9 +25,9 @@ describe('chooseMealContent', () => {
     expect(chooseMealContent({ ...base, plan, ideas: [recipe('Toast')] })).toEqual({ source: 'plan', ...plan });
   });
 
-  it('a planned meal is sent even when Cook First is empty', () => {
+  it('a planned meal is sent even when FridgeStock is empty', () => {
     const plan = { title: 'Porridge', foods: [] };
-    expect(chooseMealContent({ ...base, plan, cookFirst: [] })).toEqual({
+    expect(chooseMealContent({ ...base, plan, fridgeStock: [] })).toEqual({
       source: 'plan',
       title: 'Porridge',
       foods: [],
@@ -59,7 +59,7 @@ describe('chooseMealContent', () => {
     expect(content?.source).toBe('items');
   });
 
-  it('3. otherwise names the top Cook First items with their days left', () => {
+  it('3. otherwise names the top FridgeStock items with their days left', () => {
     expect(chooseMealContent(base)).toEqual({ source: 'items', items: [item('Bread', 0), item('Chicken', 1)] });
   });
 
@@ -73,18 +73,18 @@ describe('chooseMealContent', () => {
   });
 
   it('names at most three items, in the order given (most urgent first)', () => {
-    const cookFirst = ['A', 'B', 'C', 'D', 'E'].map((name, i) => item(name, i));
-    const content = chooseMealContent({ ...base, cookFirst });
+    const fridgeStock = ['A', 'B', 'C', 'D', 'E'].map((name, i) => item(name, i));
+    const content = chooseMealContent({ ...base, fridgeStock });
     expect(MEAL_ITEMS).toBe(3);
-    expect(content).toEqual({ source: 'items', items: cookFirst.slice(0, 3) });
+    expect(content).toEqual({ source: 'items', items: fridgeStock.slice(0, 3) });
   });
 
-  it('4. sends nothing when Cook First is empty and no meal is planned', () => {
-    expect(chooseMealContent({ ...base, cookFirst: [] })).toBeNull();
+  it('4. sends nothing when FridgeStock is empty and no meal is planned', () => {
+    expect(chooseMealContent({ ...base, fridgeStock: [] })).toBeNull();
   });
 
-  it('sends nothing for an idea built from food that has since gone, when Cook First is empty', () => {
-    expect(chooseMealContent({ ...base, cookFirst: [], ideas: [recipe('Toast')] })).toBeNull();
+  it('sends nothing for an idea built from food that has since gone, when FridgeStock is empty', () => {
+    expect(chooseMealContent({ ...base, fridgeStock: [], ideas: [recipe('Toast')] })).toBeNull();
   });
 
   it('does not change what it is given', () => {

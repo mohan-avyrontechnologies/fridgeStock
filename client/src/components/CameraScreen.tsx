@@ -9,7 +9,7 @@ import {
   PHOTO_CONFIDENCE_MIN,
   todayInTz,
   type PrintedDateType,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { api, ApiError } from '../api/client';

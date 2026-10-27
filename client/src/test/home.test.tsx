@@ -11,7 +11,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useFoodStore } from '../stores/foodStore';
 import { renderSignedIn } from './render';
 
-/** Home: the "Cook first today" panel, the location chips and the tab bar. The API is faked with MSW. */
+/** Home: the "FridgeStock today" panel, the location chips and the tab bar. The API is faked with MSW. */
 
 const urgent = [
   item({ id: 'a', name: 'Salmon', urgency: 'OVERDUE', remainingDays: -1, expiryDate: '2026-09-28', storage: 'FRIDGE' }),
@@ -36,7 +36,7 @@ const calm = [
   }),
 ];
 
-function foods(items: typeof urgent, cookFirst = items.filter((i) => i.urgency !== 'NOT_URGENT')) {
+function foods(items: typeof urgent, fridgeStock = items.filter((i) => i.urgency !== 'NOT_URGENT')) {
   server.use(
     http.get(`${API_URL}/foods`, () =>
       HttpResponse.json({
@@ -45,7 +45,7 @@ function foods(items: typeof urgent, cookFirst = items.filter((i) => i.urgency !
         items,
       }),
     ),
-    http.get(`${API_URL}/foods/cook-first`, () => HttpResponse.json({ today: '2026-09-29', items: cookFirst })),
+    http.get(`${API_URL}/foods/fridgestock`, () => HttpResponse.json({ today: '2026-09-29', items: fridgeStock })),
   );
 }
 
@@ -64,11 +64,11 @@ const at = (hour: number) => {
 
 afterEach(() => vi.useRealTimers());
 
-describe('the "Cook first today" panel', () => {
+describe('the "FridgeStock today" panel', () => {
   it('is the first thing on Home, with the most urgent food as large cards in a row', async () => {
     foods([...urgent, ...calm]);
     renderSignedIn('/', <DashboardPage />);
-    const panel = await screen.findByRole('region', { name: 'Cook first today' });
+    const panel = await screen.findByRole('region', { name: 'FridgeStock today' });
     const row = within(panel).getByRole('list', { name: 'Food to cook first' });
     const cards = within(row).getAllByRole('listitem');
     expect(cards.map((card) => within(card).getByRole('heading', { level: 3 }).textContent)).toEqual([
@@ -84,10 +84,10 @@ describe('the "Cook first today" panel', () => {
     expect(within(cards[2]!).getByRole('link')).toHaveAttribute('href', '/food/c');
     // The panel comes before the inventory.
     const headings = screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent);
-    expect(headings.indexOf('Cook first today')).toBeLessThan(headings.findIndex((h) => h?.startsWith('All food')));
+    expect(headings.indexOf('FridgeStock today')).toBeLessThan(headings.findIndex((h) => h?.startsWith('All food')));
   });
 
-  it('has no more than six cards, and "See all" opens Cook First', async () => {
+  it('has no more than six cards, and "See all" opens FridgeStock', async () => {
     const many = Array.from({ length: 9 }, (_, i) =>
       item({
         id: `x${i}`,
@@ -99,9 +99,9 @@ describe('the "Cook first today" panel', () => {
     );
     foods(many);
     renderSignedIn('/', <DashboardPage />);
-    const panel = await screen.findByRole('region', { name: 'Cook first today' });
+    const panel = await screen.findByRole('region', { name: 'FridgeStock today' });
     expect(within(panel).getAllByRole('listitem')).toHaveLength(6);
-    expect(within(panel).getByRole('link', { name: 'See all' })).toHaveAttribute('href', '/cook-first');
+    expect(within(panel).getByRole('link', { name: 'See all' })).toHaveAttribute('href', '/fridgestock');
   });
 
   it('suggests the planned meal for the current meal', async () => {
@@ -135,7 +135,7 @@ describe('the "Cook first today" panel', () => {
 
     it('is a calm message with "Plan a meal" and "Add food"', async () => {
       renderSignedIn('/', <DashboardPage />);
-      const panel = await screen.findByRole('region', { name: 'Cook first today' });
+      const panel = await screen.findByRole('region', { name: 'FridgeStock today' });
       expect(within(panel).getByText('Nothing needs cooking first')).toBeInTheDocument();
       expect(within(panel).getByRole('button', { name: 'Plan a meal' })).toBeInTheDocument();
       expect(within(panel).getByRole('button', { name: 'Add food' })).toBeInTheDocument();
@@ -238,11 +238,11 @@ describe('location chips and the inventory', () => {
     expect(screen.getAllByRole('button', { name: 'Add food' }).length).toBeGreaterThan(0);
   });
 
-  it('only filters the list: the Cook first today panel still shows every urgent item', async () => {
+  it('only filters the list: the FridgeStock today panel still shows every urgent item', async () => {
     const user = userEvent.setup();
     renderSignedIn('/', <DashboardPage />);
     await user.click(await screen.findByRole('button', { name: 'Pantry' }));
-    const panel = screen.getByRole('region', { name: 'Cook first today' });
+    const panel = screen.getByRole('region', { name: 'FridgeStock today' });
     expect(within(panel).getAllByRole('listitem')).toHaveLength(3);
   });
 });
@@ -250,15 +250,15 @@ describe('location chips and the inventory', () => {
 describe('the bottom tab bar', () => {
   const bottomNav = () => screen.getAllByRole('navigation', { name: 'Main' }).at(-1)!;
 
-  it('has Home, Cook First, a large Add button in the middle, Shopping and More', async () => {
+  it('has Home, FridgeStock, a large Add button in the middle, Shopping and More', async () => {
     foods(urgent);
     renderSignedIn('/', <DashboardPage />);
-    await screen.findByRole('region', { name: 'Cook first today' });
+    await screen.findByRole('region', { name: 'FridgeStock today' });
     const items = within(bottomNav()).getAllByRole('listitem');
     expect(items).toHaveLength(5);
-    expect(items.map((li) => li.textContent)).toEqual(['Home', 'Cook First3', 'Add food', 'Shopping', 'More']);
+    expect(items.map((li) => li.textContent)).toEqual(['Home', 'FridgeStock3', 'Add food', 'Shopping', 'More']);
     expect(within(items[2]!).getByRole('link', { name: 'Add food' })).toHaveAttribute('href', '/add');
-    expect(within(items[1]!).getByRole('link')).toHaveAttribute('href', '/cook-first');
+    expect(within(items[1]!).getByRole('link')).toHaveAttribute('href', '/fridgestock');
     expect(within(items[3]!).getByRole('link')).toHaveAttribute('href', '/shopping');
   });
 
@@ -266,7 +266,7 @@ describe('the bottom tab bar', () => {
     const user = userEvent.setup();
     foods(urgent);
     renderSignedIn('/', <DashboardPage />);
-    await screen.findByRole('region', { name: 'Cook first today' });
+    await screen.findByRole('region', { name: 'FridgeStock today' });
     await user.click(within(bottomNav()).getByRole('button', { name: 'More' }));
     const sheet = screen.getByRole('dialog', { name: 'More' });
     expect(
@@ -288,7 +288,7 @@ describe('the bottom tab bar', () => {
     const user = userEvent.setup();
     foods(urgent);
     renderSignedIn('/', <DashboardPage />);
-    await screen.findByRole('region', { name: 'Cook first today' });
+    await screen.findByRole('region', { name: 'FridgeStock today' });
     const more = within(bottomNav()).getByRole('button', { name: 'More' });
     await user.click(more);
     expect(screen.getByRole('dialog', { name: 'More' })).toBeInTheDocument();

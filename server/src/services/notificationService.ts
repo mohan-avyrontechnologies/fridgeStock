@@ -18,7 +18,7 @@ import {
   type PreferenceKey,
   type PreferencesInput,
   type ReminderType,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import type { Types } from 'mongoose';
 import { APPROACHING_EXPIRY_DAYS } from '../config/urgency.js';
 import { pushCopy, reminderCopy } from '../copy.js';
@@ -190,7 +190,7 @@ export { DIGEST_LINES } from './pushPayloads.js';
  * Sends this user's push notifications once their chosen hour has arrived in
  * their time zone. Runs from the hourly job, after dispatchDue, so in-app
  * reminders are always delivered first and never depend on push.
- * - DIGEST: one summary a day of the Cook First list (snoozed items left out).
+ * - DIGEST: one summary a day of the FridgeStock list (snoozed items left out).
  * - EACH_ITEM: one push per reminder delivered today.
  * - An item snoozed until today is reminded about again (EACH_ITEM), or simply
  *   appears in the summary again (DIGEST).

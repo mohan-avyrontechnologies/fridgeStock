@@ -64,8 +64,8 @@ router.put("/auth/me", validate(UpdateAccountInput), auth_controller.update_me)
 router.get("/foods", food_controller.list_foods)
 router.post("/foods", validate(CreateFoodInput), food_controller.create)
 router.post("/foods/bulk", validate(BulkCreateInput), food_controller.bulk_create)
-# /foods/cook-first must come before /foods/:id, or "cook-first" would be taken as an id.
-router.get("/foods/cook-first", food_controller.cook_first)
+# /foods/fridgestock must come before /foods/:id, or "fridgestock" would be taken as an id.
+router.get("/foods/fridgestock", food_controller.fridge_stock)
 router.get("/foods/:id", food_controller.get)
 router.put("/foods/:id", validate(UpdateFoodInput), food_controller.update)
 router.delete("/foods/:id", food_controller.remove)

@@ -1,4 +1,4 @@
-import type { AppNotification, ReminderType } from '@cook-first/shared';
+import type { AppNotification, ReminderType } from '@fridgestock/shared';
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { PageBody, PageHeader } from '../components/AppShell';

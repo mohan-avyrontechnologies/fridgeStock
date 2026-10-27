@@ -1,4 +1,4 @@
-import type { User } from '@cook-first/shared';
+import type { User } from '@fridgestock/shared';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
@@ -57,19 +57,19 @@ afterEach(() => {
 describe('who sees the guide', () => {
   it('a new account sees it first, whatever page it asked for', async () => {
     open('/');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Welcome to Cook First' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Welcome to FridgeStock' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /^Hi, / })).not.toBeInTheDocument();
   });
 
   it('is shown instead of any other page, such as Shopping', async () => {
     open('/shopping');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Welcome to Cook First' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Welcome to FridgeStock' })).toBeInTheDocument();
   });
 
   it('an account that has finished it, or that predates it, goes straight to Home', async () => {
     open('/', user({ firstRunDone: true }));
     expect(await screen.findByRole('heading', { name: 'Hi, Asha Rao' })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'Welcome to Cook First' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Welcome to FridgeStock' })).not.toBeInTheDocument();
   });
 
   it('an account from before the guide existed has no value, which counts as done', async () => {
@@ -80,8 +80,8 @@ describe('who sees the guide', () => {
   it('can be opened again from Settings', async () => {
     const reader = userEvent.setup();
     open('/settings', user({ firstRunDone: true }));
-    await reader.click(await screen.findByRole('link', { name: 'How Cook First works' }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'Welcome to Cook First' })).toBeInTheDocument();
+    await reader.click(await screen.findByRole('link', { name: 'How FridgeStock works' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Welcome to FridgeStock' })).toBeInTheDocument();
   });
 });
 
@@ -271,13 +271,13 @@ describe('leaving the guide', () => {
     expect(useAuthStore.getState().user?.firstRunDone).toBe(true);
   });
 
-  it('Start using Cook First (the last step) does the same', async () => {
+  it('Start using FridgeStock (the last step) does the same', async () => {
     const reader = userEvent.setup();
     const bodies = me();
     open();
     await reader.click(await screen.findByRole('button', { name: /Next/ }));
     await reader.click(screen.getByRole('button', { name: /Next/ }));
-    await reader.click(screen.getByRole('button', { name: 'Start using Cook First' }));
+    await reader.click(screen.getByRole('button', { name: 'Start using FridgeStock' }));
     expect(await screen.findByRole('heading', { name: 'Hi, Asha Rao' })).toBeInTheDocument();
     expect(bodies).toEqual([{ firstRunDone: true }]);
   });

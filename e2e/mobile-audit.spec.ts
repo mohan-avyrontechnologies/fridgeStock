@@ -151,7 +151,7 @@ for (const device of DEVICES) {
     const first = await setup.newPage();
     const token = await signUp(first);
     const { foodId } = await seed(first, token);
-    const auth = await first.evaluate(() => localStorage.getItem('cook-first-auth'));
+    const auth = await first.evaluate(() => localStorage.getItem('fridgestock-auth'));
     await setup.close();
 
     for (const v of VARIANTS) {
@@ -186,7 +186,7 @@ for (const device of DEVICES) {
         await open(`/${screen}`);
         await record(`00-${screen}`);
       }
-      await page.evaluate((a) => localStorage.setItem('cook-first-auth', a!), auth);
+      await page.evaluate((a) => localStorage.setItem('fridgestock-auth', a!), auth);
       for (const [i, s] of SCREENS(foodId).entries()) {
         await open(s.path);
         await record(`${String(i + 1).padStart(2, '0')}-${s.name}`);

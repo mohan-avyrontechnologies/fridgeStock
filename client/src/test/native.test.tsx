@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { PhotoCheck, ProductLookup } from '@cook-first/shared';
+import type { PhotoCheck, ProductLookup } from '@fridgestock/shared';
 import { API_URL } from '../api/client';
 import { App } from '../App';
 import { CameraScreen } from '../components/CameraScreen';
@@ -297,7 +297,7 @@ describe('the app itself', () => {
     });
 
   it('waits for the saved login to be read from secure storage before deciding where to go', async () => {
-    fake.saved.set('cook-first-auth', JSON.stringify({ state: { token: 'saved-jwt', user: null }, version: 0 }));
+    fake.saved.set('fridgestock-auth', JSON.stringify({ state: { token: 'saved-jwt', user: null }, version: 0 }));
     fake.storageDelay = 60;
     const done = useAuthStore.persist.rehydrate();
     renderApp('/login');

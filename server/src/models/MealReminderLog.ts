@@ -1,4 +1,4 @@
-import { isValidDate, MEAL_TYPES, type DateString, type MealContent, type MealType } from '@cook-first/shared';
+import { isValidDate, MEAL_TYPES, type DateString, type MealContent, type MealType } from '@fridgestock/shared';
 import { Schema, Types, model, type HydratedDocument } from 'mongoose';
 
 /**

@@ -1,4 +1,4 @@
-import { addDays, type FoodStatus } from '@cook-first/shared';
+import { addDays, type FoodStatus } from '@fridgestock/shared';
 import { describe, expect, it } from 'vitest';
 import { APPROACHING_EXPIRY_DAYS } from '../config/urgency.js';
 import { classifyUrgency, prioritise } from '../services/priorityEngine.js';
@@ -35,7 +35,7 @@ describe('prioritise', () => {
   });
 
   it('excludes used, wasted and removed items', () => {
-    const { items, cookFirst, summary } = prioritise(
+    const { items, fridgeStock, summary } = prioritise(
       [
         item('active', TODAY, 1),
         item('used', TODAY, 1, 'USED'),
@@ -45,7 +45,7 @@ describe('prioritise', () => {
       TODAY,
     );
     expect(ids(items)).toEqual(['active']);
-    expect(ids(cookFirst)).toEqual(['active']);
+    expect(ids(fridgeStock)).toEqual(['active']);
     expect(summary.total).toBe(1);
   });
 
@@ -68,9 +68,9 @@ describe('prioritise', () => {
   });
 
   it('counts an item with a zero-day lifespan as DUE on the day it is added', () => {
-    const { items, cookFirst } = prioritise([item('yoghurt', TODAY, 0)], TODAY);
+    const { items, fridgeStock } = prioritise([item('yoghurt', TODAY, 0)], TODAY);
     expect(items[0]).toMatchObject({ expiryDate: TODAY, remainingDays: 0, urgency: 'DUE' });
-    expect(ids(cookFirst)).toEqual(['yoghurt']);
+    expect(ids(fridgeStock)).toEqual(['yoghurt']);
   });
 
   it('gives identical output when run twice on the same input', () => {
@@ -104,23 +104,23 @@ describe('prioritise', () => {
     expect(input).toEqual(copy);
   });
 
-  it('orders chicken, spinach, milk, eggs, with only chicken and spinach in Cook First', () => {
-    const { items, cookFirst, summary } = prioritise(
+  it('orders chicken, spinach, milk, eggs, with only chicken and spinach in FridgeStock', () => {
+    const { items, fridgeStock, summary } = prioritise(
       [item('eggs', TODAY, 8), item('milk', TODAY, 4), item('chicken', TODAY, 1), item('spinach', TODAY, 2)],
       TODAY,
     );
     expect(ids(items)).toEqual(['chicken', 'spinach', 'milk', 'eggs']);
-    expect(ids(cookFirst)).toEqual(['chicken', 'spinach']);
+    expect(ids(fridgeStock)).toEqual(['chicken', 'spinach']);
     expect(summary).toEqual({ NOT_URGENT: 2, APPROACHING_EXPIRY: 2, DUE: 0, OVERDUE: 0, total: 4 });
   });
 
-  it('returns Cook First in the same order as the full list, with a summary and total', () => {
-    const { items, cookFirst, summary } = prioritise(
+  it('returns FridgeStock in the same order as the full list, with a summary and total', () => {
+    const { items, fridgeStock, summary } = prioritise(
       [item('later', TODAY, 7), item('soon', TODAY, 3), item('due', TODAY, 0), item('overdue', '2026-09-20', 2)],
       TODAY,
     );
     expect(ids(items)).toEqual(['overdue', 'due', 'soon', 'later']);
-    expect(ids(cookFirst)).toEqual(['overdue', 'due', 'soon']);
+    expect(ids(fridgeStock)).toEqual(['overdue', 'due', 'soon']);
     expect(summary).toEqual({ NOT_URGENT: 1, APPROACHING_EXPIRY: 1, DUE: 1, OVERDUE: 1, total: 4 });
   });
 });

@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { PhotoCheck } from '@cook-first/shared';
+import type { PhotoCheck } from '@fridgestock/shared';
 import { API_URL } from '../api/client';
 import { item } from '../mocks/handlers';
 import { server } from '../mocks/server';

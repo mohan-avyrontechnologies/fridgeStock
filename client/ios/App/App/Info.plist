@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Cook First</string>
+        <string>FridgeStock</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -42,11 +42,11 @@
     </dict>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Cook First uses the camera to scan barcodes and to take photos so it can identify your food. Photos are saved privately to your household and are never shared.</string>
+	<string>FridgeStock uses the camera to scan barcodes and to take photos so it can identify your food. Photos are saved privately to your household and are never shared.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Cook First lets you choose a photo of your food from your library so it can be identified. The photo is saved privately to your household and is never shared.</string>
+	<string>FridgeStock lets you choose a photo of your food from your library so it can be identified. The photo is saved privately to your household and is never shared.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Cook First does not save photos to your library. Photos you take are saved privately to your household inside Cook First.</string>
+	<string>FridgeStock does not save photos to your library. Photos you take are saved privately to your household inside FridgeStock.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>

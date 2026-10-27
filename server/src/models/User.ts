@@ -8,7 +8,7 @@ import {
   type DateString,
   type MealReminders,
   type ReminderMode,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { Schema, Types, model, type HydratedDocument } from 'mongoose';
 
 export interface NotificationPreferences {

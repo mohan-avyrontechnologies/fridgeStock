@@ -1,4 +1,4 @@
-import { hasBannedWording, type ProductLookup, type Unit } from '@cook-first/shared';
+import { hasBannedWording, type ProductLookup, type Unit } from '@fridgestock/shared';
 import { AppError } from './errors.js';
 import { productClient, type RawProduct } from './productClient.js';
 

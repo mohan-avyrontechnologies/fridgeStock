@@ -1,5 +1,5 @@
 import { Capacitor, type PluginListenerHandle } from '@capacitor/core';
-import { PUSH_ACTIONS, PUSH_KINDS, type PushAction, type PushActionInput } from '@cook-first/shared';
+import { PUSH_ACTIONS, PUSH_KINDS, type PushAction, type PushActionInput } from '@fridgestock/shared';
 import { api } from '../../api/client';
 import { openPage, PUSH_ACTION_DONE_EVENT, PUSH_RECEIVED_EVENT } from '../events';
 import type { PushPlatform } from '../types';
@@ -21,13 +21,13 @@ import { nativeStorage } from './storage';
  * sound and vibration; on iOS the payload names a bundled sound file. While the app is open the in-app chime
  * (lib/chime.ts) is played instead, from the event this raises with the reminder's kind.
  */
-const TOKEN_KEY = 'cook-first-push-token';
+const TOKEN_KEY = 'fridgestock-push-token';
 /** How long to wait for the phone to hand over a token. */
 const REGISTRATION_TIMEOUT_MS = 20_000;
 
 const plugin = async () => (await import('@capacitor/push-notifications')).PushNotifications;
 
-const deviceName = () => (Capacitor.getPlatform() === 'ios' ? 'Cook First app on iOS' : 'Cook First app on Android');
+const deviceName = () => (Capacitor.getPlatform() === 'ios' ? 'FridgeStock app on iOS' : 'FridgeStock app on Android');
 
 /** Registers with the system and resolves with the device token. */
 async function registerForToken(): Promise<string> {

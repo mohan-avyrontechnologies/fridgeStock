@@ -5,7 +5,7 @@ import { AddFoodPage } from './pages/AddFoodPage';
 import { BulkAddPage } from './pages/BulkAddPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
-import { CookFirstPage } from './pages/CookFirstPage';
+import { FridgeStockPage } from './pages/FridgeStockPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { FirstRunPage } from './pages/FirstRunPage';
 import { FoodDetailPage } from './pages/FoodDetailPage';
@@ -42,7 +42,7 @@ function GuestOnly() {
 }
 
 /** Where the Android shell leaves an address for a notification that started the app (MainActivity.java). */
-type PendingWindow = Window & { __cookFirstPendingUrl?: string };
+type PendingWindow = Window & { __fridgeStockPendingUrl?: string };
 
 /** What the apps' notifications ask the screens to do (see platform/events.ts). Nothing happens in a browser. */
 function useNativeEvents() {
@@ -50,7 +50,7 @@ function useNativeEvents() {
   const toast = useToastStore((s) => s.show);
   useEffect(() => {
     const open = (event: Event) => {
-      delete (window as PendingWindow).__cookFirstPendingUrl;
+      delete (window as PendingWindow).__fridgeStockPendingUrl;
       navigate(String((event as CustomEvent).detail ?? '/'));
     };
     const received = () => void useNotificationStore.getState().fetchUnread();
@@ -62,9 +62,9 @@ function useNativeEvents() {
       void useFoodStore.getState().refresh();
     };
     // A page handed over before this was listening (the app was started by tapping a notification).
-    const pending = (window as PendingWindow).__cookFirstPendingUrl;
+    const pending = (window as PendingWindow).__fridgeStockPendingUrl;
     if (pending) {
-      delete (window as PendingWindow).__cookFirstPendingUrl;
+      delete (window as PendingWindow).__fridgeStockPendingUrl;
       navigate(pending);
     }
     window.addEventListener(OPEN_PAGE_EVENT, open);
@@ -94,7 +94,7 @@ export function App() {
         <Route path="/welcome" element={<FirstRunPage />} />
         <Route element={<AppShell />}>
           <Route index element={<DashboardPage />} />
-          <Route path="/cook-first" element={<CookFirstPage />} />
+          <Route path="/fridgestock" element={<FridgeStockPage />} />
           <Route path="/add" element={<AddFoodPage />} />
           <Route path="/add/bulk" element={<BulkAddPage />} />
           <Route path="/food/:id" element={<FoodDetailPage />} />

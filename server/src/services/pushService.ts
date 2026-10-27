@@ -1,4 +1,4 @@
-import type { PushConfig, PushDevice, PushPayload, PushSubscriptionInput } from '@cook-first/shared';
+import type { PushConfig, PushDevice, PushPayload, PushSubscriptionInput } from '@fridgestock/shared';
 import { PushSubscriptionModel, type PushSubscriptionDoc } from '../models/PushSubscription.js';
 import type { UserDoc } from '../models/User.js';
 import { clock } from './clock.js';

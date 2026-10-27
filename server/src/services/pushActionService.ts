@@ -1,4 +1,4 @@
-import type { PushActionInput } from '@cook-first/shared';
+import type { PushActionInput } from '@fridgestock/shared';
 import { UsedActionTokenModel } from '../models/UsedActionToken.js';
 import { findUserById } from './authService.js';
 import { AppError, unauthenticated } from './errors.js';

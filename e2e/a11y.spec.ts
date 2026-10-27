@@ -53,7 +53,7 @@ test('axe finds no violations on the three steps of the first-run guide, in ligh
   await page.getByLabel('Email').fill(`guide-${Date.now()}@example.com`);
   await page.getByLabel('Password').fill('e2e-password-123');
   await page.getByRole('button', { name: 'Create account' }).click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Welcome to Cook First' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Welcome to FridgeStock' })).toBeVisible();
 
   const found: string[] = [];
   const check = async (scheme: string, step: number) => {

@@ -4,7 +4,7 @@ import {
   MEAL_TYPES,
   type AlertSettings,
   type MealReminders,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import type { UserDoc } from '../models/User.js';
 
 /**

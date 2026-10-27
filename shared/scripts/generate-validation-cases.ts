@@ -76,7 +76,7 @@ const web = {
   keys: { p256dh: 'p256', auth: 'auth' },
   browser: 'Chrome',
 };
-const native = { platform: 'android', token: 'f'.repeat(30), browser: 'Cook First app on Android' };
+const native = { platform: 'android', token: 'f'.repeat(30), browser: 'FridgeStock app on Android' };
 const image = { mediaType: 'image/jpeg', image: 'aGVsbG8gd29ybGQ=' };
 
 /** Each schema with its valid example and its own cases. */

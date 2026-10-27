@@ -1,4 +1,4 @@
-import type { DateString } from '@cook-first/shared';
+import type { DateString } from '@fridgestock/shared';
 import { Schema, Types, model } from 'mongoose';
 
 /** How many AI requests a user has made on one of their calendar days (for the daily limit). */

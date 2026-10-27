@@ -35,7 +35,7 @@ import {
   updateFoodSchema,
   useFoodSchema,
   wasteFoodSchema,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import multer from 'multer';
@@ -143,8 +143,8 @@ router.get('/household/activity', validate(paginationSchema, 'query'), household
 router.get('/foods', foodController.list);
 router.post('/foods', validate(createFoodSchema), foodController.create);
 router.post('/foods/bulk', validate(bulkCreateSchema), foodController.bulkCreate);
-// /foods/cook-first must be registered before /foods/:id, or "cook-first" would be taken as an id.
-router.get('/foods/cook-first', foodController.cookFirst);
+// /foods/fridgestock must be registered before /foods/:id, or "fridgestock" would be taken as an id.
+router.get('/foods/fridgestock', foodController.fridgeStock);
 router.get('/foods/:id', foodController.get);
 router.put('/foods/:id', validate(updateFoodSchema), foodController.update);
 router.delete('/foods/:id', foodController.remove);
@@ -185,7 +185,7 @@ router.get('/push/config', pushController.config);
 router.post('/push/subscriptions', validate(pushSubscriptionSchema), pushController.subscribe);
 router.delete('/push/subscriptions', validate(pushUnsubscribeSchema), pushController.unsubscribe);
 
-// Phase 4: using the food. AI routes read the Cook First order and never change it.
+// Phase 4: using the food. AI routes read the FridgeStock order and never change it.
 router.get('/ai/status', aiController.status);
 router.post('/ai/recipes', validate(recipesRequestSchema), aiController.recipes);
 router.post('/ai/meal-plan', aiController.mealPlan);

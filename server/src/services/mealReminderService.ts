@@ -8,7 +8,7 @@ import {
   type MealRecipe,
   type MealReminderView,
   type MealType,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { FoodItemModel, type FoodItemDoc } from '../models/FoodItem.js';
 import { MealPlanEntryModel } from '../models/MealPlanEntry.js';
 import { MealReminderLogModel } from '../models/MealReminderLog.js';
@@ -74,7 +74,7 @@ async function contentFor(user: UserDoc, meal: MealType, today: DateString): Pro
     FoodItemModel.find({ householdId: user.householdId, status: 'ACTIVE' }),
     MealReminderLogModel.find({ userId: user._id, date: today, meal: { $ne: meal } }),
   ]);
-  const { cookFirst } = prioritise(
+  const { fridgeStock } = prioritise(
     foods
       .filter((doc) => awake(doc, today))
       .map((doc) => ({
@@ -96,13 +96,13 @@ async function contentFor(user: UserDoc, meal: MealType, today: DateString): Pro
           .map((id) => ({ id, name: names.get(id)! })),
       }
     : null;
-  // Ideas are only needed when nothing is planned and there is something in Cook First to cook.
-  const ideas = !plan && cookFirst.length > 0 ? await ideasFor(user, meal, today) : [];
+  // Ideas are only needed when nothing is planned and there is something in FridgeStock to cook.
+  const ideas = !plan && fridgeStock.length > 0 ? await ideasFor(user, meal, today) : [];
   return chooseMealContent({
     plan,
     ideas,
     usedRecipeTitles: sentToday.flatMap((log) => (log.recipeTitle ? [log.recipeTitle] : [])),
-    cookFirst: cookFirst.map((item) => ({ id: item.id, name: item.doc.name, remainingDays: item.remainingDays })),
+    fridgeStock: fridgeStock.map((item) => ({ id: item.id, name: item.doc.name, remainingDays: item.remainingDays })),
   });
 }
 

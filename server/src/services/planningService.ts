@@ -10,7 +10,7 @@ import {
   type MealPlanEntryInput,
   type MealType,
   type RecipeIdeas,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { aiPrompts, promptLine } from '../copy.js';
 import { FoodItemModel, type FoodItemDoc } from '../models/FoodItem.js';
 import { MealPlanEntryModel } from '../models/MealPlanEntry.js';
@@ -31,13 +31,13 @@ const MAX_RECIPES = 3;
 const ref = (doc: FoodItemDoc): FoodRef => ({ id: doc._id.toString(), name: doc.name });
 
 /**
- * The user's active food in Cook First order, each with a short code (F1, F2…)
+ * The user's active food in FridgeStock order, each with a short code (F1, F2…)
  * for the AI to refer to. The AI only ever reads this order; nothing it
  * returns is used to change it.
  */
 async function codedFood(user: UserDoc, today: DateString) {
   const foods = await FoodItemModel.find({ householdId: user.householdId, status: 'ACTIVE' });
-  const { items, cookFirst } = prioritise(
+  const { items, fridgeStock } = prioritise(
     foods.map((doc) => ({
       doc,
       id: doc._id.toString(),
@@ -47,7 +47,7 @@ async function codedFood(user: UserDoc, today: DateString) {
     })),
     today,
   );
-  // Urgent items have the earliest expected expiry, so Cook First is always the start of the full list.
+  // Urgent items have the earliest expected expiry, so FridgeStock is always the start of the full list.
   const listed = items.slice(0, PROMPT_ITEMS).map((item, rank) => ({
     ...item,
     rank,
@@ -55,26 +55,26 @@ async function codedFood(user: UserDoc, today: DateString) {
     line: promptLine(`F${rank + 1}`, item.doc.name, item.doc.quantity, item.doc.unit, item.remainingDays),
   }));
   const byCode = new Map(listed.map((item) => [item.code, item]));
-  /** Known codes only, each once, in Cook First order. */
+  /** Known codes only, each once, in FridgeStock order. */
   const resolve = (codes: string[]) =>
     [...new Set(codes.map((code) => code.trim().toUpperCase()))]
       .map((code) => byCode.get(code))
       .filter((item) => item !== undefined)
       .sort((a, b) => a.rank - b.rank);
-  return { listed, cookFirstCount: Math.min(cookFirst.length, listed.length), cookFirst, resolve };
+  return { listed, fridgeStockCount: Math.min(fridgeStock.length, listed.length), fridgeStock, resolve };
 }
 
 // ---- Recipe ideas ----
 
 /**
- * Up to three recipe ideas built from the Cook First list. Each must use at
- * least one Cook First item; ideas are listed by the most urgent item they
- * use. With nothing in Cook First, no AI request is made (and none counted).
+ * Up to three recipe ideas built from the FridgeStock list. Each must use at
+ * least one FridgeStock item; ideas are listed by the most urgent item they
+ * use. With nothing in FridgeStock, no AI request is made (and none counted).
  */
 export async function suggestRecipes(user: UserDoc, mealType?: MealType): Promise<RecipeIdeas> {
   const today = clock.today(user.timeZone);
-  const { listed, cookFirstCount, cookFirst, resolve } = await codedFood(user, today);
-  if (cookFirstCount === 0) return { basedOn: [], recipes: [] };
+  const { listed, fridgeStockCount, fridgeStock, resolve } = await codedFood(user, today);
+  if (fridgeStockCount === 0) return { basedOn: [], recipes: [] };
 
   // For a meal: ideas already made for the household's other meals today, which are not to be repeated.
   const avoid = mealType
@@ -88,8 +88,8 @@ export async function suggestRecipes(user: UserDoc, mealType?: MealType): Promis
     : [];
   const result = await aiService.generate(user, {
     prompt: aiPrompts.recipes(
-      listed.slice(0, cookFirstCount).map((item) => item.line),
-      listed.slice(cookFirstCount).map((item) => item.line),
+      listed.slice(0, fridgeStockCount).map((item) => item.line),
+      listed.slice(fridgeStockCount).map((item) => item.line),
       mealType,
       avoid,
     ),
@@ -102,7 +102,7 @@ export async function suggestRecipes(user: UserDoc, mealType?: MealType): Promis
 
   const recipes = result.recipes
     .map((recipe) => ({ recipe, used: resolve(recipe.uses) }))
-    .filter(({ used }) => used.some((item) => item.rank < cookFirstCount))
+    .filter(({ used }) => used.some((item) => item.rank < fridgeStockCount))
     .sort((a, b) => a.used[0]!.rank - b.used[0]!.rank)
     .slice(0, MAX_RECIPES)
     .map(({ recipe, used }) => ({
@@ -119,7 +119,7 @@ export async function suggestRecipes(user: UserDoc, mealType?: MealType): Promis
       { upsert: true },
     );
   }
-  return { basedOn: cookFirst.map((item) => ref(item.doc)), recipes };
+  return { basedOn: fridgeStock.map((item) => ref(item.doc)), recipes };
 }
 
 // ---- Weekly meal plan ----

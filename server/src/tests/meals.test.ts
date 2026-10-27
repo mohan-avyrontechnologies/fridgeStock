@@ -1,4 +1,4 @@
-import { hasBannedWording, MESSAGES, type PushPayload } from '@cook-first/shared';
+import { hasBannedWording, MESSAGES, type PushPayload } from '@fridgestock/shared';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { MealReminderLogModel } from '../models/MealReminderLog.js';
 import { RecipeIdeaCacheModel } from '../models/RecipeIdeaCache.js';
@@ -64,7 +64,7 @@ async function addFood(s: Session, name: string, lifespanDays: number, addedDate
   };
 }
 
-/** A user with one registered browser, Bread (expected expiry today) and Chicken (tomorrow) in Cook First. */
+/** A user with one registered browser, Bread (expected expiry today) and Chicken (tomorrow) in FridgeStock. */
 async function household(overrides: Record<string, unknown> = {}) {
   at('06:00');
   const s = await registerUser({ timeZone: 'UTC', ...overrides });
@@ -196,7 +196,7 @@ describe('settings: meal reminders', () => {
 });
 
 describe('meal reminders: when they are sent', () => {
-  it('sends at the chosen time with the top Cook First items, their days left, and three buttons', async () => {
+  it('sends at the chosen time with the top FridgeStock items, their days left, and three buttons', async () => {
     const sent = fakePush();
     const { s } = await household();
     await turnOn(s, { breakfast: { enabled: true } });
@@ -318,7 +318,7 @@ describe('meal reminders: when they are sent', () => {
     expect(mealPushes(sent)[1]!.payload.tag).toBe('meal-dinner-2026-12-25');
   });
 
-  it('sends nothing when Cook First is empty and nothing is planned, and does not record one', async () => {
+  it('sends nothing when FridgeStock is empty and nothing is planned, and does not record one', async () => {
     const sent = fakePush();
     at('06:00');
     const s = await registerUser({ timeZone: 'UTC' });
@@ -329,7 +329,7 @@ describe('meal reminders: when they are sent', () => {
           .send({ endpoint: 'https://push.example.com/send/empty', keys: { p256dh: 'p', auth: 'a' } }),
       )
       .expect(201);
-    await addFood(s, 'Rice', 30); // not in Cook First
+    await addFood(s, 'Rice', 30); // not in FridgeStock
     await turnOn(s, { breakfast: { enabled: true } });
     at('07:30');
     await sweep();
@@ -394,7 +394,7 @@ describe('meal reminders: what they say', () => {
     expect(mealPushes(sent)[1]!.payload.body).toMatch(/^Use these up first:/);
   });
 
-  it('1. a planned meal is sent even when nothing is in Cook First', async () => {
+  it('1. a planned meal is sent even when nothing is in FridgeStock', async () => {
     const sent = fakePush();
     at('06:00');
     const s = await registerUser({ timeZone: 'UTC' });
@@ -454,7 +454,7 @@ describe('meal reminders: what they say', () => {
     expect(bad.body.error.message).toBe('Choose breakfast, lunch or dinner.');
   });
 
-  it('3. with AI off, a plain message naming the top items with their days left, in Cook First order', async () => {
+  it('3. with AI off, a plain message naming the top items with their days left, in FridgeStock order', async () => {
     const sent = fakePush();
     const { s } = await household();
     await turnOn(s, { dinner: { enabled: true } });
@@ -689,7 +689,7 @@ describe('meal reminders and the daily summary', () => {
       [
         'Planned: Toast. It uses Bread.',
         '',
-        'Cook First: 2 items to check',
+        'FridgeStock: 2 items to check',
         'Bread: expected expiry today',
         'Chicken: expected expiry in 1 day',
       ].join('\n'),
@@ -714,7 +714,7 @@ describe('meal reminders and the daily summary', () => {
     await sweep();
     expect(sent).toHaveLength(1);
     expect(sent[0]!.payload.kind).toBe('MEAL');
-    expect(sent[0]!.payload.body).toContain('Cook First: 2 items to check');
+    expect(sent[0]!.payload.body).toContain('FridgeStock: 2 items to check');
   });
 
   it('31 minutes apart they are separate: the summary at 08:00, the meal reminder later', async () => {

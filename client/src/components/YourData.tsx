@@ -23,7 +23,7 @@ export function YourData() {
       const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
       const link = document.createElement('a');
       link.href = url;
-      link.download = `cook-first-data-${data.exportedAt.slice(0, 10)}.json`;
+      link.download = `fridgestock-data-${data.exportedAt.slice(0, 10)}.json`;
       link.click();
       URL.revokeObjectURL(url);
       toast(dataCopy.exportDone);

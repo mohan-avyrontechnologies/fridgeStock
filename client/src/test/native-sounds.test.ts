@@ -9,7 +9,7 @@ import {
   PUSH_KINDS,
   SOUND_NAMES,
   type AlertSettings,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { afterEach, describe, expect, it } from 'vitest';
 import { ANDROID_CHANNELS } from '../platform/native/channels';
 
@@ -134,7 +134,7 @@ describe('npm run sounds:sync', () => {
 
   /** A scratch copy of just what the script reads and writes. */
   function scratch() {
-    temp = mkdtempSync(path.join(os.tmpdir(), 'cook-first-sounds-'));
+    temp = mkdtempSync(path.join(os.tmpdir(), 'fridgestock-sounds-'));
     cpSync(path.join(CLIENT, SOUND_DIR), path.join(temp, SOUND_DIR), { recursive: true });
     mkdirSync(path.join(temp, 'ios/App/App.xcodeproj'), { recursive: true });
     mkdirSync(path.join(temp, 'ios/App/App'), { recursive: true });
@@ -234,7 +234,7 @@ describe('the Android notification channels', () => {
   /** The rows of ReminderChannels.java's table. */
   const javaRows = () =>
     [
-      ...read('android/app/src/main/java/com/example/cookfirst/ReminderChannels.java').matchAll(
+      ...read('android/app/src/main/java/com/example/fridgestock/ReminderChannels.java').matchAll(
         /\{ "([a-z-]+)", "([^"]+)", "([^"]+)", (\d), (null|"[a-z_]+"), (true|false) \},/g,
       ),
     ].map((m) => ({
@@ -283,18 +283,18 @@ describe('the Android notification channels', () => {
   });
 
   it('the messaging service uses the channel the server names, and is silent while the app is open', () => {
-    const service = read('android/app/src/main/java/com/example/cookfirst/ActionMessagingService.java');
+    const service = read('android/app/src/main/java/com/example/fridgestock/ActionMessagingService.java');
     expect(service).toContain('data.get("channelId")');
     expect(service).toMatch(/if \(MainActivity\.isVisible\(\)\) channelId = ReminderChannels\.SILENT;/);
     expect(service).toContain('ReminderChannels.ensure(context, channelId)');
-    const activity = read('android/app/src/main/java/com/example/cookfirst/MainActivity.java');
+    const activity = read('android/app/src/main/java/com/example/fridgestock/MainActivity.java');
     expect(activity).toContain('ReminderChannels.ensureSoundless(this)');
     expect(activity).toMatch(/onResume\(\) \{\s*super\.onResume\(\);\s*visible = true;/);
     expect(activity).toMatch(/onPause\(\) \{\s*visible = false;/);
   });
 
   it('a button that opens a page opens it; the others call the server', () => {
-    const service = read('android/app/src/main/java/com/example/cookfirst/ActionMessagingService.java');
+    const service = read('android/app/src/main/java/com/example/fridgestock/ActionMessagingService.java');
     expect(service).toContain('item.optString("url", null)');
     expect(service).toMatch(/button = openPage\(context, buttonPage/);
     expect(service).toContain('PendingIntent.getBroadcast');
@@ -395,7 +395,7 @@ describe('the service worker', () => {
   it('is quiet when a page is open to play its own chime, and tells that page which kind arrived', () => {
     const text = worker();
     expect(text).toContain("client.visibilityState === 'visible'");
-    expect(text).toContain("type: 'cook-first:reminder'");
+    expect(text).toContain("type: 'fridgestock:reminder'");
     expect(text).toContain('data.silent === true || visible.length > 0');
   });
 

@@ -1,6 +1,6 @@
 # Architecture
 
-How Cook First is put together: the moving parts, the data, and the rules the code keeps. For endpoints see [API.md](API.md); for what people see, [FEATURES.md](FEATURES.md).
+How FridgeStock is put together: the moving parts, the data, and the rules the code keeps. For endpoints see [API.md](API.md); for what people see, [FEATURES.md](FEATURES.md).
 
 ---
 
@@ -9,7 +9,7 @@ How Cook First is put together: the moving parts, the data, and the rules the co
 ```
 client (React)  ──HTTP/JSON──▶  server (Express)  ──Mongoose──▶  MongoDB
       │                               │
-      └──────── @cook-first/shared ───┘   enums · API types · zod schemas · dates.ts
+      └──────── @fridgestock/shared ───┘   enums · API types · zod schemas · dates.ts
 ```
 
 **How a request flows through the server:**
@@ -149,7 +149,7 @@ remainingDays = diffDays(today, expiryDate)                       today = todayI
 - **Move:** `expiryDate = addDays(today, daysLeft)` for the new location, with the lifespan capped at 365 days.
 - Both reschedule the item's pending reminders. Neither changes how the priority engine orders items; it just sorts by the new expected expiry.
 
-| Remaining days | Urgency | Label | Colour | In Cook First | Card text |
+| Remaining days | Urgency | Label | Colour | In FridgeStock | Card text |
 |---|---|---|---|---|---|
 | more than 3 | `NOT_URGENT` | Not urgent | green | No | "5 days left" |
 | 1 – 3 | `APPROACHING_EXPIRY` | Use soon | amber | Yes | "2 days left", "1 day left" |
@@ -166,9 +166,9 @@ remainingDays = diffDays(today, expiryDate)                       today = todayI
 
 1. Keep only `ACTIVE` items, and add remaining days and urgency to each.
 2. Sort by **expiry date** (earliest first), then **added date**, then **ID compared as strings**. `YYYY-MM-DD` strings sort in date order.
-3. Return **`{ items, cookFirst, summary }`**:
+3. Return **`{ items, fridgeStock, summary }`**:
    - `items`: the full sorted list
-   - `cookFirst`: the `APPROACHING_EXPIRY`, `DUE` and `OVERDUE` items, in the same order
+   - `fridgeStock`: the `APPROACHING_EXPIRY`, `DUE` and `OVERDUE` items, in the same order
    - `summary`: the count for each urgency state, plus `total`
 
 ### Recording what happened
@@ -206,19 +206,19 @@ A failed send is marked `FAILED` and retried until it has been attempted 3 times
 - at the start of `GET /foods`
 - every 5 minutes through node-cron (`*/5 * * * *`; it was hourly before v2.17)
 
-In `GET /foods` it's wrapped so that any reminder failure is only logged: it can never affect the inventory or the Cook First list.
+In `GET /foods` it's wrapped so that any reminder failure is only logged: it can never affect the inventory or the FridgeStock list.
 
 **Push (v2.7).** The reminder job runs `pushDue(user)` after `dispatchDue`, for users with at least one registered browser, once the user's chosen hour has arrived in their time zone:
 
 | Mode | What is sent |
 |---|---|
-| `DIGEST` (default) | Once a day: "Cook First: N items to check", listing up to 4 items from the Cook First list **in Cook First order** ("Bread: expected expiry today", "Chicken: expected expiry in 1 day", "and 2 more"). Opens the Cook First screen. With a single item it opens that item and has the Used and Snooze buttons. Nothing is sent when nothing needs attention. |
+| `DIGEST` (default) | Once a day: "FridgeStock: N items to check", listing up to 4 items from the FridgeStock list **in FridgeStock order** ("Bread: expected expiry today", "Chicken: expected expiry in 1 day", "and 2 more"). Opens the FridgeStock screen. With a single item it opens that item and has the Used and Snooze buttons. Nothing is sent when nothing needs attention. |
 | `EACH_ITEM` | One notification per reminder delivered that day, with the same text as the in-app reminder, opening that item's Food Details, with **Used** and **Snooze** buttons. |
 
-- **Buttons.** The service worker (`client/public/sw.js`) calls `POST /push/actions` with a narrow **action token** carried in the notification: signed with the server secret, naming one user and one item, and rejected as a login token. Each notification gets its own token (a unique `jti`), valid **24 hours**, that carries out **one action, once**: `pushActionService` records the `jti` in `usedactiontokens` (atomically, by a unique index, so two taps can't both get through; a TTL index drops the record when the token expires) before acting, and gives the token back if the action fails. A meal reminder's token works the same way, for its one meal and day. **Used** closes the item exactly like "Used all" (with a usage record). **Snooze** sets `snoozedUntil` to tomorrow: the item is left out of push reminders until then, then reminded about again (per-item) or back in the summary (digest). It stays in Cook First and in-app reminders throughout. If the call fails (expired token, item already closed, offline), Food Details opens instead.
+- **Buttons.** The service worker (`client/public/sw.js`) calls `POST /push/actions` with a narrow **action token** carried in the notification: signed with the server secret, naming one user and one item, and rejected as a login token. Each notification gets its own token (a unique `jti`), valid **24 hours**, that carries out **one action, once**: `pushActionService` records the `jti` in `usedactiontokens` (atomically, by a unique index, so two taps can't both get through; a TTL index drops the record when the token expires) before acting, and gives the token back if the action fails. A meal reminder's token works the same way, for its one meal and day. **Used** closes the item exactly like "Used all" (with a usage record). **Snooze** sets `snoozedUntil` to tomorrow: the item is left out of push reminders until then, then reminded about again (per-item) or back in the summary (digest). It stays in FridgeStock and in-app reminders throughout. If the call fails (expired token, item already closed, offline), Food Details opens instead.
 - **Delivery goes through a `PushProvider` interface** (`services/pushProvider.ts`). The Web Push provider uses the `web-push` library with the VAPID keys; a Firebase provider for native apps could be added without touching the notification service.
 - **Failures.** 404 or 410 from the push service deletes that subscription. Any other error is logged and the subscription kept. A push failure never changes in-app reminders, and one user's failure doesn't stop others.
-- **Wording.** All notification text comes from `server/src/copy.ts`; the service worker has none of its own. The Cook First order is read, never changed.
+- **Wording.** All notification text comes from `server/src/copy.ts`; the service worker has none of its own. The FridgeStock order is read, never changed.
 
 **Feed.** Paginated: pages of up to 50 reminders (`SENT` or `FAILED`), newest first, with the total and the unread count. The Reminders screen has "Load more". `readAt` stays empty until the user opens the Reminders screen, which calls `POST /notifications/read-all`. New ones still show a "New" tag during that visit.
 
@@ -253,8 +253,8 @@ Android fixes a channel's sound and vibration, so each combination of the person
 1. `chooseMealContent` (`services/mealContent.ts`, pure and unit-tested) picks what to say:
    1. today's `MealPlanEntry` for that meal;
    2. otherwise, with AI on, the first of **today's cached recipe ideas** for that meal type that hasn't been used for another meal today (titles are compared ignoring case and punctuation);
-   3. otherwise the top 3 Cook First items, each with its days left in expected-expiry wording ("Bread: expected expiry today");
-   4. otherwise nothing: **nothing is sent when Cook First is empty and no meal is planned** (even if an old idea is cached).
+   3. otherwise the top 3 FridgeStock items, each with its days left in expected-expiry wording ("Bread: expected expiry today");
+   4. otherwise nothing: **nothing is sent when FridgeStock is empty and no meal is planned** (even if an old idea is cached).
 2. It is sent (silently in quiet hours) and recorded in `mealreminderlogs`, so it goes once a day and "Show recipe" can show what it said.
 
 Recipe ideas are cached per household, per day and per meal (`recipeideacaches`, cleared after 3 days). `POST /ai/recipes` takes an optional `{mealType}` (so breakfast ideas suit breakfast, and it is told which recipes other meals already have) and keeps its answer; when a meal reminder is due and nothing is cached, the AI is asked once for that meal, and if that fails an empty answer is kept so it doesn't ask again that day.
@@ -351,7 +351,7 @@ All AI calls go through one interface, `AiClient` (`server/src/services/aiClient
 | Read the date on a pack | `POST /parse/date` | fast | Copying a few characters |
 | Read a receipt | `POST /parse/receipt` | fast | Copying lines of text |
 | Name a food in a photo, list visible warning signs | `POST /parse/photo` (Photo Check) | smart | Recognition with a strict, problems-only schema |
-| Recipe ideas from Cook First | `POST /ai/recipes`, meal reminders | smart | Writing |
+| Recipe ideas from FridgeStock | `POST /ai/recipes`, meal reminders | smart | Writing |
 | Draft a meal plan | `POST /ai/meal-plan` | smart | Writing |
 
 **Rate limits.** `withRateLimitRetry` wraps both providers. An HTTP 429/529 or a quota error gets **one retry after 2 seconds**, then becomes an `AiBusyError`. The service shows "AI is busy, try again later." and **refunds** that request's allowance. The Anthropic SDK's own retries are turned off, so both providers follow one policy.
@@ -369,7 +369,7 @@ These rules must never be broken. Each one is enforced in code and checked by an
 | Rule | How it's enforced | Test |
 |---|---|---|
 | **Never suggest food is fit to eat.** The banned phrases (listed in the wording-guard test) must not appear anywhere. | All expiry wording lives in `client/src/copy.ts` (interface) and `server/src/copy.ts` (reminder messages). | `foodSafetyCopy.test.ts` scans every `.ts`/`.tsx` file in `client/src`, `server/src` and `shared/src`, ignoring case. It fails on any banned phrase, on "safe" in either copy file, or on expiry wording outside the copy files. Playwright also scans every rendered page. |
-| **Add Food and Cook First show:** *"Expected expiry is an estimate to help you plan. Always check your food before eating it."* | `estimateNote` in `client/src/copy.ts`, shown by the `EstimateNote` component. | Client tests; Playwright journeys 1 and 3 |
+| **Add Food and FridgeStock show:** *"Expected expiry is an estimate to help you plan. Always check your food before eating it."* | `estimateNote` in `client/src/copy.ts`, shown by the `EstimateNote` component. | Client tests; Playwright journeys 1 and 3 |
 | **Users only ever see their own data.** | The identity comes only from the verified JWT. Every query on food items, usage records and reminders includes `userId` (including `save()`/`deleteOne()`, via Mongoose's `shardKey`). Another user's item returns **404**, not 403. | `rules.test.ts` records every MongoDB operation in a full journey and fails on any without the user's ID; `security.test.ts`; Playwright journey 5 |
 | **Prioritisation is deterministic.** | `prioritise(items, today)` in `services/priorityEngine.ts` is a pure function with no database, Express or clock imports. | `priorityEngine.test.ts` (running twice gives identical output; shuffled input gives the same order); `rules.test.ts` |
 | **Urgency is never stored; the threshold of 3 is one constant.** | `APPROACHING_EXPIRY_DAYS` in `server/src/config/urgency.ts`. Urgency is calculated on every read. | `structure.test.ts` scans client, server and shared for a hard-coded 3 |

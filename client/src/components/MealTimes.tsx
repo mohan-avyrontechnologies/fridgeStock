@@ -4,7 +4,7 @@ import {
   type MealReminders,
   type MealRemindersInput,
   type MealType,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
 import { alertCopy, mealSettingsCopy } from '../copy';

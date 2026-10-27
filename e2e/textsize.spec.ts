@@ -60,7 +60,7 @@ test('at 200% text size the tab bar still fits and every tab can be reached', as
   await signUp(page);
   await page.addStyleTag({ content: `html { font-size: ${LARGE} !important; }` });
   const bar = page.getByRole('navigation', { name: 'Main' }).last();
-  for (const tab of ['Home', 'Cook First', 'Add food', 'Shopping', 'More']) {
+  for (const tab of ['Home', 'FridgeStock', 'Add food', 'Shopping', 'More']) {
     const item = bar.getByText(tab, { exact: false }).first();
     const box = (await item.boundingBox())!;
     expect(box.x, tab).toBeGreaterThanOrEqual(0);

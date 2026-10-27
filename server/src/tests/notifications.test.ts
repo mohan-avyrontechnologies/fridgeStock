@@ -180,14 +180,14 @@ describe('dispatchDue', () => {
     });
   });
 
-  it('a reminder failure never affects the inventory or Cook First', async () => {
+  it('a reminder failure never affects the inventory or FridgeStock', async () => {
     await add({ name: 'Chicken', lifespanDays: 1 });
     vi.spyOn(notificationService, 'dispatchDue').mockRejectedValue(new Error('reminders down'));
     const logged = vi.spyOn(console, 'error').mockImplementation(() => {});
     const list = await s.auth(api().get('/api/foods')).expect(200);
     expect(logged).toHaveBeenCalledWith('Reminder dispatch failed', expect.any(Error));
     expect(list.body.items.map((i: { name: string }) => i.name)).toEqual(['Chicken']);
-    const cf = await s.auth(api().get('/api/foods/cook-first')).expect(200);
+    const cf = await s.auth(api().get('/api/foods/fridgestock')).expect(200);
     expect(cf.body.items).toHaveLength(1);
   });
 
@@ -243,7 +243,7 @@ describe('delivery failure', () => {
 
     const list = await s.auth(api().get('/api/foods')).expect(200);
     expect(list.body.items).toHaveLength(1);
-    await s.auth(api().get('/api/foods/cook-first')).expect(200);
+    await s.auth(api().get('/api/foods/fridgestock')).expect(200);
   });
 
   it('a failed reminder shows in the feed as FAILED, then is retried and delivered once the channel recovers', async () => {

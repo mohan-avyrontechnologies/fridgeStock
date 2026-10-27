@@ -7,7 +7,7 @@ import {
   type MealPlanEntry,
   type MealType,
   MEAL_TYPES,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { api } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';
@@ -241,7 +241,7 @@ function MealForm({
   onDone: () => Promise<void>;
   onCancel: () => void;
 }) {
-  // The user's active food in Cook First order (most urgent first).
+  // The user's active food in FridgeStock order (most urgent first).
   const inventory = useFoodStore((s) => s.inventory);
   const food = inventory?.items ?? [];
   const [title, setTitle] = useState(entry?.title ?? '');

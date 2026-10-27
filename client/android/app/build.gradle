@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.example.cookfirst"
+    namespace = "com.example.fridgestock"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.example.cookfirst"
+        applicationId "com.example.fridgestock"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

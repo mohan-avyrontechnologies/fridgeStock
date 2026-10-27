@@ -6,7 +6,7 @@ process.env.NODE_ENV = 'test';
 process.env.AUTH_RATE_LIMIT = 'off';
 
 beforeAll(async () => {
-  await mongoose.connect(`${process.env.TEST_MONGO_URI}cook-first-test`);
+  await mongoose.connect(`${process.env.TEST_MONGO_URI}fridgestock-test`);
   await mongoose.connection.syncIndexes();
 });
 

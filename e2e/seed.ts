@@ -14,7 +14,7 @@ export async function signUp(page: Page, name = 'Asha Rao'): Promise<string> {
   await page.getByRole('button', { name: 'Create account' }).click();
   await page.getByRole('button', { name: 'Skip for now' }).click();
   await expect(page.getByRole('heading', { name: `Hi, ${name}` })).toBeVisible();
-  return page.evaluate(() => JSON.parse(localStorage.getItem('cook-first-auth')!).state.token as string);
+  return page.evaluate(() => JSON.parse(localStorage.getItem('fridgestock-auth')!).state.token as string);
 }
 
 /** Today, in the browser's time zone, as YYYY-MM-DD (the zone the app sends when registering). */
@@ -73,7 +73,7 @@ export async function seed(page: Page, token: string): Promise<{ foodId: string 
 /** The main screens, in the order they are reviewed. `path` may use the seeded food's id. */
 export const SCREENS = (foodId: string) => [
   { name: 'home', path: '/' },
-  { name: 'cook-first', path: '/cook-first' },
+  { name: 'fridgestock', path: '/fridgestock' },
   { name: 'add-food', path: '/add' },
   { name: 'food-details', path: `/food/${foodId}` },
   { name: 'shopping', path: '/shopping' },

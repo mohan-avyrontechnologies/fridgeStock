@@ -1,4 +1,4 @@
-import type { PushConfig } from '@cook-first/shared';
+import type { PushConfig } from '@fridgestock/shared';
 import type { PushSupport, TurnOnResult } from '../lib/push';
 
 /**

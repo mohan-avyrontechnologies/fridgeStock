@@ -1,4 +1,4 @@
-import type { AtHomeMatch, ShoppingItem, ShoppingItemInput, ShoppingUpdateInput } from '@cook-first/shared';
+import type { AtHomeMatch, ShoppingItem, ShoppingItemInput, ShoppingUpdateInput } from '@fridgestock/shared';
 import { isValidObjectId } from 'mongoose';
 import { FoodItemModel } from '../models/FoodItem.js';
 import { ShoppingItemModel, type ShoppingItemDoc } from '../models/ShoppingItem.js';

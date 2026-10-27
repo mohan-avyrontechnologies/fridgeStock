@@ -6,7 +6,7 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  // Use @cook-first/shared's TypeScript source directly (no separate build needed).
+  // Use @fridgestock/shared's TypeScript source directly (no separate build needed).
   resolve: { conditions: ['source', ...defaultClientConditions] },
   server: { port: 5173 },
   test: {

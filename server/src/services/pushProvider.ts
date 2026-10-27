@@ -1,4 +1,4 @@
-import type { PushPayload, PushPlatform } from '@cook-first/shared';
+import type { PushPayload, PushPlatform } from '@fridgestock/shared';
 import webpush from 'web-push';
 import { env } from '../config/env.js';
 import { createFcmPushProvider, createFirebaseMessaging } from './fcmProvider.js';

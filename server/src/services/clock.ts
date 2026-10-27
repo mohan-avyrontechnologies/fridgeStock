@@ -1,4 +1,4 @@
-import { todayInTz, type DateString } from '@cook-first/shared';
+import { todayInTz, type DateString } from '@fridgestock/shared';
 
 /**
  * The server's only source of the current time. Date logic must go through

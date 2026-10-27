@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import type { PushPayload } from '@cook-first/shared';
+import type { PushPayload } from '@fridgestock/shared';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NATIVE_APP_ORIGINS } from '../config/native.js';
 import { PushSubscriptionModel } from '../models/PushSubscription.js';
@@ -22,8 +22,8 @@ type Session = Awaited<ReturnType<typeof registerUser>>;
 const TOKEN_A = 'fcm-token-android-' + 'a'.repeat(140);
 const TOKEN_I = 'fcm-token-ios-' + 'i'.repeat(140);
 
-const android = (token = TOKEN_A) => ({ platform: 'android', token, browser: 'Cook First app on Android' });
-const ios = (token = TOKEN_I) => ({ platform: 'ios', token, browser: 'Cook First app on iOS' });
+const android = (token = TOKEN_A) => ({ platform: 'android', token, browser: 'FridgeStock app on Android' });
+const ios = (token = TOKEN_I) => ({ platform: 'ios', token, browser: 'FridgeStock app on iOS' });
 const webDevice = () => ({
   endpoint: 'https://push.example.com/send/web-1',
   keys: { p256dh: 'p256dh-key', auth: 'auth-secret' },
@@ -65,7 +65,7 @@ describe('native subscriptions', () => {
     expect(res.body).toEqual({
       id: expect.any(String),
       platform: 'android',
-      browser: 'Cook First app on Android',
+      browser: 'FridgeStock app on Android',
       createdAt: expect.any(String),
       lastUsedAt: null,
     });
@@ -90,10 +90,10 @@ describe('native subscriptions', () => {
   it('subscribing the same app again updates it instead of adding another', async () => {
     const s = await registerUser();
     await subscribe(s, android()).expect(201);
-    await subscribe(s, { ...android(), browser: 'Cook First app on Android 15' }).expect(201);
+    await subscribe(s, { ...android(), browser: 'FridgeStock app on Android 15' }).expect(201);
     const all = await PushSubscriptionModel.find({ userId: s.user.id });
     expect(all).toHaveLength(1);
-    expect(all[0]!.browser).toBe('Cook First app on Android 15');
+    expect(all[0]!.browser).toBe('FridgeStock app on Android 15');
   });
 
   it('gives a phone to whoever is signed in on it: the token leaves the previous account', async () => {
@@ -160,7 +160,7 @@ describe('GET /api/push/config', () => {
 
 describe('sending to every kind of device', () => {
   const payload: PushPayload = {
-    title: 'Cook First: 1 item to check',
+    title: 'FridgeStock: 1 item to check',
     body: 'Milk: expected expiry today',
     tag: 'item-1',
     url: '/food/1',
@@ -230,7 +230,7 @@ describe('sending to every kind of device', () => {
     clock.set(new Date('2026-09-29T06:00:00Z'));
     const s = await registerUser();
     await subscribe(s, ios()).expect(201);
-    // Two items in Cook First make a summary (a single one is sent as one reminder, with buttons).
+    // Two items in FridgeStock make a summary (a single one is sent as one reminder, with buttons).
     for (const [name, lifespanDays] of [
       ['Bread', 0],
       ['Milk', 1],
@@ -247,13 +247,13 @@ describe('sending to every kind of device', () => {
     await sweep();
     expect(fcm.sent).toHaveLength(1);
     expect(fcm.sent[0]!.target).toMatchObject({ platform: 'ios', token: TOKEN_I });
-    expect(fcm.sent[0]!.payload).toMatchObject({ tag: 'digest', url: '/cook-first', actions: [] });
+    expect(fcm.sent[0]!.payload).toMatchObject({ tag: 'digest', url: '/fridgestock', actions: [] });
   });
 });
 
 describe('the Firebase provider', () => {
   const payload: PushPayload = {
-    title: 'Cook First: Milk',
+    title: 'FridgeStock: Milk',
     body: 'Milk: expected expiry today',
     tag: 'item-1',
     url: '/food/1',
@@ -265,10 +265,10 @@ describe('the Firebase provider', () => {
     ...gentleAlert,
   };
   const digest: PushPayload = {
-    title: 'Cook First: 2 items',
+    title: 'FridgeStock: 2 items',
     body: 'Bread\nMilk',
     tag: 'digest',
-    url: '/cook-first',
+    url: '/fridgestock',
     actions: [],
     ...gentleAlert,
   };
@@ -310,7 +310,7 @@ describe('the Firebase provider', () => {
       silent: 'false',
       actionUrls: '{}',
       actionToken: 'action-token',
-      title: 'Cook First: Milk',
+      title: 'FridgeStock: Milk',
       body: 'Milk: expected expiry today',
       channelId: 'food-soon',
       actions: JSON.stringify(payload.actions),
@@ -335,7 +335,7 @@ describe('the Firebase provider', () => {
 
   it('sends iPhone a notification with a category, so its buttons appear, through APNs via Firebase', async () => {
     const { messages, messaging } = fake();
-    const provider = createFcmPushProvider(messaging, { apnsBundleId: 'com.example.cookfirst' });
+    const provider = createFcmPushProvider(messaging, { apnsBundleId: 'com.example.fridgestock' });
     clock.set(new Date('2026-09-29T12:00:00Z'));
     expect(await provider.send(target('ios'), payload)).toBe('SENT');
     const message = messages[0]! as {
@@ -343,7 +343,7 @@ describe('the Firebase provider', () => {
       data: Record<string, string>;
       apns: { headers: Record<string, string>; payload: { aps: Record<string, unknown> } };
     };
-    expect(message.notification).toEqual({ title: 'Cook First: Milk', body: 'Milk: expected expiry today' });
+    expect(message.notification).toEqual({ title: 'FridgeStock: Milk', body: 'Milk: expected expiry today' });
     expect(message.data).toEqual({
       url: '/food/1',
       tag: 'item-1',
@@ -361,7 +361,7 @@ describe('the Firebase provider', () => {
     expect(message.apns.headers).toEqual({
       'apns-priority': '10',
       'apns-expiration': String(Math.floor(new Date('2026-09-30T12:00:00Z').getTime() / 1000)),
-      'apns-topic': 'com.example.cookfirst',
+      'apns-topic': 'com.example.fridgestock',
     });
   });
 
@@ -487,7 +487,7 @@ describe('configuration', () => {
       process.env.FIREBASE_PROJECT_ID = 'p';
       process.env.FIREBASE_CLIENT_EMAIL = 'x@p.iam.gserviceaccount.com';
       process.env.FIREBASE_PRIVATE_KEY = '-----BEGIN PRIVATE KEY-----\\nABC\\n-----END PRIVATE KEY-----\\n';
-      process.env.APNS_BUNDLE_ID = 'com.example.cookfirst';
+      process.env.APNS_BUNDLE_ID = 'com.example.fridgestock';
       process.env.PUBLIC_API_URL = 'https://api.example.com/api/';
       const { env } = await import('../config/env.js');
       expect(env.fcm).toEqual({
@@ -495,7 +495,7 @@ describe('configuration', () => {
         clientEmail: 'x@p.iam.gserviceaccount.com',
         privateKey: '-----BEGIN PRIVATE KEY-----\nABC\n-----END PRIVATE KEY-----\n',
       });
-      expect(env.apnsBundleId).toBe('com.example.cookfirst');
+      expect(env.apnsBundleId).toBe('com.example.fridgestock');
       expect(env.publicApiUrl).toBe('https://api.example.com/api');
     });
   });

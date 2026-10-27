@@ -4,12 +4,12 @@
  */
 
 /** A notification was tapped: open this page. The event's `detail` is the address, like "/food/123". */
-export const OPEN_PAGE_EVENT = 'cook-first:open-page';
+export const OPEN_PAGE_EVENT = 'fridgestock:open-page';
 
 /** A push arrived while the app is open: refresh the reminders. */
-export const PUSH_RECEIVED_EVENT = 'cook-first:push-received';
+export const PUSH_RECEIVED_EVENT = 'fridgestock:push-received';
 
 /** A notification button (Used or Snooze) was handled without opening a page. The `detail` is the action. */
-export const PUSH_ACTION_DONE_EVENT = 'cook-first:push-action-done';
+export const PUSH_ACTION_DONE_EVENT = 'fridgestock:push-action-done';
 
 export const openPage = (url: string) => window.dispatchEvent(new CustomEvent(OPEN_PAGE_EVENT, { detail: url }));

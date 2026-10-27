@@ -1,4 +1,4 @@
-# Cook First documentation
+# FridgeStock documentation
 
 | Document | What's in it |
 |---|---|

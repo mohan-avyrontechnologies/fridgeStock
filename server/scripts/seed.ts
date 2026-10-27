@@ -7,10 +7,10 @@
  *
  * Environment: API_URL (default http://localhost:4000/api).
  */
-import { addDays, todayInTz, type FoodInput, type StorageLocation } from '@cook-first/shared';
+import { addDays, todayInTz, type FoodInput, type StorageLocation } from '@fridgestock/shared';
 
 const API = (process.env.API_URL ?? 'http://localhost:4000/api').replace(/\/$/, '');
-const DEMO = { name: 'Demo Cook', email: 'demo@cookfirst.local', password: 'cookfirst-demo' };
+const DEMO = { name: 'Demo Cook', email: 'demo@fridgestock.local', password: 'fridgestock-demo' };
 const reset = process.argv.includes('--reset');
 
 async function call<T>(method: string, path: string, token?: string, body?: unknown): Promise<T> {

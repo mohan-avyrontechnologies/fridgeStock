@@ -1,4 +1,4 @@
-# Cook First API in Python (`server-py`)
+# FridgeStock API in Python (`server-py`)
 
 The Python rewrite of the API in `server/`, built in phases on the `python-backend` branch. To every client the
 switch is meant to be invisible: same routes, same bodies, same data. The full plan, and which phase is done, is
@@ -9,7 +9,7 @@ connection and start-up migrations, Express's HTTP behaviour (helmet headers, CO
 ETags, the error format), logins (JWT and bcrypt, interchangeable with the Node server's), the auth rate limit,
 and these routes: `GET /health`, `POST /auth/register`, `POST /auth/login`, `GET` and `PUT /auth/me`,
 `GET /push/config`, `GET /ai/status`, and food: every `/foods` route except photos, `/foods/bulk`,
-`/foods/cook-first`, `/favourites`, `/usage` and `/suggestions/lifespans` (with reminders scheduled and
+`/foods/fridgestock`, `/favourites`, `/usage` and `/suggestions/lifespans` (with reminders scheduled and
 delivered in the app). Everything else under `/api` is a 401 without a login and a 404 with
 one, until its phase.
 

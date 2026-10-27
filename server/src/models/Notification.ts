@@ -5,7 +5,7 @@ import {
   type DateString,
   type NotificationStatus,
   type ReminderType,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { Schema, Types, model, type HydratedDocument } from 'mongoose';
 
 export const MAX_DELIVERY_ATTEMPTS = 3;

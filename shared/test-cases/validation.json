@@ -15543,7 +15543,7 @@
         "args": [
           {
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15557,7 +15557,7 @@
           {
             "platform": null,
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15571,7 +15571,7 @@
           {
             "platform": 123,
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15585,7 +15585,7 @@
           {
             "platform": "",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15599,7 +15599,7 @@
           {
             "platform": "   ",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15613,7 +15613,7 @@
           {
             "platform": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15627,7 +15627,7 @@
           {
             "platform": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15641,7 +15641,7 @@
           {
             "platform": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15655,7 +15655,7 @@
           {
             "platform": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15669,7 +15669,7 @@
           {
             "platform": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15683,7 +15683,7 @@
           {
             "platform": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15697,7 +15697,7 @@
           {
             "platform": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15711,7 +15711,7 @@
           {
             "platform": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15725,7 +15725,7 @@
           {
             "platform": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15739,7 +15739,7 @@
           {
             "platform": " android ",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15752,7 +15752,7 @@
         "args": [
           {
             "platform": "android",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15766,7 +15766,7 @@
           {
             "platform": "android",
             "token": null,
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15780,7 +15780,7 @@
           {
             "platform": "android",
             "token": 123,
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15794,7 +15794,7 @@
           {
             "platform": "android",
             "token": "",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15808,7 +15808,7 @@
           {
             "platform": "android",
             "token": "   ",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15822,7 +15822,7 @@
           {
             "platform": "android",
             "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15830,7 +15830,7 @@
           "data": {
             "platform": "android",
             "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         }
       },
@@ -15839,7 +15839,7 @@
           {
             "platform": "android",
             "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15847,7 +15847,7 @@
           "data": {
             "platform": "android",
             "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         }
       },
@@ -15856,7 +15856,7 @@
           {
             "platform": "android",
             "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15864,7 +15864,7 @@
           "data": {
             "platform": "android",
             "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         }
       },
@@ -15873,7 +15873,7 @@
           {
             "platform": "android",
             "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15881,7 +15881,7 @@
           "data": {
             "platform": "android",
             "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         }
       },
@@ -15890,7 +15890,7 @@
           {
             "platform": "android",
             "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15898,7 +15898,7 @@
           "data": {
             "platform": "android",
             "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         }
       },
@@ -15907,7 +15907,7 @@
           {
             "platform": "android",
             "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15915,7 +15915,7 @@
           "data": {
             "platform": "android",
             "token": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         }
       },
@@ -15924,7 +15924,7 @@
           {
             "platform": "android",
             "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15932,7 +15932,7 @@
           "data": {
             "platform": "android",
             "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         }
       },
@@ -15941,7 +15941,7 @@
           {
             "platform": "android",
             "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15949,7 +15949,7 @@
           "data": {
             "platform": "android",
             "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         }
       },
@@ -15958,7 +15958,7 @@
           {
             "platform": "android",
             "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -15966,7 +15966,7 @@
           "data": {
             "platform": "android",
             "token": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         }
       },
@@ -15975,7 +15975,7 @@
           {
             "platform": "android",
             "token": " ffffffffffffffffffffffffffffff ",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -16195,7 +16195,7 @@
           {
             "platform": "android",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": " Cook First app on Android "
+            "browser": " FridgeStock app on Android "
           }
         ],
         "expected": {
@@ -16203,7 +16203,7 @@
           "data": {
             "platform": "android",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         }
       },
@@ -16212,7 +16212,7 @@
           {
             "platform": "android",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -16220,7 +16220,7 @@
           "data": {
             "platform": "android",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         }
       },
@@ -16339,7 +16339,7 @@
           {
             "platform": "windows",
             "token": "ffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -16353,7 +16353,7 @@
           {
             "platform": "android",
             "token": "has spaces in the token here",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -16367,7 +16367,7 @@
           {
             "platform": "android",
             "token": "fffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {
@@ -16381,7 +16381,7 @@
           {
             "platform": "android",
             "token": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-            "browser": "Cook First app on Android"
+            "browser": "FridgeStock app on Android"
           }
         ],
         "expected": {

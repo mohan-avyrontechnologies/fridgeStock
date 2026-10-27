@@ -20,7 +20,7 @@ export interface ProductClient {
 
 const TIMEOUT_MS = 5000;
 /** Open Food Facts asks every app to say who it is. */
-const USER_AGENT = 'CookFirst/2.12 (home food planner)';
+const USER_AGENT = 'FridgeStock/2.12 (home food planner)';
 
 const text = (value: unknown): string | null => (typeof value === 'string' && value.trim() ? value.trim() : null);
 const positive = (value: unknown): number | null => {

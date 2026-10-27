@@ -1,4 +1,4 @@
-import type { ErrorCode } from '@cook-first/shared';
+import type { ErrorCode } from '@fridgestock/shared';
 
 /** Errors thrown by services and turned into `{error: {code, message, field?}}` responses. */
 export class AppError extends Error {

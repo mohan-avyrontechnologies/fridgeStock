@@ -1,8 +1,8 @@
-import { formatDisplay, type ActiveFoodItem } from '@cook-first/shared';
+import { formatDisplay, type ActiveFoodItem } from '@fridgestock/shared';
 import { Check } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Link } from 'react-router';
-import { expirySourceLabel } from '@cook-first/shared';
+import { expirySourceLabel } from '@fridgestock/shared';
 import { cardExpiryLine, leftoverCopy, remainingText, swipeCopy, urgencyCopy } from '../copy';
 import { formatQuantity } from '../lib/format';
 import { prefersReducedMotion } from '../lib/motion';

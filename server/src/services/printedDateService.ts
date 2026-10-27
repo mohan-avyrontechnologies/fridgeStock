@@ -1,4 +1,4 @@
-import { isUsablePrintedDate, parsePrintedDate, type PrintedDateInput, type PrintedDateRead } from '@cook-first/shared';
+import { isUsablePrintedDate, parsePrintedDate, type PrintedDateInput, type PrintedDateRead } from '@fridgestock/shared';
 import { aiPrompts } from '../copy.js';
 import type { UserDoc } from '../models/User.js';
 import * as aiService from './aiService.js';

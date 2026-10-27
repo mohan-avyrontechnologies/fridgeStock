@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { PushPayload } from '@cook-first/shared';
+import type { PushPayload } from '@fridgestock/shared';
 import { setAiClient } from '../services/aiClient.js';
 import { clock } from '../services/clock.js';
 import { sweep } from '../services/notificationService.js';
@@ -10,7 +10,7 @@ import { api, registerUser } from './helpers.js';
 /**
  * The main user journey with AI completely unavailable (no provider, no key, so aiClient() is null). Every
  * feature that does not need a model must work exactly the same: barcode look-up, automatic expiry estimation,
- * manual entry, reminders in plain text and the Cook First list. The AI-only extras say so plainly instead of failing.
+ * manual entry, reminders in plain text and the FridgeStock list. The AI-only extras say so plainly instead of failing.
  */
 
 afterEach(() => {
@@ -99,11 +99,11 @@ describe('with AI unavailable', () => {
     const opened = await s.auth(api().post(`/api/foods/${bread.body.id}/open`).send({})).expect(200);
     expect(opened.body.expiryDate <= bread.body.expiryDate).toBe(true);
 
-    // 5. The Cook First list is the most urgent food, in order.
-    const cookFirst = await s.auth(api().get('/api/foods/cook-first')).expect(200);
-    expect(cookFirst.body.items[0]).toMatchObject({ id: milk.body.id, urgency: 'APPROACHING_EXPIRY' });
+    // 5. The FridgeStock list is the most urgent food, in order.
+    const fridgeStock = await s.auth(api().get('/api/foods/fridgestock')).expect(200);
+    expect(fridgeStock.body.items[0]).toMatchObject({ id: milk.body.id, urgency: 'APPROACHING_EXPIRY' });
 
-    // 6. A meal reminder is plain text built from the Cook First list, with no recipe idea behind it.
+    // 6. A meal reminder is plain text built from the FridgeStock list, with no recipe idea behind it.
     await s
       .auth(
         api()

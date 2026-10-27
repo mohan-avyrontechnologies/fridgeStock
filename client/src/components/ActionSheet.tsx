@@ -1,4 +1,4 @@
-import { MESSAGES, type FoodItem } from '@cook-first/shared';
+import { MESSAGES, type FoodItem } from '@fridgestock/shared';
 import { describeError } from '../lib/errors';
 import { useState, type FormEvent } from 'react';
 import { actionCopy, undoCopy } from '../copy';

@@ -129,7 +129,7 @@ async def _prioritised_for(user: UserDoc) -> dict[str, Any]:
     return {
         "today": today,
         "items": view(result["items"]),
-        "cookFirst": view(result["cookFirst"]),
+        "fridgeStock": view(result["fridgeStock"]),
         "summary": result["summary"],
     }
 
@@ -148,9 +148,9 @@ async def list_foods(user: UserDoc) -> dict[str, Any]:
     return {"today": listed["today"], "summary": listed["summary"], "items": listed["items"]}
 
 
-async def list_cook_first(user: UserDoc) -> dict[str, Any]:
+async def list_fridge_stock(user: UserDoc) -> dict[str, Any]:
     listed = await _prioritised_for(user)
-    return {"today": listed["today"], "items": listed["cookFirst"]}
+    return {"today": listed["today"], "items": listed["fridgeStock"]}
 
 
 async def get_food(user: UserDoc, food_id: str) -> dict[str, Any]:

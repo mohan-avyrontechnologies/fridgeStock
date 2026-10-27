@@ -1,4 +1,4 @@
-/** Display helpers for values that aren't calendar dates (those use formatDisplay from @cook-first/shared). */
+/** Display helpers for values that aren't calendar dates (those use formatDisplay from @fridgestock/shared). */
 
 /** "12 pcs", "0.75 l". */
 export function formatQuantity(quantity: number, unit: string): string {

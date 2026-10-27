@@ -1,11 +1,11 @@
-import { PUSH_KINDS, type PushKind } from '@cook-first/shared';
+import { PUSH_KINDS, type PushKind } from '@fridgestock/shared';
 import { useEffect } from 'react';
 import { PUSH_RECEIVED_EVENT } from '../platform/events';
 import { useAuthStore } from '../stores/authStore';
 import { playChime, trackInteraction } from './chime';
 
 /** What the service worker posts to an open page when a push arrives (client/public/sw.js). */
-export const REMINDER_MESSAGE = 'cook-first:reminder';
+export const REMINDER_MESSAGE = 'fridgestock:reminder';
 
 const isKind = (value: unknown): value is PushKind => (PUSH_KINDS as readonly unknown[]).includes(value);
 

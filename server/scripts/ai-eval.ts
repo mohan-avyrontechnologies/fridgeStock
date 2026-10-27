@@ -18,7 +18,7 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { FOOD_REFERENCE } from '@cook-first/shared';
+import { FOOD_REFERENCE } from '@fridgestock/shared';
 import type { ZodType } from 'zod';
 import { DEFAULT_AI_MODEL, DEFAULT_GEMINI_MODEL_FAST, DEFAULT_GEMINI_MODEL_SMART } from '../src/config/env.js';
 import { aiPrompts } from '../src/copy.js';

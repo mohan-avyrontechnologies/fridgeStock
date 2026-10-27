@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BANNED_PHRASES } from '@cook-first/shared';
+import { BANNED_PHRASES } from '@fridgestock/shared';
 import { describe, expect, it } from 'vitest';
 
 /**

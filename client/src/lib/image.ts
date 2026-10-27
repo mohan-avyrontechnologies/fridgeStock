@@ -1,4 +1,4 @@
-import { MAX_RECEIPT_BASE64, RECEIPT_MAX_SIDE } from '@cook-first/shared';
+import { MAX_RECEIPT_BASE64, RECEIPT_MAX_SIDE } from '@fridgestock/shared';
 
 /** The size an image has after being scaled so its longest side is at most `max` (never enlarged). */
 export function scaledSize(width: number, height: number, max: number): { width: number; height: number } {

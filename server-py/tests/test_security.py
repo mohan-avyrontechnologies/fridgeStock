@@ -33,12 +33,12 @@ async def stored(food_id: str) -> dict[str, object]:
     return found
 
 
-async def test_never_lists_another_users_food_cook_first_items_or_history(
+async def test_never_lists_another_users_food_fridge_stock_items_or_history(
     api: httpx.AsyncClient, people: tuple[Account, Account, str]
 ) -> None:
     _alice, bob, _food_id = people
     assert (await api.get("/api/foods", headers=bob.headers)).json()["items"] == []
-    assert (await api.get("/api/foods/cook-first", headers=bob.headers)).json()["items"] == []
+    assert (await api.get("/api/foods/fridgestock", headers=bob.headers)).json()["items"] == []
     assert (await api.get("/api/usage", headers=bob.headers)).json()["total"] == 0
 
 

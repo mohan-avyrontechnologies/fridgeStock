@@ -14,8 +14,8 @@ export const foodController = {
     res.json(await foodService.listFoods(currentUser(req)));
   },
 
-  async cookFirst(req: Request, res: Response) {
-    res.json(await foodService.listCookFirst(currentUser(req)));
+  async fridgeStock(req: Request, res: Response) {
+    res.json(await foodService.listFridgeStock(currentUser(req)));
   },
 
   async get(req: Request, res: Response) {

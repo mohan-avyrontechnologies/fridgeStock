@@ -1,4 +1,4 @@
-import { isUsablePrintedDate, parsePrintedDate, type DateString, type PrintedDateType } from '@cook-first/shared';
+import { isUsablePrintedDate, parsePrintedDate, type DateString, type PrintedDateType } from '@fridgestock/shared';
 
 /**
  * Reading the date printed on a pack, on the device. It needs no AI and no network: the text comes from the

@@ -25,10 +25,10 @@ describe('client/src layout', () => {
     expect(pages).toEqual([
       'AddFoodPage.tsx',
       'BulkAddPage.tsx',
-      'CookFirstPage.tsx',
       'DashboardPage.tsx',
       'FirstRunPage.tsx',
       'FoodDetailPage.tsx',
+      'FridgeStockPage.tsx',
       'HistoryPage.tsx',
       'HouseholdPage.tsx',
       'InsightsPage.tsx',
@@ -79,7 +79,7 @@ describe('auth token', () => {
 });
 
 describe('shared package', () => {
-  it('types, enums, schemas and dates come from @cook-first/shared, not local copies', () => {
+  it('types, enums, schemas and dates come from @fridgestock/shared, not local copies', () => {
     expect(existsSync(path.join(SRC, 'api/types.ts'))).toBe(false);
     expect(existsSync(path.join(SRC, 'lib/dates.ts'))).toBe(false);
     expect(read('components/FoodForm.tsx')).toMatch(/createFoodSchema/);

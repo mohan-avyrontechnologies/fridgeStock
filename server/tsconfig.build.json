@@ -1,5 +1,5 @@
 {
-  // Production build: resolves @cook-first/shared from its compiled dist (build it first).
+  // Production build: resolves @fridgestock/shared from its compiled dist (build it first).
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,

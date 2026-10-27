@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { PUSH_ACTIONS } from '@cook-first/shared';
+import { PUSH_ACTIONS } from '@fridgestock/shared';
 import { afterEach, describe, expect, it } from 'vitest';
 
 /**
@@ -19,20 +19,20 @@ const infoPlist = () => read('ios/App/App/Info.plist');
 const appDelegate = () => read('ios/App/App/AppDelegate.swift');
 
 describe('the app’s identity', () => {
-  it('is called "Cook First" and wraps the built web app, served over https on Android', () => {
+  it('is called "FridgeStock" and wraps the built web app, served over https on Android', () => {
     const config = read('capacitor.config.ts');
-    expect(config).toMatch(/appName: 'Cook First'/);
+    expect(config).toMatch(/appName: 'FridgeStock'/);
     expect(config).toMatch(/webDir: 'dist'/);
     expect(config).toMatch(/androidScheme: 'https'/);
-    expect(read('ios/App/App/Info.plist')).toMatch(/<key>CFBundleDisplayName<\/key>\s*<string>Cook First<\/string>/);
+    expect(read('ios/App/App/Info.plist')).toMatch(/<key>CFBundleDisplayName<\/key>\s*<string>FridgeStock<\/string>/);
     expect(read('android/app/src/main/res/values/strings.xml')).toContain(
-      '<string name="app_name">Cook First</string>',
+      '<string name="app_name">FridgeStock</string>',
     );
   });
 
   it('has one app ID everywhere, and it is still the placeholder until you choose one', () => {
     const output = execFileSync(process.execPath, ['scripts/set-app-id.mjs', '--check'], { encoding: 'utf8' });
-    expect(output).toContain('All places use com.example.cookfirst.');
+    expect(output).toContain('All places use com.example.fridgestock.');
     expect(read('capacitor.config.ts')).toMatch(/PLACEHOLDER/);
   });
 
@@ -71,7 +71,7 @@ describe('Android', () => {
   });
 
   it('builds the notification from the server’s data message, with the same field names the server sends', () => {
-    const service = read('android/app/src/main/java/com/example/cookfirst/ActionMessagingService.java');
+    const service = read('android/app/src/main/java/com/example/fridgestock/ActionMessagingService.java');
     const server = read('server/src/services/fcmProvider.ts', REPO);
     for (const field of ['title', 'body', 'tag', 'url', 'actionToken', 'actions', 'actionUrl']) {
       expect(service, field).toContain(`data.get("${field}")`);
@@ -81,28 +81,28 @@ describe('Android', () => {
   });
 
   it('sends the button’s action to the API as {token, action}, the same call as the web app', () => {
-    const receiver = read('android/app/src/main/java/com/example/cookfirst/NotificationActionReceiver.java');
+    const receiver = read('android/app/src/main/java/com/example/fridgestock/NotificationActionReceiver.java');
     expect(receiver).toContain('.put("token", token).put("action", action)');
     expect(receiver).toContain('setRequestMethod("POST")');
     expect(receiver).toContain('"Content-Type", "application/json"');
   });
 
   it('never sends a login with a button, and any refusal (an expired or used token) just opens the item', () => {
-    const receiver = read('android/app/src/main/java/com/example/cookfirst/NotificationActionReceiver.java');
+    const receiver = read('android/app/src/main/java/com/example/fridgestock/NotificationActionReceiver.java');
     expect(receiver).not.toMatch(/Authorization|Bearer/);
     expect(receiver).toContain('return status >= 200 && status < 300;');
     expect(receiver).toMatch(/if \(done\) \{[\s\S]*?\} else \{[\s\S]*?open\.putExtra\(MainActivity\.EXTRA_PAGE/);
     // It runs outside the web view, so it cannot reach the app's sign-out.
-    expect(receiver).not.toMatch(/logout|evaluateJavascript|cook-first-auth/);
+    expect(receiver).not.toMatch(/logout|evaluateJavascript|fridgestock-auth/);
   });
 
   it('opens a tapped notification’s page through the web view, the way the web app expects', () => {
-    const activity = read('android/app/src/main/java/com/example/cookfirst/MainActivity.java');
+    const activity = read('android/app/src/main/java/com/example/fridgestock/MainActivity.java');
     const app = read('src/App.tsx');
-    expect(activity).toContain("CustomEvent('cook-first:open-page'");
-    expect(activity).toContain('__cookFirstPendingUrl');
-    expect(read('src/platform/events.ts')).toContain("'cook-first:open-page'");
-    expect(app).toContain('__cookFirstPendingUrl');
+    expect(activity).toContain("CustomEvent('fridgestock:open-page'");
+    expect(activity).toContain('__fridgeStockPendingUrl');
+    expect(read('src/platform/events.ts')).toContain("'fridgestock:open-page'");
+    expect(app).toContain('__fridgeStockPendingUrl');
   });
 
   it('has Firebase Messaging on the app’s own build, and picks up google-services.json when you add it', () => {
@@ -190,7 +190,7 @@ describe('npm run native:set-app-id', () => {
 
   /** A scratch copy of just the four files the script changes. */
   function scratch() {
-    temp = mkdtempSync(path.join(os.tmpdir(), 'cook-first-appid-'));
+    temp = mkdtempSync(path.join(os.tmpdir(), 'fridgestock-appid-'));
     for (const file of [
       'capacitor.config.ts',
       'android/app/build.gradle',
@@ -224,7 +224,7 @@ describe('npm run native:set-app-id', () => {
     expect(result.code).toBe(0);
     expect(read('capacitor.config.ts', dir)).toContain("appId: 'com.acme.cook'");
     expect(read('android/app/build.gradle', dir)).toContain('applicationId "com.acme.cook"');
-    expect(read('android/app/build.gradle', dir)).toContain('namespace = "com.example.cookfirst"');
+    expect(read('android/app/build.gradle', dir)).toContain('namespace = "com.example.fridgestock"');
     const strings = read('android/app/src/main/res/values/strings.xml', dir);
     expect(strings).toContain('<string name="package_name">com.acme.cook</string>');
     expect(strings).toContain('<string name="custom_url_scheme">com.acme.cook</string>');
@@ -239,14 +239,14 @@ describe('npm run native:set-app-id', () => {
     const dir = scratch();
     run(['--root', dir, 'com.acme.cook']);
     expect(run(['--root', dir, 'com.acme.cook']).code).toBe(0);
-    expect(run(['--root', dir, 'org.other.cookfirst']).code).toBe(0);
-    expect(run(['--root', dir, '--check']).output).toContain('All places use org.other.cookfirst.');
+    expect(run(['--root', dir, 'org.other.fridgestock']).code).toBe(0);
+    expect(run(['--root', dir, '--check']).output).toContain('All places use org.other.fridgestock.');
   });
 
   it('refuses an invalid ID and changes nothing', () => {
     const dir = scratch();
     const before = read('capacitor.config.ts', dir);
-    for (const bad of ['cookfirst', 'Com.Acme.Cook', 'com.acme-cook', 'com..cook', '1com.acme', 'com.acme.cook!']) {
+    for (const bad of ['fridgestock', 'Com.Acme.Cook', 'com.acme-cook', 'com..cook', '1com.acme', 'com.acme.cook!']) {
       const result = run(['--root', dir, bad]);
       expect(result.code, bad).toBe(2);
       expect(result.output, bad).toContain('not a valid app ID');
@@ -269,12 +269,12 @@ describe('npm run native:set-app-id', () => {
     expect(run(['--root', dir, '--check']).code).toBe(0);
     const gradle = path.join(dir, 'android/app/build.gradle');
     const text = readFileSync(gradle, 'utf8').replace(
-      'applicationId "com.example.cookfirst"',
+      'applicationId "com.example.fridgestock"',
       'applicationId "com.different.id"',
     );
     writeFileSync(gradle, text);
     const result = run(['--root', dir, '--check']);
     expect(result.code).toBe(1);
-    expect(result.output).toMatch(/DISAGREE: com\.example\.cookfirst, com\.different\.id/);
+    expect(result.output).toMatch(/DISAGREE: com\.example\.fridgestock, com\.different\.id/);
   });
 });

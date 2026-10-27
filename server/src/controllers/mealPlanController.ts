@@ -1,4 +1,4 @@
-import type { MealType } from '@cook-first/shared';
+import type { MealType } from '@fridgestock/shared';
 import type { Request, Response } from 'express';
 import { currentUser } from '../middleware/auth.js';
 import { validatedParams, validatedQuery } from '../middleware/validate.js';

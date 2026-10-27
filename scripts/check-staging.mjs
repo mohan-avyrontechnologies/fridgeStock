@@ -1,7 +1,7 @@
 /* global process, console, fetch, URL, AbortSignal */
-// Checks a deployed Cook First (staging or production) from the outside, the way a phone would see it.
+// Checks a deployed FridgeStock (staging or production) from the outside, the way a phone would see it.
 //
-//   npm run check:staging -- --api https://cook-first-api.onrender.com --client https://cook-first.vercel.app
+//   npm run check:staging -- --api https://fridgestock-api.onrender.com --client https://fridgestock.vercel.app
 //
 // It needs no login and changes nothing. Exit code 0 means every check passed (warnings don't fail it).
 
@@ -134,8 +134,8 @@ try {
   }
 
   // A deep link must open the app (not a 404), because the app handles its own routes.
-  const deep = await get(`${client}/cook-first`);
-  if (deep.res.status === 200) pass('a deep link such as /cook-first opens the app');
+  const deep = await get(`${client}/fridgestock`);
+  if (deep.res.status === 200) pass('a deep link such as /fridgestock opens the app');
   else fail(`a deep link returned ${deep.res.status}: add the rewrite to /index.html`);
 } catch (error) {
   fail(`the web app can't be checked: ${error.message}`);

@@ -1,4 +1,4 @@
-import { formatDisplay, type ActivityEvent, type Household } from '@cook-first/shared';
+import { formatDisplay, type ActivityEvent, type Household } from '@fridgestock/shared';
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { api, ApiError } from '../api/client';
 import { PageBody, PageHeader } from '../components/AppShell';

@@ -13,14 +13,14 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Cook First" />
-    <title>Cook First</title>
+    <meta name="apple-mobile-web-app-title" content="FridgeStock" />
+    <title>FridgeStock</title>
   </head>
   <body>
     <script>
       // Apply a saved theme before the first paint, so there is no flash of the other theme.
       try {
-        var t = JSON.parse(localStorage.getItem('cook-first-theme') || '{}').state;
+        var t = JSON.parse(localStorage.getItem('fridgestock-theme') || '{}').state;
         if (t && (t.theme === 'light' || t.theme === 'dark')) document.documentElement.dataset.theme = t.theme;
       } catch (e) {}
     </script>

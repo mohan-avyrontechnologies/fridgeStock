@@ -1,9 +1,9 @@
-import { expirySourceLabel } from '@cook-first/shared';
+import { expirySourceLabel } from '@fridgestock/shared';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { describeError } from '../lib/errors';
 import { useNavigate, useParams } from 'react-router';
 import { api, ApiError } from '../api/client';
-import type { Favourite, FoodItem } from '@cook-first/shared';
+import type { Favourite, FoodItem } from '@fridgestock/shared';
 import { ActionSheet, useFoodActions, type SheetStep } from '../components/ActionSheet';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { MoveSheet, OpenSheet } from '../components/EstimateSheets';
@@ -32,7 +32,7 @@ import {
   errorCopy,
   emptyCopy,
 } from '../copy';
-import { formatDisplay } from '@cook-first/shared';
+import { formatDisplay } from '@fridgestock/shared';
 import { formatInstant, formatMoney, formatQuantity } from '../lib/format';
 import { useFoodStore } from '../stores/foodStore';
 import { useAuthStore } from '../stores/authStore';

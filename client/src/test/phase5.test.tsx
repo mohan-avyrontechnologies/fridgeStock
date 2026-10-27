@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { describe, expect, it } from 'vitest';
-import { addDays, hasBannedWording, type Insights, type InsightsPeriod, type InsightsWeek } from '@cook-first/shared';
+import { addDays, hasBannedWording, type Insights, type InsightsPeriod, type InsightsWeek } from '@fridgestock/shared';
 import { API_URL } from '../api/client';
 import { item } from '../mocks/handlers';
 import { server } from '../mocks/server';

@@ -18,7 +18,7 @@ async function resolveMongoUri(): Promise<string> {
     const tmp = mkdtempSync(path.resolve('.test-db-'));
     const server = await MongoMemoryServer.create({ instance: { dbPath: tmp } });
     process.once('exit', () => rmSync(tmp, { recursive: true, force: true }));
-    return `${server.getUri()}cook-first-e2e`;
+    return `${server.getUri()}fridgestock-e2e`;
   }
   const dbPath = path.resolve('.data');
   mkdirSync(dbPath, { recursive: true });
@@ -26,7 +26,7 @@ async function resolveMongoUri(): Promise<string> {
     instance: { dbPath, storageEngine: 'wiredTiger', port: 27027 },
   });
   console.log(`Using embedded MongoDB at ${server.getUri()} (data in ${dbPath})`);
-  return `${server.getUri()}cook-first`;
+  return `${server.getUri()}fridgestock`;
 }
 
 export async function connectDatabase(): Promise<void> {

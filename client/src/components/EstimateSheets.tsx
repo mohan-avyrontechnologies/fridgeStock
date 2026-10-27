@@ -7,7 +7,7 @@ import {
   todayInTz,
   type FoodItem,
   type StorageLocation,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { useEffect, useState, type FormEvent } from 'react';
 import { moveCopy, openCopy, referenceCopy, storageLabel, undoCopy } from '../copy';
 import { suggestFor } from '../lib/suggestions';

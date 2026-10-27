@@ -10,15 +10,15 @@ import type {
   MoveFoodInput,
   OpenFoodInput,
   UsageAction,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { useAuthStore } from './authStore';
 
 interface FoodState {
   inventory: FoodList | null;
-  cookFirst: ActiveFoodItem[] | null;
+  fridgeStock: ActiveFoodItem[] | null;
   loading: boolean;
   error: string | null;
-  /** Reloads the prioritised inventory and Cook First list together. */
+  /** Reloads the prioritised inventory and FridgeStock list together. */
   refresh: () => Promise<void>;
   add: (input: FoodInput) => Promise<FoodItem>;
   update: (id: string, input: Partial<FoodInput>) => Promise<FoodItem>;
@@ -57,15 +57,15 @@ function withoutOrReduced(list: FoodList, id: string, action: UsageAction, quant
 
 export const useFoodStore = create<FoodState>()((set, get) => ({
   inventory: null,
-  cookFirst: null,
+  fridgeStock: null,
   loading: false,
   error: null,
 
   async refresh() {
     set({ loading: true, error: null });
     try {
-      const [inventory, cookFirst] = await Promise.all([api.listFoods(), api.cookFirst()]);
-      set({ inventory, cookFirst: cookFirst.items, loading: false });
+      const [inventory, fridgeStock] = await Promise.all([api.listFoods(), api.fridgeStock()]);
+      set({ inventory, fridgeStock: fridgeStock.items, loading: false });
     } catch (err) {
       set({ loading: false, error: describeError(err, 'load your food') });
     }
@@ -85,10 +85,10 @@ export const useFoodStore = create<FoodState>()((set, get) => ({
 
   async act(id, action, quantity) {
     // Optimistic: the item leaves (or shrinks in) the lists at once; if the server refuses, it comes back.
-    const before = { inventory: get().inventory, cookFirst: get().cookFirst };
+    const before = { inventory: get().inventory, fridgeStock: get().fridgeStock };
     set({
       inventory: before.inventory && withoutOrReduced(before.inventory, id, action, quantity),
-      cookFirst: before.cookFirst && reduceItems(before.cookFirst, id, action, quantity),
+      fridgeStock: before.fridgeStock && reduceItems(before.fridgeStock, id, action, quantity),
     });
     try {
       if (action === 'REMOVED') await api.removeFood(id);
@@ -138,7 +138,7 @@ export const useFoodStore = create<FoodState>()((set, get) => ({
   },
 
   reset() {
-    set({ inventory: null, cookFirst: null, error: null });
+    set({ inventory: null, fridgeStock: null, error: null });
   },
 }));
 

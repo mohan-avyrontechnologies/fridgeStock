@@ -4,7 +4,7 @@
 container), otherwise an empty throwaway one from scripts/dev-mongo.mjs --empty. It is only started when a test
 asks for it, directly or through `database` or `api`.
 
-`database` connects once, to "cook-first-test", and creates every model's indexes. A test that uses it starts
+`database` connects once, to "fridgestock-test", and creates every model's indexes. A test that uses it starts
 with every collection empty, the clock unpinned and the rate limits reset, as setup.ts arranges before each test.
 `api` is an HTTP client on the app, like supertest's `request(app)`.
 """
@@ -74,7 +74,7 @@ def mongo_uri() -> Iterator[str]:
 
 @pytest.fixture(scope="session")
 async def _connected(mongo_uri: str) -> AsyncIterator[AsyncDatabase[dict[str, Any]]]:
-    database = await db.connect(f"{mongo_uri.rstrip('/')}/cook-first-test")
+    database = await db.connect(f"{mongo_uri.rstrip('/')}/fridgestock-test")
     for model in ALL_MODELS:
         await ensure_indexes(model)
     try:

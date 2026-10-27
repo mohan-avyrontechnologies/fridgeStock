@@ -1,4 +1,4 @@
-import { findReference, todayInTz, type Favourite } from '@cook-first/shared';
+import { findReference, todayInTz, type Favourite } from '@fridgestock/shared';
 import { Camera, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';

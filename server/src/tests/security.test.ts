@@ -23,9 +23,9 @@ describe('cross-user isolation', () => {
     await alice.auth(api().post(`/api/foods/${aliceFoodId}/use`).send({ quantity: 0.5 })).expect(200);
   });
 
-  it("never lists another user's food, Cook First items, history or reminders", async () => {
+  it("never lists another user's food, FridgeStock items, history or reminders", async () => {
     expect((await bob.auth(api().get('/api/foods'))).body.items).toEqual([]);
-    expect((await bob.auth(api().get('/api/foods/cook-first'))).body.items).toEqual([]);
+    expect((await bob.auth(api().get('/api/foods/fridgestock'))).body.items).toEqual([]);
     expect((await bob.auth(api().get('/api/usage'))).body.total).toBe(0);
     expect((await bob.auth(api().get('/api/notifications'))).body.items).toEqual([]);
   });

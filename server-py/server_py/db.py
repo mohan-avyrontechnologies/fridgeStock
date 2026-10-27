@@ -32,10 +32,10 @@ async def resolve_mongo_uri() -> str:
     # Development fallback: an embedded MongoDB, so the app runs without Docker or a local mongod install.
     if os.environ.get("EPHEMERAL_DB") == "1":
         _embedded = await asyncio.to_thread(EmbeddedMongo)
-        return f"{_embedded.uri}cook-first-e2e"
+        return f"{_embedded.uri}fridgestock-e2e"
     _embedded = await asyncio.to_thread(EmbeddedMongo, [])
     log.warning("Using embedded MongoDB at %s (data in %s)", _embedded.uri, _embedded.db_path)
-    return f"{_embedded.uri}cook-first"
+    return f"{_embedded.uri}fridgestock"
 
 
 async def connect(uri: str) -> AsyncDatabase[dict[str, Any]]:

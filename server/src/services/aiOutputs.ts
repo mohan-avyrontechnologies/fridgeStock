@@ -1,4 +1,4 @@
-import { PRINTED_DATE_TYPES, UNITS, WARNING_SIGN_TYPES } from '@cook-first/shared';
+import { PRINTED_DATE_TYPES, UNITS, WARNING_SIGN_TYPES } from '@fridgestock/shared';
 import { z } from 'zod';
 
 /**

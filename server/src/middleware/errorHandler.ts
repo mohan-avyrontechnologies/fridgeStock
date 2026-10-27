@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { MESSAGES } from '@cook-first/shared';
+import { MESSAGES } from '@fridgestock/shared';
 import mongoose from 'mongoose';
 import { AppError } from '../services/errors.js';
 

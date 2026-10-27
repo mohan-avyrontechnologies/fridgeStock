@@ -35,11 +35,11 @@ for (const key of ['GEMINI_API_KEY', 'ANTHROPIC_API_KEY', 'VAPID_PUBLIC_KEY', 'F
 const servers = [
   spawn(process.execPath, [path.join(REPO, 'node_modules', 'tsx', 'dist', 'cli.mjs'), 'src/index.ts'], {
     cwd: path.join(REPO, 'server'),
-    env: { ...settings, PORT: String(NODE_PORT), MONGO_URI: `${mongoA.getUri()}cook-first` },
+    env: { ...settings, PORT: String(NODE_PORT), MONGO_URI: `${mongoA.getUri()}fridgestock` },
   }),
   spawn(PYTHON, ['-m', 'server_py', '--host', '127.0.0.1'], {
     cwd: path.join(REPO, 'server-py'),
-    env: { ...settings, PORT: String(PYTHON_PORT), MONGO_URI: `${mongoB.getUri()}cook-first` },
+    env: { ...settings, PORT: String(PYTHON_PORT), MONGO_URI: `${mongoB.getUri()}fridgestock` },
   }),
 ];
 let logs = '';
@@ -217,7 +217,7 @@ await step('notes past the model limit', 'POST', '/api/foods', {
 });
 await step('bad body', 'POST', '/api/foods', { name: '', quantity: 'x' });
 await step('list', 'GET', '/api/foods');
-await step('cook first', 'GET', '/api/foods/cook-first');
+await step('fridgestock', 'GET', '/api/foods/fridgestock');
 await step('get', 'GET', '/api/foods/{milk}');
 await step('get missing', 'GET', '/api/foods/000000000000000000000000');
 await step('get bad id', 'GET', '/api/foods/xyz');
@@ -329,7 +329,7 @@ for (const name of ['users', 'fooditems', 'usagerecords', 'favourites', 'notific
   const [a, b] = await Promise.all(
     clients.map((client, i) =>
       client
-        .db('cook-first')
+        .db('fridgestock')
         .collection(name)
         .find()
         .sort({ _id: 1 })

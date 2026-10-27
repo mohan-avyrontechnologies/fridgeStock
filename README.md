@@ -1,8 +1,8 @@
-# Cook First
+# FridgeStock
 
 **A perishable-food planner for households: it tells you what to cook first, so food gets eaten instead of thrown away.**
 
-Log what you buy and Cook First works out each item's **expected expiry** automatically, from the date on the pack, your own history or a built-in food catalog. Everything is sorted so the most urgent food comes first, a daily **Cook First** list shows what to use today, and reminders, recipe ideas and a meal plan help you use it.
+Log what you buy and FridgeStock works out each item's **expected expiry** automatically, from the date on the pack, your own history or a built-in food catalog. Everything is sorted so the most urgent food comes first, a daily **FridgeStock** list shows what to use today, and reminders, recipe ideas and a meal plan help you use it.
 
 > **Food-safety boundary:** *Expected expiry is an estimate to help you plan. Always check your food before eating it.* The app never says that food is fit to eat, and a test scans every file for wording that would.
 
@@ -20,9 +20,9 @@ Log what you buy and Cook First works out each item's **expected expiry** automa
 
 Captured by the Playwright end-to-end suite (`npm run test:e2e`) on a 375 px phone and a 1440 × 900 desktop.
 
-| Dashboard | Cook First | Add food | Bulk add | Insights |
+| Dashboard | FridgeStock | Add food | Bulk add | Insights |
 |---|---|---|---|---|
-| ![Dashboard on a phone](docs/screenshots/mobile-02-dashboard.png) | ![Cook First on a phone](docs/screenshots/mobile-03-cook-first.png) | ![Add food on a phone](docs/screenshots/mobile-07-add-food.png) | ![Bulk add on a phone](docs/screenshots/mobile-11-bulk-add.png) | ![Insights on a phone](docs/screenshots/mobile-17-insights.png) |
+| ![Dashboard on a phone](docs/screenshots/mobile-02-dashboard.png) | ![FridgeStock on a phone](docs/screenshots/mobile-03-fridgestock.png) | ![Add food on a phone](docs/screenshots/mobile-07-add-food.png) | ![Bulk add on a phone](docs/screenshots/mobile-11-bulk-add.png) | ![Insights on a phone](docs/screenshots/mobile-17-insights.png) |
 
 | Shopping | Meal plan | Household | Barcode | Photo Check |
 |---|---|---|---|---|
@@ -37,7 +37,7 @@ Captured by the Playwright end-to-end suite (`npm run test:e2e`) on a 375 px pho
 ## Main features
 
 - **Automatic expected expiry.** You never type a lifespan. The estimate comes from the printed date, your household's usual lifespan, the catalog, the food's category or a short fallback, and every item says where its estimate came from. *Change estimate* lets you set your own.
-- **Cook First list and priority order.** Most urgent first, the same order every time, with urgency shown as a colour **and** a text label.
+- **FridgeStock list and priority order.** Most urgent first, the same order every time, with urgency shown as a colour **and** a text label.
 - **Fast entry.** Camera screen with live barcode scanning (Open Food Facts) and reading the date on the pack; favourites, recent foods, bulk add, and receipt scanning with AI.
 - **Using the food.** Mark as used (all or some), wasted or removed, with Undo; opened and moved items re-estimate (never later); leftovers; shopping list that warns about food already at home; a weekly meal plan.
 - **Reminders.** In-app always; Web Push in browsers and Firebase push in the apps; daily summary or one per item; sounds, vibration and quiet hours; breakfast, lunch and dinner cooking reminders.
@@ -58,7 +58,7 @@ The full list is in [docs/FEATURES.md](docs/FEATURES.md).
 | **Mobile** | Capacitor 8 (Android and iOS) with native camera, ML Kit barcode scanning, Firebase push and secure storage |
 | **Server** | Node.js, Express 5, Mongoose 9 (MongoDB 8), zod 4, JWT + bcrypt, node-cron, web-push, firebase-admin, multer + sharp |
 | **AI** | `@anthropic-ai/sdk` (Claude, default in production) and `@google/genai` (Gemini, default in development) |
-| **Shared** | `@cook-first/shared`: enums, API types, zod schemas, date utilities, the expiry estimator |
+| **Shared** | `@fridgestock/shared`: enums, API types, zod schemas, date utilities, the expiry estimator |
 | **Language** | TypeScript 6.0 throughout (npm workspaces monorepo) |
 | **Testing** | Vitest, Supertest + mongodb-memory-server, React Testing Library + MSW, Playwright + axe |
 | **Tooling / CI** | ESLint, Prettier, GitHub Actions (checks, e2e, Android debug APK) |
@@ -71,8 +71,8 @@ Versions and the reasons behind each choice are in [docs/ARCHITECTURE.md](docs/A
 ## Folder structure
 
 ```
-cook-first/
-├── shared/                  @cook-first/shared, used by client and server
+fridgestock/
+├── shared/                  @fridgestock/shared, used by client and server
 │   └── src/                 enums, api types, zod schemas, dates, food catalog, estimate.ts (expected expiry)
 ├── server/                  Express API
 │   ├── src/
@@ -107,8 +107,8 @@ cook-first/
 **You need** Node.js 20.19+ (`.nvmrc` pins 20.19.0) and, for the database, Docker Desktop. Without Docker the API starts a built-in MongoDB instead (it downloads about 780 MB on first run).
 
 ```bash
-git clone https://github.com/rugvailabs/cook_first.git cook-first
-cd cook-first
+git clone https://github.com/rugvailabs/fridgestock.git fridgestock
+cd fridgestock
 npm install
 cp server/.env.example server/.env
 cp client/.env.example client/.env
@@ -120,7 +120,7 @@ cp client/.env.example client/.env
 docker compose up -d        # MongoDB 8 on localhost:27017
 ```
 
-Then set `MONGO_URI=mongodb://localhost:27017/cook-first` in `server/.env`. (Or leave `MONGO_URI` empty to use the built-in database, kept in `server/.data/`.)
+Then set `MONGO_URI=mongodb://localhost:27017/fridgestock` in `server/.env`. (Or leave `MONGO_URI` empty to use the built-in database, kept in `server/.data/`.)
 
 **Run it** in two terminals:
 
@@ -133,7 +133,7 @@ Open http://localhost:5173 and create an account. For a demo login with sample f
 
 | If you see | Do this |
 |---|---|
-| `ERR_MODULE_NOT_FOUND … @cook-first/shared`, or Vite `Cannot find native binding` | `node_modules` is damaged (usually after moving the folder). Delete every `node_modules` folder and run `npm ci`. |
+| `ERR_MODULE_NOT_FOUND … @fridgestock/shared`, or Vite `Cannot find native binding` | `node_modules` is damaged (usually after moving the folder). Delete every `node_modules` folder and run `npm ci`. |
 | `DBPathInUse … server\.data\mongod.lock` | Another API is using the built-in database. Stop it, or set `MONGO_URI`. |
 | `EADDRINUSE` on 4000 or 5173 | Free the port, or change `PORT` / the Vite port and add the new address to `CLIENT_ORIGIN`. |
 
@@ -203,7 +203,7 @@ npm run build
 
 ### Android
 
-**From GitHub, nothing to install:** every push to `main` (and every `v*` tag) runs the **Android debug APK** workflow. Open the repository's **Actions** tab → *Android debug APK* → the latest run → **Artifacts** → download `cook-first-debug-apk`, unzip it, copy `app-debug.apk` to your phone and open it (allow *Install unknown apps* for your file manager or browser). You can also start a build by hand with *Run workflow*.
+**From GitHub, nothing to install:** every push to `main` (and every `v*` tag) runs the **Android debug APK** workflow. Open the repository's **Actions** tab → *Android debug APK* → the latest run → **Artifacts** → download `fridgestock-debug-apk`, unzip it, copy `app-debug.apk` to your phone and open it (allow *Install unknown apps* for your file manager or browser). You can also start a build by hand with *Run workflow*.
 
 Before the APK is useful on a phone, set the repository **variable** `NATIVE_API_URL` to your deployed API (`https://<api>/api`) under *Settings → Secrets and variables → Actions*. Without it the app is built to talk to `localhost`, which a phone can't reach. For push, also add your Firebase `google-services.json` as the **secret** `GOOGLE_SERVICES_JSON`.
 

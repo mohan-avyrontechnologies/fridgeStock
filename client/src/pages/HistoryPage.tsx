@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { api } from '../api/client';
-import { formatDisplay, type UsageAction, type UsageRecord } from '@cook-first/shared';
+import { formatDisplay, type UsageAction, type UsageRecord } from '@fridgestock/shared';
 import { PageBody, PageHeader } from '../components/AppShell';
 import { Button, EmptyState, SkeletonList, Card, LoadError } from '../components/ui';
 import { historyActionLabel, screenCopy, emptyCopy } from '../copy';

@@ -1,4 +1,4 @@
-"""The Cook First reference list and category defaults (shared/src/foodReference.ts), from shared/data.
+"""The FridgeStock reference list and category defaults (shared/src/foodReference.ts), from shared/data.
 
 Rough planning estimates, in days per storage location (None = not usually kept there). They say nothing
 about whether food is fit to eat.

@@ -1,4 +1,4 @@
-import { MESSAGES, type AccountExport, type DeleteAccountInput } from '@cook-first/shared';
+import { MESSAGES, type AccountExport, type DeleteAccountInput } from '@fridgestock/shared';
 import type { Types } from 'mongoose';
 import { AiUsageModel } from '../models/AiUsage.js';
 import { FavouriteModel } from '../models/Favourite.js';

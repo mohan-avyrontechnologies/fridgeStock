@@ -3,11 +3,22 @@
 All notable changes to this project are listed here, newest first. Versions follow [Semantic Versioning](https://semver.org/).
 
 ### [Unreleased]
+**Changed**
+- **The app is now called FridgeStock** (it was Cook First), and so is the list of food to use first. This breaks things on purpose:
+  - The route is now `GET /api/foods/fridgestock`, not `/api/foods/cook-first`.
+  - Fields named `cookFirst…` are now `fridgeStock…`.
+  - The app id is now `com.example.fridgestock`, so this is a new app on Android and iOS, and the old app has to be removed by hand.
+  - The browser storage keys are now `fridgestock-*`, so everyone is signed out once and their theme is reset.
+  - The workspace packages are now `@fridgestock/*`.
+  - The local database names are now `fridgestock*`.
+  - The Render service in `render.yaml` is now `fridgestock-api`.
+  - The repository is now `rugvailabs/fridgestock`.
+
 **Added**
-- **Python server, Phase 2**: food items (adding, bulk adds, editing, using, wasting, removing, undo, opening, moving and "use today"), Cook First and the priority engine, usage history, favourites and learned lifespans, with reminders scheduled and delivered in the app. `npm run compare:py` runs one journey on both servers and compares every response and stored document; all 84 checks match. pytest: 406 tests (`pytest -m phase2`).
+- **Python server, Phase 2**: food items (adding, bulk adds, editing, using, wasting, removing, undo, opening, moving and "use today"), FridgeStock and the priority engine, usage history, favourites and learned lifespans, with reminders scheduled and delivered in the app. `npm run compare:py` runs one journey on both servers and compares every response and stored document; all 84 checks match. pytest: 406 tests (`pytest -m phase2`).
 - **Python server, Phase 1** (`server-py/`; notes in [docs/PYTHON_MIGRATION.md](docs/PYTHON_MIGRATION.md#progress)). The server runs (`npm run dev:server-py`) with settings, the MongoDB connection, Mongoose's indexes and the start-up migrations, Express's HTTP behaviour (helmet, CORS, body limits and encodings, ETags, the error format), logins and the auth rate limit, and `GET /health`, `POST /auth/register`, `POST /auth/login`, `GET`/`PUT /auth/me`, `GET /push/config` and `GET /ai/status`. Its tokens are byte-for-byte the Node server's, each server accepts the other's tokens and password hashes, and 38 raw HTTP requests got identical answers from both. pytest: 237 tests, grouped by phase (`pytest -m phase1`).
 - **Python server, Phase 0** (`server-py/`, branch `python-backend`; plan in [docs/PYTHON_MIGRATION.md](docs/PYTHON_MIGRATION.md)). No routes yet: the Python port of the shared logic (dates, alerts, barcodes, wording, the catalog, `estimateExpiry`, the priority engine and the server's wording), uv with ruff, pyright (strict) and pytest, a CI job on Python 3.12 and 3.13, and a local embedded MongoDB (`npm run db:py` keeps its data in `server-py/.data`; `npm run db:py:empty` starts an empty one for tests).
-- **Shared data** (`shared/data/*.json`): the catalog, category defaults, banned phrases, each locale's day/month order and all of the server's wording (`messages.json`, from `server/src/copy.ts`) are now JSON that the TypeScript code and the Python server both read. The TypeScript exports are unchanged; the server reads its wording through `@cook-first/shared/server-messages`, so the AI prompts never ship in the web app.
+- **Shared data** (`shared/data/*.json`): the catalog, category defaults, banned phrases, each locale's day/month order and all of the server's wording (`messages.json`, from `server/src/copy.ts`) are now JSON that the TypeScript code and the Python server both read. The TypeScript exports are unchanged; the server reads its wording through `@fridgestock/shared/server-messages`, so the AI prompts never ship in the web app.
 - **Shared test cases** (`shared/test-cases/*.json`): about 2,050 inputs with expected outputs that the Vitest suites (`shared/src/testCases.test.ts`, `server/src/tests/sharedCases.test.ts`) and pytest (`tests/test_shared_cases.py`) must both pass. `validation.json` records what every request schema answers (the first problem's exact message and field, or the parsed value) for about 1,300 inputs, written by `npm run cases:validation -w shared`; Vitest fails if a schema or a zod upgrade changes an answer.
 - **`JOBS_ENABLED`** on the server (on by default): `false` starts no scheduled jobs, so exactly one server runs them while two share a database. Anything other than an on/off word stops the server.
 
@@ -60,7 +71,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 - **One name for each action, from its button to its toast:** **Mark as used** → "Marked as used", **Mark all as used** and **Mark some as used** → "Marked some as used", **Mark as wasted** → "Marked as wasted", **Mark as opened** → "Marked X as opened", **Move** → "Moved X", **Add food** → "Added X", **Save changes** → "Saved changes", **Save as favourite** → "Saved X as a favourite". The cards, the swipe actions, the sheets and Food Details all use the same words.
 - **Sentence case everywhere:** "See history", "Photo check", "Fill in the form"; no all-capitals styling; no symbols standing in for icons (the ★ and ☆ are icons now).
 - **Every error says what happened and what to do** (`lib/errors.ts`, `describeError`): no connection ("Check your internet and try again"), signed out ("Sign in again"), the server had a problem ("Try again in a moment"), a limit ("Wait a minute"), or the server's own reason when it explains a mistake in what was typed. They replace "Something went wrong" and "Couldn’t save that" everywhere (saving, adding, undoing, moving, the meal plan, the shopping list, settings, loading food).
-- **Every empty state has a short explanation and a button:** Cook First (Plan a meal, Add food), History (Go to Home), Reminders (Choose reminder settings), Shopping (Add an item, which moves to the field), the household activity (Add food); and every "couldn’t load" screen has **Try again** (`LoadError`), as does Food Details, which also offers Go to Home.
+- **Every empty state has a short explanation and a button:** FridgeStock (Plan a meal, Add food), History (Go to Home), Reminders (Choose reminder settings), Shopping (Add an item, which moves to the field), the household activity (Add food); and every "couldn’t load" screen has **Try again** (`LoadError`), as does Food Details, which also offers Go to Home.
 - **Text size:** nothing is cut off or runs off the screen at 200% text size on any main screen, the first-run guide or the tab bar (long names wrap instead of being truncated, badges wrap, a card's picture stacks above its text when there isn't room, the guide's buttons wrap). The tab labels follow the text size up to 125%, because a tab bar has no room for more.
 - Photo thumbnails are a fixed size so the words get the room.
 
@@ -73,7 +84,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 **Added**
 - **Add food is a bottom sheet** (on a phone it slides up; on a larger screen it is a centred dialog). It is a real dialog: focus starts on the food name, Tab stays inside, Escape or the backdrop closes it and focus goes back. The **camera is first**, then favourites, then **Recent** (the foods you added most recently, one of each, without your favourites): tapping one fills the form from that food (amount, unit, lifespan, place) for you to check and save.
 - **A + / - stepper for quantity** (a half for kilos and litres, 50 for grams and millilitres, 1 for the rest), with the number still typeable. Quantity and price open a **decimal keyboard** and lifespan a **numeric** one; the lifespan **quick-pick chips** (1, 2, 3, 5, 7 and 14 days) stay.
-- **A three-step first-run guide** (`/welcome`), shown once to a new account and available again from **Settings → How Cook First works**: (1) what "expected expiry" means, with the disclaimer in a note; (2) add the first food with the **camera**, your **favourites**, or a tap on **common foods** (added to the fridge with their usual unit and lifespan); (3) choose **meal times** and turn on **reminders**. The phone's permission for notifications is asked **only** when "Turn on reminders" is tapped here or in Settings (a test checks no step asks earlier). Skip is on every step, finishing or skipping saves that it has been seen, and a failure to save never traps anyone in it.
+- **A three-step first-run guide** (`/welcome`), shown once to a new account and available again from **Settings → How FridgeStock works**: (1) what "expected expiry" means, with the disclaimer in a note; (2) add the first food with the **camera**, your **favourites**, or a tap on **common foods** (added to the fridge with their usual unit and lifespan); (3) choose **meal times** and turn on **reminders**. The phone's permission for notifications is asked **only** when "Turn on reminders" is tapped here or in Settings (a test checks no step asks earlier). Skip is on every step, finishing or skipping saves that it has been seen, and a failure to save never traps anyone in it.
 - `firstRunDone` on the account (`PUT /auth/me`): new accounts start with `false`; accounts made before the guide count as done.
 - Shared pieces: `MealTimes` (the meal-time switches, now in Settings and the guide) and `usePushReminders` (the push on/off logic, now in Settings and the guide).
 - Tests: 5 server, 13 for Add food, 19 for the guide, 5 for the bottom sheet, and two end-to-end journeys (the guide and the sheet), and axe on every step of the guide in both themes.
@@ -100,13 +111,13 @@ All notable changes to this project are listed here, newest first. Versions foll
 
 ### [2.19.0] - 2026-10-03: design and usability, stage 2 (navigation and home) · `227e87e`
 **Added**
-- **A new bottom tab bar** on phones: **Home**, **Cook First** (with its count), a large central **Add food** button, **Shopping**, and **More**. More opens a sheet with **Meal plan**, **Settings**, **History**, **Insights** and **Household** (Meal plan joins the four you asked for, because it no longer has a tab and would otherwise be hard to reach). The sidebar on desktop is unchanged.
-- **Home now starts with a "Cook first today" panel:** the most urgent food (up to six) as large cards in a row you scroll sideways, each with its photo or category icon, name, days left in words and the urgency badge; below it the **current meal's suggestion** (today's planned breakfast, lunch or dinner, otherwise "start with" the two most urgent items; the meal is chosen by the time of day in your time zone) and a **Cooked something** button that opens the leftovers form. When nothing is urgent the panel is a calm message with **Plan a meal** and **Add food**.
+- **A new bottom tab bar** on phones: **Home**, **FridgeStock** (with its count), a large central **Add food** button, **Shopping**, and **More**. More opens a sheet with **Meal plan**, **Settings**, **History**, **Insights** and **Household** (Meal plan joins the four you asked for, because it no longer has a tab and would otherwise be hard to reach). The sidebar on desktop is unchanged.
+- **Home now starts with a "FridgeStock today" panel:** the most urgent food (up to six) as large cards in a row you scroll sideways, each with its photo or category icon, name, days left in words and the urgency badge; below it the **current meal's suggestion** (today's planned breakfast, lunch or dinner, otherwise "start with" the two most urgent items; the meal is chosen by the time of day in your time zone) and a **Cooked something** button that opens the leftovers form. When nothing is urgent the panel is a calm message with **Plan a meal** and **Add food**.
 - **Location chips** (**All**, **Fridge**, **Freezer**, **Pantry**) filter the full inventory below the panel, which stays in priority order. The panel is not filtered.
 - Tests: 15 for Home and the tab bar (`home.test.tsx`).
 
 **Changed**
-- The four count tiles at the top of Home (past, today, use soon, not urgent) are gone, so the panel is first as asked; the same counts are in the Cook First badge and on Insights.
+- The four count tiles at the top of Home (past, today, use soon, not urgent) are gone, so the panel is first as asked; the same counts are in the FridgeStock badge and on Insights.
 - On phones the meal plan is reached through More.
 
 
@@ -135,7 +146,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 `- **The in-app chime** (`src/lib/chime.ts`): with the app open, a push plays the matching sound, only after the person has touched the page, never in quiet hours or with sound off. The service worker and the Android service make the notification silent while the app is open, so it isn't heard twice.
 `- **Settings: Sounds and quiet hours.** A sound switch, a vibration switch and quiet hours (on, 22:00 to 07:00 by default, in the person's time zone, crossing midnight and following daylight saving). In quiet hours every reminder arrives silently. `GET` and `PUT /notifications/alerts`.
 `- **Settings: Meal reminders.** Breakfast, lunch and dinner, each with a switch (off by default) and a time (07:30, 12:30, 19:30). `GET` and `PUT /notifications/meals`.
-`- **Meal-time cooking reminders** (`services/mealReminderService.ts`). The job now runs **every 5 minutes** (`*/5 * * * *`). At each meal's time (and up to 30 minutes after, if the job was late) a reminder is sent once a day, chosen by the pure, unit-tested `chooseMealContent`: today's planned meal for that meal; else, with AI on, one of today's cached recipe ideas for that meal type (never one already used for another meal that day); else a plain message naming the top Cook First items with their days left; else nothing when Cook First is empty and no meal is planned. Buttons: **Cooked it** (the leftovers form, pre-filled), **Show recipe** and **Snooze 30 min** (sent again 30 minutes later; a `SNOOZE_MEAL` action with its own one-day meal token).
+`- **Meal-time cooking reminders** (`services/mealReminderService.ts`). The job now runs **every 5 minutes** (`*/5 * * * *`). At each meal's time (and up to 30 minutes after, if the job was late) a reminder is sent once a day, chosen by the pure, unit-tested `chooseMealContent`: today's planned meal for that meal; else, with AI on, one of today's cached recipe ideas for that meal type (never one already used for another meal that day); else a plain message naming the top FridgeStock items with their days left; else nothing when FridgeStock is empty and no meal is planned. Buttons: **Cooked it** (the leftovers form, pre-filled), **Show recipe** and **Snooze 30 min** (sent again 30 minutes later; a `SNOOZE_MEAL` action with its own one-day meal token).
 `- **A meal reminder within 30 minutes of the daily summary replaces it** and carries its lines; the summary is marked sent. If that meal reminder can no longer be sent, the summary goes as usual.
 `- **Recipe ideas for a meal:** `POST /ai/recipes` takes an optional `{mealType}`, so breakfast ideas suit breakfast and it is told which recipes other meals already have. Ideas for a meal are **cached** per household per day (`recipeideacaches`); a meal reminder asks the AI once when nothing is cached, and keeps an empty answer on failure so it doesn't ask again.
 `- **Meal plans have a meal.** `mealplanentries.meal` (breakfast, lunch or dinner, default dinner; one entry per meal per day, migrated). `PUT /meal-plan/:date` takes `meal`, `DELETE` takes `?meal=`, and `GET /meal-plan` adds `meals` to each day (`entry` is still the dinner). The Plan screen has a Breakfast / Lunch / Dinner chooser; the AI draft stays for dinners.
@@ -155,7 +166,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 
 ### [2.16.0] - 2026-10-02: Android and iOS apps (Capacitor) · `87a7f5e`
 **Added**
-- **Capacitor** in the client workspace, with an Android and an iOS project (`client/android`, `client/ios`; iOS uses CocoaPods because the ML Kit scanner and Firebase need it). App name **Cook First**; the app ID is the placeholder `com.example.cookfirst` in one place each, and `npm run native:set-app-id -w client -- <id>` changes every place (it keeps the Android Java package, so no files move).
+- **Capacitor** in the client workspace, with an Android and an iOS project (`client/android`, `client/ios`; iOS uses CocoaPods because the ML Kit scanner and Firebase need it). App name **FridgeStock**; the app ID is the placeholder `com.example.fridgestock` in one place each, and `npm run native:set-app-id -w client -- <id>` changes every place (it keeps the Android Java package, so no files move).
 - **`client/src/platform`:** web and native implementations of the **camera**, **barcode scanning**, **push** and **token storage**, chosen once with `Capacitor.isNativePlatform()`. Native: `@capacitor/camera` for photos, `@capacitor-mlkit/barcode-scanning`, `@capacitor/push-notifications`, and `@aparajita/capacitor-secure-storage` (iOS Keychain, Android Keystore) for the login token instead of `localStorage`. The plugins load on demand, so a browser never downloads them. The web implementations wrap exactly what the app did before.
 - **Server:** push to the apps through **firebase-admin** behind the existing `PushProvider` interface (`fcmProvider.ts`), next to Web Push. **Each subscription stores its platform** (`web`, `android`, `ios`); an app is registered by its Firebase token and a phone belongs to whoever is signed in on it. Android gets data-only messages (so its own service can add buttons) and iOS notification messages with a category, through **FCM with an APNs key**. `GET /push/config` says whether the apps are set up.
 - **Notification buttons:** **Used** and **Snooze** as native actions: Android (`ActionMessagingService.java` and `NotificationActionReceiver.java` call `POST /push/actions` without opening the app, or open the item if that fails) and iOS (a notification category registered in `AppDelegate.swift`; the tap comes back to the web app, which calls the API).
@@ -219,7 +230,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 - The end-to-end API now runs with AI on, pointed at the stand-in, instead of AI off. The Phase 4 journey now checks that the AI buttons appear.
 
 **Fixed**
-- The Phase 4 end-to-end journey's "Cook First" link was the logo (Home) on desktop, so its "no AI buttons" check passed without testing anything. It now uses the main navigation.
+- The Phase 4 end-to-end journey's "FridgeStock" link was the logo (Home) on desktop, so its "no AI buttons" check passed without testing anything. It now uses the main navigation.
 
 **Not in this release**
 - Voice entry, other languages and grocery integrations. Photo Check and receipt scanning have not been tried against the real Anthropic API.
@@ -287,13 +298,13 @@ All notable changes to this project are listed here, newest first. Versions foll
 - The Settings link row for Insights sits above History.
 
 **Also in this release**
-- **Demo seed script** (`npm run seed -w server`): creates `demo@cookfirst.local` with 10 sample food items covering overdue, due, approaching and not-urgent, through the running API. Rerunning adds nothing; `--reset` re-seeds.
+- **Demo seed script** (`npm run seed -w server`): creates `demo@fridgestock.local` with 10 sample food items covering overdue, due, approaching and not-urgent, through the running API. Rerunning adds nothing; `--reset` re-seeds.
 
 ### [2.8.0] - 2026-09-30: Phase 4 (using the food) · `2bd172b`
 **Added**
 - **AI setup:** Anthropic's Claude API through the official `@anthropic-ai/sdk`, behind an `AiClient` interface. The key comes from `ANTHROPIC_API_KEY` and the model from `AI_MODEL` (default `claude-sonnet-5-5`, checked in Anthropic's models overview). AI features are on only when the key is set.
 - **Safeguards on every AI request:** a daily limit of 20 per user (a failed request isn't counted), zod validation of the JSON answer, and a banned-wording check (the seven phrases plus "safe") with up to 3 attempts, then a 503.
-- **Recipe ideas** on Cook First, built from the Cook First list in its order (read, never changed). "Save leftovers" on each idea.
+- **Recipe ideas** on FridgeStock, built from the FridgeStock list in its order (read, never changed). "Save leftovers" on each idea.
 - **Leftovers:** a "These are leftovers" box on Add Food, a short suggested lifespan, at most 4 days unless frozen, and a Leftovers tag.
 - **Shopping list** that warns about matching food already at home, with its expected expiry.
 - **Weekly meal plan** for today and the next six days, with the food each meal uses, plus AI suggestions for empty days as a draft to add or discard.
@@ -303,7 +314,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 - A shared `Checkbox` with a 44 px tap area (leftovers box, shopping list).
 
 **Changed**
-- Phone navigation: Home · Cook First · Add food · Shopping · Plan. Settings moved to the header gear on every screen; History is reached from Settings.
+- Phone navigation: Home · FridgeStock · Add food · Shopping · Plan. Settings moved to the header gear on every screen; History is reached from Settings.
 - The banned phrases are defined once in `shared/src/wording.ts` and used by both the source guard and the AI check.
 - `.env.example` and `render.yaml` list `ANTHROPIC_API_KEY` and `AI_MODEL`, both empty.
 - The end-to-end API always runs with an empty `ANTHROPIC_API_KEY`, so it can never reach the real API.
@@ -354,7 +365,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 **Added: Phase 1, faster entry**
 - **Reference list** (`shared/src/foodReference.ts`): 43 common foods with suggested lifespans for fridge, freezer and pantry.
   - Add Food suggests matches as you type; picking one fills in the unit and lifespan, and changing "Kept in" follows the suggestion.
-  - Suggestions are labelled as planning estimates from the "Cook First reference list" and are always editable.
+  - Suggestions are labelled as planning estimates from the "FridgeStock reference list" and are always editable.
 - **Favourites:** "☆ Save as favourite" on the details screen, and a Favourites strip on Add Food that re-adds an item with one tap. API: `GET/POST /favourites`, `DELETE /favourites/:id`, `POST /favourites/:id/add`.
 - **Bulk add:** a screen for a whole shopping haul (up to 50 rows sharing one added date), with reference fill-in and per-row errors. API: `POST /foods/bulk`, all or nothing.
 - **Undo:** `POST /foods/:id/undo` reverses an item's most recent action (used, partly used, wasted or removed) within 10 minutes and deletes its usage record.
@@ -370,7 +381,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 - **Prettier:** config (`.prettierrc.json`, `.prettierignore`), `npm run format` and `format:check`, and a **format check step in CI**. The whole codebase was formatted once (layout only).
 - **`.gitattributes`:** keeps LF line endings on every OS, so the Prettier check passes on Windows checkouts.
 - **Notifications are paginated:** `GET /notifications?limit=50&offset=0` (maximum 50 per page) returns `{items, total, unread}`, and the Reminders screen has "Load more".
-- **End-to-end spec journey:** sign up → chicken (1 day) and eggs (8 days) → only chicken in Cook First → mark used → gone from the dashboard and Cook First. Now 7 journeys, 14 tests.
+- **End-to-end spec journey:** sign up → chicken (1 day) and eggs (8 days) → only chicken in FridgeStock → mark used → gone from the dashboard and FridgeStock. Now 7 journeys, 14 tests.
 - **More tests:**
   - wasted and removed items leave both lists, alongside used ones
   - century leap years (2000, 2100) and more month- and year-end date cases
@@ -387,13 +398,13 @@ All notable changes to this project are listed here, newest first. Versions foll
   - "{name}: expected expiry is today."
   - "{name} is past its expected expiry. Check it before using."
 - **Scheduling rules** are now an explicit, tested function (`scheduledDateFor`).
-- **`dispatchForUser` renamed `dispatchDue`.** It now also runs at the start of `GET /foods`, wrapped so a reminder failure can never affect the inventory or Cook First.
+- **`dispatchForUser` renamed `dispatchDue`.** It now also runs at the start of `GET /foods`, wrapped so a reminder failure can never affect the inventory or FridgeStock.
 - **The node-cron job** now runs **hourly** (`0 * * * *`) instead of every 15 minutes.
 
 **Changed: screens**
 - **Dashboard:**
   - the header shows the full name, the bell (at every screen size) and a new settings icon
-  - Cook First always shows the top 3 with "See all", or "Nothing urgent right now."
+  - FridgeStock always shows the top 3 with "See all", or "Nothing urgent right now."
   - the empty list reads "Your fridge is empty. Add your first item."
   - the fixed centre button is now labelled "Add food"
 - **Add food:**
@@ -401,8 +412,8 @@ All notable changes to this project are listed here, newest first. Versions foll
   - notes behind an "**Add note**" link
   - the preview reads "Expected expiry: Thu, 1 Oct (2 days left)", with the disclaimer beneath it
 - **Food details:** "**Used all**", "**Used some**", "**Wasted**" and "**Remove**" buttons. Closing actions need **one confirmation**, and closed items show a read-only note.
-- **Cards** (Cook First and dashboard): **Used** (all or some) and **Wasted** buttons instead of "Update".
-- **Cook First empty state:** "Nothing needs attention right now."
+- **Cards** (FridgeStock and dashboard): **Used** (all or some) and **Wasted** buttons instead of "Update".
+- **FridgeStock empty state:** "Nothing needs attention right now."
 - **Settings:** name and email shown as read-only fields, a **History** link, and "**Log out**".
 - **History:** "**Load more**", and the action's date.
 - **Error states:** the Reminders screen now shows an error instead of "No reminders yet" when loading fails, and Settings shows one if reminder settings can't load.
@@ -448,8 +459,8 @@ All notable changes to this project are listed here, newest first. Versions foll
 
 **Added**
 - **Notes:** optional, up to 200 characters, on food items. Shown on cards and the details screen; editable, and cleared with an empty string.
-- **Priority engine:** `prioritise(items, today)` now returns `{ items, cookFirst, summary }` (with `total`).
-- **Required priority-engine tests:** a zero-day lifespan is DUE on the day it's added; running twice gives identical output; chicken, spinach, milk, eggs orders correctly with only chicken and spinach in Cook First; urgency switches exactly at 4, 3, 1, 0 and −1 days.
+- **Priority engine:** `prioritise(items, today)` now returns `{ items, fridgeStock, summary }` (with `total`).
+- **Required priority-engine tests:** a zero-day lifespan is DUE on the day it's added; running twice gives identical output; chicken, spinach, milk, eggs orders correctly with only chicken and spinach in FridgeStock; urgency switches exactly at 4, 3, 1, 0 and −1 days.
 - **Tests for new limits and fields:** units, name/lifespan/notes limits, the name limit of 50, lowercase email and default settings.
 - **Expiry never from the client:** tests show a client-sent expiry date is ignored on create and edit.
 - **Structure tests:** the threshold of 3 isn't hard-coded outside `config/urgency.ts` (checked across client, server and shared); there's no Mongoose hook for expiry.
@@ -471,7 +482,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 - **Node.js 20.19 or later required** (`engines`, `.nvmrc`).
 
 **Added**
-- **`shared` workspace package** (`@cook-first/shared`), used by both client and server:
+- **`shared` workspace package** (`@fridgestock/shared`), used by both client and server:
   - enums
   - API request and response types
   - zod schemas
@@ -510,7 +521,7 @@ All notable changes to this project are listed here, newest first. Versions foll
   - bcrypt cost 12, and passwords are never returned or logged
   - `.env` is ignored
   - helmet, CORS, and the rate limit of 20 per 15 minutes
-- **Required estimate line tests:** client tests and Playwright checks for the line on Add Food and Cook First.
+- **Required estimate line tests:** client tests and Playwright checks for the line on Add Food and FridgeStock.
 - **README:** rewritten as the full project reference, with a [Project rules](docs/ARCHITECTURE.md#project-rules) section.
 
 **Changed**
@@ -527,7 +538,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 - Desktop layout from 1024 px wide:
   - a fixed sidebar
   - a two-column dashboard
-  - a two-column Cook First grid
+  - a two-column FridgeStock grid
   - reading-width forms
   - a brand panel beside the sign-in and sign-up forms
 - Every Playwright journey now runs at phone size and desktop size: 12 tests.
@@ -548,7 +559,7 @@ All notable changes to this project are listed here, newest first. Versions foll
 **Added**
 - **Accounts:** JWT sign-in, bcrypt password hashing and time-zone capture.
 - **Food:** add, edit, view and remove, with expected expiry = added date + lifespan.
-- **Priority and Cook First:** the priority engine, four urgency labels and the Cook First list.
+- **Priority and FridgeStock:** the priority engine, four urgency labels and the FridgeStock list.
 - **Dashboard and history:** the dashboard, used / partly used / wasted / removed actions with usage records, and History.
 - **Reminders:** in-app reminders with preferences and retries.
 - **Privacy and wording:** each user sees only their own data, plus the "safe"-wording test.

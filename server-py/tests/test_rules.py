@@ -60,7 +60,7 @@ async def test_every_read_and_write_carries_the_user_id_or_the_household_id(api:
         a = (await api.post("/api/foods", headers=h, json=food(lifespanDays=2, quantity=2))).json()
         b = (await api.post("/api/foods", headers=h, json=food(lifespanDays=9))).json()
         await api.get("/api/foods", headers=h)
-        await api.get("/api/foods/cook-first", headers=h)
+        await api.get("/api/foods/fridgestock", headers=h)
         await api.get(f"/api/foods/{a['id']}", headers=h)
         await api.put(f"/api/foods/{a['id']}", headers=h, json={"lifespanDays": 1})
         await api.post(f"/api/foods/{a['id']}/use", headers=h, json={"quantity": 1})

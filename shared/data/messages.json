@@ -10,10 +10,10 @@
     "OVERDUE": "{name} is past its expected expiry. Check it before using."
   },
   "push": {
-    "title": "Cook First",
+    "title": "FridgeStock",
     "digestTitle": {
-      "one": "Cook First: 1 item to check",
-      "other": "Cook First: {count} items to check"
+      "one": "FridgeStock: 1 item to check",
+      "other": "FridgeStock: {count} items to check"
     },
     "digestLine": {
       "future": "{name}: expected expiry in {days}",
@@ -98,13 +98,13 @@
     ],
     "date": "This is a photo of the date printed on a food package. Copy that date and say what it is called.",
     "recipes": {
-      "intro": "My Cook First list, most urgent first:",
+      "intro": "My FridgeStock list, most urgent first:",
       "othersHeading": "Other food I have:",
       "ask": "Suggest up to 3 simple home recipes.",
       "mealType": "They are for {mealType}, so suggest dishes that suit {mealType}.",
       "avoid": "Do not suggest these, which are already chosen for other meals today: {avoid}.",
       "rules": [
-        "Each recipe must use at least one item from the Cook First list, and the most urgent items should be used first.",
+        "Each recipe must use at least one item from the FridgeStock list, and the most urgent items should be used first.",
         "Only use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).",
         "For each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
       ]

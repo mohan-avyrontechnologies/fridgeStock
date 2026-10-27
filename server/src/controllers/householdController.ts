@@ -1,4 +1,4 @@
-import type { JoinHouseholdInput, Pagination } from '@cook-first/shared';
+import type { JoinHouseholdInput, Pagination } from '@fridgestock/shared';
 import type { Request, Response } from 'express';
 import { currentUser } from '../middleware/auth.js';
 import { validatedParams, validatedQuery } from '../middleware/validate.js';

@@ -1,4 +1,4 @@
-package com.example.cookfirst;
+package com.example.fridgestock;
 
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;

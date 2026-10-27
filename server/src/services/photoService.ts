@@ -1,4 +1,4 @@
-import { FOOD_REFERENCE, MESSAGES, type PhotoCheck, type PhotoCheckInput } from '@cook-first/shared';
+import { FOOD_REFERENCE, MESSAGES, type PhotoCheck, type PhotoCheckInput } from '@fridgestock/shared';
 import { photoCheckEnabled } from '../config/features.js';
 import { aiPrompts } from '../copy.js';
 import { HouseholdEventModel } from '../models/HouseholdEvent.js';

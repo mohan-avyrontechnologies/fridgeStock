@@ -31,7 +31,7 @@ def mongo_eval(uri: str, script: str) -> object:
     code = (
         "const { MongoClient } = require('mongodb');"
         f"(async () => {{ const client = await MongoClient.connect({json.dumps(uri)});"
-        "const items = client.db('cook-first').collection('items');"
+        "const items = client.db('fridgestock').collection('items');"
         f"const result = await (async () => {{ {script} }})();"
         "console.log(JSON.stringify(result ?? null)); await client.close(); })();"
     )

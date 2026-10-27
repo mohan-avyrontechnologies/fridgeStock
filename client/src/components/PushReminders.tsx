@@ -1,4 +1,4 @@
-import { REMINDER_MODES, type ReminderDelivery, type ReminderMode } from '@cook-first/shared';
+import { REMINDER_MODES, type ReminderDelivery, type ReminderMode } from '@fridgestock/shared';
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
 import { pushSettingsCopy as copy } from '../copy';

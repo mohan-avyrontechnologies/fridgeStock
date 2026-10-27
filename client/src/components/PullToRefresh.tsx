@@ -9,7 +9,7 @@ const PULL_MAX = 110;
 /**
  * Pull down from the top of the page to refresh, as on a phone. It only starts when the page is scrolled to
  * the top and the finger moves mostly downwards, and does nothing with a mouse or keyboard (the lists refresh
- * on their own when you come back to the app, and Cook First and Home reload when you open them).
+ * on their own when you come back to the app, and FridgeStock and Home reload when you open them).
  */
 export function PullToRefresh({ onRefresh, children }: { onRefresh: () => Promise<unknown>; children: ReactNode }) {
   const [pull, setPull] = useState(0);

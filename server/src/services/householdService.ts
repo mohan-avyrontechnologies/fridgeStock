@@ -7,7 +7,7 @@ import {
   type HouseholdInvite,
   type JoinHouseholdInput,
   type Pagination,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { Types } from 'mongoose';
 import { HOUSEHOLD_MAX_MEMBERS, INVITE_DAYS, MAX_OPEN_INVITES } from '../config/household.js';
 import { FoodItemModel } from '../models/FoodItem.js';

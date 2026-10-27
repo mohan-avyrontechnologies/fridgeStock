@@ -1,4 +1,4 @@
-import { ERROR_CODES } from '@cook-first/shared';
+import { ERROR_CODES } from '@fridgestock/shared';
 import express from 'express';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -151,8 +151,8 @@ describe('responses', () => {
 });
 
 describe('routes', () => {
-  it('/foods/cook-first is matched before /foods/:id', async () => {
-    const res = await s.auth(api().get('/api/foods/cook-first')).expect(200);
+  it('/foods/fridgestock is matched before /foods/:id', async () => {
+    const res = await s.auth(api().get('/api/foods/fridgestock')).expect(200);
     expect(res.body).toHaveProperty('items');
   });
 

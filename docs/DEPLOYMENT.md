@@ -1,6 +1,6 @@
 # Deployment
 
-Running Cook First for real: the full configuration reference, an HTTPS staging set-up for testing on phones, and the Android and iOS apps. For local development see the [README](../README.md#getting-started).
+Running FridgeStock for real: the full configuration reference, an HTTPS staging set-up for testing on phones, and the Android and iOS apps. For local development see the [README](../README.md#getting-started).
 
 ---
 
@@ -33,7 +33,7 @@ Running Cook First for real: the full configuration reference, an HTTPS staging 
 | `PRODUCT_LOOKUP_URL` | *(empty = Open Food Facts)* | No | Where barcodes are looked up. Only the end-to-end tests change it, to a local stand-in. |
 | `AI_MODEL` | *(empty = `claude-sonnet-5-5`)* | No | Claude model ID. The default was checked against Anthropic's models overview on 2026-09-30. |
 
-**Switching AI provider.** Both providers sit behind the same `AiClient` interface, return the same zod-validated JSON, and go through the same banned-wording retry, so switching is a settings change. A rate limit (HTTP 429, a quota error, or an overloaded provider) is retried once after a short pause; if it happens again the person sees "AI is busy, try again later." and the request does not count toward the 20 a day. **Every feature works without AI:** barcode look-up, reading the date on a pack (on the device, or typed), automatic expiry estimation, manual entry, plain-text meal reminders and the Cook First list; only recipe ideas, meal-plan suggestions, receipt reading, Photo Check and the AI date reader need a model. To compare providers before choosing one for production, run `npm run eval:ai -w server -- --provider both` against a sample set (see `server/scripts/ai-eval.ts` and `server/scripts/ai-eval/samples.example.json`): it reports accuracy per task, valid-answer rate, banned-wording hits, latency, tokens and cost (from a `prices.json` you fill in).
+**Switching AI provider.** Both providers sit behind the same `AiClient` interface, return the same zod-validated JSON, and go through the same banned-wording retry, so switching is a settings change. A rate limit (HTTP 429, a quota error, or an overloaded provider) is retried once after a short pause; if it happens again the person sees "AI is busy, try again later." and the request does not count toward the 20 a day. **Every feature works without AI:** barcode look-up, reading the date on a pack (on the device, or typed), automatic expiry estimation, manual entry, plain-text meal reminders and the FridgeStock list; only recipe ideas, meal-plan suggestions, receipt reading, Photo Check and the AI date reader need a model. To compare providers before choosing one for production, run `npm run eval:ai -w server -- --provider both` against a sample set (see `server/scripts/ai-eval.ts` and `server/scripts/ai-eval/samples.example.json`): it reports accuracy per task, valid-answer rate, banned-wording hits, latency, tokens and cost (from a `prices.json` you fill in).
 
 Generate the VAPID key pair once with `npm run vapid:keys -w server`. Push is switched on only when all three VAPID variables are set; without them, reminders stay in-app and Settings says push isn't set up. **Tests never use a real AI key:** the server ignores `ANTHROPIC_API_KEY` when `NODE_ENV` is `test`, and the end-to-end API is started with it empty.
 
@@ -43,7 +43,7 @@ In production the server **refuses to start** if `MONGO_URI` or `JWT_SECRET` is 
 
 | Variable | Default | Description |
 |---|---|---|
-| `VITE_API_URL` | `http://localhost:4000/api` | Full address of the API, for example `https://cook-first-api.onrender.com/api` |
+| `VITE_API_URL` | `http://localhost:4000/api` | Full address of the API, for example `https://fridgestock-api.onrender.com/api` |
 
 `.env.example` files are committed for both. The real `.env` files are git-ignored.
 
@@ -65,7 +65,7 @@ The camera, barcode scanning, push reminders and installing to the Home Screen *
 1. Create a free **M0** cluster.
 2. **Database Access** → add a user with read and write access, and note its password.
 3. **Network Access** → allow `0.0.0.0/0` for staging (Render's free plan has no fixed address). Tighten this for production.
-4. **Connect** → *Drivers* → copy the `mongodb+srv://…` string and put a database name before the `?`, for example `…mongodb.net/cook-first-staging?retryWrites=true&w=majority`.
+4. **Connect** → *Drivers* → copy the `mongodb+srv://…` string and put a database name before the `?`, for example `…mongodb.net/fridgestock-staging?retryWrites=true&w=majority`.
 
 ### 2. Generate the push keys (optional, for reminders)
 ```bash
@@ -78,7 +78,7 @@ New → **Blueprint** → pick this repository. Then set these in the dashboard 
 | Variable | Value |
 |---|---|
 | `MONGO_URI` | The Atlas string from step 1 |
-| `CLIENT_ORIGIN` | Your Vercel address, **exactly** (for example `https://cook-first.vercel.app`, no trailing slash). Fill it in after step 4. |
+| `CLIENT_ORIGIN` | Your Vercel address, **exactly** (for example `https://fridgestock.vercel.app`, no trailing slash). Fill it in after step 4. |
 | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | The keys from step 2, and `mailto:you@example.com`. Without them reminders stay in the app. |
 | `ANTHROPIC_API_KEY`, `PHOTO_CHECK` | Optional: AI features, and `on` for Photo Check |
 
@@ -137,12 +137,12 @@ The web app also runs as real **Android and iOS apps**, built with [Capacitor](h
 > **Status: written and configured, but not built or run.** The TypeScript, the server and the project files are tested. The Java, Swift and Gradle were **not compiled** and nothing was run on a device, because no Android Studio, Xcode or phone was available. Expect a build error or two on the first build.
 
 ### Debug APK from GitHub Actions
-The **Android debug APK** workflow (`.github/workflows/android-apk.yml`) builds `app-debug.apk` on every push to `main`, every `v*` tag, or by hand (*Run workflow*). Download it from the run's **Artifacts** (`cook-first-debug-apk`, kept 30 days). Set the repository variable `NATIVE_API_URL` (`https://<api>/api`) first, or the app is built to talk to `localhost`. Add the secret `GOOGLE_SERVICES_JSON` (the file's contents) for push. A debug APK is signed with a throwaway debug key: fine for testing, not for the Play Store.
+The **Android debug APK** workflow (`.github/workflows/android-apk.yml`) builds `app-debug.apk` on every push to `main`, every `v*` tag, or by hand (*Run workflow*). Download it from the run's **Artifacts** (`fridgestock-debug-apk`, kept 30 days). Set the repository variable `NATIVE_API_URL` (`https://<api>/api`) first, or the app is built to talk to `localhost`. Add the secret `GOOGLE_SERVICES_JSON` (the file's contents) for push. A debug APK is signed with a throwaway debug key: fine for testing, not for the Play Store.
 
 ### 1. Choose the app ID
-`com.example.cookfirst` is a **placeholder**. Choose your own (for example `com.yourcompany.cookfirst`) **before publishing**: once an app is in the Play Store or App Store its ID can't change.
+`com.example.fridgestock` is a **placeholder**. Choose your own (for example `com.yourcompany.fridgestock`) **before publishing**: once an app is in the Play Store or App Store its ID can't change.
 ```bash
-npm run native:set-app-id -w client -- com.yourcompany.cookfirst
+npm run native:set-app-id -w client -- com.yourcompany.fridgestock
 npm run native:set-app-id -w client -- --check     # shows every place it is set, and whether they agree
 ```
 It changes `capacitor.config.ts`, the Android `applicationId` and the iOS bundle identifier. (The Android Java package stays as it is, so no files move.)
@@ -225,4 +225,4 @@ On iPhone the reminder buttons are the notification categories in `AppDelegate.s
 | `client/ios/App/App/Info.plist`, `client/android/app/src/main/AndroidManifest.xml` | The permission text and permissions |
 | `client/scripts/set-app-id.mjs` | `npm run native:set-app-id` |
 
-**What the permission boxes say.** iPhone: *"Cook First uses the camera to scan barcodes and to take photos so it can identify your food. Photos are saved privately to your household and are never shared."* and, for the photo library, *"…lets you choose a photo of your food from your library so it can be identified. The photo is saved privately to your household and is never shared."* Android shows its own permission box; the same explanation is in `strings.xml` (`camera_permission_message`) and in the manifest.
+**What the permission boxes say.** iPhone: *"FridgeStock uses the camera to scan barcodes and to take photos so it can identify your food. Photos are saved privately to your household and are never shared."* and, for the photo library, *"…lets you choose a photo of your food from your library so it can be identified. The photo is saved privately to your household and is never shared."* Android shows its own permission box; the same explanation is in `strings.xml` (`camera_permission_message`) and in the manifest.

@@ -25,8 +25,8 @@ async def list_foods(request: Request) -> Response:
     return json_response(200, await food_service.list_foods(current_user(request)))
 
 
-async def cook_first(request: Request) -> Response:
-    return json_response(200, await food_service.list_cook_first(current_user(request)))
+async def fridge_stock(request: Request) -> Response:
+    return json_response(200, await food_service.list_fridge_stock(current_user(request)))
 
 
 async def get(request: Request) -> Response:

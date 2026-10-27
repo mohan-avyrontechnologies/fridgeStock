@@ -1,9 +1,9 @@
-import { isValidDate, MEAL_TYPES, type DateString, type MealRecipe, type MealType } from '@cook-first/shared';
+import { isValidDate, MEAL_TYPES, type DateString, type MealRecipe, type MealType } from '@fridgestock/shared';
 import { Schema, Types, model, type HydratedDocument } from 'mongoose';
 
 /**
  * The recipe ideas generated for a household's meal on one day, kept so a meal reminder can use one without
- * asking the AI again. The ideas are built from the household's Cook First list, so they are shared by its
+ * asking the AI again. The ideas are built from the household's FridgeStock list, so they are shared by its
  * members. Cleared after three days.
  */
 export interface RecipeIdeaCache {

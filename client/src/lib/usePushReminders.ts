@@ -1,4 +1,4 @@
-import type { PushConfig } from '@cook-first/shared';
+import type { PushConfig } from '@fridgestock/shared';
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
 import { pushSettingsCopy as copy } from '../copy';

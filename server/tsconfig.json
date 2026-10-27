@@ -9,9 +9,9 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "types": ["node"],
-    // Resolve @cook-first/shared from its TypeScript source during development and tests.
+    // Resolve @fridgestock/shared from its TypeScript source during development and tests.
     "customConditions": ["source"],
-    // @cook-first/shared reads its data from JSON files (shared/data).
+    // @fridgestock/shared reads its data from JSON files (shared/data).
     "resolveJsonModule": true
   },
   "include": ["src", "vitest.config.ts"]

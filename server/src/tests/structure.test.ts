@@ -109,7 +109,7 @@ describe('dates', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('date helpers come from @cook-first/shared, not local copies', () => {
+  it('date helpers come from @fridgestock/shared, not local copies', () => {
     for (const file of appFiles) {
       expect(stripComments(source(file)), rel(file)).not.toMatch(
         /function\s+(addDays|diffDays|todayInTz|isValidDate|formatDisplay)\b/,

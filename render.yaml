@@ -5,7 +5,7 @@
 # The step-by-step guide is in the README ("Deployment: HTTPS staging on real phones").
 services:
   - type: web
-    name: cook-first-api
+    name: fridgestock-api
     runtime: node
     plan: free
     buildCommand: npm ci --include=dev && npm run build -w shared && npm run build -w server

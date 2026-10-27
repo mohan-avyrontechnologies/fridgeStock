@@ -3,7 +3,7 @@ import referenceData from '../data/food-reference.json' with { type: 'json' };
 import type { FoodCategory, StorageLocation, Unit } from './enums.js';
 
 /**
- * The Cook First reference list: common foods with suggested lifespans in
+ * The FridgeStock reference list: common foods with suggested lifespans in
  * days for each storage location (null = not usually kept there).
  *
  * These are rough planning estimates used only to pre-fill the Add Food form.

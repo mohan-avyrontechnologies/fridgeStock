@@ -1,4 +1,4 @@
-package com.example.cookfirst;
+package com.example.fridgestock;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,7 +14,7 @@ import org.json.JSONObject;
 public class MainActivity extends BridgeActivity {
 
     /** The page a tapped notification should open, like "/food/123". */
-    public static final String EXTRA_PAGE = "cookFirstPage";
+    public static final String EXTRA_PAGE = "fridgeStockPage";
 
     /** The page may be handed over before the web app has finished loading, so it is offered again a little later. */
     private static final long[] RETRY_DELAYS_MS = { 300, 1500, 4000 };
@@ -61,11 +61,11 @@ public class MainActivity extends BridgeActivity {
         // however many times it is offered, while a later tap on the same page still works.
         final String address = JSONObject.quote(page);
         final String nonce = JSONObject.quote(String.valueOf(System.nanoTime()));
-        // The web app reads window.__cookFirstPendingUrl when it starts, and listens for the event once it is running.
+        // The web app reads window.__fridgeStockPendingUrl when it starts, and listens for the event once it is running.
         final String script =
-            "(function(u,n){if(window.__cookFirstHandled===n){return;}window.__cookFirstHandled=n;" +
-            "window.__cookFirstPendingUrl=u;" +
-            "window.dispatchEvent(new CustomEvent('cook-first:open-page',{detail:u}));})(" +
+            "(function(u,n){if(window.__fridgeStockHandled===n){return;}window.__fridgeStockHandled=n;" +
+            "window.__fridgeStockPendingUrl=u;" +
+            "window.dispatchEvent(new CustomEvent('fridgestock:open-page',{detail:u}));})(" +
             address +
             "," +
             nonce +

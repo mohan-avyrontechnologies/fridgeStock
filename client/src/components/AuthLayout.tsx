@@ -23,7 +23,7 @@ export function AuthLayout({ title, children, footer }: { title: string; childre
       <aside className="hidden flex-col justify-between bg-brand p-12 text-on-brand lg:flex">
         <div className="flex items-center gap-3">
           <img src="/icon.svg" alt="" className="size-10 rounded-button ring-1 ring-white/20" />
-          <span className="text-xl font-bold tracking-tight">Cook First</span>
+          <span className="text-xl font-bold tracking-tight">FridgeStock</span>
         </div>
         <div className="max-w-md">
           <p className="text-4xl leading-tight font-bold tracking-tight">{screenCopy.auth.headline}</p>
@@ -39,7 +39,7 @@ export function AuthLayout({ title, children, footer }: { title: string; childre
       <main className="top-inset mx-auto flex min-h-dvh w-full max-w-md flex-col px-5 pb-8 lg:justify-center lg:py-12">
         <div className="pt-12 pb-8 lg:pt-0">
           <img src="/icon.svg" alt="" className="size-12 lg:hidden" />
-          <p className="mt-5 text-sm font-semibold text-brand lg:mt-0">Cook First</p>
+          <p className="mt-5 text-sm font-semibold text-brand lg:mt-0">FridgeStock</p>
           <h1 className="mt-1 text-3xl font-bold tracking-tight">{title}</h1>
           <p className="mt-2 text-muted">{screenCopy.auth.intro}</p>
         </div>

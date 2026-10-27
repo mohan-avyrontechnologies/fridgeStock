@@ -1,6 +1,6 @@
 {
-  "description": "The Cook First reference list: common foods with suggested lifespans in days for each storage location (null = not usually kept there), and openedDays once opened (null when opening makes no difference). Rough planning estimates only; they say nothing about whether food is fit to eat. Read by shared/src/foodReference.ts and the Python server.",
-  "source": "Cook First reference list",
+  "description": "The FridgeStock reference list: common foods with suggested lifespans in days for each storage location (null = not usually kept there), and openedDays once opened (null when opening makes no difference). Rough planning estimates only; they say nothing about whether food is fit to eat. Read by shared/src/foodReference.ts and the Python server.",
+  "source": "FridgeStock reference list",
   "usuallyPantry": ["bread", "tortillas", "tomatoes", "avocado", "oranges"],
   "foods": [
     {

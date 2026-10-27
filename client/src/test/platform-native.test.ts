@@ -262,7 +262,7 @@ describe('native push', () => {
     expect(await nativePush.isOn()).toBe(false);
     expect(await nativePush.turnOn({ publicKey: null, native: true })).toBe('on');
     expect(pushPlugin.requestPermissions).toHaveBeenCalledOnce();
-    expect(subscribed).toEqual([{ platform: 'ios', token: state.registrationToken, browser: 'Cook First app on iOS' }]);
+    expect(subscribed).toEqual([{ platform: 'ios', token: state.registrationToken, browser: 'FridgeStock app on iOS' }]);
     expect(await nativePush.isOn()).toBe(true);
     expect([...state.secure.values()]).toContain(state.registrationToken);
   });
@@ -270,7 +270,7 @@ describe('native push', () => {
   it('says Android on Android', async () => {
     state.os = 'android';
     await nativePush.turnOn({ publicKey: null, native: true });
-    expect(subscribed[0]).toMatchObject({ platform: 'android', browser: 'Cook First app on Android' });
+    expect(subscribed[0]).toMatchObject({ platform: 'android', browser: 'FridgeStock app on Android' });
   });
 
   it('does not ask again when permission is already granted', async () => {
@@ -397,10 +397,10 @@ describe('native push', () => {
     });
 
     it('opens the page when the notification itself is tapped, or when it has no token', async () => {
-      tapped('tap', { actionToken: 'tok', url: '/cook-first' });
+      tapped('tap', { actionToken: 'tok', url: '/fridgestock' });
       tapped('USED', { url: '/food/2' });
       await vi.waitFor(() => expect(events.filter((e) => e.type === OPEN_PAGE_EVENT)).toHaveLength(2));
-      expect(events.map((e) => e.detail)).toEqual(['/cook-first', '/food/2']);
+      expect(events.map((e) => e.detail)).toEqual(['/fridgestock', '/food/2']);
       expect(actions).toEqual([]);
     });
 

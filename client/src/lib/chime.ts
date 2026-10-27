@@ -1,7 +1,7 @@
-import { DEFAULT_ALERTS, isQuietHours, soundFor, type PushKind, type SoundName, type User } from '@cook-first/shared';
+import { DEFAULT_ALERTS, isQuietHours, soundFor, type PushKind, type SoundName, type User } from '@fridgestock/shared';
 
 /**
- * The in-app chime: when a reminder arrives while Cook First is open, play the matching sound (gentle, strong
+ * The in-app chime: when a reminder arrives while FridgeStock is open, play the matching sound (gentle, strong
  * or meal). The sound files are in client/assets/sounds. A licensed `<sound>.wav` (or .ogg or .mp3) wins over the
  * `<sound>.placeholder.wav` that stands in until it is added.
  *

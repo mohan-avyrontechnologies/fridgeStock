@@ -1,4 +1,4 @@
-import { BANNED_PHRASES, hasBannedWording } from '@cook-first/shared';
+import { BANNED_PHRASES, hasBannedWording } from '@fridgestock/shared';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AI_DAILY_LIMIT } from '../config/ai.js';
 import { DEFAULT_AI_MODEL, env } from '../config/env.js';
@@ -48,7 +48,7 @@ async function add(s: Session, name: string, lifespanDays: number, extra: Record
   ).body as { id: string; name: string };
 }
 
-/** Bread (today), Chicken (1 day), Spinach (2 days) are in Cook First; Rice (30 days) isn't. */
+/** Bread (today), Chicken (1 day), Spinach (2 days) are in FridgeStock; Rice (30 days) isn't. */
 async function kitchen() {
   setToday('2026-09-29');
   const s = await registerUser();
@@ -146,8 +146,8 @@ describe('banned wording in AI text', () => {
   });
 });
 
-describe('recipe ideas from the Cook First list', () => {
-  it('sends the Cook First list in its order and returns ideas using those items, most urgent first', async () => {
+describe('recipe ideas from the FridgeStock list', () => {
+  it('sends the FridgeStock list in its order and returns ideas using those items, most urgent first', async () => {
     const { s, bread, chicken, spinach } = await kitchen();
     const calls = fakeAi({
       recipes: [
@@ -160,7 +160,7 @@ describe('recipe ideas from the Cook First list', () => {
 
     expect(calls[0]!.prompt).toContain(
       [
-        'My Cook First list, most urgent first:',
+        'My FridgeStock list, most urgent first:',
         'F1: Bread (1 pcs): expected expiry today',
         'F2: Chicken (500 g): expected expiry in 1 day',
         'F3: Spinach (200 g): expected expiry in 2 days',
@@ -174,8 +174,8 @@ describe('recipe ideas from the Cook First list', () => {
       { id: chicken.id, name: 'Chicken' },
       { id: spinach.id, name: 'Spinach' },
     ]);
-    // Unknown codes (F9) are dropped, uses are in Cook First order, and an idea
-    // that uses no Cook First item ("Plain rice") is left out.
+    // Unknown codes (F9) are dropped, uses are in FridgeStock order, and an idea
+    // that uses no FridgeStock item ("Plain rice") is left out.
     expect(res.body.recipes).toEqual([
       {
         title: 'Chicken and bread bake',
@@ -195,17 +195,17 @@ describe('recipe ideas from the Cook First list', () => {
     ]);
   });
 
-  it('reads the Cook First order but never changes it or any item', async () => {
+  it('reads the FridgeStock order but never changes it or any item', async () => {
     const { s } = await kitchen();
-    const before = (await s.auth(api().get('/api/foods/cook-first'))).body.items;
+    const before = (await s.auth(api().get('/api/foods/fridgestock'))).body.items;
     const stored = await FoodItemModel.find({ userId: s.user.id }).lean();
     fakeAi({ recipes: [recipe('Stew', ['F3', 'F2'])] });
     await s.auth(api().post('/api/ai/recipes')).expect(200);
-    expect((await s.auth(api().get('/api/foods/cook-first'))).body.items).toEqual(before);
+    expect((await s.auth(api().get('/api/foods/fridgestock'))).body.items).toEqual(before);
     expect(await FoodItemModel.find({ userId: s.user.id }).lean()).toEqual(stored);
   });
 
-  it('makes no AI request, and uses none of the allowance, when Cook First is empty', async () => {
+  it('makes no AI request, and uses none of the allowance, when FridgeStock is empty', async () => {
     setToday('2026-09-29');
     const s = await registerUser();
     await add(s, 'Rice', 30);

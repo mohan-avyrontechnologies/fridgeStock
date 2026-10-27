@@ -1,6 +1,6 @@
 import { X } from 'lucide-react';
 import { describeError } from '../lib/errors';
-import { UNITS, formatDisplay, shoppingItemSchema, type ShoppingItem, type Unit } from '@cook-first/shared';
+import { UNITS, formatDisplay, shoppingItemSchema, type ShoppingItem, type Unit } from '@fridgestock/shared';
 import { useCallback, useEffect, useId, useState, type FormEvent, useRef } from 'react';
 import { Link } from 'react-router';
 import { api } from '../api/client';

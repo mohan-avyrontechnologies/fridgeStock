@@ -14,9 +14,9 @@ import {
   type ReminderType,
   type StorageLocation,
   type Urgency,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 
-/** Required on Add Food and Cook First (and shown elsewhere). Do not reword. */
+/** Required on Add Food and FridgeStock (and shown elsewhere). Do not reword. */
 export const estimateNote = 'Expected expiry is an estimate to help you plan. Always check your food before eating it.';
 
 /**
@@ -75,12 +75,12 @@ export const screenCopy = {
     seeAll: 'See all',
     loadError: 'Couldn’t load your food.',
   },
-  cookFirst: {
+  fridgeStock: {
     subtitle: 'What to use first, soonest expected expiry at the top',
     intro: (count: number) =>
       `${count} ${count === 1 ? 'item is' : 'items are'} at or near expected expiry. Tap “Used” or “Wasted” once you’ve dealt with something.`,
     empty: 'Nothing needs attention right now.',
-    loadError: 'Couldn’t load Cook First.',
+    loadError: 'Couldn’t load FridgeStock.',
   },
   form: {
     /** "Expected expiry: Thu, 1 Oct (2 days left)". */
@@ -237,7 +237,7 @@ export const historyActionLabel = {
 /** Phase 3: push reminders on this device (Settings). */
 export const pushSettingsCopy = {
   title: 'Push reminders',
-  intro: 'Get reminders on this device, even when Cook First is closed.',
+  intro: 'Get reminders on this device, even when FridgeStock is closed.',
   turnOn: 'Turn on reminders',
   turnOff: 'Turn off on this device',
   on: 'Reminders are on for this device.',
@@ -248,12 +248,12 @@ export const pushSettingsCopy = {
   failed: 'Couldn’t turn on reminders. Try again.',
   unsupported: 'This browser can’t show push reminders. You’ll still see every reminder under the bell.',
   iosHomeScreen:
-    'On iPhone, reminders need the app on your Home Screen first. Tap Share, then “Add to Home Screen”, and open Cook First from there.',
+    'On iPhone, reminders need the app on your Home Screen first. Tap Share, then “Add to Home Screen”, and open FridgeStock from there.',
   notConfigured: 'Push reminders aren’t set up on this server yet. You’ll still see every reminder under the bell.',
   inAppNote: 'Every reminder also appears under the bell, even if a push doesn’t arrive.',
   modeTitle: 'How they arrive',
   modes: {
-    DIGEST: { title: 'One daily summary', detail: 'Your Cook First list in one message' },
+    DIGEST: { title: 'One daily summary', detail: 'Your FridgeStock list in one message' },
     EACH_ITEM: { title: 'One per item', detail: 'A separate message for each reminder' },
   } satisfies Record<ReminderMode, { title: string; detail: string }>,
   timeLabel: 'Time',
@@ -273,7 +273,7 @@ export const leftoverCopy = {
 /** Phase 4: AI features. */
 export const aiCopy = {
   left: (used: number, limit: number) => `${Math.max(limit - used, 0)} of ${limit} AI suggestions left today`,
-  note: 'These are AI suggestions built from your Cook First list. Always check your food before cooking with it.',
+  note: 'These are AI suggestions built from your FridgeStock list. Always check your food before cooking with it.',
   busy: 'Thinking…',
 };
 
@@ -553,7 +553,7 @@ export const mealSettingsCopy = {
   intro: 'A reminder at meal time with what to cook first: your planned meal, a recipe idea, or the food to use up.',
   meals: { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner' } satisfies Record<MealType, string>,
   time: (meal: string) => `${meal} reminder time`,
-  note: 'These arrive as push reminders, so turn those on above. Nothing is sent when there is nothing in Cook First and no meal planned.',
+  note: 'These arrive as push reminders, so turn those on above. Nothing is sent when there is nothing in FridgeStock and no meal planned.',
 };
 
 /** The screen a meal reminder's "Show recipe" button opens. */
@@ -561,11 +561,11 @@ export const mealPageCopy = {
   mealNames: { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner' } satisfies Record<MealType, string>,
   title: (meal: string) => `${meal} reminder`,
   none: 'There’s no reminder for this meal today.',
-  openCookFirst: 'See your Cook First list',
+  openFridgeStock: 'See your FridgeStock list',
   planned: 'Planned for this meal',
   noRecipe: 'No recipe this time',
   itemsTitle: 'Use these up first',
-  aiNote: 'This is an AI suggestion built from your Cook First list. Always check your food before cooking with it.',
+  aiNote: 'This is an AI suggestion built from your FridgeStock list. Always check your food before cooking with it.',
   cooked: 'Cooked it',
   daysLeft: (remainingDays: number) =>
     remainingDays > 0
@@ -578,9 +578,9 @@ export const mealPageCopy = {
 /** Said when a meal reminder is snoozed from a notification button. */
 export const mealSnoozeToast = 'We’ll remind you again in 30 minutes';
 
-/** The Home screen: the "Cook first today" panel, the location filter and the empty states. */
+/** The Home screen: the "FridgeStock today" panel, the location filter and the empty states. */
 export const homeCopy = {
-  title: 'Cook first today',
+  title: 'FridgeStock today',
   seeAll: 'See all',
   rowLabel: 'Food to cook first',
   calmTitle: 'Nothing needs cooking first',
@@ -613,19 +613,19 @@ export const recentCopy = {
 
 /** The first-run guide: three steps, shown once to a new account. */
 export const firstRunCopy = {
-  welcome: 'Welcome to Cook First',
+  welcome: 'Welcome to FridgeStock',
   progress: (step: number, total: number) => `Step ${step} of ${total}`,
   skip: 'Skip for now',
   back: 'Back',
   next: 'Next',
-  finish: 'Start using Cook First',
+  finish: 'Start using FridgeStock',
   navigation: 'Guide steps',
   saveFailed: 'Couldn’t save that you’ve seen the guide. It may show again next time.',
   addFailed: 'Couldn’t add that. Check your connection and try again.',
   addedToast: (count: number) => (count === 1 ? 'Added 1 food' : `Added ${count} foods`),
   step1: {
     title: 'What “expected expiry” means',
-    body: 'Cook First works out an expected expiry date for each food from the day you added it and how long that kind of food usually lasts. The soonest dates come first, so you can see what to cook first.',
+    body: 'FridgeStock works out an expected expiry date for each food from the day you added it and how long that kind of food usually lasts. The soonest dates come first, so you can see what to cook first.',
     points: [
       'It is an estimate, so you can change any lifespan.',
       '“Use soon” means a food is getting close to its expected expiry.',
@@ -661,14 +661,14 @@ export const errorCopy = {
   offline: (what: string) => `Couldn’t ${what} because there’s no connection. Check your internet and try again.`,
   signedOut: (what: string) => `Couldn’t ${what} because you’ve been signed out. Sign in again.`,
   tooMany: (what: string) => `Couldn’t ${what} because there have been too many tries. Wait a minute and try again.`,
-  serverProblem: (what: string) => `Couldn’t ${what} because Cook First had a problem. Try again in a moment.`,
+  serverProblem: (what: string) => `Couldn’t ${what} because FridgeStock had a problem. Try again in a moment.`,
   unexpected: (what: string) => `Couldn’t ${what}. Try again, and if it keeps happening, reload the page.`,
   retry: 'Try again',
 };
 
 /** Empty states: a short explanation and a way forward. */
 export const emptyCopy = {
-  cookFirst: {
+  fridgeStock: {
     title: 'Nothing needs cooking first',
     body: 'Nothing is close to its expected expiry right now. A good moment to plan a meal or add what you bought.',
   },
@@ -683,7 +683,7 @@ export const emptyCopy = {
   },
   shopping: {
     title: 'Your shopping list is empty',
-    body: 'Add what you need to buy. Cook First tells you if you already have some at home.',
+    body: 'Add what you need to buy. FridgeStock tells you if you already have some at home.',
     action: 'Add an item',
   },
   householdActivity: {

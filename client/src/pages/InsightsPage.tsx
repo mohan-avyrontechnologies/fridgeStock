@@ -1,4 +1,4 @@
-import { formatDisplay, type Insights, type InsightsPeriod, type InsightsWeek } from '@cook-first/shared';
+import { formatDisplay, type Insights, type InsightsPeriod, type InsightsWeek } from '@fridgestock/shared';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { api } from '../api/client';

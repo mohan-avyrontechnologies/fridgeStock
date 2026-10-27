@@ -1,4 +1,4 @@
-import type { PhotoCheckInput, PrintedDateInput, ReceiptInput } from '@cook-first/shared';
+import type { PhotoCheckInput, PrintedDateInput, ReceiptInput } from '@fridgestock/shared';
 import type { Request, Response } from 'express';
 import { currentUser } from '../middleware/auth.js';
 import { validatedQuery } from '../middleware/validate.js';

@@ -1,4 +1,4 @@
-import type { PushPlatform } from '@cook-first/shared';
+import type { PushPlatform } from '@fridgestock/shared';
 import { Schema, Types, model, type HydratedDocument } from 'mongoose';
 
 /**
@@ -18,7 +18,7 @@ export interface PushSubscription {
   keys?: { p256dh: string; auth: string };
   /** Apps only: the Firebase device token. */
   token?: string;
-  /** e.g. "Chrome on Android" or "Cook First app on iOS", for the user's own reference. */
+  /** e.g. "Chrome on Android" or "FridgeStock app on iOS", for the user's own reference. */
   browser: string | null;
   lastUsedAt: Date | null;
   createdAt: Date;

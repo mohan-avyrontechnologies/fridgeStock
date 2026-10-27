@@ -1,4 +1,4 @@
-import { DEFAULT_ALERTS, type AlertSettings as Alerts, type AlertSettingsInput } from '@cook-first/shared';
+import { DEFAULT_ALERTS, type AlertSettings as Alerts, type AlertSettingsInput } from '@fridgestock/shared';
 import { useEffect, useState } from 'react';
 import { api } from '../api/client';
 import { alertCopy, mealSettingsCopy } from '../copy';

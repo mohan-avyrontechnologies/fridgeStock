@@ -1,4 +1,4 @@
-import { hasBannedWording, parsePrintedDate, type PrintedDateType } from '@cook-first/shared';
+import { hasBannedWording, parsePrintedDate, type PrintedDateType } from '@fridgestock/shared';
 import type { PhotoCheckOutput, PrintedDateOutput, ReceiptOutput } from './aiOutputs.js';
 
 /**

@@ -1,4 +1,4 @@
-import type { DateString } from '@cook-first/shared';
+import type { DateString } from '@fridgestock/shared';
 import { NotificationModel } from '../models/Notification.js';
 import type { UserDoc } from '../models/User.js';
 

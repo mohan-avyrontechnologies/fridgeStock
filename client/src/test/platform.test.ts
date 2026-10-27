@@ -162,14 +162,14 @@ describe('the login token in secure storage', () => {
       token: 'jwt-123',
       user: { id: 'u1', name: 'Asha' } as never,
     });
-    await vi.waitFor(() => expect(secure.values.get('cook-first-auth')).toBeDefined());
-    const saved = JSON.parse(secure.values.get('cook-first-auth')!);
+    await vi.waitFor(() => expect(secure.values.get('fridgestock-auth')).toBeDefined());
+    const saved = JSON.parse(secure.values.get('fridgestock-auth')!);
     expect(saved.state.token).toBe('jwt-123');
-    expect(localStorage.getItem('cook-first-auth')).toBeNull();
+    expect(localStorage.getItem('fridgestock-auth')).toBeNull();
   });
 
   it('waits for the saved login to be read before the app decides who is signed in', async () => {
-    secure.values.set('cook-first-auth', JSON.stringify({ state: { token: 'saved-jwt', user: null }, version: 0 }));
+    secure.values.set('fridgestock-auth', JSON.stringify({ state: { token: 'saved-jwt', user: null }, version: 0 }));
     secure.delay = 30;
     await loadPlatform('ios');
     const { useAuthStore } = await import('../stores/authStore');
@@ -180,7 +180,7 @@ describe('the login token in secure storage', () => {
   });
 
   it('reads the saved login at once in a browser, so nothing waits', async () => {
-    localStorage.setItem('cook-first-auth', JSON.stringify({ state: { token: 'web-jwt', user: null }, version: 0 }));
+    localStorage.setItem('fridgestock-auth', JSON.stringify({ state: { token: 'web-jwt', user: null }, version: 0 }));
     await loadPlatform(false);
     const { useAuthStore } = await import('../stores/authStore');
     expect(useAuthStore.persist.hasHydrated()).toBe(true);

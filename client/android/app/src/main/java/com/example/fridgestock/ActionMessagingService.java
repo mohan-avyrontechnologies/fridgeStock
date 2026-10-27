@@ -1,4 +1,4 @@
-package com.example.cookfirst;
+package com.example.fridgestock;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -15,7 +15,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * Receives Cook First's reminders from Firebase and shows them with their buttons.
+ * Receives FridgeStock's reminders from Firebase and shows them with their buttons.
  *
  * The server sends Android a data-only message (a "notification" message would be shown by the system
  * without buttons), with the title, body, page, the notification channel to use, and a single-use action token.
@@ -96,7 +96,7 @@ public class ActionMessagingService extends MessagingService {
                     } else if (actionUrl != null) {
                         // A button that calls the API without opening the app.
                         Intent send = new Intent(context, NotificationActionReceiver.class);
-                        send.setAction("cookfirst.ACTION." + action + "." + id);
+                        send.setAction("fridgestock.ACTION." + action + "." + id);
                         send.putExtra(NotificationActionReceiver.EXTRA_TOKEN, token);
                         send.putExtra(NotificationActionReceiver.EXTRA_ACTION, action);
                         send.putExtra(NotificationActionReceiver.EXTRA_API_URL, actionUrl);

@@ -1,4 +1,4 @@
-import { BANNED_PHRASES, FOOD_REFERENCE } from '@cook-first/shared';
+import { BANNED_PHRASES, FOOD_REFERENCE } from '@fridgestock/shared';
 import mongoose from 'mongoose';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AI_DAILY_LIMIT } from '../config/ai.js';
@@ -161,7 +161,7 @@ describe('the Open Food Facts client', () => {
     expect(url).toBe(
       `https://off.example/api/v2/product/${EAN}.json?fields=product_name,brands,product_quantity,product_quantity_unit`,
     );
-    expect((init.headers as Record<string, string>)['User-Agent']).toMatch(/^CookFirst\//);
+    expect((init.headers as Record<string, string>)['User-Agent']).toMatch(/^FridgeStock\//);
     expect(init.signal).toBeInstanceOf(AbortSignal);
   });
 

@@ -177,8 +177,8 @@ async def _reminder_ids(food_id: str) -> list[str]:
 
 @pytest.mark.phase2
 class TestRoutes:
-    async def test_cook_first_is_matched_before_foods_id(self, api: httpx.AsyncClient, account: Account) -> None:
-        res = await api.get("/api/foods/cook-first", headers=account.headers)
+    async def test_fridge_stock_is_matched_before_foods_id(self, api: httpx.AsyncClient, account: Account) -> None:
+        res = await api.get("/api/foods/fridgestock", headers=account.headers)
         assert res.status_code == 200
         assert "items" in res.json()
 

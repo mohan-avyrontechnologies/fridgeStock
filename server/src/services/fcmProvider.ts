@@ -1,4 +1,4 @@
-import type { PushPayload } from '@cook-first/shared';
+import type { PushPayload } from '@fridgestock/shared';
 import { clock } from './clock.js';
 import type { PushProvider } from './pushProvider.js';
 
@@ -127,8 +127,8 @@ export function createFirebaseMessaging(credentials: {
           import('firebase-admin/messaging'),
         ]);
         const app =
-          getApps().find((existing) => existing.name === 'cook-first') ??
-          initializeApp({ credential: cert(credentials) }, 'cook-first');
+          getApps().find((existing) => existing.name === 'fridgestock') ??
+          initializeApp({ credential: cert(credentials) }, 'fridgestock');
         return getMessaging(app) as unknown as { send(message: Record<string, unknown>): Promise<string> };
       })();
       return (await ready).send(message);

@@ -1,4 +1,4 @@
-import { UNITS, type Unit } from '@cook-first/shared';
+import { UNITS, type Unit } from '@fridgestock/shared';
 import { Schema, Types, model, type HydratedDocument } from 'mongoose';
 
 export interface ShoppingItem {

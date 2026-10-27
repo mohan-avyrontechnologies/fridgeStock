@@ -1,4 +1,4 @@
-import type { NotificationChannelId } from '@cook-first/shared';
+import type { NotificationChannelId } from '@fridgestock/shared';
 
 /**
  * The Android notification channels. Android fixes a notification's sound, vibration and importance by its
@@ -47,7 +47,7 @@ export const ANDROID_CHANNELS: ChannelSpec[] = [
   {
     id: 'food-urgent-sound',
     name: 'Food due or overdue (sound only)',
-    description: 'Used when vibration is switched off in Cook First.',
+    description: 'Used when vibration is switched off in FridgeStock.',
     importance: 4,
     sound: 'reminder_strong',
     vibration: false,
@@ -55,7 +55,7 @@ export const ANDROID_CHANNELS: ChannelSpec[] = [
   {
     id: 'reminders-vibrate',
     name: 'Vibration only',
-    description: 'Used when sounds are switched off in Cook First.',
+    description: 'Used when sounds are switched off in FridgeStock.',
     importance: 3,
     sound: null,
     vibration: true,

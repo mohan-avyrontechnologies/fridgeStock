@@ -61,7 +61,7 @@
     "push.title": [
       {
         "args": [],
-        "expected": "Cook First"
+        "expected": "FridgeStock"
       }
     ],
     "push.digestTitle": [
@@ -69,19 +69,19 @@
         "args": [
           1
         ],
-        "expected": "Cook First: 1 item to check"
+        "expected": "FridgeStock: 1 item to check"
       },
       {
         "args": [
           2
         ],
-        "expected": "Cook First: 2 items to check"
+        "expected": "FridgeStock: 2 items to check"
       },
       {
         "args": [
           12
         ],
-        "expected": "Cook First: 12 items to check"
+        "expected": "FridgeStock: 12 items to check"
       }
     ],
     "push.digestLine": [
@@ -288,7 +288,7 @@
           ],
           []
         ],
-        "expected": "My Cook First list, most urgent first:\nF1: Milk: expected expiry today\n\nSuggest up to 3 simple home recipes.\nEach recipe must use at least one item from the Cook First list, and the most urgent items should be used first.\nOnly use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).\nFor each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
+        "expected": "My FridgeStock list, most urgent first:\nF1: Milk: expected expiry today\n\nSuggest up to 3 simple home recipes.\nEach recipe must use at least one item from the FridgeStock list, and the most urgent items should be used first.\nOnly use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).\nFor each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
       },
       {
         "args": [
@@ -299,7 +299,7 @@
             "F2: Rice: expected expiry in 9 days"
           ]
         ],
-        "expected": "My Cook First list, most urgent first:\nF1: Milk: expected expiry today\n\nOther food I have:\nF2: Rice: expected expiry in 9 days\n\nSuggest up to 3 simple home recipes.\nEach recipe must use at least one item from the Cook First list, and the most urgent items should be used first.\nOnly use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).\nFor each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
+        "expected": "My FridgeStock list, most urgent first:\nF1: Milk: expected expiry today\n\nOther food I have:\nF2: Rice: expected expiry in 9 days\n\nSuggest up to 3 simple home recipes.\nEach recipe must use at least one item from the FridgeStock list, and the most urgent items should be used first.\nOnly use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).\nFor each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
       },
       {
         "args": [
@@ -309,7 +309,7 @@
           [],
           "breakfast"
         ],
-        "expected": "My Cook First list, most urgent first:\nF1: Milk: expected expiry today\n\nSuggest up to 3 simple home recipes.\nThey are for breakfast, so suggest dishes that suit breakfast.\nEach recipe must use at least one item from the Cook First list, and the most urgent items should be used first.\nOnly use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).\nFor each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
+        "expected": "My FridgeStock list, most urgent first:\nF1: Milk: expected expiry today\n\nSuggest up to 3 simple home recipes.\nThey are for breakfast, so suggest dishes that suit breakfast.\nEach recipe must use at least one item from the FridgeStock list, and the most urgent items should be used first.\nOnly use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).\nFor each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
       },
       {
         "args": [
@@ -325,7 +325,7 @@
             "Soup"
           ]
         ],
-        "expected": "My Cook First list, most urgent first:\nF1: Milk: expected expiry today\n\nOther food I have:\nF2: Rice\n\nSuggest up to 3 simple home recipes.\nThey are for dinner, so suggest dishes that suit dinner.\nDo not suggest these, which are already chosen for other meals today: Omelette; Soup.\nEach recipe must use at least one item from the Cook First list, and the most urgent items should be used first.\nOnly use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).\nFor each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
+        "expected": "My FridgeStock list, most urgent first:\nF1: Milk: expected expiry today\n\nOther food I have:\nF2: Rice\n\nSuggest up to 3 simple home recipes.\nThey are for dinner, so suggest dishes that suit dinner.\nDo not suggest these, which are already chosen for other meals today: Omelette; Soup.\nEach recipe must use at least one item from the FridgeStock list, and the most urgent items should be used first.\nOnly use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).\nFor each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
       },
       {
         "args": [
@@ -336,7 +336,7 @@
             "Omelette"
           ]
         ],
-        "expected": "My Cook First list, most urgent first:\n\nSuggest up to 3 simple home recipes.\nDo not suggest these, which are already chosen for other meals today: Omelette.\nEach recipe must use at least one item from the Cook First list, and the most urgent items should be used first.\nOnly use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).\nFor each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
+        "expected": "My FridgeStock list, most urgent first:\n\nSuggest up to 3 simple home recipes.\nDo not suggest these, which are already chosen for other meals today: Omelette.\nEach recipe must use at least one item from the FridgeStock list, and the most urgent items should be used first.\nOnly use items from these lists plus basic cupboard staples (oil, salt, pepper, spices, water).\nFor each: a short title, total minutes as a whole number, the codes of the items it uses, and 3 to 6 short steps."
       }
     ],
     "aiPrompts.mealPlan": [

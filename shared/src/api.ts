@@ -153,7 +153,7 @@ export interface LearnedLifespan {
   basedOn: number;
 }
 
-export interface CookFirstList {
+export interface FridgeStockList {
   today: DateString;
   items: ActiveFoodItem[];
 }
@@ -301,7 +301,7 @@ export interface FoodRef {
   name: string;
 }
 
-/** One recipe idea built from the Cook First list. */
+/** One recipe idea built from the FridgeStock list. */
 export interface RecipeIdea {
   title: string;
   minutes: number;
@@ -312,7 +312,7 @@ export interface RecipeIdea {
 
 /** POST /ai/recipes */
 export interface RecipeIdeas {
-  /** The Cook First list the ideas were built from, in its (unchanged) order. */
+  /** The FridgeStock list the ideas were built from, in its (unchanged) order. */
   basedOn: FoodRef[];
   recipes: RecipeIdea[];
 }

@@ -4,7 +4,7 @@ import {
   type LearnedLifespan,
   type StorageLocation,
   type Unit,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 
 /** A lifespan suggestion for a food in a location: the user's own usual first, then the reference list. */
 export interface LifespanSuggestion {

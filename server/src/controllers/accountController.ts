@@ -1,4 +1,4 @@
-import type { DeleteAccountInput } from '@cook-first/shared';
+import type { DeleteAccountInput } from '@fridgestock/shared';
 import type { Request, Response } from 'express';
 import { currentUser } from '../middleware/auth.js';
 import * as accountService from '../services/accountService.js';
@@ -7,7 +7,7 @@ import * as accountService from '../services/accountService.js';
 export const accountController = {
   async export(req: Request, res: Response) {
     const data = await accountService.exportAccount(currentUser(req));
-    res.setHeader('Content-Disposition', 'attachment; filename="cook-first-data.json"');
+    res.setHeader('Content-Disposition', 'attachment; filename="fridgestock-data.json"');
     res.json(data);
   },
   async remove(req: Request, res: Response) {

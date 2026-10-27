@@ -1,6 +1,6 @@
 {
-  "name": "Cook First",
-  "short_name": "Cook First",
+  "name": "FridgeStock",
+  "short_name": "FridgeStock",
   "description": "See what to cook first, ordered by each item's expected expiry.",
   "start_url": "/",
   "scope": "/",

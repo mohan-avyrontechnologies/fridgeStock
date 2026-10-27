@@ -22,7 +22,7 @@ import {
   type PrintedDateType,
   type StorageLocation,
   type Unit,
-} from '@cook-first/shared';
+} from '@fridgestock/shared';
 import { useEffect, useId, useMemo, useState, type FormEvent } from 'react';
 import { ApiError } from '../api/client';
 import { expiryCopy, leftoverCopy, screenCopy, storageLabel } from '../copy';

@@ -1,5 +1,5 @@
-import { fillTemplate } from '@cook-first/shared';
-import { SERVER_MESSAGES as copy } from '@cook-first/shared/server-messages';
+import { fillTemplate } from '@fridgestock/shared';
+import { SERVER_MESSAGES as copy } from '@fridgestock/shared/server-messages';
 
 /**
  * Every user-facing sentence the server produces about expiry comes from here, and
@@ -31,7 +31,7 @@ export const pushCopy = {
   title: copy.push.title,
   digestTitle: (count: number) =>
     count === 1 ? copy.push.digestTitle.one : fillTemplate(copy.push.digestTitle.other, { count }),
-  /** One line of the daily summary, in Cook First order. */
+  /** One line of the daily summary, in FridgeStock order. */
   digestLine: (name: string, remainingDays: number) => {
     if (remainingDays > 0) return fillTemplate(copy.push.digestLine.future, { name, days: days(remainingDays) });
     if (remainingDays === 0) return fillTemplate(copy.push.digestLine.today, { name });
@@ -85,10 +85,10 @@ export const aiPrompts = {
 
   date: () => prompts.date,
 
-  recipes: (cookFirst: string[], others: string[], mealType?: string, avoid: string[] = []) =>
+  recipes: (fridgeStock: string[], others: string[], mealType?: string, avoid: string[] = []) =>
     [
       prompts.recipes.intro,
-      ...cookFirst,
+      ...fridgeStock,
       ...(others.length ? ['', prompts.recipes.othersHeading, ...others] : []),
       '',
       prompts.recipes.ask,

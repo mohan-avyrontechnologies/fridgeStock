@@ -1,4 +1,4 @@
-import { isValidDate, USAGE_ACTIONS, type DateString, type UsageAction } from '@cook-first/shared';
+import { isValidDate, USAGE_ACTIONS, type DateString, type UsageAction } from '@fridgestock/shared';
 import { Schema, Types, model, type HydratedDocument } from 'mongoose';
 import { clock } from '../services/clock.js';
 
