@@ -16,7 +16,7 @@ As of v2.23.0 (2026-10-23).
 | Tests: shared 83 + server 545 + client 439 = **1,067**, plus the Playwright end-to-end suite | ✅ Passing |
 | ESLint, Prettier and typecheck on all packages | ✅ Clean |
 | All project rules (see [Architecture → Project rules](ARCHITECTURE.md#project-rules)) | ✅ Met, each one checked by a test |
-| Code on GitHub (`rugvailabs/fridgestock`, private) | ✅ Pushed with tag `v2.23.0` |
+| Code on GitHub (`mohan-avyrontechnologies/fridgeStock`, public) | ✅ Pushed with tag `v2.23.0` |
 | CI (lint, format, typecheck, tests, build, end-to-end) and the Android debug APK | ✅ Workflows in `.github/workflows/`; they run on every push |
 | Online deployment | ⏳ Configuration and a step-by-step guide are ready ([Deployment](DEPLOYMENT.md)); it needs your own Atlas, Render and Vercel accounts |
 | Android and iOS apps (Capacitor) | ⚠️ The Android debug APK is built by CI; the apps have **not been run on a device** yet, and iOS needs a Mac to build |

@@ -107,7 +107,7 @@ fridgestock/
 **You need** Node.js 20.19+ (`.nvmrc` pins 20.19.0) and, for the database, Docker Desktop. Without Docker the API starts a built-in MongoDB instead (it downloads about 780 MB on first run).
 
 ```bash
-git clone https://github.com/rugvailabs/fridgestock.git fridgestock
+git clone https://github.com/mohan-avyrontechnologies/fridgeStock.git fridgestock
 cd fridgestock
 npm install
 cp server/.env.example server/.env

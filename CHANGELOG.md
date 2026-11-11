@@ -12,7 +12,7 @@ All notable changes to this project are listed here, newest first. Versions foll
   - The workspace packages are now `@fridgestock/*`.
   - The local database names are now `fridgestock*`.
   - The Render service in `render.yaml` is now `fridgestock-api`.
-  - The repository is now `rugvailabs/fridgestock`.
+  - The repository is now `mohan-avyrontechnologies/fridgeStock` (it was `rugvailabs/cook_first`, then `rugvailabs/fridgestock`).
 
 **Added**
 - **Python server, Phase 2**: food items (adding, bulk adds, editing, using, wasting, removing, undo, opening, moving and "use today"), FridgeStock and the priority engine, usage history, favourites and learned lifespans, with reminders scheduled and delivered in the app. `npm run compare:py` runs one journey on both servers and compares every response and stored document; all 84 checks match. pytest: 406 tests (`pytest -m phase2`).
