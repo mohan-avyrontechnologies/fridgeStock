@@ -135,7 +135,7 @@ def test_routes_only_wire_paths_to_middleware_and_controllers() -> None:
 def test_only_models_and_db_py_talk_to_mongodb() -> None:
     for file in sorted(SRC.rglob("*.py")):
         relative = file.relative_to(SRC).as_posix()
-        if relative.startswith("models/") or relative == "db.py":
+        if relative.startswith("models/") or relative == "db/__init__.py":
             continue
         code = re.sub(r'"""[\s\S]*?"""|#.*', "", file.read_text(encoding="utf-8"))
         for name in _imports(file):
@@ -148,9 +148,10 @@ def test_only_the_clock_reads_the_time() -> None:
     offenders: list[str] = []
     for file in sorted(SRC.rglob("*.py")):
         relative = file.relative_to(SRC).as_posix()
-        if relative in ("services/clock.py", "shared/dates.py"):
+        # Ids follow the real time, as ObjectIds do (db/ids.py says why).
+        if relative in ("services/clock.py", "shared/dates.py", "db/ids.py"):
             continue
         code = re.sub(r'"""[\s\S]*?"""|#.*', "", file.read_text(encoding="utf-8"))
-        if re.search(r"datetime\.now\(|datetime\.utcnow\(|time\.time\(|date\.today\(", code):
+        if re.search(r"datetime\.now\(|datetime\.utcnow\(|time\.time(_ns)?\(|date\.today\(", code):
             offenders.append(relative)
     assert offenders == []

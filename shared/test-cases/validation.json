@@ -21136,6 +21136,143 @@
           {
             "title": "Curry",
             "foodIds": [
+              "0192f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d00"
+            ]
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "meal": "dinner",
+            "title": "Curry",
+            "foodIds": [
+              "0192f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d00"
+            ]
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "title": "Curry",
+            "foodIds": [
+              "0192F3C4-7B1E-7C2A-9D4E-3F6A8B2C1D00"
+            ]
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "meal": "dinner",
+            "title": "Curry",
+            "foodIds": [
+              "0192F3C4-7B1E-7C2A-9D4E-3F6A8B2C1D00"
+            ]
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "title": "Curry",
+            "foodIds": [
+              "0123456789abcdef01234567",
+              "0192f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d00"
+            ]
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "meal": "dinner",
+            "title": "Curry",
+            "foodIds": [
+              "0123456789abcdef01234567",
+              "0192f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d00"
+            ]
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "title": "Curry",
+            "foodIds": [
+              "0192f3c47b1e7c2a9d4e3f6a8b2c1d00"
+            ]
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose up to 10 items from your own food.",
+          "field": "foodIds.0"
+        }
+      },
+      {
+        "args": [
+          {
+            "title": "Curry",
+            "foodIds": [
+              "{0192f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d00}"
+            ]
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose up to 10 items from your own food.",
+          "field": "foodIds.0"
+        }
+      },
+      {
+        "args": [
+          {
+            "title": "Curry",
+            "foodIds": [
+              "0192f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d0"
+            ]
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose up to 10 items from your own food.",
+          "field": "foodIds.0"
+        }
+      },
+      {
+        "args": [
+          {
+            "title": "Curry",
+            "foodIds": [
+              "0192f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d000"
+            ]
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose up to 10 items from your own food.",
+          "field": "foodIds.0"
+        }
+      },
+      {
+        "args": [
+          {
+            "title": "Curry",
+            "foodIds": [
+              "0g92f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d00"
+            ]
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose up to 10 items from your own food.",
+          "field": "foodIds.0"
+        }
+      },
+      {
+        "args": [
+          {
+            "title": "Curry",
+            "foodIds": [
               "0123456789abcdef01234567",
               "0123456789abcdef01234567",
               "0123456789abcdef01234567",
@@ -23124,6 +23261,110 @@
             "mediaType": "image/jpeg",
             "image": "aGVsbG8gd29ybGQ=",
             "foodId": "nope"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose one of your own food items.",
+          "field": "foodId"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "aGVsbG8gd29ybGQ=",
+            "foodId": "0192f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d00"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "mediaType": "image/jpeg",
+            "image": "aGVsbG8gd29ybGQ=",
+            "foodId": "0192f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d00"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "aGVsbG8gd29ybGQ=",
+            "foodId": "0192F3C4-7B1E-7C2A-9D4E-3F6A8B2C1D00"
+          }
+        ],
+        "expected": {
+          "valid": true,
+          "data": {
+            "mediaType": "image/jpeg",
+            "image": "aGVsbG8gd29ybGQ=",
+            "foodId": "0192F3C4-7B1E-7C2A-9D4E-3F6A8B2C1D00"
+          }
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "aGVsbG8gd29ybGQ=",
+            "foodId": "0192f3c47b1e7c2a9d4e3f6a8b2c1d00"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose one of your own food items.",
+          "field": "foodId"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "aGVsbG8gd29ybGQ=",
+            "foodId": "{0192f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d00}"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose one of your own food items.",
+          "field": "foodId"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "aGVsbG8gd29ybGQ=",
+            "foodId": "0192f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d0"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose one of your own food items.",
+          "field": "foodId"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "aGVsbG8gd29ybGQ=",
+            "foodId": "0192f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d000"
+          }
+        ],
+        "expected": {
+          "valid": false,
+          "message": "Choose one of your own food items.",
+          "field": "foodId"
+        }
+      },
+      {
+        "args": [
+          {
+            "mediaType": "image/jpeg",
+            "image": "aGVsbG8gd29ybGQ=",
+            "foodId": "0g92f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d00"
           }
         ],
         "expected": {

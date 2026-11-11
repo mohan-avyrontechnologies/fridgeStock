@@ -20,6 +20,9 @@ import { validationResult } from '../src/validationResult.js';
 type Input = unknown;
 const OUT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../test-cases/validation.json');
 const ID = '0123456789abcdef01234567';
+/** A UUIDv7, the Python server's form of an id, and near misses of it. */
+const UUID = '0192f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d00';
+const NOT_UUIDS = [UUID.replaceAll('-', ''), `{${UUID}}`, UUID.slice(0, -1), `${UUID}0`, UUID.replace('0192', '0g92')];
 const long = (n: number) => 'a'.repeat(n);
 const emoji = (n: number) => String.fromCodePoint(0x1f600).repeat(n);
 
@@ -244,6 +247,10 @@ const SCHEMAS: Record<string, { base: Record<string, unknown>; extra?: Input[] }
       { title: long(81) },
       { title: 'Curry', foodIds: ['not-an-id'] },
       { title: 'Curry', foodIds: [ID.toUpperCase()] },
+      { title: 'Curry', foodIds: [UUID] },
+      { title: 'Curry', foodIds: [UUID.toUpperCase()] },
+      { title: 'Curry', foodIds: [ID, UUID] },
+      ...NOT_UUIDS.map((id) => ({ title: 'Curry', foodIds: [id] })),
       { title: 'Curry', foodIds: Array.from({ length: 10 }, () => ID) },
       { title: 'Curry', foodIds: Array.from({ length: 11 }, () => ID) },
     ],
@@ -265,7 +272,16 @@ const SCHEMAS: Record<string, { base: Record<string, unknown>; extra?: Input[] }
     ],
   },
   notificationPageSchema: { base: { limit: '50', offset: '0' }, extra: [{ limit: '51' }, {}] },
-  photoCheckSchema: { base: { ...image, foodId: ID }, extra: [{ ...image, foodId: 'nope' }, image] },
+  photoCheckSchema: {
+    base: { ...image, foodId: ID },
+    extra: [
+      { ...image, foodId: 'nope' },
+      image,
+      { ...image, foodId: UUID },
+      { ...image, foodId: UUID.toUpperCase() },
+      ...NOT_UUIDS.map((foodId) => ({ ...image, foodId })),
+    ],
+  },
   printedDateSchema: {
     base: { ...image, locale: 'en-GB' },
     extra: [

@@ -215,6 +215,7 @@ describe('a photo of an item at home', () => {
     const theirs = await add(other, { name: 'Their jam' });
     await check(s, { foodId: theirs.id }).expect(404);
     await check(s, { foodId: '0'.repeat(24) }).expect(404);
+    await check(s, { foodId: '0192f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d00' }).expect(404); // the Python server's form
     expect(calls).toEqual([]);
   });
 

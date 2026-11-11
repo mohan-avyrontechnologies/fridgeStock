@@ -12,6 +12,7 @@ import {
   type RecipeIdeas,
 } from '@fridgestock/shared';
 import { aiPrompts, promptLine } from '../copy.js';
+import { isValidObjectId } from 'mongoose';
 import { FoodItemModel, type FoodItemDoc } from '../models/FoodItem.js';
 import { MealPlanEntryModel } from '../models/MealPlanEntry.js';
 import { RecipeIdeaCacheModel } from '../models/RecipeIdeaCache.js';
@@ -126,8 +127,9 @@ export async function suggestRecipes(user: UserDoc, mealType?: MealType): Promis
 
 const planDates = (today: DateString) => Array.from({ length: PLAN_DAYS }, (_, i) => addDays(today, i));
 
+/** A UUID (the Python server's form, which the shared schema accepts) can't be one of these foods, so it's left out. */
 async function foodsById(user: UserDoc, ids: string[]) {
-  const foods = await FoodItemModel.find({ householdId: user.householdId, _id: { $in: ids } });
+  const foods = await FoodItemModel.find({ householdId: user.householdId, _id: { $in: ids.filter(isValidObjectId) } });
   return new Map(foods.map((doc) => [doc._id.toString(), doc]));
 }
 

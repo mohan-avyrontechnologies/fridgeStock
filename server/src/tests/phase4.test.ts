@@ -351,6 +351,18 @@ describe('weekly meal plan', () => {
     await s.auth(api().put('/api/meal-plan/2026-09-30').send({ title: ' ' })).expect(400);
   });
 
+  it('treats a UUID food id (the Python server’s form) as food that isn’t the household’s', async () => {
+    const { s, chicken } = await kitchen();
+    for (const foodIds of [
+      ['0192f3c4-7b1e-7c2a-9d4e-3f6a8b2c1d00'],
+      [chicken.id, '0192F3C4-7B1E-7C2A-9D4E-3F6A8B2C1D00'],
+    ]) {
+      const res = await s.auth(api().put('/api/meal-plan/2026-09-30').send({ title: 'Curry', foodIds })).expect(400);
+      expect(res.body.error).toMatchObject({ field: 'foodIds', message: 'Choose up to 10 items from your own food.' });
+    }
+    expect(await MealPlanEntryModel.countDocuments()).toBe(0);
+  });
+
   it('AI suggests meals only for empty days, and saves nothing until the user adds them', async () => {
     const { s, bread, chicken } = await kitchen();
     await s.auth(api().put('/api/meal-plan/2026-09-29').send({ title: 'Already planned' })).expect(200);

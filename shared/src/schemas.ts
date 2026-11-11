@@ -351,14 +351,19 @@ export const shoppingItemSchema = z.object({
 /** PUT /shopping/:id */
 export const shoppingUpdateSchema = shoppingItemSchema.partial().extend({ checked: z.boolean().optional() }).strict();
 
-const objectId = z.string().regex(/^[0-9a-f]{24}$/i, MESSAGES.mealFoods);
+/**
+ * An id in a request body: a 24-hex ObjectId (the Node server, on MongoDB) or a UUID (the Python server, on
+ * PostgreSQL), in either case. A well-formed id that isn't one of the household's is the service's concern.
+ */
+const idSchema = (message: string) =>
+  z.string().regex(/^(?:[0-9a-f]{24}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i, message);
 
 /** PUT /meal-plan/:date */
 export const mealPlanEntrySchema = z.object({
   /** Which meal; leaving it out means dinner, as before meals were added. */
   meal: z.enum(MEAL_TYPES, { error: MESSAGES.mealType }).default('dinner'),
   title: z.string({ error: MESSAGES.mealTitle }).trim().min(1, MESSAGES.mealTitle).max(80, MESSAGES.mealTitle),
-  foodIds: z.array(objectId, { error: MESSAGES.mealFoods }).max(10, MESSAGES.mealFoods).default([]),
+  foodIds: z.array(idSchema(MESSAGES.mealFoods), { error: MESSAGES.mealFoods }).max(10, MESSAGES.mealFoods).default([]),
 });
 
 /** GET /usage: limit defaults to 20 and offset to 0. */
@@ -409,10 +414,7 @@ export const PHOTO_CONFIDENCE_MIN = 0.6;
  * `foodId` is set when the photo is of an item already in the household (Food Details).
  */
 export const photoCheckSchema = receiptSchema.extend({
-  foodId: z
-    .string()
-    .regex(/^[0-9a-f]{24}$/i, MESSAGES.photoFood)
-    .optional(),
+  foodId: idSchema(MESSAGES.photoFood).optional(),
 });
 
 /** POST /parse/date: a photo of the date on a pack (like the receipt photo), plus the person's locale. */
